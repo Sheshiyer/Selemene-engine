@@ -1,0 +1,14 @@
+{
+  "verdict": "PASS",
+  "findings": [],
+  "limits": [
+    "Review limited to the supplied `biofield/page.tsx` and `agent-merge-lane.yml`; no other files, runtime behavior, or production DNS/remote CI were verified.",
+    "Merge lane eligibility requires `mergeable === true` and `mergeable_state === 'clean'`; `mergeable: null` is intentionally skipped (fail-closed) until GitHub recomputes\u2014operators may need to re-run the workflow.",
+    "CI gating depends on a completed successful check named `CI Gate` with `app.id === 15368` on the captured head SHA; repo/org branch protection and server-side enforcement remain out of band for this change.",
+    "Open PR discovery uses a single `pulls.list` page (`per_page: 100`); lanes with more than 100 open agent PRs may not see all candidates in one run.",
+    "Local test/lint/build claims and UI login-only render were taken as stated; no authenticated browser or live GitHub API validation was performed in this review."
+  ],
+  "sourceCommit": "f6d777e3c7050e14999b884279745047fe1dc41f",
+  "verificationMethod": "Independent bounded source review; see per-file limits. Primary local tests and authenticated runtime observations are separate receipts.",
+  "resolvedModel": "cursor/composer-2.5"
+}

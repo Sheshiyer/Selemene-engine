@@ -1,7 +1,11 @@
 name = "selemene-pattern-memory"
+account_id = "9d9d23b27f32e70ae3afb6a1aa2c0f10"
 main = "src/index.ts"
 compatibility_date = "2025-04-01"
 
+# Undeployed worker; KV/D1/Vectorize/R2 bindings are placeholders until provisioned.
+# Replace ids after Cloudflare resources exist — do not deploy from this config alone.
+# docs/plans/selemene-engine/RECOVERY-2026-09-05.md
 [[kv_namespaces]]
 binding = "LLM_SECRETS"
 id = "SELEMENE_LLM_SECRETS"

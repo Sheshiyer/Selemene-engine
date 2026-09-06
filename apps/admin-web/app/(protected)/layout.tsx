@@ -87,10 +87,10 @@ const ROUTE_META: Record<string, { eyebrow: string; title: string; summary: stri
   "/witness-dyad": { eyebrow: "Interpretation", title: "Witness Dyad Executions", summary: "Browse LLM-powered and rule-based dyad interpretations with full pillar text and metadata." },
   "/living-readings": { eyebrow: "Living Archive", title: "Living Readings", summary: "Review imported readings with owner, subject, relationship, source, evidence, and editorial provenance." },
   "/readings": { eyebrow: "Content", title: "Readings Browser", summary: "Browse completed readings across all users with engine, workflow, and witness prompt context." },
-  "/engines": { eyebrow: "Registry", title: "Engine Registry", summary: "View all 16 consciousness engines with category, status, and performance metrics." },
+  "/engines": { eyebrow: "Registry", title: "Engine Registry", summary: "Browse the runtime engine registry with category, status, and performance metrics." },
   "/biofield": { eyebrow: "Biometrics", title: "Biofield Sessions", summary: "Browse biofield capture sessions with device tracking and artifact metadata." },
   "/workflows": { eyebrow: "Orchestration", title: "Workflow Registry", summary: "View synthesis types, engine composition, and execution metrics for all 6 canonical workflows." },
-  "/sidecars": { eyebrow: "Runtime", title: "Sidecar Health", summary: "Monitor TypeScript engine server and Python biofield CV service health with per-engine detail." }
+  "/sidecars": { eyebrow: "Runtime", title: "Sidecar Health", summary: "Monitor TypeScript sidecar health, per-engine status, and circuit breakers." }
 };
 
 function toRelativeAdminPath(pathname: string): string {

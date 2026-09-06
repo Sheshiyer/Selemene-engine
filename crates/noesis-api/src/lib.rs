@@ -886,6 +886,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/admin/system/cache", get(handlers::admin::system_cache))
         .route("/admin/bridge/health", get(handlers::admin::bridge_health))
         .route(
+            "/admin/engines/capabilities",
+            get(handlers::admin::engine_capabilities),
+        )
+        .route(
             "/admin/bridge/sidecar",
             get(handlers::admin::sidecar_detail),
         )
@@ -3966,6 +3970,21 @@ async fn build_runtime_orchestrator_and_bridge(
     (orchestrator, bridge_manager)
 }
 
+/// Register engines whose runtime contract requires an available database pool.
+///
+/// Both production state builders call this seam so the database-conditional
+/// engine set cannot drift between connected and lazy initialization paths.
+fn register_database_conditional_engines(
+    orchestrator: &mut WorkflowOrchestrator,
+    pool: Option<&sqlx::PgPool>,
+) {
+    if let Some(db_pool) = pool {
+        orchestrator.register_engine(Arc::new(noesis_orchestrator::BiofieldCaptureEngine::new(
+            db_pool.clone(),
+        )));
+    }
+}
+
 /// Build the default `AppState` with all engines registered.
 ///
 /// # Arguments
@@ -4062,11 +4081,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         None
     };
 
-    if let Some(ref db_pool) = pool {
-        orchestrator.register_engine(Arc::new(noesis_orchestrator::BiofieldCaptureEngine::new(
-            db_pool.clone(),
-        )));
-    }
+    register_database_conditional_engines(&mut orchestrator, pool.as_ref());
 
     // -- Auth (Postgres-backed API key validation, or degraded without DB) --
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
@@ -4203,11 +4218,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
             .expect("Failed to create lazy database pool")
     });
 
-    if let Some(ref db_pool) = pool {
-        orchestrator.register_engine(Arc::new(noesis_orchestrator::BiofieldCaptureEngine::new(
-            db_pool.clone(),
-        )));
-    }
+    register_database_conditional_engines(&mut orchestrator, pool.as_ref());
 
     // -- Auth (lazy Postgres-backed API key validation, or degraded without DB) --
     let auth = AuthService::with_pool(config.jwt_secret.clone(), pool.clone());
@@ -4344,6 +4355,47 @@ mod checksum_tests {
         assert!(map.contains_key("a.se1"));
         assert!(map.contains_key("b.se1"));
         assert!(!map.contains_key("c.txt"));
+    }
+}
+
+#[cfg(test)]
+mod database_conditional_registration_tests {
+    use super::*;
+
+    fn runtime_orchestrator(pool: Option<&sqlx::PgPool>) -> WorkflowOrchestrator {
+        let mut orchestrator = WorkflowOrchestrator::new();
+        orchestrator.register_native_runtime_engines();
+        let bridge = noesis_bridge::BridgeManager::new("http://127.0.0.1:1");
+        for engine in bridge.engines() {
+            orchestrator.register_engine(engine);
+        }
+        register_database_conditional_engines(&mut orchestrator, pool);
+        orchestrator
+    }
+
+    #[test]
+    fn production_registration_omits_capture_without_database_configuration() {
+        let orchestrator = runtime_orchestrator(None);
+
+        assert!(!orchestrator
+            .list_engines()
+            .iter()
+            .any(|engine_id| engine_id == "biofield-capture"));
+    }
+
+    #[tokio::test]
+    async fn production_registration_includes_capture_with_database_configuration() {
+        let pool = PgPoolOptions::new()
+            .connect_lazy("postgres://127.0.0.1:1/noesis_registration_fixture")
+            .expect("local lazy fixture URL must parse");
+
+        let orchestrator = runtime_orchestrator(Some(&pool));
+
+        assert!(orchestrator
+            .list_engines()
+            .iter()
+            .any(|engine_id| engine_id == "biofield-capture"));
+        pool.close().await;
     }
 }
 

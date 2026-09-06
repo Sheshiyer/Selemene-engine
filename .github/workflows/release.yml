@@ -6,184 +6,136 @@ on:
       - 'v*.*.*'
 
 permissions:
-  contents: write
-  packages: write
+  contents: read
+  packages: read
+
+concurrency:
+  group: production-release
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_API: ${{ github.repository_owner }}/selemene-engine
+  IMAGE_NAME_TS: ${{ github.repository_owner }}/selemene-ts-engines
 
 jobs:
-  # Gate: unit + doc tests must pass before release artifacts are built.
+  # Gate: the same complete CI suite must pass before release artifacts are built.
   pre-release-tests:
     name: Pre-release test gate
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
+
+  # Resolve the immutable images already published by the main deployment
+  # workflow. This job performs registry reads only; it does not create or move
+  # a tag.
+  resolve-release-artifacts:
+    name: Resolve immutable release artifacts
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-
-      - name: Run unit tests
-        run: cargo test --lib --bins -- --test-threads=4
-
-  create-release:
     needs: pre-release-tests
-    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      api-digest: ${{ steps.resolve.outputs.api-digest }}
+      ts-digest: ${{ steps.resolve.outputs.ts-digest }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Extract version from tag
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Check if release notes exist
-        id: check_notes
-        run: |
-          if [ -f "RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md" ]; then
-            echo "EXISTS=true" >> $GITHUB_OUTPUT
-          else
-            echo "EXISTS=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.VERSION }}
-          name: Release ${{ steps.version.outputs.VERSION }}
-          body_path: ${{ steps.check_notes.outputs.EXISTS == 'true' && format('RELEASE_NOTES_{0}.md', steps.version.outputs.VERSION) || 'CHANGELOG.md' }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-docker:
-    needs: create-release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile.prod
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  build-binaries:
-    needs: create-release
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            artifact_name: noesis-server-linux-x86_64
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            artifact_name: noesis-server-macos-x86_64
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            artifact_name: noesis-server-macos-arm64
-
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
-
-      - name: Cache cargo registry
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache cargo index
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache target directory
-        uses: actions/cache@v3
-        with:
-          path: target
-          key: ${{ runner.os }}-target-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build release binary
-        run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Package binary
+      - name: Resolve source-tag digests
+        id: resolve
+        shell: bash
         run: |
-          cd target/${{ matrix.target }}/release
-          tar czf ${{ matrix.artifact_name }}.tar.gz noesis-server
-          mv ${{ matrix.artifact_name }}.tar.gz ${{ github.workspace }}/
+          set -euo pipefail
+          resolve_digest() {
+            local image_ref="$1"
+            local digest
+            digest="$(docker buildx imagetools inspect "${image_ref}" | awk '$1 == "Digest:" { print $2; exit }')"
+            if [[ ! "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+              echo "::error title=Artifact digest unavailable::Could not resolve an immutable digest for ${image_ref}."
+              exit 1
+            fi
+            printf '%s' "${digest}"
+          }
+          api_ref="${REGISTRY}/${IMAGE_NAME_API}:sha-${GITHUB_SHA}"
+          ts_ref="${REGISTRY}/${IMAGE_NAME_TS}:sha-${GITHUB_SHA}"
+          echo "api-digest=$(resolve_digest "${api_ref}")" >> "$GITHUB_OUTPUT"
+          echo "ts-digest=$(resolve_digest "${ts_ref}")" >> "$GITHUB_OUTPUT"
 
-      - name: Upload binary to release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ matrix.artifact_name }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  update-changelog:
-    needs: [create-release, build-docker, build-binaries]
+  # Release publication is denied until a reviewed immutable-image receipt is
+  # bound to the tag source, exact registry-read digests and manifest-owned
+  # production target. Test fixtures are rejected even when internally valid.
+  validate-release-receipt:
+    name: Validate Release Receipt
     runs-on: ubuntu-latest
+    needs: [pre-release-tests, resolve-release-artifacts]
+    env:
+      RELEASE_RECEIPT_B64: ${{ vars.PUBLISH_RELEASE_RECEIPT_B64 }}
+      EXPECTED_API_DIGEST: ${{ needs.resolve-release-artifacts.outputs.api-digest }}
+      EXPECTED_TS_DIGEST: ${{ needs.resolve-release-artifacts.outputs.ts-digest }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: main
+          ref: ${{ github.sha }}
 
-      - name: Extract version
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Update CHANGELOG
+      - name: Materialize candidate release receipt
+        shell: bash
         run: |
-          if [ -f "RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md" ]; then
-            cat RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md >> CHANGELOG.md.new
-            echo "" >> CHANGELOG.md.new
-            cat CHANGELOG.md >> CHANGELOG.md.new
-            mv CHANGELOG.md.new CHANGELOG.md
+          set -euo pipefail
+          if [[ -z "${RELEASE_RECEIPT_B64:-}" ]]; then
+            echo "::error title=Release receipt missing::Set vars.PUBLISH_RELEASE_RECEIPT_B64 to a reviewed v1 release-production receipt for this exact source revision and registry-read digests."
+            exit 1
           fi
+          umask 077
+          python3 -c 'import base64, os, pathlib; pathlib.Path(os.environ["RUNNER_TEMP"], "selemene-release-receipt.json").write_bytes(base64.b64decode(os.environ["RELEASE_RECEIPT_B64"], validate=True))'
 
-      - name: Commit changelog
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          commit_message: "docs: Update CHANGELOG for ${{ steps.version.outputs.VERSION }}"
-          file_pattern: CHANGELOG.md
+          python-version: "3.12"
+
+      - name: Install receipt validator dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-gates.txt
+
+      - name: Validate source-bound release receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/validate_release_receipt.py \
+            "$RUNNER_TEMP/selemene-release-receipt.json" \
+            --expected-source "$GITHUB_SHA" \
+            --expected-release-tag "$GITHUB_REF_NAME" \
+            --expected-operation-id "github-run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}" \
+            --expected-workflow .github/workflows/release.yml \
+            --now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --required-promotion-mode immutable-image \
+            --target-profile release-production \
+            --expected-artifact-digest "api=${EXPECTED_API_DIGEST}" \
+            --expected-artifact-digest "typescript-engines=${EXPECTED_TS_DIGEST}" \
+            --operational
+
+  # The repository cannot prove atomic alias movement across both GHCR
+  # repositories or compensate a later GitHub-release failure. Keep the
+  # production mutation absent until the manifest's required authority exists.
+  release-result:
+    name: Production Release Hold
+    runs-on: ubuntu-latest
+    needs: [validate-release-receipt, resolve-release-artifacts]
+    if: always()
+    permissions:
+      contents: read
+    steps:
+      - name: Enforce atomic promotion hold
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::error title=Production release held::No aliases or GitHub release were changed. Authorization requires durable one-use receipt consumption and atomic multi-registry alias promotion with compensation."
+          exit 1

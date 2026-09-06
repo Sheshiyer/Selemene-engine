@@ -6,19 +6,32 @@
   "scripts": {
     "verify:typecheck": "pnpm --filter @noesis/verification typecheck",
     "verify": "pnpm --filter @noesis/verification test",
-    "gate:scripts": "python3 scripts/validate_contracts.py && python3 scripts/validate_migrations.py && python3 scripts/validate_docker_workspace.py && python3 -m pytest tests/scripts -q",
+    "gate:scripts": "python3 scripts/validate_action_pins.py && python3 scripts/validate_contracts.py && python3 scripts/validate_release_receipt.py --validate-fixtures && python3 scripts/validate_migrations.py && python3 scripts/validate_docker_workspace.py && python3 -m pytest tests/scripts -q",
     "gate:contracts": "cargo test -p noesis-core --test contract_v1_authority --locked && cargo test -p noesis-api --test openapi_schema_tests --locked && cargo test -p noesis-api --test integration_tests test_calculate_ --locked && pnpm --filter @selemene/engine-sdk test && pnpm --filter @selemene/engine-sdk typecheck && pnpm --filter @noesis/witness-pipeline build && pnpm --filter @noesis/sdk test && pnpm --filter @noesis/sdk typecheck",
     "gate:verification": "pnpm --filter @noesis/witness-pipeline build && pnpm run verify && pnpm run verify:typecheck",
     "gate:ts": "cd ts-engines && bun run typecheck && bun test",
     "gate": "pnpm run gate:scripts && pnpm run gate:contracts && pnpm run gate:verification && pnpm run gate:ts"
   },
-  "overrides": {
-    "postcss": "^8.5.10",
-    "next": {
-      "postcss": "^8.5.10"
-    }
-  },
   "devDependencies": {
-    "shadcn": "^3.8.5"
+    "shadcn": "^4.21.0",
+    "typescript": "5.9.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": "^8.5.28",
+      "js-yaml": "^4.3.2",
+      "nanoid": "^3.3.18",
+      "browserslist": "^4.28.9",
+      "vite@<6.4.3": "^6.4.3",
+      "brace-expansion@<2.0.0": "^1.1.18",
+      "minimatch@^10": "^10.2.6",
+      "brace-expansion@^5": "^5.0.9",
+      "fast-uri@^3": "^3.1.6",
+      "undici@^7": "^7.29.0",
+      "ip-address@^10": "^10.3.1",
+      "hono@^4": "^4.13.7",
+      "@hono/node-server@^1": "^1.19.15",
+      "qs@^6": "^6.16.0"
+    }
   }
 }

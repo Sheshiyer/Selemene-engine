@@ -1,4 +1,5 @@
 name = "selemene-llm-proxy"
+account_id = "9d9d23b27f32e70ae3afb6a1aa2c0f10"
 main = "src/index.ts"
 compatibility_date = "2025-04-01"
 

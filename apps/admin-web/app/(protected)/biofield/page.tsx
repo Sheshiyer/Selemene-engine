@@ -10,6 +10,8 @@ import { statusPillClass } from "@/lib/status";
 import { buildQueryString, getNumberParam, getStringParam } from "@/lib/url-query";
 import type { AdminBiofieldSessionItem } from "@/types/admin";
 
+const EMPTY_SESSIONS: AdminBiofieldSessionItem[] = [];
+
 function formatDateTime(value: string | null): string {
   if (!value) {
     return "--";
@@ -31,10 +33,20 @@ export default function BiofieldPage() {
   const limit = getNumberParam(searchParams, "limit", 50, 1, 200);
   const offset = getNumberParam(searchParams, "offset", 0, 0, 100_000);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [sessions, setSessions] = useState<AdminBiofieldSessionItem[]>([]);
-  const [total, setTotal] = useState(0);
+  const queryKey = [statusFilter, userIdFilter, limit, offset].join("\0");
+
+  const [fetchResult, setFetchResult] = useState<{
+    key: string;
+    sessions: AdminBiofieldSessionItem[];
+    total: number;
+    error: string | null;
+    settled: boolean;
+  }>({ key: "", sessions: [], total: 0, error: null, settled: false });
+
+  const loading = fetchResult.key !== queryKey || !fetchResult.settled;
+  const error = fetchResult.key === queryKey ? fetchResult.error : null;
+  const sessions = fetchResult.key === queryKey ? fetchResult.sessions : EMPTY_SESSIONS;
+  const total = fetchResult.key === queryKey ? fetchResult.total : 0;
 
   function updateParam(key: string, value: string) {
     const nextQuery = buildQueryString(searchParams, { [key]: value || undefined, offset: key !== "offset" ? undefined : value });
@@ -60,9 +72,6 @@ export default function BiofieldPage() {
     let cancelled = false;
     const token = getAuthToken() ?? undefined;
 
-    setError(null);
-    setLoading(true);
-
     getAdminBiofieldSessions(token, {
       status: statusFilter || undefined,
       user_id: userIdFilter || undefined,
@@ -71,31 +80,37 @@ export default function BiofieldPage() {
     })
       .then((response) => {
         if (!cancelled) {
-          setSessions(response.items);
-          setTotal(response.total);
+          setFetchResult({
+            key: queryKey,
+            sessions: response.items,
+            total: response.total,
+            error: null,
+            settled: true
+          });
         }
       })
       .catch((err) => {
         if (!cancelled) {
+          let message = "Failed to load biofield sessions";
           if (err instanceof ApiClientError) {
-            setError(err.payload?.error || err.message);
+            message = err.payload?.error || err.message;
           } else if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError("Failed to load biofield sessions");
+            message = err.message;
           }
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
+          setFetchResult({
+            key: queryKey,
+            sessions: [],
+            total: 0,
+            error: message,
+            settled: true
+          });
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [statusFilter, userIdFilter, limit, offset]);
+  }, [queryKey, statusFilter, userIdFilter, limit, offset]);
 
   return (
     <PageShell
@@ -123,7 +138,10 @@ export default function BiofieldPage() {
             placeholder="user uuid"
           />
         </label>
-        <button type="button" onClick={() => { updateParam("status", ""); updateParam("user_id", ""); }}>
+        <button type="button" onClick={() => {
+          const nextQuery = buildQueryString(searchParams, { status: undefined, user_id: undefined, offset: undefined });
+          router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+        }}>
           Clear
         </button>
       </div>
@@ -138,11 +156,11 @@ export default function BiofieldPage() {
           <div className="value">{sessions.length}</div>
         </article>
         <article className="metric">
-          <div className="label">Active</div>
+          <div className="label">Active on this page</div>
           <div className="value">{activeCount}</div>
         </article>
         <article className="metric">
-          <div className="label">Abandoned</div>
+          <div className="label">Abandoned on this page</div>
           <div className="value">{abandonedCount}</div>
         </article>
       </div>

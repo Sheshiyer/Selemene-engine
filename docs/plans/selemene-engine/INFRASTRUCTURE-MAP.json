@@ -1,0 +1,452 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-05T10:32:24.973076+00:00",
+  "sourceHead": "9a05f5cc90777f083d7065e491484ef727aeada1",
+  "scope": "Read-only Selemene account/resource inventory; no credential or variable values",
+  "railway": {
+    "projectName": "robust-adventure",
+    "projectId": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+    "workspaceId": "871e554f-2c1b-4a0e-850a-d09019b4036d",
+    "services": [
+      {
+        "name": "ts-engines",
+        "id": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
+        "environmentId": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": {
+          "image": null,
+          "repo": "Sheshiyer/Selemene-engine"
+        },
+        "domains": {
+          "customDomains": [],
+          "serviceDomains": [
+            {
+              "domain": "ts-engines-production.up.railway.app",
+              "id": "3cefb16b-70a8-4be5-be22-b2385256200c",
+              "targetPort": 3001
+            },
+            {
+              "domain": "ts-engines-production-56f0.up.railway.app",
+              "id": "0d1f8608-24d6-488f-b461-e1c209cbf8c6",
+              "targetPort": 3001
+            }
+          ]
+        },
+        "activeDeployments": [
+          {
+            "id": "e13dcbfa-fc0d-4493-85fc-3f3799f6b6cd",
+            "status": "SUCCESS",
+            "createdAt": "2026-08-27T07:05:41.184Z",
+            "sourceCommit": "ae3e2cef402bd0cf28d1c7a102800d215cc5f2c2",
+            "imageDigest": "sha256:d7d80604b63b89d8707375a9c1b5de11ed83dd23e9ce7f5af181cfa45776423b",
+            "configFile": "/ts-engines/railway.toml",
+            "rootDirectory": "/ts-engines",
+            "sourceDeclaredBuilder": "NIXPACKS",
+            "effectiveBuilder": "DOCKERFILE",
+            "dockerfilePath": "Dockerfile",
+            "effectiveWatchPatterns": [],
+            "healthcheckPath": "/health",
+            "runningInstanceStates": [
+              "RUNNING"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Selemene-engine",
+        "id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+        "environmentId": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": {
+          "image": null,
+          "repo": "Sheshiyer/Selemene-engine"
+        },
+        "domains": {
+          "customDomains": [
+            {
+              "domain": "selemene.tryambakam.space",
+              "id": "9fe2ccf7-b061-43b3-9595-46c4b6a43abd",
+              "targetPort": 8163
+            }
+          ],
+          "serviceDomains": [
+            {
+              "domain": "selemene-engine-production.up.railway.app",
+              "id": "ede005ad-15dd-4964-a699-60212bfa7ef6",
+              "targetPort": 8163
+            }
+          ]
+        },
+        "activeDeployments": [
+          {
+            "id": "075f03de-7b60-42fd-8cc2-e0119d5ff2c9",
+            "status": "SUCCESS",
+            "createdAt": "2026-08-27T07:35:04.438Z",
+            "sourceCommit": null,
+            "imageDigest": "sha256:ac78840ad8e33b58c72e2cefcc56f1f012670559c147271f4cee43cf2173bc5e",
+            "configFile": "/railway.toml",
+            "rootDirectory": null,
+            "sourceDeclaredBuilder": "DOCKERFILE",
+            "effectiveBuilder": "DOCKERFILE",
+            "dockerfilePath": "Dockerfile.prod",
+            "effectiveWatchPatterns": [
+              "crates/**",
+              "data/**",
+              "migrations/**",
+              "Cargo.toml",
+              "Cargo.lock",
+              "Dockerfile.prod",
+              ".dockerignore",
+              "railway.toml"
+            ],
+            "healthcheckPath": "/health/live",
+            "runningInstanceStates": [
+              "RUNNING"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "biofield-cv-service",
+        "id": "f596e31b-e190-409c-993d-a3b618d29a73",
+        "environmentId": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": {
+          "image": null,
+          "repo": "Sheshiyer/Selemene-engine"
+        },
+        "domains": {
+          "customDomains": [],
+          "serviceDomains": []
+        },
+        "activeDeployments": [
+          {
+            "id": "11bcc687-9c4b-4682-b5ff-bbba49f824d3",
+            "status": "SUCCESS",
+            "createdAt": "2026-07-11T09:24:07.465Z",
+            "sourceCommit": "0efc3d8ae939f1c793537a700d0c3e37c2cdd38e",
+            "imageDigest": "sha256:f9f5b718cde9a009ad40c2a8e6211138bf337f0fccf4f38047e57916415d7f2d",
+            "configFile": "/python-services/railway.toml",
+            "rootDirectory": "python-services",
+            "sourceDeclaredBuilder": "DOCKERFILE",
+            "effectiveBuilder": "DOCKERFILE",
+            "dockerfilePath": "Dockerfile.biofield",
+            "effectiveWatchPatterns": [],
+            "healthcheckPath": null,
+            "runningInstanceStates": [
+              "RUNNING"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Redis",
+        "id": "37fc197c-19ef-4f5e-a371-6a4abdbee907",
+        "environmentId": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": {
+          "image": "redis:8.2.9",
+          "repo": null
+        },
+        "domains": {
+          "customDomains": [],
+          "serviceDomains": []
+        },
+        "activeDeployments": [
+          {
+            "id": "32cea5f8-6fcf-4861-ba96-e4ddda65d118",
+            "status": "SUCCESS",
+            "createdAt": "2026-06-01T08:08:18.679Z",
+            "sourceCommit": null,
+            "imageDigest": "sha256:5fa2edb1e408fa8235e6db8fab01d1afaaae96c9403ba67b70feceb8661e8621",
+            "configFile": null,
+            "rootDirectory": null,
+            "sourceDeclaredBuilder": null,
+            "effectiveBuilder": "RAILPACK",
+            "dockerfilePath": null,
+            "effectiveWatchPatterns": [],
+            "healthcheckPath": null,
+            "runningInstanceStates": [
+              "RUNNING"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "witness-agents",
+        "id": "f62adfac-9f81-4a0a-8cf5-8e5c212eddbb",
+        "environmentId": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": {
+          "image": null,
+          "repo": null
+        },
+        "domains": {
+          "customDomains": [
+            {
+              "domain": "48.tryambakam.space",
+              "id": "30d79634-8a73-47dc-abaf-7d79684a7c52",
+              "targetPort": 3333
+            }
+          ],
+          "serviceDomains": [
+            {
+              "domain": "witness-agents-production.up.railway.app",
+              "id": "1c081267-5338-4f18-a714-7a5e06a3daba",
+              "targetPort": 3333
+            }
+          ]
+        },
+        "activeDeployments": [
+          {
+            "id": "377d2553-848f-4072-b4e0-c6986e8d3a6c",
+            "status": "SUCCESS",
+            "createdAt": "2026-06-01T08:08:18.597Z",
+            "sourceCommit": null,
+            "imageDigest": "sha256:7e806f888085bd197fe7c3d50d6021d1d9ceb450e723cbfe7e0660e55e150bfb",
+            "configFile": null,
+            "rootDirectory": null,
+            "sourceDeclaredBuilder": null,
+            "effectiveBuilder": "DOCKERFILE",
+            "dockerfilePath": "/Dockerfile",
+            "effectiveWatchPatterns": [],
+            "healthcheckPath": null,
+            "runningInstanceStates": [
+              "RUNNING"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "suno-bridge",
+        "id": "eb888f5b-0ce0-4db0-8f8e-8c08dbc7841d",
+        "environmentId": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": {
+          "image": null,
+          "repo": null
+        },
+        "domains": {
+          "customDomains": [],
+          "serviceDomains": [
+            {
+              "domain": "suno-bridge-production.up.railway.app",
+              "id": "f9377a83-539f-45c3-8a39-b979797eb39e",
+              "targetPort": 3000
+            }
+          ]
+        },
+        "activeDeployments": [
+          {
+            "id": "6199dcb8-80b3-4c35-b1b2-96c39c89c924",
+            "status": "SUCCESS",
+            "createdAt": "2026-06-01T08:08:18.753Z",
+            "sourceCommit": null,
+            "imageDigest": "sha256:76385c9f73cf0d4e79211cc62f02ee59a05d7572a62e621e6f29deb28089ed37",
+            "configFile": "/railway.toml",
+            "rootDirectory": null,
+            "sourceDeclaredBuilder": "DOCKERFILE",
+            "effectiveBuilder": "DOCKERFILE",
+            "dockerfilePath": "Dockerfile.prod",
+            "effectiveWatchPatterns": [],
+            "healthcheckPath": "/health/live",
+            "runningInstanceStates": [
+              "RUNNING"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Postgres",
+        "id": "1ba4a991-ca9a-4831-981e-aa3470101ef1",
+        "environmentId": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": {
+          "image": "ghcr.io/railwayapp-templates/postgres-ssl:18",
+          "repo": null
+        },
+        "domains": {
+          "customDomains": [],
+          "serviceDomains": []
+        },
+        "activeDeployments": [
+          {
+            "id": "922eb502-80a7-4027-af98-5bce1e53c714",
+            "status": "SUCCESS",
+            "createdAt": "2026-08-23T11:44:10.623Z",
+            "sourceCommit": null,
+            "imageDigest": "sha256:e617e80d34d40def28ab197662197acc5cd6c1dc120db9cf38d835a2386c226c",
+            "configFile": null,
+            "rootDirectory": null,
+            "sourceDeclaredBuilder": null,
+            "effectiveBuilder": "RAILPACK",
+            "dockerfilePath": null,
+            "effectiveWatchPatterns": [],
+            "healthcheckPath": null,
+            "runningInstanceStates": [
+              "RUNNING"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "cloudflare": {
+    "accountId": "9d9d23b27f32e70ae3afb6a1aa2c0f10",
+    "profile": "9d9d",
+    "zones": [
+      {
+        "id": "3c1066df55d4e99464c8bcf1f850894b",
+        "name": "tryambakam.space",
+        "status": "active"
+      }
+    ],
+    "workers": [
+      {
+        "name": "selemene-gw",
+        "success": true,
+        "errors": [],
+        "compatibility_date": "2026-07-01",
+        "bindings": [
+          {
+            "name": "SELEMENE_SECRETS",
+            "type": "kv_namespace",
+            "namespace_id": "7d11ab631a5145bfa8076546da6a9e27"
+          }
+        ]
+      },
+      {
+        "name": "selemene-llm-proxy",
+        "success": true,
+        "errors": [],
+        "compatibility_date": "2025-04-01",
+        "bindings": [
+          {
+            "name": "CHAT_PROXY_TOKEN",
+            "type": "secret_text"
+          },
+          {
+            "name": "LLM_SECRETS",
+            "type": "kv_namespace",
+            "namespace_id": "310ee556e91d465eb54d55586a541e49"
+          }
+        ]
+      },
+      {
+        "name": "selemene-admin-api-proxy",
+        "success": true,
+        "errors": [],
+        "compatibility_date": "2026-07-06",
+        "bindings": []
+      },
+      {
+        "name": "selemene-pattern-memory",
+        "success": false,
+        "errors": [
+          {
+            "code": 10007,
+            "message": "This Worker does not exist on your account."
+          }
+        ],
+        "compatibility_date": null,
+        "bindings": []
+      }
+    ],
+    "dnsRecordRead": {
+      "success": false,
+      "errors": [
+        {
+          "code": 10000,
+          "message": "Authentication error",
+          "documentation_url": "https://developers.cloudflare.com/api/resources/dns/subresources/records/methods/list"
+        }
+      ],
+      "records": null
+    },
+    "selemeneAdminRoute": [
+      {
+        "id": "d452a59105e04865875f67b3e62a5a4e",
+        "pattern": "144.tryambakam.space/api/*",
+        "script": "selemene-admin-api-proxy",
+        "request_limit_fail_open": false
+      }
+    ],
+    "dnsBrowserRead": {
+      "observedAt": "2026-09-05T12:54:58.199609+00:00",
+      "status": "verified targeted records in authenticated IAB",
+      "scope": "Selemene and witness targets; first page showed 25 of 36 zone records; not a full-zone export",
+      "records": [
+        {
+          "name": "selemene.tryambakam.space",
+          "type": "CNAME",
+          "content": "9apgcwm8.up.railway.app",
+          "proxied": true,
+          "ttl": "Auto"
+        },
+        {
+          "name": "144.tryambakam.space",
+          "type": "CNAME",
+          "content": "805d39b3f845b26f.vercel-dns-017.com",
+          "proxied": true,
+          "ttl": "Auto"
+        },
+        {
+          "name": "48.tryambakam.space",
+          "type": "CNAME",
+          "content": "6636vvzi.up.railway.app",
+          "proxied": false,
+          "ttl": "Auto"
+        }
+      ],
+      "zoneAccountConfirmed": true
+    }
+  },
+  "limitations": [
+    "DNS record listing denied with Cloudflare code 10000; absence of records is not established.",
+    "Main API active deployment has an image digest but no source commit in returned metadata.",
+    "Health status does not prove per-engine semantics, deployed capability parity, data durability or rollback.",
+    "Historical source manifests have placeholders for pattern-memory; no resources were created.",
+    "Initial DNS API error10000 remains API-scope evidence. Later authenticated browser verified targeted DNS records without changing credentials or DNS."
+  ],
+  "repositoryCI": {
+    "adminSmoke": {
+      "name": "ADMIN_WEB_URL",
+      "value": "https://144.tryambakam.space",
+      "before": "absent",
+      "verifiedAt": "2026-09-05T13:29:07.683276+00:00",
+      "purpose": "Existing admin origin for required post-deploy smoke",
+      "probe": {
+        "adminLogin": 302,
+        "apiLiveness": 200,
+        "unauthenticatedSession": 302,
+        "unauthenticatedApiKeys": 302
+      },
+      "scope": "repository Actions variable only; no workflow dispatched"
+    },
+    "deploymentPreflight": {
+      "variables": {
+        "API_BASE_URL": "https://selemene.tryambakam.space",
+        "ADMIN_WEB_URL": "https://144.tryambakam.space"
+      },
+      "secretNamesPresent": {
+        "RAILWAY_PROJECT_ID": true,
+        "SMOKE_TEST_API_KEY": true,
+        "SMOKE_TEST_JWT": false,
+        "RAILWAY_TOKEN": true
+      }
+    }
+  },
+  "vercel": {
+    "production": {
+      "id": "dpl_HhkGqfwkFw4u9YG9ebFe2GfKoe7C",
+      "url": "enantiodromia-engine-dashboard-4nv3lhkb8-sheshiyers-projects.vercel.app",
+      "target": "production",
+      "readyState": "READY",
+      "createdAt": 1787814342834,
+      "sourceCommit": "ae3e2cef402bd0cf28d1c7a102800d215cc5f2c2",
+      "sourceEvidence": "Deployment build log: Branch main, Commit ae3e2ce"
+    },
+    "preview": {
+      "id": "dpl_4LmvAZHxoDXrGNKjmxCoXD72mcTe",
+      "url": "enantiodromia-engine-dashboard-50te7xy3g-sheshiyers-projects.vercel.app",
+      "target": "preview",
+      "readyState": "READY",
+      "createdAt": 1788614292687
+    },
+    "previewSource": "9b618deff890e7aecfb3dd445eb37fa31dd9565a",
+    "previewBrowserAcceptance": "Vercel deployment protection requires a separate login; production admin login does not authorize the preview browser session"
+  }
+}

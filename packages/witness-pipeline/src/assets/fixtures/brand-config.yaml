@@ -1,0 +1,38 @@
+brand:
+  colors:
+    background: '#070B1D'
+    accent: '#CFAF61'
+    text: '#EFE9D8'
+    text_secondary: '#AFA8B2'
+    surface: '#1D223A'
+    success: '#2E8B57'
+    error: '#D94F4F'
+    warning: '#F0B429'
+    info: '#6F5EE8'
+    primary: '#7B61FF'
+    secondary: '#6F5EE8'
+    signal: '#2E8B57'
+  typography:
+    heading: Panchang
+    header: Panchang
+    body: Source Sans 3
+    mono: JetBrains Mono
+    data: JetBrains Mono
+palette:
+  - name: Void Black
+    hex: '#070B1D'
+  - name: Sacred Gold
+    hex: '#CFAF61'
+  - name: Flow Indigo
+    hex: '#6F5EE8'
+typography:
+  heading:
+    font: Panchang
+  header:
+    font: Panchang
+  body:
+    font: Source Sans 3
+  mono:
+    font: JetBrains Mono
+  data:
+    font: JetBrains Mono

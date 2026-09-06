@@ -1,0 +1,185 @@
+{
+  "operation": "update existing branch ruleset only after critical approval",
+  "repository": "Sheshiyer/Selemene-engine",
+  "rulesetId": 15597830,
+  "preserve": [
+    "name",
+    "target",
+    "enforcement",
+    "conditions",
+    "bypass_actors",
+    "existing deletion and non_fast_forward rules"
+  ],
+  "addRule": {
+    "type": "required_status_checks",
+    "parameters": {
+      "strict_required_status_checks_policy": true,
+      "do_not_enforce_on_create": false,
+      "required_status_checks": [
+        {
+          "context": "CI Gate",
+          "integration_id": 15368
+        }
+      ]
+    }
+  },
+  "preconditions": [
+    "Read current ruleset again and abort if unrelated changes appeared",
+    "Verify GitHub Actions app id for CI Gate before applying integration_id",
+    "Verify current candidate CI Gate is green at its exact source revision"
+  ],
+  "effects": [
+    "Main updates require a successful up-to-date CI Gate",
+    "No review-count, bypass, branch deletion, force push or deployment policy is changed"
+  ],
+  "approvalStatus": "applied",
+  "verifiedEvidence": {
+    "githubActionsAppId": 15368,
+    "pullRequest": 1488,
+    "candidateHead": "7a5793d94bc850976f29db9277527e475d7f127b",
+    "ciRun": 33973728459,
+    "jobCount": 16,
+    "conclusion": "success",
+    "verifiedAt": "2026-09-06T10:17:48Z"
+  },
+  "expectedCurrentState": {
+    "name": "noesis-admin",
+    "target": "branch",
+    "enforcement": "active",
+    "conditions": {
+      "ref_name": {
+        "exclude": [],
+        "include": [
+          "~DEFAULT_BRANCH",
+          "refs/heads/main"
+        ]
+      }
+    },
+    "rules": [
+      {
+        "type": "deletion"
+      },
+      {
+        "type": "non_fast_forward"
+      }
+    ],
+    "bypass_actors": []
+  },
+  "request": {
+    "method": "PUT",
+    "endpoint": "repos/Sheshiyer/Selemene-engine/rulesets/15597830",
+    "body": {
+      "name": "noesis-admin",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "~DEFAULT_BRANCH",
+            "refs/heads/main"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "type": "deletion"
+        },
+        {
+          "type": "non_fast_forward"
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              {
+                "context": "CI Gate",
+                "integration_id": 15368
+              }
+            ]
+          }
+        }
+      ],
+      "bypass_actors": []
+    }
+  },
+  "rollbackRequest": {
+    "method": "PUT",
+    "endpoint": "repos/Sheshiyer/Selemene-engine/rulesets/15597830",
+    "body": {
+      "name": "noesis-admin",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "~DEFAULT_BRANCH",
+            "refs/heads/main"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "type": "deletion"
+        },
+        {
+          "type": "non_fast_forward"
+        }
+      ],
+      "bypass_actors": []
+    },
+    "condition": "Only if explicitly approved; first verify no concurrent changes"
+  },
+  "liveCandidatePrecondition": {
+    "pullRequest": 1488,
+    "base": "main",
+    "rule": "Re-query the reviewed head and require current successful CI Gate from GitHub Actions before applying"
+  },
+  "approvedAt": "2026-09-06T10:17:48Z",
+  "approvalSource": "Explicit user approval in the active Codex task",
+  "appliedReceipt": {
+    "appliedAt": "2026-09-06T10:17:48Z",
+    "rulesetId": 15597830,
+    "freshReadback": {
+      "name": "noesis-admin",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "~DEFAULT_BRANCH",
+            "refs/heads/main"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "type": "deletion"
+        },
+        {
+          "type": "non_fast_forward"
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              {
+                "context": "CI Gate",
+                "integration_id": 15368
+              }
+            ]
+          }
+        }
+      ],
+      "bypass_actors": []
+    },
+    "resolvedForMain": true,
+    "mergeOrDeploymentAuthorized": false
+  }
+}

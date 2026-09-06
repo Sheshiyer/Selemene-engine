@@ -10,44 +10,45 @@ import { statusPillClass } from "@/lib/status";
 import type { AdminSidecarDetail } from "@/types/admin";
 
 export default function SidecarsPage() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [sidecar, setSidecar] = useState<AdminSidecarDetail | null>(null);
+  const sidecarRequestKey = "sidecar-detail";
+
+  const [fetchResult, setFetchResult] = useState<{
+    key: string;
+    sidecar: AdminSidecarDetail | null;
+    error: string | null;
+    settled: boolean;
+  }>({ key: "", sidecar: null, error: null, settled: false });
+
+  const loading = fetchResult.key !== sidecarRequestKey || !fetchResult.settled;
+  const error = fetchResult.key === sidecarRequestKey ? fetchResult.error : null;
+  const sidecar = fetchResult.key === sidecarRequestKey ? fetchResult.sidecar : null;
 
   useEffect(() => {
     let cancelled = false;
     const token = getAuthToken() ?? undefined;
 
-    setError(null);
-    setLoading(true);
-
     getAdminSidecarDetail(token)
       .then((data) => {
         if (!cancelled) {
-          setSidecar(data);
+          setFetchResult({ key: sidecarRequestKey, sidecar: data, error: null, settled: true });
         }
       })
       .catch((err) => {
         if (!cancelled) {
+          let message = "Failed to load sidecar health data";
           if (err instanceof ApiClientError) {
-            setError(err.payload?.error || err.message);
+            message = err.payload?.error || err.message;
           } else if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError("Failed to load sidecar health data");
+            message = err.message;
           }
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
+          setFetchResult({ key: sidecarRequestKey, sidecar: null, error: message, settled: true });
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [sidecarRequestKey]);
 
   const healthyEngines = sidecar
     ? sidecar.engines.filter((e) => e.healthy).length
@@ -59,7 +60,7 @@ export default function SidecarsPage() {
   return (
     <PageShell
       title="Sidecar Health"
-      summary="Monitor TypeScript engine server and Python biofield CV service health with per-engine detail."
+      summary="Monitor TypeScript sidecar health, per-engine status, and circuit breakers."
     >
       {error ? <StateBanner variant="error" title={error} /> : null}
 

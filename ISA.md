@@ -1,67 +1,95 @@
 ---
 project: Selemene-engine
-task: "P6 Wave 2 performance, recovery, runtime status, and accessible depth"
-effort: E3
+task: "Continue Selemene waves through verified planning, gates and infrastructure"
+effort: E4
 effort_source: classifier
-phase: complete
-progress: 170/170
+phase: verify
+progress: 332/335
 mode: algorithm
+iteration: 5
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-07-19T03:05:00+05:30
+updated: 2026-09-06T16:50:15+00:00
 ---
+
+> **Active continuation — 2026-09-05:** Restore the existing seven-wave Selemene program, use GSD research/discuss/plan/execute/verify with recommended defaults, review infrastructure/dependencies and refresh CodeGraph. Criteria ISC-279 onward describe this continuation. Older entries are preserved dated evidence; their checked status does not imply current production acceptance. This file is the acceptance ledger; `.planning/` is the execution adapter.
+
+> The earlier active-scope statement below is retained as a historical record.
+
+
+> **Active scope — 2026-08-26:** This iteration establishes one language-neutral v1 contract authority inside the isolated `codex/selemene-contract-convergence` worktree. It adds golden fixtures, fail-closed validation, and additive Rust, OpenAPI, and TypeScript parity without changing engine calculations, routing, provider behavior, external repositories, or live state. Contract criteria begin at ISC-235.
 
 ## Problem
 
-Phase 6 Wave 1 is verified on both mains: Sankalpa assembles and resumes one bounded current practice. The remaining Phase 6 break is resilience at the route boundary. Noesis eagerly ships Three.js in the initial renderer bundle, missing readings become fabricated empty galleries, payload provenance and remote failures collapse to `null`, gateway readiness is invisible, and the depth experience lacks a complete reduced-motion, keyboard, dialog-focus, and WebGL-failure path.
+The verified gate foundation exists on an isolated branch while local `main` contains unrelated user-owned planning changes. Contract work cannot safely begin until the branch is merged without altering those changes, the merged revision passes the same repository gate under the primary checkout's real environment, and a fresh isolated contracts workspace starts from that exact revision.
+
+### Continuation — 2026-09-05
+
+The current checkout lacked the canonical plan files while GitHub retained the full program. Its ISA described a July consumer UI task, capability PR #1486 has failing formatting CI, dependency audits expose current Node findings, and provider metadata cannot yet connect every running service to the current source. See `docs/plans/selemene-engine/RECOVERY-2026-09-05.md` for the observed state.
 
 ## Vision
 
-Sankalpa opens quickly and tells the truth about every runtime state. A reading either loads from a named source, offers a useful recovery path, or explains a bounded failure; it never invents evidence. The optional Three.js depth layer loads only when needed, degrades to an equivalent readable navigator, respects motion preferences, and preserves the existing Electron trust boundary.
+Local `main` contains the gate foundation with byte-for-byte preservation evidence for all prior edits. The retired gate worktree leaves no orphaned state, and contract convergence begins in a clean isolated workspace whose baseline passes the merged repository gate. The next bounded work establishes canonical versioned request, result, error, consent, provenance, and capability-discovery contracts before engine semantics change.
+
+### Continuation — 2026-09-05
+
+An operator can select any remaining wave, identify its existing GitHub work, navigate the real source through CodeGraph, and see exactly which local, CI, deployment and operational evidence is still missing. Routine choices flow automatically; concrete high-impact decisions receive a reviewable gate.
 
 ## Out of Scope
 
-- Reopening the completed P4 API, bridge, health, raaga clip, face CV, or media-contract work.
-- Reopening the completed P5 SDK, gateway, consent, Biofield, or single-result handoff boundaries.
-- Broad visual redesign of every engine surface or remediation beyond the Noesis depth, reading recovery, and Account gateway-status paths.
-- Cloud synchronization, cross-device sessions, account identity, telemetry, or server persistence for practice state.
-- Rebuilding T-125: the live Sankalpa Command Center already launches Noesis and all four focus engines.
-- Production Discord OAuth, token refresh, operating-system keychain storage, billing, or account synchronization.
-- Publishing the SDK to a public registry; this wave proves a packable standalone artifact.
-- Persisting raw camera pixels or generated base64 media inside localStorage or Noesis reading payloads.
-- Pulling, rebasing, force-updating, or otherwise reconciling the three remote commits that local main is behind.
-- Pushing branches, opening pull requests, deploying, or mutating external issue trackers.
-- Changing FROZEN media contracts unless a failing test proves an existing contract cannot round-trip.
-- Making paid NVIDIA, RunComfy, Kimi, or other generation calls from health probes.
-- Treating narrative witness output as a substitute for deterministic engine output.
-- Repairing or redesigning billing E2E infrastructure; its four Postgres `PoolTimedOut` failures are reproduced unchanged on pre-P4 main.
+- Planning or implementing Sankalpa, Urania 137, FalseEarth, Raycast, or any other consumer repository.
+- Changing engine semantics, public API contracts, providers, media behavior, or runtime routing in this gate-foundation slice.
+- Renumbering, deleting, or rewriting existing migrations without production-schema evidence.
+- Mutating credentials, databases, cloud resources, GitHub settings, branch protection, or live deployment state.
+- Claiming all Wave 1 gates, contracts, engines, deployment, or operations complete from this bounded slice.
+- Publishing packages, pushing commits, opening issues, triggering releases, or performing any merge beyond the explicitly authorized local gate integration.
+
+### Continuation — 2026-09-05
+
+Historical scope restrictions above applied to their recorded iterations. This continuation remains within Selemene and its declared infrastructure; external consumer implementation, destructive cleanup, unrequested provider generation, secret disclosure and invented completion claims are excluded. The current request authorizes routine reversible repairs and plan reconciliation; critical production/security boundaries remain explicit.
 
 ## Principles
 
-- Live repository state outranks stale session narration.
-- A merge is complete only when ancestry and tests prove it.
+- Current source and reproducible evidence outrank stale status narration.
+- Completion is a vector: declaration, implementation, execution, integration, deployment, and operations are independent claims.
 - Preserve local-first media handling and explicit consent before pixels or audio leave the client boundary.
 - Health checks observe configuration and reachability; they never perform paid generation.
-- Integration should minimize overlap: API, bridge, and health changes remain separable until individually verified.
 - Engine output is the authoritative deterministic anchor; narrative layers may reflect it but never silently replace it.
+- External products test compatibility but do not define this repository's implementation plan.
+
+### Continuation — 2026-09-05
+
+- Preserve stable authority and historical IDs while allowing fresh evidence to refute stale narration.
+- Keep six completion axes separate.
+- Resolve routine implementation choices from documented defaults; do not fabricate human approvals.
 
 ## Constraints
 
-- Preserve the user's existing modification to `docs/plans/engine-integration/EXECUTION-STATUS.md` until its T-094 claim is independently verified.
-- Preserve all uncommitted changes in `.worktrees/p4-api-codex` and `.worktrees/p4-health-codex`; no reset, checkout-overwrite, or cleanup is permitted.
-- Keep the P4 bridge work isolated until its large FROZEN-contract diff is compared against current main.
-- Reuse the existing FROZEN media shapes and consent semantics.
-- Keep `/health`, `/ready`, and `/health/live` backward compatible.
-- Provider readiness may inspect token presence only; secrets must never be printed or returned.
-- API and bridge code must compile in the current Rust workspace and TS engine tests must remain compatible.
-- Sankalpa remains a separate repository and must consume a built SDK artifact, never a sibling source-tree link.
-- Renderer code must never receive API credentials or an unrestricted raw-fetch IPC primitive.
-- Availability failures may activate explicit local fallback; authentication, authorization, validation, and consent failures must fail closed.
-- Local preview, local approximation, and authenticated remote analysis are distinct provenance classes.
-- Keep Sankalpa's Electron isolation guarantees: context isolation on, Node integration off, sandbox on, allowlisted IPC only.
+- Preserve every existing and concurrent user change in the primary worktree.
+- Make subsequent contract changes only in the isolated `codex/selemene-contract-convergence` worktree branch.
+- Preserve ISC-1 through ISC-195 as immutable historical evidence and continue numbering from ISC-196.
+- Distinguish 17 public mirrors from 19 supported runtime IDs everywhere a count is used.
+- Use current registry, manifests, tests, and fresh probes as primary evidence.
+- Mark unknown external deployment state as unknown rather than inferring it from configuration files.
+- Keep fallbacks, mocks, placeholders, optional services, and database-conditional registration explicit.
+- Do not assign or perform external-repository work.
+- Treat a required check that does not execute as failure; intentional opt-outs require explicit configuration and visible status.
+- Bind deploy eligibility to the exact revision that passed repository-owned validation.
+
+### Continuation — 2026-09-05
+
+- Root acceptance ledger is ISA.md; GSD files are executable views of the existing wave scope.
+- Preserve the untouched root checkout, stash and existing worktrees. Source changes live in the new Superset worktree.
+- Use Railway project 11eedde4-41e6-4f51-b86b-cf77111cf592 and production environment 702b945e-2c66-4d5a-bae1-4c67ea14c3bb explicitly; Cloudflare profile 9d9d must address account 9d9d23b27f32e70ae3afb6a1aa2c0f10.
+- No broad engine expansion before remaining registry/build gates.
+- Merges that trigger production, deployments, schema/data changes, new DNS/security access and paid generation require their concrete critical gate.
 
 ## Goal
 
-Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route. Done means the initial app bundle excludes Three.js, reading loads expose source and explicit loading/empty/error/retry states, Account reports the real typed gateway status without leaking configuration, and depth navigation remains readable and keyboard-operable under reduced motion or WebGL failure. Completion evidence must include focused tests, bundle inspection, full build gates, sensitive-data scans, and browser verification across desktop, narrow, recovery, and reduced-motion states.
+Establish a canonical v1 contract authority that every maintained language surface can verify without a flag-day runtime rewrite. Done means six versioned schemas and representative fixtures are valid, repository gates reject drift, Rust/OpenAPI/TypeScript surfaces prove additive parity, existing envelope behavior remains compatible, and the complete repository gate passes from the isolated contract worktree.
+
+### Continuation — 2026-09-05
+
+Complete the existing dependency-ordered Selemene program through the GSD phase flow, preserving its GitHub work and acceptance history. Start by recovering authority, current dependency and infrastructure truth, and CodeGraph navigation; progress through remaining gates and engine/runtime/distribution work until all original wave exits are verified or a concrete critical human decision is reached. No recovery, healthy endpoint or passing local test substitutes for the remaining program.
 
 ## Criteria
 
@@ -289,6 +317,194 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-162: Full tests, typecheck, production build, and browser journeys pass at desktop, narrow, recovery, and reduced-motion states (probe: repository and browser gates).
 - [x] ISC-163: Anti: Wave 2 introduces no raw media, credentials, unrestricted renderer fetch, or Electron-boundary regression (probe: source, bundle, and trust-boundary scans).
 
+### Active Selemene-only planning authority
+
+- [x] ISC-164: The active planning directory states that only `Selemene-engine` is in implementation scope (probe: exact scope text).
+- [x] ISC-165: External products are named only as delivery-context consumers (probe: active roadmap assignment scan).
+- [x] ISC-166: The planning authority defines declared, implemented, executable, integrated, deployed, and operational as separate states (probe: status table).
+- [x] ISC-167: Document precedence ranks source and reproducible evidence above derived plans and historical ledgers (probe: authority-order inspection).
+- [x] ISC-168: The repository boundary covers engines, contracts, orchestration, API, persistence, packages, infrastructure, operations, and assets (probe: topology and inventory tables).
+- [x] ISC-169: The active README links the Selemene-only authority, ledger, and roadmap (probe: link check).
+- [x] ISC-170: The historical project overview points unsupported completion claims to the active ledger (probe: banner inspection).
+- [x] ISC-171: The historical integration ledger points completion labels to the active Selemene authority (probe: banner inspection).
+- [x] ISC-172: The prior ecosystem map, ledger, and roadmap are explicitly marked context-only or superseded (probe: banner scan).
+
+### Engine and platform evidence
+
+- [x] ISC-173: The ledger contains all 19 IDs from `SUPPORTED_ENGINE_IDS` exactly once (probe: registry-to-table comparison).
+- [x] ISC-174: The ledger distinguishes 12 unconditional native engines, one database-conditional native engine, and six TypeScript engines (probe: registration comparison).
+- [x] ISC-175: Public count guidance distinguishes 17 mirrors from 19 runtime IDs (probe: planning-doc scan).
+- [x] ISC-176: Each engine row identifies runtime path and all six completion axes (probe: table validation).
+- [x] ISC-177: Biofield calculation, Biofield capture lookup, and Biofield CV analysis are not conflated (probe: ledger text inspection).
+- [x] ISC-178: Face Reading distinguishes MediaPipe analysis from heuristic fallback provenance (probe: ledger text inspection).
+- [x] ISC-179: Sigil Forge distinguishes configured providers, mocks, and placeholder output (probe: ledger text inspection).
+- [x] ISC-180: Raaga distinguishes theory, local audio, and hosted clip capability (probe: ledger and roadmap inspection).
+- [x] ISC-181: Platform rows cover API, orchestration, bridge, SDKs, CLI/tool server, TUI, admin, witness, and verification packages (probe: ledger row scan).
+- [x] ISC-182: Infrastructure rows cover Postgres, migrations, Redis, images, Railway, Kubernetes, workers, monitoring, CI, release, and assets (probe: ledger row scan).
+- [x] ISC-183: Fresh health evidence records endpoint, date, response status, engine count, workflow count, and authentication result (probe: probe receipt).
+- [x] ISC-184: Anti: Fresh health evidence does not claim authenticated journeys, provider execution, sidecar deployment, or revision identity (probe: wording audit).
+
+### Dependency roadmap and contradictions
+
+- [x] ISC-185: The contradiction register corrects engine counts, bridge counts, migration counts, deployment topology, CI meaning, and health meaning (probe: row scan).
+- [x] ISC-186: Wave 0 establishes machine-readable registry, evidence axes, deployment identity, and asset classification (probe: roadmap inspection).
+- [x] ISC-187: Wave 1 makes builds, migrations, typecheck, required smokes, and release gates fail closed and reproducible (probe: roadmap inspection).
+- [x] ISC-188: Wave 2 converges cross-language contracts, routing, discovery, and registry parity (probe: roadmap inspection).
+- [x] ISC-189: Wave 3 closes semantic and provenance gaps in partial media and TypeScript engines (probe: roadmap inspection).
+- [x] ISC-190: Wave 4 orders schema, state, auth, cache, health, retention, and recovery work (probe: roadmap inspection).
+- [x] ISC-191: Wave 5 defines repository-owned package and tool distribution without assigning external implementation (probe: roadmap inspection).
+- [x] ISC-192: Wave 6 aligns service deployment, observability, asset governance, and generated documentation (probe: roadmap inspection).
+- [x] ISC-193: Every wave has falsifiable exit evidence (probe: roadmap heading and exit scan).
+- [x] ISC-194: Anti: No active roadmap work item assigns implementation to Sankalpa, Urania, FalseEarth, Raycast, or another repository (probe: imperative-context scan).
+- [x] ISC-195: Final link, table, diff, test, scope, and independent-review gates find no critical contradiction in the planning artifacts (probe: verification receipt).
+
+### Active gate-foundation implementation
+
+- [x] ISC-196: Production changes occur only in a clean isolated Selemene worktree (probe: branch and worktree status).
+- [x] ISC-197: Primary-worktree user changes remain byte-for-byte preserved during implementation (probe: before/after status and diff inventory).
+- [x] ISC-198: This slice changes no external repository, live service, cloud resource, database, or GitHub setting (probe: command and diff audit).
+- [x] ISC-199: Gate semantics define success as execution against the exact candidate revision (probe: gate contract inspection).
+- [x] ISC-200: The pre-change TypeScript typecheck failure is captured as RED evidence (probe: `bun run typecheck`).
+- [x] ISC-201: TypeScript path aliases use syntax accepted by the installed compiler (probe: `bun run typecheck`).
+- [x] ISC-202: TypeScript typechecking executes without suppression in local and CI gates (probe: command and workflow inspection).
+- [x] ISC-203: All existing TypeScript engine tests remain green after gate repair (probe: `bun test`).
+- [x] ISC-204: Migration integrity behavior is covered by executable temporary-fixture tests (probe: focused test command).
+- [x] ISC-205: Historical migration numbering exceptions are explicit, bounded, and checksummed (probe: baseline manifest inspection).
+- [x] ISC-206: New duplicates, gaps, untracked files, and checksum mutation fail migration validation (probe: negative fixtures).
+- [x] ISC-207: The current migration tree passes its documented integrity policy unchanged (probe: validator command).
+- [x] ISC-208: Docker manifest caching covers every current Cargo workspace member and declared target (probe: manifest-parity validator).
+- [x] ISC-209: Docker dependency prebuild contains no broad success-masking fallback (probe: Dockerfile validator).
+- [x] ISC-210: The production Docker build path reaches a real fail-closed Cargo build step (probe: Docker validation or build receipt).
+- [x] ISC-211: CI executes migration integrity without `|| true`, ignored exit codes, or equivalent masking (probe: workflow validator).
+- [x] ISC-212: CI executes TypeScript typecheck as a required failing step (probe: workflow validator).
+- [x] ISC-213: One repository-owned verification command composes the focused gate checks (probe: root command).
+- [x] ISC-214: Deployment jobs cannot start when repository validation fails or is absent (probe: workflow dependency validation).
+- [x] ISC-215: Deployment artifact identity derives from the exact validated triggering commit (probe: workflow expression validation).
+- [x] ISC-216: Required API and TypeScript build artifacts share the same validated source revision (probe: workflow dependency inspection).
+- [x] ISC-217: Toolchain and action versions used by the gate are deterministic rather than floating (probe: workflow and manifest scan).
+- [x] ISC-218: The unified repository gate exits zero from a clean isolated worktree (probe: fresh full command).
+- [x] ISC-219: Changed-file formatting and whitespace checks pass (probe: format checks and `git diff --check`).
+- [x] ISC-220: Independent correctness review finds no false-green or migration-history blocker (probe: adversarial review).
+- [x] ISC-221: Anti: Existing migrations are not renumbered, deleted, or rewritten (probe: migration diff audit).
+- [x] ISC-222: Anti: No deployment, provider generation, package publication, push, or merge occurs (probe: command audit).
+- [x] ISC-223: Gate documentation states both covered guarantees and remaining Wave 1 gaps (probe: evidence wording audit).
+- [x] ISC-224: ReReadCheck confirms the user-selected order remains gates, contracts, then engines (probe: final request comparison).
+
+### Gate merge and contracts transition
+
+- [x] ISC-225: The gate-foundation branch contains committed, whitespace-clean changes before integration (probe: commit and cached-diff inspection).
+- [x] ISC-226: The gate-foundation commits are ancestors of local `main` (probe: `git merge-base --is-ancestor`).
+- [x] ISC-227: Every pre-existing dirty primary-worktree file retains its exact SHA-256 digest after both merges (probe: before/after checksum comparison).
+- [x] ISC-228: The merged primary checkout passes the complete repository gate under its real local environment (probe: `pnpm run gate`).
+- [x] ISC-229: Ambient image-provider credentials cannot make gate tests perform provider calls (probe: sentinel-credential focused test).
+- [x] ISC-230: The completed gate worktree is removed only after the merged gate passes (probe: command sequence and `git worktree list`).
+- [x] ISC-231: The fully merged local gate branch is deleted without force (probe: `git branch -d` output).
+- [x] ISC-232: The contracts worktree starts from the final verified merge revision (probe: branch HEAD equality).
+- [x] ISC-233: The contracts worktree is clean and its full baseline gate exits zero (probe: status and `pnpm run gate`).
+- [x] ISC-234: Anti: This transition changes no external repository, live service, database, cloud resource, remote branch, or engine semantics (probe: command and diff audit).
+
+### Contract authority v1
+
+- [x] ISC-235: Contract work occurs only on `codex/selemene-contract-convergence` in its isolated worktree (probe: branch, worktree, and diff paths).
+- [x] ISC-236: The primary worktree's pre-existing user and planning changes remain untouched (probe: primary status and scoped diff audit).
+- [x] ISC-237: Anti: No external repository, live service, database, cloud resource, remote branch, package publication, or engine calculation is changed (probe: command and diff audit).
+- [x] ISC-238: A repository-root `contracts/v1` directory is the documented language-neutral authority (probe: path and README inspection).
+- [x] ISC-239: The contract manifest declares one immutable `v1` contract identifier (probe: manifest assertion).
+- [x] ISC-240: The manifest enumerates request, result, error, consent, provenance, and capability-discovery schemas (probe: exact-name assertion).
+- [x] ISC-241: The request schema requires an explicit contract version (probe: schema validation test).
+- [x] ISC-242: The request schema represents `consciousness_level` and free-form `parameters` without engine-specific semantics (probe: property assertion).
+- [x] ISC-243: The request schema preserves legacy birth, time, location, precision, and options compatibility fields additively (probe: golden legacy fixture validation).
+- [x] ISC-244: The request schema supports bounded image and audio references through explicit media fields (probe: schema and fixture validation).
+- [x] ISC-245: The consent schema requires grant state, scope, and capture timestamp (probe: valid and invalid fixture tests).
+- [x] ISC-246: Media-bearing requests reference the canonical consent definition rather than duplicating consent shapes (probe: `$ref` assertion).
+- [x] ISC-247: The quality schema defines bounded score and optional diagnostics without provider-specific leakage (probe: valid and invalid fixture tests).
+- [x] ISC-248: The result schema requires contract version, engine identifier, result payload, and consciousness level (probe: schema validation test).
+- [x] ISC-249: The result schema preserves singular and plural witness-prompt compatibility (probe: golden result variants).
+- [x] ISC-250: The result schema includes calculation timestamp and processing duration (probe: required-field assertion).
+- [x] ISC-251: Generated image and audio fields remain optional top-level compatibility fields (probe: fixture variants).
+- [x] ISC-252: The universal error schema preserves status, code, message, legacy error, trace, details, and contract version (probe: golden error validation).
+- [x] ISC-253: Error fixtures contain no stack, secret, credential, token, or internal URL fields (probe: sensitive-key scan).
+- [x] ISC-254: The provenance schema records runtime kind, implementation version, cache state, and fallback state (probe: schema validation test).
+- [x] ISC-255: Provenance permits sanitized provider/backend identifiers but forbids credentials and raw endpoints (probe: allowlist assertion).
+- [x] ISC-256: Capability discovery exposes declared, available, degraded, and unavailable states (probe: enum assertion).
+- [x] ISC-257: Capability discovery distinguishes native, TypeScript, Python, database-conditional, and composed runtimes (probe: enum assertion).
+- [x] ISC-258: Capability discovery declares explicit dependencies and contract version (probe: golden capability validation).
+- [x] ISC-259: A canonical valid request fixture validates against the request schema (probe: repository contract validator).
+- [x] ISC-260: A canonical valid result fixture validates against the result schema (probe: repository contract validator).
+- [x] ISC-261: A canonical error fixture validates against the error schema (probe: repository contract validator).
+- [x] ISC-262: A canonical capability fixture validates against the capability schema (probe: repository contract validator).
+- [x] ISC-263: The contract validator rejects malformed schemas, missing manifest entries, and invalid fixtures (probe: focused negative tests).
+- [x] ISC-264: Contract validation is composed into the root repository gate (probe: package script and gate execution).
+- [x] ISC-265: Rust core contract types deserialize canonical request, result, error, provenance, consent, and capability fixtures (probe: focused Cargo test).
+- [x] ISC-266: Rust contract types serialize canonical fixtures without unversioned field drift (probe: round-trip equality test).
+- [x] ISC-267: OpenAPI schemas retain existing route fields while matching canonical v1 required compatibility fields (probe: OpenAPI parity test).
+- [x] ISC-268: The engine SDK exports the v1 contract identifier and additive canonical contract types (probe: package typecheck and fixture test).
+- [x] ISC-269: TypeScript engine types accept the same canonical request and result fixtures (probe: compile-time and runtime fixture test).
+- [x] ISC-270: The general TypeScript SDK cannot silently diverge from canonical engine IDs and envelope fields (probe: parity test).
+- [x] ISC-271: Anti: Existing endpoint paths, authentication headers, HTTP status behavior, and calculation routing remain unchanged (probe: regression and diff audit).
+- [x] ISC-272: Anti: Existing engine algorithms, providers, fallbacks, and generated-media execution paths remain unchanged (probe: changed-file and source audit).
+- [x] ISC-273: Focused language-neutral contract tests pass from a clean dependency state (probe: validator test command).
+- [x] ISC-274: Focused Rust contract and OpenAPI tests pass (probe: Cargo commands).
+- [x] ISC-275: Focused TypeScript SDK and engine parity tests pass (probe: Bun/npm commands).
+- [x] ISC-276: The full root `pnpm run gate` exits zero after contract convergence (probe: fresh full command).
+- [x] ISC-277: Independent review finds no P0/P1 contract drift, compatibility break, false-green path, or engine-scope leak (probe: read-only review).
+- [x] ISC-278: ReReadCheck confirms this iteration proceeds only through contracts after the merged gate foundation (probe: final request comparison).
+
+### Continuation — 2026-09-05
+
+- [x] ISC-279: Recovered ISA retains all 170 criterion IDs from the starting checkout.
+- [x] ISC-280: Canonical README, ROADMAP and CAPABILITY-LEDGER are restored with original baseline content.
+- [x] ISC-281: Fresh engine issue index contains exactly 570 unique issues in 19 groups of 30 slots.
+- [x] ISC-282: Master and seven wave control issues retain their original GitHub IDs and wave scope.
+- [x] ISC-283: GSD parser recognizes all seven continuation phases and their original-wave mapping.
+- [x] ISC-284: Phase 1 context records the recommended discussion choices and critical gate boundaries.
+- [x] ISC-285: Phase 1 research cites current source, captured service evidence and primary provider documentation.
+- [x] ISC-286: Independent plan-review concerns are explicitly resolved or retained as named verification limits.
+- [x] ISC-287: Railway service inventory records seven service IDs and active deployment digests.
+- [x] ISC-288: Cloudflare account 9d9d ownership of tryambakam.space is verified by scoped API readback.
+- [x] ISC-289: Three live Selemene Workers have source-to-binding metadata recorded.
+- [x] ISC-290: DNS permission denial is recorded as unknown DNS state rather than absent records.
+- [x] ISC-291: Undeployed pattern-memory declarations are explicitly distinguished from live infrastructure.
+- [x] ISC-292: Public API curl liveness records HTTP 200 with 19 loaded engines.
+- [x] ISC-293: TS production capability-route HTTP 404 is recorded as an undeployed slice.
+- [x] ISC-294: CodeGraph index reports a completed current-source scan.
+- [x] ISC-295: CodeGraph sync completes successfully after indexing.
+- [x] ISC-296: CodeGraph context resolves the actual capability handler and bridge registry symbols.
+- [x] ISC-297: Rust dependency audit records zero known vulnerabilities and the yanked dependency disposition.
+- [x] ISC-298: Production Node dependency audit has no unresolved high or critical vulnerabilities.
+- [x] ISC-299: Python dependency evidence distinguishes local environment findings from unproven image resolution.
+- [x] ISC-300: TS capability formatter repair passes lint, typecheck and the complete TS test suite.
+- [x] ISC-301: GSD Phase 2 has dependency-ordered plans for the remaining gate and source-config work.
+- [x] ISC-302: Capability documentation no longer claims native or conditional engines are covered by six TS rows.
+- [x] ISC-303: GitHub control planning is reconciled against the new evidence without closing unproven work.
+- [x] ISC-304: Current source changes are packaged as scoped reviewable commits with exact verification evidence.
+- [x] ISC-305: Required remote CI is green on the reviewed source revision before merge approval.
+- [x] ISC-306: Immutable action pins and complete Python/admin release-gate coverage are verified.
+- [ ] ISC-307: Production release can identify source and schema revisions for the approved image digests.
+- [ ] ISC-308: Original Wave 0 through Wave 6 exit criteria are all verified before overall goal completion.
+- [x] ISC-309: Anti: starting checkout, preserved planning stash and existing user worktrees are not overwritten or discarded.
+- [x] ISC-310: Anti: recovery artifacts contain no credential values, personal runtime payloads or secret variable values.
+- [x] ISC-311: Accepted Hands worker output has substantive artifacts and actual provider/model attribution.
+- [ ] ISC-312: Every originally partial engine row has semantic and integration evidence or an explicitly approved reduced scope.
+- [x] ISC-313: Critical DNS/security/production decisions remain explicit until the exact requested operation is authorized.
+- [x] ISC-314: Current phase evidence distinguishes local source, remote CI, deployed artifact and operational verification.
+
+
+- [x] ISC-315: Complete production and development Node audit reports zero known vulnerabilities for the candidate lockfile.
+- [x] ISC-316: Agent merge lane rejects missing, pending, stale and untrusted CI results in executable mocked workflow tests.
+- [x] ISC-317: Authenticated browser verifies the Selemene API, admin and witness DNS records in the 9d9d zone.
+- [x] ISC-318: Authenticated admin observations distinguish nineteen registry rows from six TypeScript health results.
+- [x] ISC-319: A versioned machine-readable authority enumerates exactly 19 runtime IDs, 17 public mirror groups and runtime classes 12 native, one database-conditional and six TypeScript.
+- [x] ISC-320: The canonical validator rejects missing or duplicate IDs, duplicate public groupings, incorrect runtime classes, missing owners and incomplete evidence axes.
+- [x] ISC-321: Actual native Rust, TypeScript bridge and TypeScript startup registrations match their class-specific canonical registry rows.
+- [x] ISC-322: The shared production database-conditional registration seam is absent without a pool and present with a disposable lazy local pool, without production database access or skipped required cases.
+- [x] ISC-323: The canonical repository gate passes after registry binding without changing calculation semantics or claiming deployed or operational completion.
+- [x] ISC-324: A versioned pre-mutation receipt binds source, canonical release tag, short-lived workflow/run identity, built artifacts, exact service roles, schema, checks, dependencies, computed asset trees and role-keyed rollback to the Plan 02-06 registry authority while rejecting future deployment claims.
+- [x] ISC-325: Release eligibility fails closed for missing, stale, expired, replayed-attempt or mismatched source, tag, operation, image/build, schema, service-role, required-check, asset and rollback identity; profiles requiring durable one-use or provider attestation remain disabled when that proof is unavailable.
+- [x] ISC-326: The current-production fixture remains ineligible because API source/build, applied schema, asset inclusion and rollback evidence are unknown; no unknown value is inferred from deployment metadata.
+- [x] ISC-327: Deploy rejects unsupported refs/environments before build, limits publication to immutable source candidates and binds both Railway roles and health origins to manifest authority; release is read-only and ends in an explicit hold until atomic alias authority exists. Both workflows preserve immutable Action pins.
+- [x] ISC-328: Executable workflow tests evaluate job conditions and run extracted provider scripts under recording shims with exact argv, cwd and failure assertions; all fourteen deep-review findings have tested or fail-closed dispositions and the complete local canonical gate passes without live mutation.
+
 ## Test Strategy
 
 | isc | type | check | threshold | tool |
@@ -313,6 +529,31 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 | ISC-138..147 | recovery | source-aware resolution, malformed hash fallback, loading/empty/error/retry/race and recovery actions | exact state transitions and zero fabricated evidence | Vitest plus browser automation |
 | ISC-148..155 | runtime status | live typed status, local/auth-required/remote-ready/error/retry and anti-secret rendering | exact fixtures and zero sensitive configuration | Vitest, rg, browser automation |
 | ISC-156..163 | accessible depth gate | reduced motion, WebGL fallback, keyboard/dialog focus, cleanup, full gates and trust anti-scan | all focused and repository gates pass | Vitest, npm, rg, browser automation |
+| ISC-164..195 | active Selemene planning | scope, registry parity, completion axes, internal inventory, probe truth, contradictions, roadmap sequencing, anti-assignment | exact links/tables/counts; independent audit has no critical planning contradiction | `rg`, registry comparison, link checker, tests, live probes, Cato review |
+| ISC-196..203 | isolation and TypeScript gates | worktree preservation, compiler configuration, unmasked typecheck, regression tests | exact branch isolation; typecheck and 88-test suite exit zero | Git, Bun, TypeScript, workflow inspection |
+| ISC-204..207, ISC-221 | migration integrity | fixture behavior, historical baseline, duplicates, gaps, tracking, checksums, preservation | every negative fixture fails; current unchanged tree passes | repository validator and temporary fixtures |
+| ISC-208..210 | production build gate | Cargo member/target parity, cache prebuild failure semantics, production build path | no missing manifest or broad success mask; real build step is reachable | Dockerfile validator and available container/build tooling |
+| ISC-211..218 | CI and deploy eligibility | composed gate, failure propagation, exact revision, artifact parity, deterministic tools | validator passes and unified clean-worktree gate exits zero | repository scripts, workflow parser, GitHub workflow inspection |
+| ISC-219..224 | final gate evidence | formatting, independent audit, anti-mutation, residual-gap documentation, request reread | zero diff errors or critical false-green findings; precise bounded claim | formatters, `git diff --check`, adversarial review, ReReadCheck |
+| ISC-225..234 | merge and transition | ancestry, checksum preservation, ambient-credential isolation, cleanup ordering, contract baseline | exact ancestry; identical hashes; both merged and contract gates exit zero | Git, SHA-256, pnpm, Bun |
+| ISC-235..278 | contract authority v1 | schema and fixture validity, negative drift, Rust/OpenAPI/TypeScript parity, compatibility, anti-scope, full gate | all focused and full gates pass; independent review has no P0/P1 finding | JSON Schema, Python, Cargo, Bun, TypeScript, Git |
+
+### Continuation — 2026-09-05
+
+| ISC | Type | Check | Threshold | Tool |
+|---|---|---|---|---|
+| 279–286 | artifact/structure | recovered history, corpus, GSD parsers, discussion/research/review | exact IDs, valid phases, explicit limits | git, Python, gsd-sdk |
+| 287–293 | live read | explicit Railway/CF metadata and HTTP probes | scoped success or recorded denied/absent result | provider CLI/API, curl |
+| 294–296 | graph | status, sync and real symbol context | indexed, up to date, source matches | codegraph MCP/CLI |
+| 297–301 | dependency/code | audit feeds and TS lint/typecheck/test | exact result; no unresolved high/critical Node advisory | cargo, pnpm, pip-audit, bun |
+| 302–306 | plan/release | GSD execution plans, corrected scope, issue readback, reviewed commits, remote CI | concrete source revision | gsd-sdk, git, gh |
+| 307–308 | release | action pin audit, Python/admin gates, deployed source/schema receipt | full required checks and identified artifact | CI/provider readback |
+| 309,312 | program | original wave exits and engine evidence rows | all named exits satisfied | per-phase named probes |
+| 310–311,313–314 | anti/evidence | preserved state, artifact scan, permission decisions, evidence separation | no violation | git, bounded scans, review |
+
+| ISC-315–318 | audit/browser/executable mock | Complete audit, merge rejection fixtures, targeted DNS/admin readback | Each explicit probe passes | pnpm/pytest/IAB |
+| ISC-319–323 | registry authority | Exact counts, negative drift fixtures, real Rust/TS enumeration, shared production conditional-registration seam and canonical gate | All focused and canonical checks pass; no live mutation | JSON/Python/Cargo/Bun/pnpm |
+| ISC-324–328 | release receipt authority | Versioned pre-mutation schema, incomplete-production rejection, immutable candidate policy, disabled unsafe promotion and executed provider scripts | Missing/stale/replayed/mismatched evidence and unavailable external authority reach zero provider writes; canonical gate passes | JSON Schema/Python/Pytest/PyYAML/pnpm |
 
 ## Features
 
@@ -338,9 +579,86 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 | GatewayStatusSurface | Render the existing narrow gateway readiness contract without exposing privileged configuration | ISC-148..155 | TrustedDesktopGateway | true |
 | AccessibleDepthFallback | Preserve witness navigation under reduced motion, WebGL failure, keyboard use, dialog focus, and unmount races | ISC-156..161 | LazyDepthBoundary | true |
 | P6Wave2Gate | Verify performance, recovery, runtime status, accessibility, trust boundaries, and responsive browser journeys | ISC-162..163 | ReadingRecoveryState, GatewayStatusSurface, AccessibleDepthFallback | false |
+| SelemenePlanningBoundary | Define repository ownership, evidence states, precedence, and external delivery context | ISC-164..172 | none | true |
+| SelemeneCapabilityLedger | Audit all engines, contracts, packages, services, infrastructure, operations, and assets by evidence axis | ISC-173..185 | SelemenePlanningBoundary | true |
+| SelemeneInternalRoadmap | Order remediation from authority and safe delivery through contracts, runtime truth, state, distribution, and operations | ISC-186..194 | SelemeneCapabilityLedger | false |
+| SelemenePlanningGate | Verify links, tables, counts, tests, scope, and independent review | ISC-195 | SelemeneInternalRoadmap | false |
+| GateWorktreeBoundary | Isolate gate implementation while preserving every existing user-owned change | ISC-196..198, ISC-221..222 | SelemenePlanningGate | false |
+| TypeScriptValidationGate | Repair compiler configuration and make TypeScript validation mandatory | ISC-199..203 | GateWorktreeBoundary | true |
+| MigrationIntegrityGate | Preserve deployed history while rejecting new structural or checksum drift | ISC-204..207, ISC-221 | GateWorktreeBoundary | true |
+| ProductionBuildGate | Make Docker manifest caching complete and Cargo prebuild fail closed | ISC-208..210 | GateWorktreeBoundary | true |
+| UnifiedReleaseGate | Compose validation and bind deployment eligibility to one exact revision | ISC-211..218 | TypeScriptValidationGate, MigrationIntegrityGate, ProductionBuildGate | false |
+| GateFoundationEvidence | Verify the bounded slice and document remaining Wave 1 work honestly | ISC-219..224 | UnifiedReleaseGate | false |
+| GateMergeAndContractTransition | Integrate verified gates, preserve primary edits, and establish the isolated contracts boundary | ISC-225..234 | GateFoundationEvidence | false |
+| ContractAuthorityV1 | Establish canonical schemas, fixtures, validation, and additive cross-language parity before engine work | ISC-235..278 | GateMergeAndContractTransition | false |
+
+### Recovered architecture (historical scope)
+
+<!-- arch-assets:start -->
+
+_Auto-maintained by `ArchitectureAssetsSync.hook.ts` on release events._
+_Last refreshed: 2026-08-25T17:34:40.307Z_
+
+| Asset | Status | How it's generated |
+|---|---|---|
+| [`docs/architecture/SERVICES.md`](docs/architecture/SERVICES.md) | ✓ current | auto (file scan) |
+| [`docs/architecture/DEPENDENCY-GRAPH.md`](docs/architecture/DEPENDENCY-GRAPH.md) | ✓ current | auto (file scan) |
+| [`docs/architecture/architecture.html`](docs/architecture/architecture.html) | ✗ not yet generated | manual (LLM skill) |
+| [`docs/architecture/notebooklm-prompt.md`](docs/architecture/notebooklm-prompt.md) | ✗ not yet generated | manual (LLM skill) |
+
+**To refresh LLM-generated assets:** invoke `/refresh-architecture` in any Claude Code session.
+
+<!-- arch-assets:end -->
+
+### Continuation — 2026-09-05
+
+| Feature | Satisfies | Depends on | Parallelizable |
+|---|---|---|---|
+| Authority/GSD recovery | ISC-279–286, ISC-301–304 | preserved history | true |
+| Infrastructure and CodeGraph | ISC-287–296 | provider read access | true |
+| Dependency/CI/config repairs | ISC-297–300, ISC-305–306 | recovered gate scope | true, disjoint files/worktrees |
+| Executable registry authority | ISC-319–323 | dependency/CI/config repairs | false |
+| Release receipt authority | ISC-324–328 | executable registry authority | false |
+| Contract/native capability closure | existing Wave 2 criteria | required gates | false |
+| Engine/state/distribution/ops continuation | ISC-307–308, ISC-312 | original wave prerequisites | per phase plan |
+| Preservation, privacy and evidence | ISC-309–311, ISC-313–314 | every phase | continuous |
 
 ## Decisions
 
+- 2026-08-26 13:31: Contract authority v1 is complete on the isolated `codex/selemene-contract-convergence` branch. Six schemas, five fixtures, fail-closed validation, and additive Rust/OpenAPI/TypeScript parity are the completed contract layer; engine semantic repair remains separately authorized next work.
+- 2026-08-26 13:31: Provenance remains optional at compatibility adapters because current runtime paths do not yet expose one truthful unified producer. The contract defines the sanitized shape but does not fabricate provider, backend, cache, or fallback facts.
+- 2026-08-26 13:31: Versioned `v1` API requests fail closed on version, canonical parameters, bounds, unknown fields, media, consent, and quality; unversioned legacy requests remain additive compatibility inputs rather than being silently reclassified as v1.
+- 2026-08-26 13:31: Independent review issued five P1 findings across two BLOCK cycles. Each became an executable schema, validator, parity, root-gate, or HTTP-boundary protection; the exact final candidate then received GO with no P0/P1 findings.
+- 2026-08-26 13:31: The required Forge rail produced the initial RED contract test before its bounded execution expired; native TDD completed and verified the implementation. Both required Advisor attempts failed on expired OAuth, so no Advisor verdict is claimed.
+- 2026-08-26 12:36: The approved contract seam is language-neutral JSON Schema plus golden fixtures under `contracts/v1`; Rust, OpenAPI, and maintained TypeScript packages consume or test that authority instead of defining competing canonical shapes.
+- 2026-08-26 12:36: Existing Rust and TypeScript runtime DTOs remain compatibility adapters during this slice. Contract convergence is additive and does not authorize a flag-day endpoint, routing, provider, calculation, or persistence migration.
+- 2026-08-26 12:36: The Observe combo did not resolve within the bounded wait, and the required Advisor checkpoint could not refresh its expired OAuth session. No external verdict is claimed; repository source, tests, the approved roadmap, Forge implementation, and independent read-only review remain the evidence path.
+- 2026-08-26 12:36: Forge owns the bounded test-first implementation in the isolated contract worktree; the native orchestrator retains plan authority, diff review, independent verification, and final scope reconciliation.
+
+- 2026-08-26 01:17: The user's explicit request selects local merge. Because local `main` already matched `origin/main`, integration used two non-fast-forward local merges without pulling or pushing; every pre-existing dirty path was disjoint and checksum-verified before and after.
+- 2026-08-26 01:17: The merged-checkout gate exposed an ambient `NVIDIA_API_KEY` test leak that the clean worktree could not reveal. Provider tests now remove and restore credential variables and inject a mock for generation, making repository gates network-free under credential-bearing developer environments.
+- 2026-08-26 01:17: Contract convergence begins on `codex/selemene-contract-convergence` from merge `01160e5`. The first slice is contract authority and cross-language parity; engine semantic repair remains Wave 3 and may not leak into this boundary.
+- 2026-08-26 01:17: Delegation was intentionally not selected because merge, destination verification, cleanup, and successor-worktree creation mutate one shared Git topology and require strict serialization. Separate agents would only have duplicated overlap auditing and contract-inventory reading, both completed locally with exact hashes and source scans.
+- 2026-08-26 00:20: The user-selected dependency order is binding: repository gates first, contract convergence second, engine completion third. This iteration implements only a bounded gate foundation and cannot close later layers by implication.
+- 2026-08-26 00:20: First-principles deconstruction defines a trustworthy green gate as four irreducible facts: the intended check executed, failure propagated, the checked revision is identifiable, and the deployable artifact derives from that same revision.
+- 2026-08-26 00:20: Systems Iceberg analysis identifies the structural generator of false-green status as fragmented commands and workflows whose outputs are not consumed by deployment. The highest feasible leverage is a repository-owned composed gate plus an explicit deploy dependency, not another status label.
+- 2026-08-26 00:20: Root-cause fishbone prioritizes success masking in methods, floating or invalid tooling in machines, incomplete migration evidence in materials, and workflow-green status in measurement. Each vital cause receives an executable repository-local falsification probe.
+- 2026-08-26 00:20: Iterative-depth passes add four safeguards: literal sequencing forbids premature contract/engine edits; failure analysis forbids skipped checks becoming green; temporal analysis preserves deployed migration history; operator analysis requires one reproducible command and bounded residual-gap wording.
+- 2026-08-26 00:20: Existing duplicate or gapped migration numbering is treated as historical evidence requiring a checksummed baseline, not permission to rewrite history or silently accept future drift.
+- 2026-08-26 01:02: The migration runner records exact filename and checksum rather than numeric version, preserving both historical `007` files while making `038+` incremental. Transactional files apply and journal atomically; `CREATE INDEX CONCURRENTLY` uses advisory locking and a fail-loud `applying` state because PostgreSQL forbids that command inside a transaction.
+- 2026-08-26 01:02: A nonempty database without a populated repository journal is never guessed or replayed. Baseline adoption is an explicit validator-backed operator action; ordinary execution validates the immutable ledger before the first database call.
+- 2026-08-26 01:02: Cato was requested for the final review but the role was unavailable. The mandated fail-open adversarial reviewer repeatedly BLOCKed synthetic-only assumptions, then returned PASS only after a real PostgreSQL 16 first-run and second-run replay closed the final defects.
+- 2026-08-26 01:02: The Docker gate is complete as a truth mechanism but the production image is not green. Native arm64 exposes a pre-existing `libswisseph-sys 0.1.2` pointer-signedness compile blocker; amd64 emulation is inconclusive after GCC crashed under QEMU. This slice records and blocks on those facts rather than expanding into dependency repair.
+- 2026-08-26 01:02: The post-deliverable Advisor retry failed because its OAuth session was expired and unrefreshable. No advisor verdict is claimed; executable gates, real PostgreSQL, actionlint, shellcheck, Docker receipts, and independent adversarial PASS form the completion evidence.
+
+- 2026-08-25 23:45: Active planning is repository-bound to Selemene Engine. Sankalpa, Urania, FalseEarth, Raycast, and other products are acceptance and delivery context only; their repositories receive no work assignments in this plan.
+- 2026-08-25 23:45: First-principles decomposition defines Selemene ownership as computation, contracts, routing, API, state, packages/tools, deployable services, operations, and assets. Product UX and downstream release ownership remain outside the boundary.
+- 2026-08-25 23:45: Systems Iceberg analysis traced recurring completion drift from visible count/status conflicts to duplicated catalogues, fail-open gates, health/registration conflation, unversioned external deploy state, and the mental model that merged or tested implies operational.
+- 2026-08-25 23:45: Root-cause fishbone grouped vital causes under authority, build/release method, multi-language material, incomplete measurement, externally held deployment state, and fragmented ownership. The high-leverage intervention is one generated capability manifest plus immutable deployment receipts and fail-closed gates.
+- 2026-08-25 23:45: Iterative-depth experiential criterion: a maintainer must be able to open one directory and know what is real, where it runs, what evidence proves it, and which internal dependency is next. Meta conclusion: Selemene is planned as a platform product, not as a collection of consumer UI projects.
+- 2026-08-25 23:45: Pre-build and post-deliverable Advisor calls were attempted as required, but both failed because the OAuth session was expired and unrefreshable. No advisor result was fabricated; independent runtime, package/contract, infrastructure, and fail-open Cato audits supplied the evidence.
+- 2026-08-25 23:45: Deep audits refuted broad completion in several connected paths: TypeScript validation has no server route; public workflows return no synthesis; both general SDKs disagree with API envelopes/auth/methods; CLI API-key auth is wrong; migrations are not deployably durable; cache is not connected to calculation; and current delivery can proceed despite red checks.
+- 2026-08-25 23:45: Safety ordering changed accordingly. Protecting main, gating deployment on a verified digest, clearing critical advisories, and making builds/migrations/typecheck/smokes fail closed precede new engine features.
 - 2026-07-19 02:15: refined: The live integration plan names Phase 6 Wave 2 as performance, empty states, and error handling; Wave 1 is complete and remains immutable.
 - 2026-07-19 02:15: Root-cause-at-ingestion: payload provenance and failure detail disappear inside `payloadLoader`, while Three.js enters the shell through the synchronous `App.tsx` import; both seams must be fixed before display polish.
 - 2026-07-19 02:15: The accessible fallback is an equivalent text-and-section navigator, not an error page; reduced motion and unavailable WebGL must never hide witness content.
@@ -392,8 +710,47 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - 2026-07-18: Merged Sankalpa trusted gateway and result continuity as `7e08431`; Electron main now owns authenticated transport, exact operation consent, runtime input validation, CSP/navigation restrictions, and trusted-top-frame IPC.
 - 2026-07-18: Final independent boundary review returned `GO`, and browser Gate 4 returned `PASS` after measured Sigil/Face layout and Biofield consent-control corrections.
 
+### Continuation — 2026-09-05
+
+- 2026-09-05T10:35:44.959123+00:00: refined: richer stashed ISA restored after a stable-ID subset check; no starting criterion ID was lost. Historical statuses remain dated evidence.
+- 2026-09-05T10:35:44.959123+00:00: User explicitly requests recommended GSD discussion/research flow and critical HITL only; routine technical defaults are auto-selected once per phase.
+- 2026-09-05T10:35:44.959123+00:00: GSD phase 01 is a recovery entry point mapped to original Wave 0; original Wave 0 registry/asset/release-receipt exits remain tracked in phase 02. This is not evidence that Wave 0 fully closed.
+- 2026-09-05T10:35:44.959123+00:00: The independent noesis-plan advisor identified acceptance-ownership and deployment-falsifier concerns. Explicit ledger authority and exact source/CI/deploy separation are now required. Its erroneous 570x30 wording was rejected against live 19x30 evidence.
+- 2026-09-05T10:35:44.959123+00:00: Earlier noesis-observe and initial Hands calls returned gateway errors/empty outputs and are not accepted as completed work. A smaller isolated Superset Claude worker continues on noesis-execute.
+- 2026-09-05T10:35:44.959123+00:00: Selected analytical capabilities: ContextSearch (prior planning evidence), ISA (history reconciliation), Advisor (bounded plan review), FirstPrinciples, SystemsThinking, Science and ReReadCheck (explicit lenses in the external review). None of those reviews substitutes for source verification.
+
+- 2026-09-05T13:47:55.589355+00:00: GitHub control bodies are reconciled with readback hashes; the missing public admin smoke URL is configured to its verified origin. The next critical decision is the additive main CI requirement. Production promotion remains held for release identity and rollback evidence.
+- 2026-09-06 10:47: The versioned engine registry is the canonical identity, ownership, public grouping and evidence-axis authority. Runtime registration tests consume it directly, while deployed and operational cells remain evidence-qualified and do not close GATE-05 without Plan 02-07 release receipts.
+- 2026-09-06 12:13: Release eligibility is a versioned, offline, source-bound receipt decision. Source redeployment and immutable-image promotion remain distinct modes; locally built bytes are checked before immutable candidate publication, and exact Railway selectors are emitted only after eligibility.
+- 2026-09-06 11:34: The incomplete current-production snapshot is a negative fixture, not a release candidate. Production API source/build identity, applied schema, asset inclusion/retention and exercised rollback remain Phase 7 evidence obligations.
+- 2026-09-06 13:42: Deep review remediation binds semver tags and short-lived operations, separates pre-mutation authority from provider attestation, models exact deploy and rollback roles, computes asset trees and exercises real scripts under shims. Stateless one-use, provider attestation and atomic multi-artifact guarantees remain unavailable, so both production profiles are explicitly disabled and promotion stays HOLD.
+
 ## Changelog
 
+- 2026-08-26 | conjectured: schema-valid fixtures and additive DTOs alone proved cross-language contract convergence
+  refuted_by: independent review found optional-result drift, unvalidated API payloads, validator escape paths, an ungated maintained SDK, and extractor errors outside the universal envelope
+  learned: contract authority must bind schema variants, real deserialization behavior, every maintained adapter, negative validator cases, and the composed root gate
+  criterion_now: ISC-235..278 require exact authority, payload-level rejection, bidirectional parity, scope audit, full-gate execution, and final independent GO
+- 2026-08-26 | conjectured: a gate passing in its isolated worktree was sufficient evidence for immediate cleanup
+  refuted_by: the merged primary checkout loaded an ambient provider credential and timed out in a supposedly network-free test
+  learned: integration verification must run under the destination checkout's real environment before worktree retirement
+  criterion_now: ISC-228..231 require merged-environment execution, credential isolation, and cleanup only after green evidence
+- 2026-08-25 | conjectured: the broad ecosystem ledger should remain the current planning authority
+  refuted_by: the user narrowed planning to Selemene Engine and external repository rows assigned work outside the authorized boundary
+  learned: consumer repositories define compatibility evidence but require their own accepted planning authority
+  criterion_now: ISC-164..172 require a repository-only boundary, explicit precedence, and superseded context banners
+- 2026-08-25 | conjectured: registered, green, or live capabilities could share one completion label
+  refuted_by: missing TS validation, disconnected workflow synthesis, SDK/API mismatches, simulated media paths, fail-open CI, and unidentified deployment revision
+  learned: completion must remain a six-axis evidence vector through every engine, contract, package, service, and operational surface
+  criterion_now: ISC-173..185 require exact registry parity, per-axis rows, probe limitations, and contradiction correction
+- 2026-08-25 | conjectured: feature and integration work should lead the next roadmap
+  refuted_by: unprotected main, deploy-after-red-CI behavior, security advisories, invalid deployment configuration, non-durable migrations, and broken release gates
+  learned: authority and safe fail-closed delivery precede runtime and experience expansion
+  criterion_now: ISC-186..193 enforce dependency-ordered waves with falsifiable exits
+- 2026-08-25 | conjectured: the first Selemene-only draft was complete after three domain audits
+  refuted_by: adversarial review found overstated deployment axes, missing billing/publication/onboarding subsystems, and a Wave 0/1 dependency cycle
+  learned: independent verification must challenge both evidence coverage and the plan's own causal ordering
+  criterion_now: ISC-181..195 include the missing subsystems, partial deployment evidence, corrected wave sequence, and final GO re-audit
 - 2026-07-18 | conjectured: the OpenCode handoff accurately described the current stopping point
   refuted_by: live git ancestry shows main and Sankalpa already contain several commits the handoff still described as pending
   learned: cold-start continuation must compare narrative state with repository state before dispatching or merging
@@ -419,8 +776,45 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
   learned: continuity features need measured browser geometry and interaction validation in addition to pure-function tests
   criterion_now: ISC-80 includes Gate 4 browser validation of the integrated focus-to-Noesis journey
 
+### Continuation — 2026-09-05
+
+- 2026-09-05 | conjectured: current checkout and completed root ISA identify the active project completion state
+  refuted_by: three authority files were only in a preserved stash, its ISA contains 285 historical criteria, two capability PRs are unmerged, 570 engine issues are open and production capabilities return 404
+  learned: recover source authority by stable identity and keep local, CI, deployment and operational evidence distinct
+  criterion_now: ISC-279 through ISC-314 govern the current continuation without renumbering historical criteria
+
+- 2026-09-05T13:47:55.589355+00:00 | conjectured: local gate success implied the candidate would pass every clean CI surface
+  refuted_by: clean-runner imports/build ordering, Vercel packaging and a database-backed fixture lifetime failure
+  learned: validate provider packaging and DB-configured test lifetimes on disposable services before promotion
+  criterion_now: ISC-305 and ISC-217 close only after current-source CI Gate and immutable action-pin validation pass; neither implies production readiness
+
 ## Verification
 
+- ISC-235..278: Contract work remained isolated on `codex/selemene-contract-convergence` from baseline `01160e5`; the final evidence commit is `59a38ed`. Changed paths are confined to the v1 authority, validators/gates/tests, additive contract types, API/OpenAPI compatibility boundaries, maintained SDK parity, and contract documentation. Primary-worktree planning changes remained present and no external repository, live service, database, cloud resource, remote, publication, deployment, provider, routing, or engine algorithm was changed.
+- ISC-238..264: `contracts/v1` contains exactly six Draft 2020-12 schemas and five uniquely mapped fixtures. The validator rejects malformed or missing authority entries, duplicate/zero fixtures, invalid payloads, traversal, unresolved local fragments, network references, and sensitive error/provenance keys; root gate composition executed 47 Python behaviors.
+- ISC-265..275: Rust canonical contracts passed 6/6; OpenAPI parity passed 4/4; API calculate-boundary integration passed 16/16; engine SDK passed 35/35 plus typecheck; general TypeScript SDK passed 11/11 plus typecheck; verification passed 36/36 plus typecheck; TypeScript engines passed 90/90 plus typecheck.
+- ISC-276: Fresh `pnpm run gate` exited zero at committed implementation candidate `0df208d`. The subsequent evidence-only commit `59a38ed` passed `git diff --check` and does not alter executable behavior.
+- ISC-277: Independent read-only review returned GO at `0df208d` after two earlier BLOCK cycles and found no remaining P0/P1 contract drift, compatibility break, false-green path, or engine-scope leak. It independently reran `gate:scripts`, `gate:contracts`, and `git diff --check 01160e5..HEAD`.
+- ISC-278 ReReadCheck: “Gate foundation merged; contract convergence is isolated, green, and next.- proceed” — addressed exactly through the contract layer. The branch remains isolated and unmerged; engines remain deliberately untouched until separately authorized work begins.
+- Historical gate-foundation receipt: ISC-217 remained open there because GitHub Actions still used floating version tags. Later Phase 2 evidence below supersedes that historical gap with immutable pins and exact-head CI.
+- ISC-225..231: Gate changes were committed as `c11bc39` and `5cf48b9`, integrated into local `main` by merge commits `130397a` and `01160e5`, and verified as ancestors. All fourteen pre-existing dirty files retained identical SHA-256 digests. The completed worktree was removed and the merged branch deleted with `git branch -d`, never force.
+- ISC-228..229: The first merged gate run correctly failed when the primary checkout exposed an ambient provider credential. A sentinel-credential focused run then passed 21/21 after credential isolation, and the final merged `pnpm run gate` passed 31 Python gate tests, 36 verification tests, strict TypeScript checks, and 88/88 Bun tests with 268 expectations.
+- ISC-232..234: `.worktrees/selemene-contract-convergence` was created on `codex/selemene-contract-convergence` from `01160e5`. After pnpm and Bun dependency setup, its baseline `pnpm run gate` passed the same 31, 36, and 88 test groups. No external repository, live service, database, cloud resource, remote branch, or engine semantic path was changed.
+- ISC-196..224: Gate work remained isolated on `codex/selemene-gate-foundation`; primary-worktree status and all unrelated user changes were preserved. Contracts, engines, external repositories, live services, databases, GitHub settings, deployment, publication, push, merge, and release remained untouched.
+- ISC-199..218: Fresh `pnpm run gate` exited zero with 31 script behaviors, 36 verification tests, both TypeScript typechecks, and 88/88 Bun tests with 268 expectations. The only open criterion is ISC-217 because GitHub Actions still use version tags rather than immutable commit SHAs.
+- ISC-204..207: Disposable PostgreSQL 16 applied and journaled all 36 historical filenames on a fresh database, including both `007` files and nontransactional `030`; the immediate second run reported `applied=0 skipped=36`, and the exact disposable container was removed afterward.
+- ISC-208..210: Docker workspace/target validation passes and the cache-stage Cargo command is no longer masked. Real `linux/arm64` construction now fails closed on 12 pre-existing `libswisseph-sys 0.1.2` `E0308` errors; the `linux/amd64` QEMU attempt reached the same real step but was inconclusive after GCC `cc1` segfaulted.
+- ISC-211..220: `actionlint` 1.7.7 returned zero findings for both workflows; warning-level ShellCheck 0.10.0 returned zero findings for the canonical runner and Suno operator; YAML, TOML, Python compilation, Bash syntax, and `git diff --check` passed. The Cato-role fallback's final verdict was PASS with no remaining P0/P1 false-green path.
+- ISC-223..224: The gate evidence states both guarantees and residual Wave 1 gaps. ReReadCheck compared the latest instruction, “Next work starts with gates, contracts, then engines,” and confirmed this iteration completed only the bounded gate foundation; contracts remain next and engines remain after contracts.
+- ReReadCheck: “we dont need to plan for the rest of the repos” — addressed: no active roadmap item assigns external-repository implementation. “as context and understanding the delivery to various platforms and connected infra” — addressed: the delivery-context map is retained, and Selemene's compatibility, package, service, and infrastructure boundaries are represented. “focus a deep pass only on the selemene engine” — addressed: the active authority, ledger, roadmap, ISCs, tests, and adversarial review are repository-local.
+- ISC-164..172: The active `docs/plans/selemene-engine/` authority states the Selemene-only boundary and six evidence states; README, historical overview, and integration status point to it. All three ecosystem documents are visibly superseded/context-only.
+- ISC-173..180: Automated registry comparison found exactly 19 unique ledger rows matching `SUPPORTED_ENGINE_IDS`; source audit confirmed 12 unconditional native registrations, one database-conditional capture engine, and six TypeScript bridges. Engine rows record the specific fallback, mock, provider, or semantic gaps discovered in source.
+- ISC-181..185: Platform and infrastructure ledgers include SDKs, CLI/TUI/admin, witness/assets, verification, billing/entitlements/credits, Dodo webhooks, Living Reading publication/invitations, OpenClaw onboarding, persistence/cache, images/topologies, CI/release/security, operations, and assets. The contradiction register records the material false-completion patterns.
+- ISC-183..184: Fresh 2026-08-25 production probes returned HTTP 200 for liveness/readiness with version 3.3.1, 19 loaded engines, six workflows, healthy Postgres/Redis/orchestrator/bridge/six TS engines, and structured 401 for protected unauthenticated routes. The ledger explicitly withholds authenticated-journey, provider, Python-sidecar, and revision-bound claims.
+- ISC-186..194: Seven internal waves each have exit evidence. External product names appear once in the active roadmap only to bound Selemene-side compatibility fixtures and explicitly prohibit downstream implementation assignment.
+- ISC-195: Local Markdown link validation passed across nine active/historical planning surfaces; registry parity passed 19/19; every roadmap wave has an exit; `git diff --check` passed. Independent adversarial review initially BLOCKed on three P1 findings, then returned GO after deployment axes, missing subsystems, and Wave 0/1 ordering were corrected.
+- Fresh executable evidence: `cargo test -p noesis-api --lib --locked` passed 94/94; `cargo test -p noesis-orchestrator --lib --locked` passed 96/96; `bun test` in `ts-engines` passed 88/88; root `pnpm verify && pnpm verify:typecheck` passed 36/36 and typecheck.
+- Fresh negative evidence: `bun run typecheck` in `ts-engines` fails on removed `baseUrl` and invalid non-relative paths; main CI currently masks this exact failure. Package/infra audits additionally recorded witness/Python/tooling gaps and current red dependency/security gates rather than converting them into completion claims.
 - ISC-132..137: Production Vite build emitted `index-CYgISPpb.js` at 249,275 raw/79,819 gzip bytes and `DepthGallery-5EhUnFqv.js` at 515,503 raw/129,200 gzip bytes; `npm run check:renderer-budget` proved Three.js is absent from entry and present in the single async depth chunk.
 - ISC-138..147: Focused loader tests prove hash/cache/remote provenance, malformed-hash fallback, 404 not-found, typed failure, safe rejected-IPC conversion, legacy nullable compatibility, and the deferred-promise gate rejects stale completions.
 - ISC-148..155: Gateway renderer tests cover all configured/authenticated combinations; browser Account QA displayed only `Local-only`, fixed guidance, and no URL, token, header, exception, console error, or failed request.
@@ -466,3 +860,38 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - ISC-106..119: Browser Gate 4 passed Unicode Threshold → Raaga → Sigil → combined Noesis → clear. It visibly proved two observations, retained inquiry, exact engine labels, a concrete current-practice route, and the explicit empty state without functional console, page, request, or HTTP errors.
 - ISC-120..122: The final Sankalpa gate passed with 85/85 tests, both TypeScript projects, production build, whitespace checks, and sensitive fixture-value bundle scans. The only build warning is the known Three.js chunk-size optimization queued for Wave 2.
 - Final review: Independent code audit returned GO with no P0/P1 findings after Unicode, strict context allowlists, single-envelope cache atomicity, malformed-state resilience, and timezone-collision remediation.
+
+### Continuation — 2026-09-05
+
+- 2026-09-05T11:07:35.247112+00:00: ISC-279–286: readback proved all 170 original stable IDs survive within 321 total criteria; each of three original stash authority files remains an exact substring of its recovered file. The issue snapshot contains 570 unique issues, 19 groups, 30 slots each; all eight controls are OPEN. GSD recognizes seven phases and both Phase 1 plans validate. Advisor concerns and its incorrect corpus arithmetic are explicitly dispositioned in research.
+- ISC-287–293,299: source provider snapshots identify seven Railway deployments and the 9d9d-owned active zone, three live Worker bindings, denied DNS reads and absent pattern-memory. Public curl returns 200/19 engines; production TS capability discovery returns 404. Python audit describes the local pip finding and withholds production resolution proof. See INFRASTRUCTURE-MAP.json and DEPENDENCY-AUDIT-2026-09-05.md.
+- ISC-294–296: CodeGraph reports 859 indexed files, 14,850 nodes and 36,207 edges. Repeated sync exits zero with Already up to date. A fresh context query resolves engine_capabilities at admin.rs:4643 and returns the actual six-engine bridge traversal.
+- ISC-302: runtime capability evidence now identifies the six TS rows and explicitly withholds native, conditional and complete Python capability parity.
+- ISC-309,311,313–314: original checkout remains clean and stash ref a6c7a0e9f04ba318fe0d98671cc80b720a529861 is retained. Superset Hands emitted real formatting/config/dependency edits; actual noesis-execute provider receipt is claude/claude-sonnet-5. Critical production/security operations are still pending. These continuous safeguards must be rechecked before promotion.
+- Historical verification above retains its original date and scope. No full-wave, remote-CI or deployment completion is implied.
+
+- ISC-297: command audit — cargo audit reports "found":false and "count":0; the unchanged chacha20 0.10.1 optional HTTP/3 lockfile yank is traced and explicitly retained.
+- ISC-298: command audit — final pnpm audit reports info 0, low 0, moderate 0, high 0, critical 0 across production and development.
+- ISC-300: command tests — repaired TS lint/typecheck and all 93 recovery tests pass; PR #1486 at exact head 520e439 separately passes all CI jobs.
+- ISC-304: git history — source changes are scoped commits 8e5a8d3,ee2b39f,d20d1b6,b456c18,ade679f,86cbae9,f6d777e, with local evidence and remaining remote checks explicit.
+- ISC-315: command audit — pnpm-audit-final-all.json returns zero vulnerabilities at every severity.
+- ISC-316: executable workflow probe — 14 mocked scenarios execute the actual agent-merge-lane.yml script and pass; full script suite: 67 passed.
+- ISC-317: browser read — account 9d9d zone DNS table shows selemene->Railway proxied,144->Vercel proxied,48->Railway DNS only; no DNS mutation.
+- ISC-318: browser read — deployed admin lists 19 engine routes; sidecar health shows six TS engines. Stale count and Python description corrected in source; candidate is not yet deployed.
+
+- ISC-303: GitHub readback — all eight control bodies updated; original exit checkboxes, OPEN state and labels preserved. GITHUB-RECONCILIATION-2026-09-05.json records hashes. All 570 engine issues remain untouched.
+- ISC-306: GitHub CI — at source 9b618de, both Python image import jobs, Python 3.11/3.12 contracts/smoke and required admin checks pass. Both release paths depend on complete CI; all 77 Action uses pass the immutable pin validator. Full CI remains separately governed by ISC-305.
+- ISC-310: privacy verification — 32 recovery artifacts pass personal-email/private-path checks; GitHub TruffleHog job 101312749961 passes. No authenticated personal records, credential values or secret variable values were saved in these receipts.
+- Capability fixture: disposable PostgreSQL 18.4 reproduces the original 500/timeout; a shared test-binary runtime passes all three existing cases against the same migrated database. GitHub's PostgreSQL 16 integration rerun passes all three cases.
+- ISC-305: GitHub run 33971363162 passes all 16 jobs at 19b80826fcc1ef787d95960a44dd4762ceb74968, including the full integration suite and CI Gate. GitHub's pull-request merge tree is byte-identical to the source tree. Vercel reports READY for the same candidate. PR #1488 remains draft, mergeable, without auto-merge.
+- Plan sync: an explicit dry run against the candidate finds no docs/planning JSON inputs and performs no issue changes. A main push will start the workflow because its file changed, but the same tree has no rows to apply.
+- ISC-319: contract validator — `contract authority v1 valid: schemas=6 fixtures=5 registries=1 engines=19`.
+- ISC-320: negative fixture suite — `23 passed in 3.34s`; mutated missing/duplicate IDs, grouping, class, owner and evidence cases all fail closed.
+- ISC-321: executable enumeration — `noesis-orchestrator` reports `97 passed; 0 failed`; the complete TypeScript suite reports `94 pass, 0 fail`, including canonical startup registration.
+- ISC-322: shared production conditional seam — `cargo test -p noesis-api database_conditional_registration --locked` reports 2 passed. Both app-state builders call the same helper; tests cover `None` and a lazy local pool with `DATABASE_URL` and `TEST_DATABASE_URL` absent.
+- ISC-323: canonical command gate — `pnpm run gate` exited zero after contract, script, verification and TypeScript stages; no deployment, schema/data mutation or calculation-semantic change was performed.
+- ISC-324–326: receipt validator — `python3 scripts/validate_release_receipt.py --validate-fixtures` reports `receipts=2 mutation_cases=9`; the 95-test focused receipt/wiring/provenance suite includes cross-tag, expiry, replayed-attempt, stale rollback, future-deployment, wrong role/target, missing source anchor and asset tree/inclusion rejection. The current-production fixture exits 1 with 29 unavailable API, schema, asset and rollback facts.
+- ISC-327–328: workflow gate — immutable Action pins and YAML parsing pass. Executed scripts under Docker, Railway, Kustomize, Kubectl, curl and release shims assert exact provider argv, cwd, ref conditions, credential scope and health source markers. Deploy can expose only immutable source candidates; release has no mutation and ends in HOLD. `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate` exits zero with 140 script, 9 core, 4 OpenAPI, 16 API integration, 35 engine SDK, 11 Noesis SDK, 36 verification and 94 TypeScript tests plus all builds/typechecks.
+- Plan sync: `scripts/sync-plans-to-github-issues.sh --repo Sheshiyer/Selemene-engine` ran in dry-run mode, found no matching plan JSON inputs and performed no issue mutation.
+- ISC-217 and ISC-305 Phase 2 closure: all 77 workflow action uses pass immutable-SHA validation, and GitHub `CI - Test & Lint` run 34046002390 passes all 16 jobs, including aggregate `CI Gate`, at exact evidence head `ba2d149106345bb9637e1d31fec8160e703c5501`. Pull-request merge commit `e163c86b7070484e193b178741ab290c7c1ad199` and the branch head share tree `3e693be8778b7f9eccff18112f5504cbf0dea512`.
+- Phase 2 verification boundary: all seven plans, the complete database-free local gate, the ten-Critical/four-Warning remediation ledger, five clean independent rechecks and exact-head remote CI pass. Draft PR #1488 remains open and unmerged. No deployment, publication, tag, cloud/DNS, schema/data, production-database or secret mutation was performed. Both repository production profiles remain disabled pending durable one-use, provider attestation, atomic coordination and source-bound asset inclusion authority; Vercel's native main deployment remains outside the gate, so promotion stays HOLD.

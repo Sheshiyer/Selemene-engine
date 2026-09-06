@@ -1,0 +1,4038 @@
+{
+  "observedAt": "2026-09-05T10:32:24.973076+00:00",
+  "repository": "Sheshiyer/Selemene-engine",
+  "total": 570,
+  "engineCount": 19,
+  "issueCountPerEngine": 30,
+  "openCount": 570,
+  "engines": {
+    "biofield": [
+      {
+        "slot": 1,
+        "number": 915,
+        "title": "[W3E:biofield:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/915"
+      },
+      {
+        "slot": 2,
+        "number": 916,
+        "title": "[W3E:biofield:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/916"
+      },
+      {
+        "slot": 3,
+        "number": 917,
+        "title": "[W3E:biofield:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/917"
+      },
+      {
+        "slot": 4,
+        "number": 918,
+        "title": "[W3E:biofield:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/918"
+      },
+      {
+        "slot": 5,
+        "number": 919,
+        "title": "[W3E:biofield:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/919"
+      },
+      {
+        "slot": 6,
+        "number": 920,
+        "title": "[W3E:biofield:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/920"
+      },
+      {
+        "slot": 7,
+        "number": 921,
+        "title": "[W3E:biofield:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/921"
+      },
+      {
+        "slot": 8,
+        "number": 922,
+        "title": "[W3E:biofield:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/922"
+      },
+      {
+        "slot": 9,
+        "number": 923,
+        "title": "[W3E:biofield:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/923"
+      },
+      {
+        "slot": 10,
+        "number": 924,
+        "title": "[W3E:biofield:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/924"
+      },
+      {
+        "slot": 11,
+        "number": 925,
+        "title": "[W3E:biofield:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/925"
+      },
+      {
+        "slot": 12,
+        "number": 926,
+        "title": "[W3E:biofield:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/926"
+      },
+      {
+        "slot": 13,
+        "number": 927,
+        "title": "[W3E:biofield:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/927"
+      },
+      {
+        "slot": 14,
+        "number": 928,
+        "title": "[W3E:biofield:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/928"
+      },
+      {
+        "slot": 15,
+        "number": 929,
+        "title": "[W3E:biofield:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/929"
+      },
+      {
+        "slot": 16,
+        "number": 930,
+        "title": "[W3E:biofield:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/930"
+      },
+      {
+        "slot": 17,
+        "number": 931,
+        "title": "[W3E:biofield:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/931"
+      },
+      {
+        "slot": 18,
+        "number": 932,
+        "title": "[W3E:biofield:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/932"
+      },
+      {
+        "slot": 19,
+        "number": 933,
+        "title": "[W3E:biofield:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/933"
+      },
+      {
+        "slot": 20,
+        "number": 934,
+        "title": "[W3E:biofield:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/934"
+      },
+      {
+        "slot": 21,
+        "number": 935,
+        "title": "[W3E:biofield:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/935"
+      },
+      {
+        "slot": 22,
+        "number": 936,
+        "title": "[W3E:biofield:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/936"
+      },
+      {
+        "slot": 23,
+        "number": 937,
+        "title": "[W3E:biofield:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/937"
+      },
+      {
+        "slot": 24,
+        "number": 938,
+        "title": "[W3E:biofield:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/938"
+      },
+      {
+        "slot": 25,
+        "number": 939,
+        "title": "[W3E:biofield:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/939"
+      },
+      {
+        "slot": 26,
+        "number": 940,
+        "title": "[W3E:biofield:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/940"
+      },
+      {
+        "slot": 27,
+        "number": 941,
+        "title": "[W3E:biofield:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/941"
+      },
+      {
+        "slot": 28,
+        "number": 942,
+        "title": "[W3E:biofield:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/942"
+      },
+      {
+        "slot": 29,
+        "number": 943,
+        "title": "[W3E:biofield:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/943"
+      },
+      {
+        "slot": 30,
+        "number": 944,
+        "title": "[W3E:biofield:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/944"
+      }
+    ],
+    "biofield-capture": [
+      {
+        "slot": 1,
+        "number": 945,
+        "title": "[W3E:biofield-capture:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/945"
+      },
+      {
+        "slot": 2,
+        "number": 946,
+        "title": "[W3E:biofield-capture:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/946"
+      },
+      {
+        "slot": 3,
+        "number": 947,
+        "title": "[W3E:biofield-capture:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/947"
+      },
+      {
+        "slot": 4,
+        "number": 948,
+        "title": "[W3E:biofield-capture:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/948"
+      },
+      {
+        "slot": 5,
+        "number": 949,
+        "title": "[W3E:biofield-capture:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/949"
+      },
+      {
+        "slot": 6,
+        "number": 950,
+        "title": "[W3E:biofield-capture:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/950"
+      },
+      {
+        "slot": 7,
+        "number": 951,
+        "title": "[W3E:biofield-capture:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/951"
+      },
+      {
+        "slot": 8,
+        "number": 952,
+        "title": "[W3E:biofield-capture:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/952"
+      },
+      {
+        "slot": 9,
+        "number": 953,
+        "title": "[W3E:biofield-capture:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/953"
+      },
+      {
+        "slot": 10,
+        "number": 954,
+        "title": "[W3E:biofield-capture:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/954"
+      },
+      {
+        "slot": 11,
+        "number": 955,
+        "title": "[W3E:biofield-capture:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/955"
+      },
+      {
+        "slot": 12,
+        "number": 956,
+        "title": "[W3E:biofield-capture:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/956"
+      },
+      {
+        "slot": 13,
+        "number": 957,
+        "title": "[W3E:biofield-capture:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/957"
+      },
+      {
+        "slot": 14,
+        "number": 958,
+        "title": "[W3E:biofield-capture:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/958"
+      },
+      {
+        "slot": 15,
+        "number": 959,
+        "title": "[W3E:biofield-capture:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/959"
+      },
+      {
+        "slot": 16,
+        "number": 960,
+        "title": "[W3E:biofield-capture:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/960"
+      },
+      {
+        "slot": 17,
+        "number": 961,
+        "title": "[W3E:biofield-capture:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/961"
+      },
+      {
+        "slot": 18,
+        "number": 962,
+        "title": "[W3E:biofield-capture:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/962"
+      },
+      {
+        "slot": 19,
+        "number": 963,
+        "title": "[W3E:biofield-capture:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/963"
+      },
+      {
+        "slot": 20,
+        "number": 964,
+        "title": "[W3E:biofield-capture:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/964"
+      },
+      {
+        "slot": 21,
+        "number": 965,
+        "title": "[W3E:biofield-capture:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/965"
+      },
+      {
+        "slot": 22,
+        "number": 966,
+        "title": "[W3E:biofield-capture:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/966"
+      },
+      {
+        "slot": 23,
+        "number": 967,
+        "title": "[W3E:biofield-capture:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/967"
+      },
+      {
+        "slot": 24,
+        "number": 968,
+        "title": "[W3E:biofield-capture:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/968"
+      },
+      {
+        "slot": 25,
+        "number": 969,
+        "title": "[W3E:biofield-capture:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/969"
+      },
+      {
+        "slot": 26,
+        "number": 970,
+        "title": "[W3E:biofield-capture:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/970"
+      },
+      {
+        "slot": 27,
+        "number": 971,
+        "title": "[W3E:biofield-capture:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/971"
+      },
+      {
+        "slot": 28,
+        "number": 972,
+        "title": "[W3E:biofield-capture:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/972"
+      },
+      {
+        "slot": 29,
+        "number": 973,
+        "title": "[W3E:biofield-capture:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/973"
+      },
+      {
+        "slot": 30,
+        "number": 974,
+        "title": "[W3E:biofield-capture:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/974"
+      }
+    ],
+    "biorhythm": [
+      {
+        "slot": 1,
+        "number": 975,
+        "title": "[W3E:biorhythm:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/975"
+      },
+      {
+        "slot": 2,
+        "number": 976,
+        "title": "[W3E:biorhythm:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/976"
+      },
+      {
+        "slot": 3,
+        "number": 977,
+        "title": "[W3E:biorhythm:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/977"
+      },
+      {
+        "slot": 4,
+        "number": 978,
+        "title": "[W3E:biorhythm:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/978"
+      },
+      {
+        "slot": 5,
+        "number": 979,
+        "title": "[W3E:biorhythm:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/979"
+      },
+      {
+        "slot": 6,
+        "number": 980,
+        "title": "[W3E:biorhythm:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/980"
+      },
+      {
+        "slot": 7,
+        "number": 981,
+        "title": "[W3E:biorhythm:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/981"
+      },
+      {
+        "slot": 8,
+        "number": 982,
+        "title": "[W3E:biorhythm:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/982"
+      },
+      {
+        "slot": 9,
+        "number": 983,
+        "title": "[W3E:biorhythm:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/983"
+      },
+      {
+        "slot": 10,
+        "number": 984,
+        "title": "[W3E:biorhythm:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/984"
+      },
+      {
+        "slot": 11,
+        "number": 985,
+        "title": "[W3E:biorhythm:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/985"
+      },
+      {
+        "slot": 12,
+        "number": 986,
+        "title": "[W3E:biorhythm:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/986"
+      },
+      {
+        "slot": 13,
+        "number": 987,
+        "title": "[W3E:biorhythm:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/987"
+      },
+      {
+        "slot": 14,
+        "number": 988,
+        "title": "[W3E:biorhythm:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/988"
+      },
+      {
+        "slot": 15,
+        "number": 989,
+        "title": "[W3E:biorhythm:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/989"
+      },
+      {
+        "slot": 16,
+        "number": 990,
+        "title": "[W3E:biorhythm:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/990"
+      },
+      {
+        "slot": 17,
+        "number": 991,
+        "title": "[W3E:biorhythm:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/991"
+      },
+      {
+        "slot": 18,
+        "number": 992,
+        "title": "[W3E:biorhythm:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/992"
+      },
+      {
+        "slot": 19,
+        "number": 993,
+        "title": "[W3E:biorhythm:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/993"
+      },
+      {
+        "slot": 20,
+        "number": 994,
+        "title": "[W3E:biorhythm:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/994"
+      },
+      {
+        "slot": 21,
+        "number": 995,
+        "title": "[W3E:biorhythm:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/995"
+      },
+      {
+        "slot": 22,
+        "number": 996,
+        "title": "[W3E:biorhythm:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/996"
+      },
+      {
+        "slot": 23,
+        "number": 997,
+        "title": "[W3E:biorhythm:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/997"
+      },
+      {
+        "slot": 24,
+        "number": 998,
+        "title": "[W3E:biorhythm:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/998"
+      },
+      {
+        "slot": 25,
+        "number": 999,
+        "title": "[W3E:biorhythm:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/999"
+      },
+      {
+        "slot": 26,
+        "number": 1000,
+        "title": "[W3E:biorhythm:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1000"
+      },
+      {
+        "slot": 27,
+        "number": 1001,
+        "title": "[W3E:biorhythm:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1001"
+      },
+      {
+        "slot": 28,
+        "number": 1002,
+        "title": "[W3E:biorhythm:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1002"
+      },
+      {
+        "slot": 29,
+        "number": 1003,
+        "title": "[W3E:biorhythm:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1003"
+      },
+      {
+        "slot": 30,
+        "number": 1004,
+        "title": "[W3E:biorhythm:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1004"
+      }
+    ],
+    "enneagram": [
+      {
+        "slot": 1,
+        "number": 1305,
+        "title": "[W3E:enneagram:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1305"
+      },
+      {
+        "slot": 2,
+        "number": 1306,
+        "title": "[W3E:enneagram:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1306"
+      },
+      {
+        "slot": 3,
+        "number": 1307,
+        "title": "[W3E:enneagram:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1307"
+      },
+      {
+        "slot": 4,
+        "number": 1308,
+        "title": "[W3E:enneagram:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1308"
+      },
+      {
+        "slot": 5,
+        "number": 1309,
+        "title": "[W3E:enneagram:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1309"
+      },
+      {
+        "slot": 6,
+        "number": 1310,
+        "title": "[W3E:enneagram:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1310"
+      },
+      {
+        "slot": 7,
+        "number": 1311,
+        "title": "[W3E:enneagram:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1311"
+      },
+      {
+        "slot": 8,
+        "number": 1312,
+        "title": "[W3E:enneagram:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1312"
+      },
+      {
+        "slot": 9,
+        "number": 1313,
+        "title": "[W3E:enneagram:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1313"
+      },
+      {
+        "slot": 10,
+        "number": 1314,
+        "title": "[W3E:enneagram:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1314"
+      },
+      {
+        "slot": 11,
+        "number": 1315,
+        "title": "[W3E:enneagram:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1315"
+      },
+      {
+        "slot": 12,
+        "number": 1316,
+        "title": "[W3E:enneagram:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1316"
+      },
+      {
+        "slot": 13,
+        "number": 1317,
+        "title": "[W3E:enneagram:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1317"
+      },
+      {
+        "slot": 14,
+        "number": 1318,
+        "title": "[W3E:enneagram:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1318"
+      },
+      {
+        "slot": 15,
+        "number": 1319,
+        "title": "[W3E:enneagram:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1319"
+      },
+      {
+        "slot": 16,
+        "number": 1320,
+        "title": "[W3E:enneagram:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1320"
+      },
+      {
+        "slot": 17,
+        "number": 1321,
+        "title": "[W3E:enneagram:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1321"
+      },
+      {
+        "slot": 18,
+        "number": 1322,
+        "title": "[W3E:enneagram:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1322"
+      },
+      {
+        "slot": 19,
+        "number": 1323,
+        "title": "[W3E:enneagram:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1323"
+      },
+      {
+        "slot": 20,
+        "number": 1324,
+        "title": "[W3E:enneagram:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1324"
+      },
+      {
+        "slot": 21,
+        "number": 1325,
+        "title": "[W3E:enneagram:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1325"
+      },
+      {
+        "slot": 22,
+        "number": 1326,
+        "title": "[W3E:enneagram:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1326"
+      },
+      {
+        "slot": 23,
+        "number": 1327,
+        "title": "[W3E:enneagram:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1327"
+      },
+      {
+        "slot": 24,
+        "number": 1328,
+        "title": "[W3E:enneagram:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1328"
+      },
+      {
+        "slot": 25,
+        "number": 1329,
+        "title": "[W3E:enneagram:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1329"
+      },
+      {
+        "slot": 26,
+        "number": 1330,
+        "title": "[W3E:enneagram:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1330"
+      },
+      {
+        "slot": 27,
+        "number": 1331,
+        "title": "[W3E:enneagram:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1331"
+      },
+      {
+        "slot": 28,
+        "number": 1332,
+        "title": "[W3E:enneagram:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1332"
+      },
+      {
+        "slot": 29,
+        "number": 1333,
+        "title": "[W3E:enneagram:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1333"
+      },
+      {
+        "slot": 30,
+        "number": 1334,
+        "title": "[W3E:enneagram:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1334"
+      }
+    ],
+    "face-reading": [
+      {
+        "slot": 1,
+        "number": 1005,
+        "title": "[W3E:face-reading:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1005"
+      },
+      {
+        "slot": 2,
+        "number": 1006,
+        "title": "[W3E:face-reading:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1006"
+      },
+      {
+        "slot": 3,
+        "number": 1007,
+        "title": "[W3E:face-reading:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1007"
+      },
+      {
+        "slot": 4,
+        "number": 1008,
+        "title": "[W3E:face-reading:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1008"
+      },
+      {
+        "slot": 5,
+        "number": 1009,
+        "title": "[W3E:face-reading:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1009"
+      },
+      {
+        "slot": 6,
+        "number": 1010,
+        "title": "[W3E:face-reading:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1010"
+      },
+      {
+        "slot": 7,
+        "number": 1011,
+        "title": "[W3E:face-reading:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1011"
+      },
+      {
+        "slot": 8,
+        "number": 1012,
+        "title": "[W3E:face-reading:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1012"
+      },
+      {
+        "slot": 9,
+        "number": 1013,
+        "title": "[W3E:face-reading:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1013"
+      },
+      {
+        "slot": 10,
+        "number": 1014,
+        "title": "[W3E:face-reading:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1014"
+      },
+      {
+        "slot": 11,
+        "number": 1015,
+        "title": "[W3E:face-reading:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1015"
+      },
+      {
+        "slot": 12,
+        "number": 1016,
+        "title": "[W3E:face-reading:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1016"
+      },
+      {
+        "slot": 13,
+        "number": 1017,
+        "title": "[W3E:face-reading:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1017"
+      },
+      {
+        "slot": 14,
+        "number": 1018,
+        "title": "[W3E:face-reading:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1018"
+      },
+      {
+        "slot": 15,
+        "number": 1019,
+        "title": "[W3E:face-reading:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1019"
+      },
+      {
+        "slot": 16,
+        "number": 1020,
+        "title": "[W3E:face-reading:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1020"
+      },
+      {
+        "slot": 17,
+        "number": 1021,
+        "title": "[W3E:face-reading:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1021"
+      },
+      {
+        "slot": 18,
+        "number": 1022,
+        "title": "[W3E:face-reading:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1022"
+      },
+      {
+        "slot": 19,
+        "number": 1023,
+        "title": "[W3E:face-reading:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1023"
+      },
+      {
+        "slot": 20,
+        "number": 1024,
+        "title": "[W3E:face-reading:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1024"
+      },
+      {
+        "slot": 21,
+        "number": 1025,
+        "title": "[W3E:face-reading:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1025"
+      },
+      {
+        "slot": 22,
+        "number": 1026,
+        "title": "[W3E:face-reading:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1026"
+      },
+      {
+        "slot": 23,
+        "number": 1027,
+        "title": "[W3E:face-reading:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1027"
+      },
+      {
+        "slot": 24,
+        "number": 1028,
+        "title": "[W3E:face-reading:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1028"
+      },
+      {
+        "slot": 25,
+        "number": 1029,
+        "title": "[W3E:face-reading:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1029"
+      },
+      {
+        "slot": 26,
+        "number": 1030,
+        "title": "[W3E:face-reading:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1030"
+      },
+      {
+        "slot": 27,
+        "number": 1031,
+        "title": "[W3E:face-reading:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1031"
+      },
+      {
+        "slot": 28,
+        "number": 1032,
+        "title": "[W3E:face-reading:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1032"
+      },
+      {
+        "slot": 29,
+        "number": 1033,
+        "title": "[W3E:face-reading:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1033"
+      },
+      {
+        "slot": 30,
+        "number": 1034,
+        "title": "[W3E:face-reading:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1034"
+      }
+    ],
+    "financial-biosensor": [
+      {
+        "slot": 1,
+        "number": 1035,
+        "title": "[W3E:financial-biosensor:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1035"
+      },
+      {
+        "slot": 2,
+        "number": 1036,
+        "title": "[W3E:financial-biosensor:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1036"
+      },
+      {
+        "slot": 3,
+        "number": 1037,
+        "title": "[W3E:financial-biosensor:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1037"
+      },
+      {
+        "slot": 4,
+        "number": 1038,
+        "title": "[W3E:financial-biosensor:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1038"
+      },
+      {
+        "slot": 5,
+        "number": 1039,
+        "title": "[W3E:financial-biosensor:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1039"
+      },
+      {
+        "slot": 6,
+        "number": 1040,
+        "title": "[W3E:financial-biosensor:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1040"
+      },
+      {
+        "slot": 7,
+        "number": 1041,
+        "title": "[W3E:financial-biosensor:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1041"
+      },
+      {
+        "slot": 8,
+        "number": 1042,
+        "title": "[W3E:financial-biosensor:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1042"
+      },
+      {
+        "slot": 9,
+        "number": 1043,
+        "title": "[W3E:financial-biosensor:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1043"
+      },
+      {
+        "slot": 10,
+        "number": 1044,
+        "title": "[W3E:financial-biosensor:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1044"
+      },
+      {
+        "slot": 11,
+        "number": 1045,
+        "title": "[W3E:financial-biosensor:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1045"
+      },
+      {
+        "slot": 12,
+        "number": 1046,
+        "title": "[W3E:financial-biosensor:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1046"
+      },
+      {
+        "slot": 13,
+        "number": 1047,
+        "title": "[W3E:financial-biosensor:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1047"
+      },
+      {
+        "slot": 14,
+        "number": 1048,
+        "title": "[W3E:financial-biosensor:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1048"
+      },
+      {
+        "slot": 15,
+        "number": 1049,
+        "title": "[W3E:financial-biosensor:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1049"
+      },
+      {
+        "slot": 16,
+        "number": 1050,
+        "title": "[W3E:financial-biosensor:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1050"
+      },
+      {
+        "slot": 17,
+        "number": 1051,
+        "title": "[W3E:financial-biosensor:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1051"
+      },
+      {
+        "slot": 18,
+        "number": 1052,
+        "title": "[W3E:financial-biosensor:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1052"
+      },
+      {
+        "slot": 19,
+        "number": 1053,
+        "title": "[W3E:financial-biosensor:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1053"
+      },
+      {
+        "slot": 20,
+        "number": 1054,
+        "title": "[W3E:financial-biosensor:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1054"
+      },
+      {
+        "slot": 21,
+        "number": 1055,
+        "title": "[W3E:financial-biosensor:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1055"
+      },
+      {
+        "slot": 22,
+        "number": 1056,
+        "title": "[W3E:financial-biosensor:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1056"
+      },
+      {
+        "slot": 23,
+        "number": 1057,
+        "title": "[W3E:financial-biosensor:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1057"
+      },
+      {
+        "slot": 24,
+        "number": 1058,
+        "title": "[W3E:financial-biosensor:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1058"
+      },
+      {
+        "slot": 25,
+        "number": 1059,
+        "title": "[W3E:financial-biosensor:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1059"
+      },
+      {
+        "slot": 26,
+        "number": 1060,
+        "title": "[W3E:financial-biosensor:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1060"
+      },
+      {
+        "slot": 27,
+        "number": 1061,
+        "title": "[W3E:financial-biosensor:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1061"
+      },
+      {
+        "slot": 28,
+        "number": 1062,
+        "title": "[W3E:financial-biosensor:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1062"
+      },
+      {
+        "slot": 29,
+        "number": 1063,
+        "title": "[W3E:financial-biosensor:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1063"
+      },
+      {
+        "slot": 30,
+        "number": 1064,
+        "title": "[W3E:financial-biosensor:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1064"
+      }
+    ],
+    "gene-keys": [
+      {
+        "slot": 1,
+        "number": 1065,
+        "title": "[W3E:gene-keys:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1065"
+      },
+      {
+        "slot": 2,
+        "number": 1066,
+        "title": "[W3E:gene-keys:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1066"
+      },
+      {
+        "slot": 3,
+        "number": 1067,
+        "title": "[W3E:gene-keys:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1067"
+      },
+      {
+        "slot": 4,
+        "number": 1068,
+        "title": "[W3E:gene-keys:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1068"
+      },
+      {
+        "slot": 5,
+        "number": 1069,
+        "title": "[W3E:gene-keys:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1069"
+      },
+      {
+        "slot": 6,
+        "number": 1070,
+        "title": "[W3E:gene-keys:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1070"
+      },
+      {
+        "slot": 7,
+        "number": 1071,
+        "title": "[W3E:gene-keys:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1071"
+      },
+      {
+        "slot": 8,
+        "number": 1072,
+        "title": "[W3E:gene-keys:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1072"
+      },
+      {
+        "slot": 9,
+        "number": 1073,
+        "title": "[W3E:gene-keys:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1073"
+      },
+      {
+        "slot": 10,
+        "number": 1074,
+        "title": "[W3E:gene-keys:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1074"
+      },
+      {
+        "slot": 11,
+        "number": 1075,
+        "title": "[W3E:gene-keys:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1075"
+      },
+      {
+        "slot": 12,
+        "number": 1076,
+        "title": "[W3E:gene-keys:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1076"
+      },
+      {
+        "slot": 13,
+        "number": 1077,
+        "title": "[W3E:gene-keys:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1077"
+      },
+      {
+        "slot": 14,
+        "number": 1078,
+        "title": "[W3E:gene-keys:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1078"
+      },
+      {
+        "slot": 15,
+        "number": 1079,
+        "title": "[W3E:gene-keys:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1079"
+      },
+      {
+        "slot": 16,
+        "number": 1080,
+        "title": "[W3E:gene-keys:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1080"
+      },
+      {
+        "slot": 17,
+        "number": 1081,
+        "title": "[W3E:gene-keys:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1081"
+      },
+      {
+        "slot": 18,
+        "number": 1082,
+        "title": "[W3E:gene-keys:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1082"
+      },
+      {
+        "slot": 19,
+        "number": 1083,
+        "title": "[W3E:gene-keys:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1083"
+      },
+      {
+        "slot": 20,
+        "number": 1084,
+        "title": "[W3E:gene-keys:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1084"
+      },
+      {
+        "slot": 21,
+        "number": 1085,
+        "title": "[W3E:gene-keys:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1085"
+      },
+      {
+        "slot": 22,
+        "number": 1086,
+        "title": "[W3E:gene-keys:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1086"
+      },
+      {
+        "slot": 23,
+        "number": 1087,
+        "title": "[W3E:gene-keys:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1087"
+      },
+      {
+        "slot": 24,
+        "number": 1088,
+        "title": "[W3E:gene-keys:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1088"
+      },
+      {
+        "slot": 25,
+        "number": 1089,
+        "title": "[W3E:gene-keys:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1089"
+      },
+      {
+        "slot": 26,
+        "number": 1090,
+        "title": "[W3E:gene-keys:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1090"
+      },
+      {
+        "slot": 27,
+        "number": 1091,
+        "title": "[W3E:gene-keys:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1091"
+      },
+      {
+        "slot": 28,
+        "number": 1092,
+        "title": "[W3E:gene-keys:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1092"
+      },
+      {
+        "slot": 29,
+        "number": 1093,
+        "title": "[W3E:gene-keys:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1093"
+      },
+      {
+        "slot": 30,
+        "number": 1094,
+        "title": "[W3E:gene-keys:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1094"
+      }
+    ],
+    "human-design": [
+      {
+        "slot": 1,
+        "number": 1095,
+        "title": "[W3E:human-design:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1095"
+      },
+      {
+        "slot": 2,
+        "number": 1096,
+        "title": "[W3E:human-design:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1096"
+      },
+      {
+        "slot": 3,
+        "number": 1097,
+        "title": "[W3E:human-design:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1097"
+      },
+      {
+        "slot": 4,
+        "number": 1098,
+        "title": "[W3E:human-design:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1098"
+      },
+      {
+        "slot": 5,
+        "number": 1099,
+        "title": "[W3E:human-design:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1099"
+      },
+      {
+        "slot": 6,
+        "number": 1100,
+        "title": "[W3E:human-design:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1100"
+      },
+      {
+        "slot": 7,
+        "number": 1101,
+        "title": "[W3E:human-design:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1101"
+      },
+      {
+        "slot": 8,
+        "number": 1102,
+        "title": "[W3E:human-design:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1102"
+      },
+      {
+        "slot": 9,
+        "number": 1103,
+        "title": "[W3E:human-design:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1103"
+      },
+      {
+        "slot": 10,
+        "number": 1104,
+        "title": "[W3E:human-design:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1104"
+      },
+      {
+        "slot": 11,
+        "number": 1105,
+        "title": "[W3E:human-design:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1105"
+      },
+      {
+        "slot": 12,
+        "number": 1106,
+        "title": "[W3E:human-design:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1106"
+      },
+      {
+        "slot": 13,
+        "number": 1107,
+        "title": "[W3E:human-design:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1107"
+      },
+      {
+        "slot": 14,
+        "number": 1108,
+        "title": "[W3E:human-design:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1108"
+      },
+      {
+        "slot": 15,
+        "number": 1109,
+        "title": "[W3E:human-design:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1109"
+      },
+      {
+        "slot": 16,
+        "number": 1110,
+        "title": "[W3E:human-design:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1110"
+      },
+      {
+        "slot": 17,
+        "number": 1111,
+        "title": "[W3E:human-design:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1111"
+      },
+      {
+        "slot": 18,
+        "number": 1112,
+        "title": "[W3E:human-design:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1112"
+      },
+      {
+        "slot": 19,
+        "number": 1113,
+        "title": "[W3E:human-design:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1113"
+      },
+      {
+        "slot": 20,
+        "number": 1114,
+        "title": "[W3E:human-design:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1114"
+      },
+      {
+        "slot": 21,
+        "number": 1115,
+        "title": "[W3E:human-design:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1115"
+      },
+      {
+        "slot": 22,
+        "number": 1116,
+        "title": "[W3E:human-design:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1116"
+      },
+      {
+        "slot": 23,
+        "number": 1117,
+        "title": "[W3E:human-design:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1117"
+      },
+      {
+        "slot": 24,
+        "number": 1118,
+        "title": "[W3E:human-design:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1118"
+      },
+      {
+        "slot": 25,
+        "number": 1119,
+        "title": "[W3E:human-design:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1119"
+      },
+      {
+        "slot": 26,
+        "number": 1120,
+        "title": "[W3E:human-design:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1120"
+      },
+      {
+        "slot": 27,
+        "number": 1121,
+        "title": "[W3E:human-design:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1121"
+      },
+      {
+        "slot": 28,
+        "number": 1122,
+        "title": "[W3E:human-design:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1122"
+      },
+      {
+        "slot": 29,
+        "number": 1123,
+        "title": "[W3E:human-design:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1123"
+      },
+      {
+        "slot": 30,
+        "number": 1124,
+        "title": "[W3E:human-design:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1124"
+      }
+    ],
+    "i-ching": [
+      {
+        "slot": 1,
+        "number": 1335,
+        "title": "[W3E:i-ching:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1335"
+      },
+      {
+        "slot": 2,
+        "number": 1336,
+        "title": "[W3E:i-ching:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1336"
+      },
+      {
+        "slot": 3,
+        "number": 1337,
+        "title": "[W3E:i-ching:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1337"
+      },
+      {
+        "slot": 4,
+        "number": 1338,
+        "title": "[W3E:i-ching:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1338"
+      },
+      {
+        "slot": 5,
+        "number": 1339,
+        "title": "[W3E:i-ching:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1339"
+      },
+      {
+        "slot": 6,
+        "number": 1340,
+        "title": "[W3E:i-ching:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1340"
+      },
+      {
+        "slot": 7,
+        "number": 1341,
+        "title": "[W3E:i-ching:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1341"
+      },
+      {
+        "slot": 8,
+        "number": 1342,
+        "title": "[W3E:i-ching:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1342"
+      },
+      {
+        "slot": 9,
+        "number": 1343,
+        "title": "[W3E:i-ching:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1343"
+      },
+      {
+        "slot": 10,
+        "number": 1344,
+        "title": "[W3E:i-ching:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1344"
+      },
+      {
+        "slot": 11,
+        "number": 1345,
+        "title": "[W3E:i-ching:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1345"
+      },
+      {
+        "slot": 12,
+        "number": 1346,
+        "title": "[W3E:i-ching:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1346"
+      },
+      {
+        "slot": 13,
+        "number": 1347,
+        "title": "[W3E:i-ching:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1347"
+      },
+      {
+        "slot": 14,
+        "number": 1348,
+        "title": "[W3E:i-ching:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1348"
+      },
+      {
+        "slot": 15,
+        "number": 1349,
+        "title": "[W3E:i-ching:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1349"
+      },
+      {
+        "slot": 16,
+        "number": 1350,
+        "title": "[W3E:i-ching:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1350"
+      },
+      {
+        "slot": 17,
+        "number": 1351,
+        "title": "[W3E:i-ching:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1351"
+      },
+      {
+        "slot": 18,
+        "number": 1352,
+        "title": "[W3E:i-ching:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1352"
+      },
+      {
+        "slot": 19,
+        "number": 1353,
+        "title": "[W3E:i-ching:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1353"
+      },
+      {
+        "slot": 20,
+        "number": 1354,
+        "title": "[W3E:i-ching:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1354"
+      },
+      {
+        "slot": 21,
+        "number": 1355,
+        "title": "[W3E:i-ching:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1355"
+      },
+      {
+        "slot": 22,
+        "number": 1356,
+        "title": "[W3E:i-ching:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1356"
+      },
+      {
+        "slot": 23,
+        "number": 1357,
+        "title": "[W3E:i-ching:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1357"
+      },
+      {
+        "slot": 24,
+        "number": 1358,
+        "title": "[W3E:i-ching:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1358"
+      },
+      {
+        "slot": 25,
+        "number": 1359,
+        "title": "[W3E:i-ching:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1359"
+      },
+      {
+        "slot": 26,
+        "number": 1360,
+        "title": "[W3E:i-ching:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1360"
+      },
+      {
+        "slot": 27,
+        "number": 1361,
+        "title": "[W3E:i-ching:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1361"
+      },
+      {
+        "slot": 28,
+        "number": 1362,
+        "title": "[W3E:i-ching:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1362"
+      },
+      {
+        "slot": 29,
+        "number": 1363,
+        "title": "[W3E:i-ching:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1363"
+      },
+      {
+        "slot": 30,
+        "number": 1364,
+        "title": "[W3E:i-ching:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1364"
+      }
+    ],
+    "nadabrahman": [
+      {
+        "slot": 1,
+        "number": 1125,
+        "title": "[W3E:nadabrahman:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1125"
+      },
+      {
+        "slot": 2,
+        "number": 1126,
+        "title": "[W3E:nadabrahman:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1126"
+      },
+      {
+        "slot": 3,
+        "number": 1127,
+        "title": "[W3E:nadabrahman:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1127"
+      },
+      {
+        "slot": 4,
+        "number": 1128,
+        "title": "[W3E:nadabrahman:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1128"
+      },
+      {
+        "slot": 5,
+        "number": 1129,
+        "title": "[W3E:nadabrahman:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1129"
+      },
+      {
+        "slot": 6,
+        "number": 1130,
+        "title": "[W3E:nadabrahman:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1130"
+      },
+      {
+        "slot": 7,
+        "number": 1131,
+        "title": "[W3E:nadabrahman:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1131"
+      },
+      {
+        "slot": 8,
+        "number": 1132,
+        "title": "[W3E:nadabrahman:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1132"
+      },
+      {
+        "slot": 9,
+        "number": 1133,
+        "title": "[W3E:nadabrahman:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1133"
+      },
+      {
+        "slot": 10,
+        "number": 1134,
+        "title": "[W3E:nadabrahman:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1134"
+      },
+      {
+        "slot": 11,
+        "number": 1135,
+        "title": "[W3E:nadabrahman:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1135"
+      },
+      {
+        "slot": 12,
+        "number": 1136,
+        "title": "[W3E:nadabrahman:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1136"
+      },
+      {
+        "slot": 13,
+        "number": 1137,
+        "title": "[W3E:nadabrahman:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1137"
+      },
+      {
+        "slot": 14,
+        "number": 1138,
+        "title": "[W3E:nadabrahman:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1138"
+      },
+      {
+        "slot": 15,
+        "number": 1139,
+        "title": "[W3E:nadabrahman:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1139"
+      },
+      {
+        "slot": 16,
+        "number": 1140,
+        "title": "[W3E:nadabrahman:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1140"
+      },
+      {
+        "slot": 17,
+        "number": 1141,
+        "title": "[W3E:nadabrahman:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1141"
+      },
+      {
+        "slot": 18,
+        "number": 1142,
+        "title": "[W3E:nadabrahman:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1142"
+      },
+      {
+        "slot": 19,
+        "number": 1143,
+        "title": "[W3E:nadabrahman:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1143"
+      },
+      {
+        "slot": 20,
+        "number": 1144,
+        "title": "[W3E:nadabrahman:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1144"
+      },
+      {
+        "slot": 21,
+        "number": 1145,
+        "title": "[W3E:nadabrahman:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1145"
+      },
+      {
+        "slot": 22,
+        "number": 1146,
+        "title": "[W3E:nadabrahman:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1146"
+      },
+      {
+        "slot": 23,
+        "number": 1147,
+        "title": "[W3E:nadabrahman:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1147"
+      },
+      {
+        "slot": 24,
+        "number": 1148,
+        "title": "[W3E:nadabrahman:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1148"
+      },
+      {
+        "slot": 25,
+        "number": 1149,
+        "title": "[W3E:nadabrahman:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1149"
+      },
+      {
+        "slot": 26,
+        "number": 1150,
+        "title": "[W3E:nadabrahman:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1150"
+      },
+      {
+        "slot": 27,
+        "number": 1151,
+        "title": "[W3E:nadabrahman:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1151"
+      },
+      {
+        "slot": 28,
+        "number": 1152,
+        "title": "[W3E:nadabrahman:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1152"
+      },
+      {
+        "slot": 29,
+        "number": 1153,
+        "title": "[W3E:nadabrahman:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1153"
+      },
+      {
+        "slot": 30,
+        "number": 1154,
+        "title": "[W3E:nadabrahman:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1154"
+      }
+    ],
+    "numerology": [
+      {
+        "slot": 1,
+        "number": 1155,
+        "title": "[W3E:numerology:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1155"
+      },
+      {
+        "slot": 2,
+        "number": 1156,
+        "title": "[W3E:numerology:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1156"
+      },
+      {
+        "slot": 3,
+        "number": 1157,
+        "title": "[W3E:numerology:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1157"
+      },
+      {
+        "slot": 4,
+        "number": 1158,
+        "title": "[W3E:numerology:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1158"
+      },
+      {
+        "slot": 5,
+        "number": 1159,
+        "title": "[W3E:numerology:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1159"
+      },
+      {
+        "slot": 6,
+        "number": 1160,
+        "title": "[W3E:numerology:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1160"
+      },
+      {
+        "slot": 7,
+        "number": 1161,
+        "title": "[W3E:numerology:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1161"
+      },
+      {
+        "slot": 8,
+        "number": 1162,
+        "title": "[W3E:numerology:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1162"
+      },
+      {
+        "slot": 9,
+        "number": 1163,
+        "title": "[W3E:numerology:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1163"
+      },
+      {
+        "slot": 10,
+        "number": 1164,
+        "title": "[W3E:numerology:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1164"
+      },
+      {
+        "slot": 11,
+        "number": 1165,
+        "title": "[W3E:numerology:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1165"
+      },
+      {
+        "slot": 12,
+        "number": 1166,
+        "title": "[W3E:numerology:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1166"
+      },
+      {
+        "slot": 13,
+        "number": 1167,
+        "title": "[W3E:numerology:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1167"
+      },
+      {
+        "slot": 14,
+        "number": 1168,
+        "title": "[W3E:numerology:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1168"
+      },
+      {
+        "slot": 15,
+        "number": 1169,
+        "title": "[W3E:numerology:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1169"
+      },
+      {
+        "slot": 16,
+        "number": 1170,
+        "title": "[W3E:numerology:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1170"
+      },
+      {
+        "slot": 17,
+        "number": 1171,
+        "title": "[W3E:numerology:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1171"
+      },
+      {
+        "slot": 18,
+        "number": 1172,
+        "title": "[W3E:numerology:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1172"
+      },
+      {
+        "slot": 19,
+        "number": 1173,
+        "title": "[W3E:numerology:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1173"
+      },
+      {
+        "slot": 20,
+        "number": 1174,
+        "title": "[W3E:numerology:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1174"
+      },
+      {
+        "slot": 21,
+        "number": 1175,
+        "title": "[W3E:numerology:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1175"
+      },
+      {
+        "slot": 22,
+        "number": 1176,
+        "title": "[W3E:numerology:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1176"
+      },
+      {
+        "slot": 23,
+        "number": 1177,
+        "title": "[W3E:numerology:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1177"
+      },
+      {
+        "slot": 24,
+        "number": 1178,
+        "title": "[W3E:numerology:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1178"
+      },
+      {
+        "slot": 25,
+        "number": 1179,
+        "title": "[W3E:numerology:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1179"
+      },
+      {
+        "slot": 26,
+        "number": 1180,
+        "title": "[W3E:numerology:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1180"
+      },
+      {
+        "slot": 27,
+        "number": 1181,
+        "title": "[W3E:numerology:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1181"
+      },
+      {
+        "slot": 28,
+        "number": 1182,
+        "title": "[W3E:numerology:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1182"
+      },
+      {
+        "slot": 29,
+        "number": 1183,
+        "title": "[W3E:numerology:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1183"
+      },
+      {
+        "slot": 30,
+        "number": 1184,
+        "title": "[W3E:numerology:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1184"
+      }
+    ],
+    "panchanga": [
+      {
+        "slot": 1,
+        "number": 1185,
+        "title": "[W3E:panchanga:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1185"
+      },
+      {
+        "slot": 2,
+        "number": 1186,
+        "title": "[W3E:panchanga:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1186"
+      },
+      {
+        "slot": 3,
+        "number": 1187,
+        "title": "[W3E:panchanga:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1187"
+      },
+      {
+        "slot": 4,
+        "number": 1188,
+        "title": "[W3E:panchanga:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1188"
+      },
+      {
+        "slot": 5,
+        "number": 1189,
+        "title": "[W3E:panchanga:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1189"
+      },
+      {
+        "slot": 6,
+        "number": 1190,
+        "title": "[W3E:panchanga:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1190"
+      },
+      {
+        "slot": 7,
+        "number": 1191,
+        "title": "[W3E:panchanga:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1191"
+      },
+      {
+        "slot": 8,
+        "number": 1192,
+        "title": "[W3E:panchanga:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1192"
+      },
+      {
+        "slot": 9,
+        "number": 1193,
+        "title": "[W3E:panchanga:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1193"
+      },
+      {
+        "slot": 10,
+        "number": 1194,
+        "title": "[W3E:panchanga:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1194"
+      },
+      {
+        "slot": 11,
+        "number": 1195,
+        "title": "[W3E:panchanga:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1195"
+      },
+      {
+        "slot": 12,
+        "number": 1196,
+        "title": "[W3E:panchanga:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1196"
+      },
+      {
+        "slot": 13,
+        "number": 1197,
+        "title": "[W3E:panchanga:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1197"
+      },
+      {
+        "slot": 14,
+        "number": 1198,
+        "title": "[W3E:panchanga:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1198"
+      },
+      {
+        "slot": 15,
+        "number": 1199,
+        "title": "[W3E:panchanga:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1199"
+      },
+      {
+        "slot": 16,
+        "number": 1200,
+        "title": "[W3E:panchanga:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1200"
+      },
+      {
+        "slot": 17,
+        "number": 1201,
+        "title": "[W3E:panchanga:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1201"
+      },
+      {
+        "slot": 18,
+        "number": 1202,
+        "title": "[W3E:panchanga:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1202"
+      },
+      {
+        "slot": 19,
+        "number": 1203,
+        "title": "[W3E:panchanga:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1203"
+      },
+      {
+        "slot": 20,
+        "number": 1204,
+        "title": "[W3E:panchanga:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1204"
+      },
+      {
+        "slot": 21,
+        "number": 1205,
+        "title": "[W3E:panchanga:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1205"
+      },
+      {
+        "slot": 22,
+        "number": 1206,
+        "title": "[W3E:panchanga:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1206"
+      },
+      {
+        "slot": 23,
+        "number": 1207,
+        "title": "[W3E:panchanga:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1207"
+      },
+      {
+        "slot": 24,
+        "number": 1208,
+        "title": "[W3E:panchanga:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1208"
+      },
+      {
+        "slot": 25,
+        "number": 1209,
+        "title": "[W3E:panchanga:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1209"
+      },
+      {
+        "slot": 26,
+        "number": 1210,
+        "title": "[W3E:panchanga:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1210"
+      },
+      {
+        "slot": 27,
+        "number": 1211,
+        "title": "[W3E:panchanga:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1211"
+      },
+      {
+        "slot": 28,
+        "number": 1212,
+        "title": "[W3E:panchanga:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1212"
+      },
+      {
+        "slot": 29,
+        "number": 1213,
+        "title": "[W3E:panchanga:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1213"
+      },
+      {
+        "slot": 30,
+        "number": 1214,
+        "title": "[W3E:panchanga:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1214"
+      }
+    ],
+    "raaga": [
+      {
+        "slot": 1,
+        "number": 1365,
+        "title": "[W3E:raaga:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1365"
+      },
+      {
+        "slot": 2,
+        "number": 1366,
+        "title": "[W3E:raaga:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1366"
+      },
+      {
+        "slot": 3,
+        "number": 1367,
+        "title": "[W3E:raaga:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1367"
+      },
+      {
+        "slot": 4,
+        "number": 1368,
+        "title": "[W3E:raaga:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1368"
+      },
+      {
+        "slot": 5,
+        "number": 1369,
+        "title": "[W3E:raaga:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1369"
+      },
+      {
+        "slot": 6,
+        "number": 1370,
+        "title": "[W3E:raaga:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1370"
+      },
+      {
+        "slot": 7,
+        "number": 1371,
+        "title": "[W3E:raaga:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1371"
+      },
+      {
+        "slot": 8,
+        "number": 1372,
+        "title": "[W3E:raaga:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1372"
+      },
+      {
+        "slot": 9,
+        "number": 1373,
+        "title": "[W3E:raaga:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1373"
+      },
+      {
+        "slot": 10,
+        "number": 1374,
+        "title": "[W3E:raaga:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1374"
+      },
+      {
+        "slot": 11,
+        "number": 1375,
+        "title": "[W3E:raaga:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1375"
+      },
+      {
+        "slot": 12,
+        "number": 1376,
+        "title": "[W3E:raaga:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1376"
+      },
+      {
+        "slot": 13,
+        "number": 1377,
+        "title": "[W3E:raaga:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1377"
+      },
+      {
+        "slot": 14,
+        "number": 1378,
+        "title": "[W3E:raaga:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1378"
+      },
+      {
+        "slot": 15,
+        "number": 1379,
+        "title": "[W3E:raaga:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1379"
+      },
+      {
+        "slot": 16,
+        "number": 1380,
+        "title": "[W3E:raaga:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1380"
+      },
+      {
+        "slot": 17,
+        "number": 1381,
+        "title": "[W3E:raaga:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1381"
+      },
+      {
+        "slot": 18,
+        "number": 1382,
+        "title": "[W3E:raaga:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1382"
+      },
+      {
+        "slot": 19,
+        "number": 1383,
+        "title": "[W3E:raaga:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1383"
+      },
+      {
+        "slot": 20,
+        "number": 1384,
+        "title": "[W3E:raaga:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1384"
+      },
+      {
+        "slot": 21,
+        "number": 1385,
+        "title": "[W3E:raaga:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1385"
+      },
+      {
+        "slot": 22,
+        "number": 1386,
+        "title": "[W3E:raaga:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1386"
+      },
+      {
+        "slot": 23,
+        "number": 1387,
+        "title": "[W3E:raaga:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1387"
+      },
+      {
+        "slot": 24,
+        "number": 1388,
+        "title": "[W3E:raaga:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1388"
+      },
+      {
+        "slot": 25,
+        "number": 1389,
+        "title": "[W3E:raaga:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1389"
+      },
+      {
+        "slot": 26,
+        "number": 1390,
+        "title": "[W3E:raaga:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1390"
+      },
+      {
+        "slot": 27,
+        "number": 1391,
+        "title": "[W3E:raaga:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1391"
+      },
+      {
+        "slot": 28,
+        "number": 1392,
+        "title": "[W3E:raaga:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1392"
+      },
+      {
+        "slot": 29,
+        "number": 1393,
+        "title": "[W3E:raaga:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1393"
+      },
+      {
+        "slot": 30,
+        "number": 1394,
+        "title": "[W3E:raaga:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1394"
+      }
+    ],
+    "sacred-geometry": [
+      {
+        "slot": 1,
+        "number": 1395,
+        "title": "[W3E:sacred-geometry:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1395"
+      },
+      {
+        "slot": 2,
+        "number": 1396,
+        "title": "[W3E:sacred-geometry:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1396"
+      },
+      {
+        "slot": 3,
+        "number": 1397,
+        "title": "[W3E:sacred-geometry:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1397"
+      },
+      {
+        "slot": 4,
+        "number": 1398,
+        "title": "[W3E:sacred-geometry:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1398"
+      },
+      {
+        "slot": 5,
+        "number": 1399,
+        "title": "[W3E:sacred-geometry:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1399"
+      },
+      {
+        "slot": 6,
+        "number": 1400,
+        "title": "[W3E:sacred-geometry:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1400"
+      },
+      {
+        "slot": 7,
+        "number": 1401,
+        "title": "[W3E:sacred-geometry:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1401"
+      },
+      {
+        "slot": 8,
+        "number": 1402,
+        "title": "[W3E:sacred-geometry:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1402"
+      },
+      {
+        "slot": 9,
+        "number": 1403,
+        "title": "[W3E:sacred-geometry:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1403"
+      },
+      {
+        "slot": 10,
+        "number": 1404,
+        "title": "[W3E:sacred-geometry:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1404"
+      },
+      {
+        "slot": 11,
+        "number": 1405,
+        "title": "[W3E:sacred-geometry:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1405"
+      },
+      {
+        "slot": 12,
+        "number": 1406,
+        "title": "[W3E:sacred-geometry:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1406"
+      },
+      {
+        "slot": 13,
+        "number": 1407,
+        "title": "[W3E:sacred-geometry:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1407"
+      },
+      {
+        "slot": 14,
+        "number": 1408,
+        "title": "[W3E:sacred-geometry:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1408"
+      },
+      {
+        "slot": 15,
+        "number": 1409,
+        "title": "[W3E:sacred-geometry:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1409"
+      },
+      {
+        "slot": 16,
+        "number": 1410,
+        "title": "[W3E:sacred-geometry:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1410"
+      },
+      {
+        "slot": 17,
+        "number": 1411,
+        "title": "[W3E:sacred-geometry:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1411"
+      },
+      {
+        "slot": 18,
+        "number": 1412,
+        "title": "[W3E:sacred-geometry:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1412"
+      },
+      {
+        "slot": 19,
+        "number": 1413,
+        "title": "[W3E:sacred-geometry:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1413"
+      },
+      {
+        "slot": 20,
+        "number": 1414,
+        "title": "[W3E:sacred-geometry:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1414"
+      },
+      {
+        "slot": 21,
+        "number": 1415,
+        "title": "[W3E:sacred-geometry:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1415"
+      },
+      {
+        "slot": 22,
+        "number": 1416,
+        "title": "[W3E:sacred-geometry:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1416"
+      },
+      {
+        "slot": 23,
+        "number": 1417,
+        "title": "[W3E:sacred-geometry:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1417"
+      },
+      {
+        "slot": 24,
+        "number": 1418,
+        "title": "[W3E:sacred-geometry:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1418"
+      },
+      {
+        "slot": 25,
+        "number": 1419,
+        "title": "[W3E:sacred-geometry:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1419"
+      },
+      {
+        "slot": 26,
+        "number": 1420,
+        "title": "[W3E:sacred-geometry:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1420"
+      },
+      {
+        "slot": 27,
+        "number": 1421,
+        "title": "[W3E:sacred-geometry:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1421"
+      },
+      {
+        "slot": 28,
+        "number": 1422,
+        "title": "[W3E:sacred-geometry:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1422"
+      },
+      {
+        "slot": 29,
+        "number": 1423,
+        "title": "[W3E:sacred-geometry:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1423"
+      },
+      {
+        "slot": 30,
+        "number": 1424,
+        "title": "[W3E:sacred-geometry:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1424"
+      }
+    ],
+    "sigil-forge": [
+      {
+        "slot": 1,
+        "number": 1425,
+        "title": "[W3E:sigil-forge:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1425"
+      },
+      {
+        "slot": 2,
+        "number": 1426,
+        "title": "[W3E:sigil-forge:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1426"
+      },
+      {
+        "slot": 3,
+        "number": 1427,
+        "title": "[W3E:sigil-forge:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1427"
+      },
+      {
+        "slot": 4,
+        "number": 1428,
+        "title": "[W3E:sigil-forge:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1428"
+      },
+      {
+        "slot": 5,
+        "number": 1429,
+        "title": "[W3E:sigil-forge:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1429"
+      },
+      {
+        "slot": 6,
+        "number": 1430,
+        "title": "[W3E:sigil-forge:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1430"
+      },
+      {
+        "slot": 7,
+        "number": 1431,
+        "title": "[W3E:sigil-forge:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1431"
+      },
+      {
+        "slot": 8,
+        "number": 1432,
+        "title": "[W3E:sigil-forge:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1432"
+      },
+      {
+        "slot": 9,
+        "number": 1433,
+        "title": "[W3E:sigil-forge:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1433"
+      },
+      {
+        "slot": 10,
+        "number": 1434,
+        "title": "[W3E:sigil-forge:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1434"
+      },
+      {
+        "slot": 11,
+        "number": 1435,
+        "title": "[W3E:sigil-forge:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1435"
+      },
+      {
+        "slot": 12,
+        "number": 1436,
+        "title": "[W3E:sigil-forge:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1436"
+      },
+      {
+        "slot": 13,
+        "number": 1437,
+        "title": "[W3E:sigil-forge:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1437"
+      },
+      {
+        "slot": 14,
+        "number": 1438,
+        "title": "[W3E:sigil-forge:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1438"
+      },
+      {
+        "slot": 15,
+        "number": 1439,
+        "title": "[W3E:sigil-forge:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1439"
+      },
+      {
+        "slot": 16,
+        "number": 1440,
+        "title": "[W3E:sigil-forge:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1440"
+      },
+      {
+        "slot": 17,
+        "number": 1441,
+        "title": "[W3E:sigil-forge:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1441"
+      },
+      {
+        "slot": 18,
+        "number": 1442,
+        "title": "[W3E:sigil-forge:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1442"
+      },
+      {
+        "slot": 19,
+        "number": 1443,
+        "title": "[W3E:sigil-forge:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1443"
+      },
+      {
+        "slot": 20,
+        "number": 1444,
+        "title": "[W3E:sigil-forge:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1444"
+      },
+      {
+        "slot": 21,
+        "number": 1445,
+        "title": "[W3E:sigil-forge:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1445"
+      },
+      {
+        "slot": 22,
+        "number": 1446,
+        "title": "[W3E:sigil-forge:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1446"
+      },
+      {
+        "slot": 23,
+        "number": 1447,
+        "title": "[W3E:sigil-forge:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1447"
+      },
+      {
+        "slot": 24,
+        "number": 1448,
+        "title": "[W3E:sigil-forge:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1448"
+      },
+      {
+        "slot": 25,
+        "number": 1449,
+        "title": "[W3E:sigil-forge:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1449"
+      },
+      {
+        "slot": 26,
+        "number": 1450,
+        "title": "[W3E:sigil-forge:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1450"
+      },
+      {
+        "slot": 27,
+        "number": 1451,
+        "title": "[W3E:sigil-forge:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1451"
+      },
+      {
+        "slot": 28,
+        "number": 1452,
+        "title": "[W3E:sigil-forge:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1452"
+      },
+      {
+        "slot": 29,
+        "number": 1453,
+        "title": "[W3E:sigil-forge:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1453"
+      },
+      {
+        "slot": 30,
+        "number": 1454,
+        "title": "[W3E:sigil-forge:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1454"
+      }
+    ],
+    "tarot": [
+      {
+        "slot": 1,
+        "number": 1455,
+        "title": "[W3E:tarot:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1455"
+      },
+      {
+        "slot": 2,
+        "number": 1456,
+        "title": "[W3E:tarot:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1456"
+      },
+      {
+        "slot": 3,
+        "number": 1457,
+        "title": "[W3E:tarot:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1457"
+      },
+      {
+        "slot": 4,
+        "number": 1458,
+        "title": "[W3E:tarot:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1458"
+      },
+      {
+        "slot": 5,
+        "number": 1459,
+        "title": "[W3E:tarot:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1459"
+      },
+      {
+        "slot": 6,
+        "number": 1460,
+        "title": "[W3E:tarot:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1460"
+      },
+      {
+        "slot": 7,
+        "number": 1461,
+        "title": "[W3E:tarot:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1461"
+      },
+      {
+        "slot": 8,
+        "number": 1462,
+        "title": "[W3E:tarot:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1462"
+      },
+      {
+        "slot": 9,
+        "number": 1463,
+        "title": "[W3E:tarot:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1463"
+      },
+      {
+        "slot": 10,
+        "number": 1464,
+        "title": "[W3E:tarot:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1464"
+      },
+      {
+        "slot": 11,
+        "number": 1465,
+        "title": "[W3E:tarot:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1465"
+      },
+      {
+        "slot": 12,
+        "number": 1466,
+        "title": "[W3E:tarot:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1466"
+      },
+      {
+        "slot": 13,
+        "number": 1467,
+        "title": "[W3E:tarot:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1467"
+      },
+      {
+        "slot": 14,
+        "number": 1468,
+        "title": "[W3E:tarot:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1468"
+      },
+      {
+        "slot": 15,
+        "number": 1469,
+        "title": "[W3E:tarot:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1469"
+      },
+      {
+        "slot": 16,
+        "number": 1470,
+        "title": "[W3E:tarot:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1470"
+      },
+      {
+        "slot": 17,
+        "number": 1471,
+        "title": "[W3E:tarot:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1471"
+      },
+      {
+        "slot": 18,
+        "number": 1472,
+        "title": "[W3E:tarot:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1472"
+      },
+      {
+        "slot": 19,
+        "number": 1473,
+        "title": "[W3E:tarot:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1473"
+      },
+      {
+        "slot": 20,
+        "number": 1474,
+        "title": "[W3E:tarot:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1474"
+      },
+      {
+        "slot": 21,
+        "number": 1475,
+        "title": "[W3E:tarot:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1475"
+      },
+      {
+        "slot": 22,
+        "number": 1476,
+        "title": "[W3E:tarot:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1476"
+      },
+      {
+        "slot": 23,
+        "number": 1477,
+        "title": "[W3E:tarot:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1477"
+      },
+      {
+        "slot": 24,
+        "number": 1478,
+        "title": "[W3E:tarot:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1478"
+      },
+      {
+        "slot": 25,
+        "number": 1479,
+        "title": "[W3E:tarot:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1479"
+      },
+      {
+        "slot": 26,
+        "number": 1480,
+        "title": "[W3E:tarot:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1480"
+      },
+      {
+        "slot": 27,
+        "number": 1481,
+        "title": "[W3E:tarot:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1481"
+      },
+      {
+        "slot": 28,
+        "number": 1482,
+        "title": "[W3E:tarot:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1482"
+      },
+      {
+        "slot": 29,
+        "number": 1483,
+        "title": "[W3E:tarot:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1483"
+      },
+      {
+        "slot": 30,
+        "number": 1484,
+        "title": "[W3E:tarot:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1484"
+      }
+    ],
+    "transits": [
+      {
+        "slot": 1,
+        "number": 1215,
+        "title": "[W3E:transits:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1215"
+      },
+      {
+        "slot": 2,
+        "number": 1216,
+        "title": "[W3E:transits:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1216"
+      },
+      {
+        "slot": 3,
+        "number": 1217,
+        "title": "[W3E:transits:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1217"
+      },
+      {
+        "slot": 4,
+        "number": 1218,
+        "title": "[W3E:transits:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1218"
+      },
+      {
+        "slot": 5,
+        "number": 1219,
+        "title": "[W3E:transits:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1219"
+      },
+      {
+        "slot": 6,
+        "number": 1220,
+        "title": "[W3E:transits:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1220"
+      },
+      {
+        "slot": 7,
+        "number": 1221,
+        "title": "[W3E:transits:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1221"
+      },
+      {
+        "slot": 8,
+        "number": 1222,
+        "title": "[W3E:transits:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1222"
+      },
+      {
+        "slot": 9,
+        "number": 1223,
+        "title": "[W3E:transits:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1223"
+      },
+      {
+        "slot": 10,
+        "number": 1224,
+        "title": "[W3E:transits:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1224"
+      },
+      {
+        "slot": 11,
+        "number": 1225,
+        "title": "[W3E:transits:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1225"
+      },
+      {
+        "slot": 12,
+        "number": 1226,
+        "title": "[W3E:transits:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1226"
+      },
+      {
+        "slot": 13,
+        "number": 1227,
+        "title": "[W3E:transits:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1227"
+      },
+      {
+        "slot": 14,
+        "number": 1228,
+        "title": "[W3E:transits:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1228"
+      },
+      {
+        "slot": 15,
+        "number": 1229,
+        "title": "[W3E:transits:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1229"
+      },
+      {
+        "slot": 16,
+        "number": 1230,
+        "title": "[W3E:transits:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1230"
+      },
+      {
+        "slot": 17,
+        "number": 1231,
+        "title": "[W3E:transits:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1231"
+      },
+      {
+        "slot": 18,
+        "number": 1232,
+        "title": "[W3E:transits:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1232"
+      },
+      {
+        "slot": 19,
+        "number": 1233,
+        "title": "[W3E:transits:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1233"
+      },
+      {
+        "slot": 20,
+        "number": 1234,
+        "title": "[W3E:transits:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1234"
+      },
+      {
+        "slot": 21,
+        "number": 1235,
+        "title": "[W3E:transits:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1235"
+      },
+      {
+        "slot": 22,
+        "number": 1236,
+        "title": "[W3E:transits:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1236"
+      },
+      {
+        "slot": 23,
+        "number": 1237,
+        "title": "[W3E:transits:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1237"
+      },
+      {
+        "slot": 24,
+        "number": 1238,
+        "title": "[W3E:transits:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1238"
+      },
+      {
+        "slot": 25,
+        "number": 1239,
+        "title": "[W3E:transits:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1239"
+      },
+      {
+        "slot": 26,
+        "number": 1240,
+        "title": "[W3E:transits:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1240"
+      },
+      {
+        "slot": 27,
+        "number": 1241,
+        "title": "[W3E:transits:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1241"
+      },
+      {
+        "slot": 28,
+        "number": 1242,
+        "title": "[W3E:transits:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1242"
+      },
+      {
+        "slot": 29,
+        "number": 1243,
+        "title": "[W3E:transits:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1243"
+      },
+      {
+        "slot": 30,
+        "number": 1244,
+        "title": "[W3E:transits:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1244"
+      }
+    ],
+    "vedic-clock": [
+      {
+        "slot": 1,
+        "number": 1245,
+        "title": "[W3E:vedic-clock:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1245"
+      },
+      {
+        "slot": 2,
+        "number": 1246,
+        "title": "[W3E:vedic-clock:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1246"
+      },
+      {
+        "slot": 3,
+        "number": 1247,
+        "title": "[W3E:vedic-clock:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1247"
+      },
+      {
+        "slot": 4,
+        "number": 1248,
+        "title": "[W3E:vedic-clock:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1248"
+      },
+      {
+        "slot": 5,
+        "number": 1249,
+        "title": "[W3E:vedic-clock:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1249"
+      },
+      {
+        "slot": 6,
+        "number": 1250,
+        "title": "[W3E:vedic-clock:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1250"
+      },
+      {
+        "slot": 7,
+        "number": 1251,
+        "title": "[W3E:vedic-clock:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1251"
+      },
+      {
+        "slot": 8,
+        "number": 1252,
+        "title": "[W3E:vedic-clock:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1252"
+      },
+      {
+        "slot": 9,
+        "number": 1253,
+        "title": "[W3E:vedic-clock:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1253"
+      },
+      {
+        "slot": 10,
+        "number": 1254,
+        "title": "[W3E:vedic-clock:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1254"
+      },
+      {
+        "slot": 11,
+        "number": 1255,
+        "title": "[W3E:vedic-clock:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1255"
+      },
+      {
+        "slot": 12,
+        "number": 1256,
+        "title": "[W3E:vedic-clock:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1256"
+      },
+      {
+        "slot": 13,
+        "number": 1257,
+        "title": "[W3E:vedic-clock:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1257"
+      },
+      {
+        "slot": 14,
+        "number": 1258,
+        "title": "[W3E:vedic-clock:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1258"
+      },
+      {
+        "slot": 15,
+        "number": 1259,
+        "title": "[W3E:vedic-clock:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1259"
+      },
+      {
+        "slot": 16,
+        "number": 1260,
+        "title": "[W3E:vedic-clock:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1260"
+      },
+      {
+        "slot": 17,
+        "number": 1261,
+        "title": "[W3E:vedic-clock:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1261"
+      },
+      {
+        "slot": 18,
+        "number": 1262,
+        "title": "[W3E:vedic-clock:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1262"
+      },
+      {
+        "slot": 19,
+        "number": 1263,
+        "title": "[W3E:vedic-clock:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1263"
+      },
+      {
+        "slot": 20,
+        "number": 1264,
+        "title": "[W3E:vedic-clock:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1264"
+      },
+      {
+        "slot": 21,
+        "number": 1265,
+        "title": "[W3E:vedic-clock:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1265"
+      },
+      {
+        "slot": 22,
+        "number": 1266,
+        "title": "[W3E:vedic-clock:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1266"
+      },
+      {
+        "slot": 23,
+        "number": 1267,
+        "title": "[W3E:vedic-clock:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1267"
+      },
+      {
+        "slot": 24,
+        "number": 1268,
+        "title": "[W3E:vedic-clock:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1268"
+      },
+      {
+        "slot": 25,
+        "number": 1269,
+        "title": "[W3E:vedic-clock:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1269"
+      },
+      {
+        "slot": 26,
+        "number": 1270,
+        "title": "[W3E:vedic-clock:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1270"
+      },
+      {
+        "slot": 27,
+        "number": 1271,
+        "title": "[W3E:vedic-clock:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1271"
+      },
+      {
+        "slot": 28,
+        "number": 1272,
+        "title": "[W3E:vedic-clock:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1272"
+      },
+      {
+        "slot": 29,
+        "number": 1273,
+        "title": "[W3E:vedic-clock:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1273"
+      },
+      {
+        "slot": 30,
+        "number": 1274,
+        "title": "[W3E:vedic-clock:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1274"
+      }
+    ],
+    "vimshottari": [
+      {
+        "slot": 1,
+        "number": 1275,
+        "title": "[W3E:vimshottari:01] Establish the six-axis authority baseline",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1275"
+      },
+      {
+        "slot": 2,
+        "number": 1276,
+        "title": "[W3E:vimshottari:02] Converge the canonical request contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1276"
+      },
+      {
+        "slot": 3,
+        "number": 1277,
+        "title": "[W3E:vimshottari:03] Converge the canonical result contract",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1277"
+      },
+      {
+        "slot": 4,
+        "number": 1278,
+        "title": "[W3E:vimshottari:04] Publish capability discovery metadata",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1278"
+      },
+      {
+        "slot": 5,
+        "number": 1279,
+        "title": "[W3E:vimshottari:05] Make validation and error taxonomy fail closed",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1279"
+      },
+      {
+        "slot": 6,
+        "number": 1280,
+        "title": "[W3E:vimshottari:06] Make calculation and replay semantics explicit",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1280"
+      },
+      {
+        "slot": 7,
+        "number": 1281,
+        "title": "[W3E:vimshottari:07] Expose provenance, confidence, and degradation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1281"
+      },
+      {
+        "slot": 8,
+        "number": 1282,
+        "title": "[W3E:vimshottari:08] Enforce consent, minimization, and retention boundaries",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1282"
+      },
+      {
+        "slot": 9,
+        "number": 1283,
+        "title": "[W3E:vimshottari:09] Define local, remote, fallback, and unavailable modes",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1283"
+      },
+      {
+        "slot": 10,
+        "number": 1284,
+        "title": "[W3E:vimshottari:10] Validate engine-specific domain semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1284"
+      },
+      {
+        "slot": 11,
+        "number": 1285,
+        "title": "[W3E:vimshottari:11] Harden runtime registration and inventory visibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1285"
+      },
+      {
+        "slot": 12,
+        "number": 1286,
+        "title": "[W3E:vimshottari:12] Integrate engine selection into orchestrator workflows",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1286"
+      },
+      {
+        "slot": 13,
+        "number": 1287,
+        "title": "[W3E:vimshottari:13] Prove bridge serialization and parity",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1287"
+      },
+      {
+        "slot": 14,
+        "number": 1288,
+        "title": "[W3E:vimshottari:14] Complete HTTP API exposure and compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1288"
+      },
+      {
+        "slot": 15,
+        "number": 1289,
+        "title": "[W3E:vimshottari:15] Expose typed SDK support and compatibility fixtures",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1289"
+      },
+      {
+        "slot": 16,
+        "number": 1290,
+        "title": "[W3E:vimshottari:16] Complete CLI and TUI engine journeys",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1290"
+      },
+      {
+        "slot": 17,
+        "number": 1291,
+        "title": "[W3E:vimshottari:17] Separate deterministic output from witness interpretation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1291"
+      },
+      {
+        "slot": 18,
+        "number": 1292,
+        "title": "[W3E:vimshottari:18] Define multi-engine composition and omission behavior",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1292"
+      },
+      {
+        "slot": 19,
+        "number": 1293,
+        "title": "[W3E:vimshottari:19] Define persistence, history, and deletion semantics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1293"
+      },
+      {
+        "slot": 20,
+        "number": 1294,
+        "title": "[W3E:vimshottari:20] Enforce authentication, ownership, and RBAC",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1294"
+      },
+      {
+        "slot": 21,
+        "number": 1295,
+        "title": "[W3E:vimshottari:21] Make usage accounting and billing attribution exact",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1295"
+      },
+      {
+        "slot": 22,
+        "number": 1296,
+        "title": "[W3E:vimshottari:22] Harden cache keys, idempotency, and invalidation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1296"
+      },
+      {
+        "slot": 23,
+        "number": 1297,
+        "title": "[W3E:vimshottari:23] Set engine-specific performance and capacity budgets",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1297"
+      },
+      {
+        "slot": 24,
+        "number": 1298,
+        "title": "[W3E:vimshottari:24] Harden timeouts, retries, and fallback reliability",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1298"
+      },
+      {
+        "slot": 25,
+        "number": 1299,
+        "title": "[W3E:vimshottari:25] Add health, metrics, traces, and sanitized diagnostics",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1299"
+      },
+      {
+        "slot": 26,
+        "number": 1300,
+        "title": "[W3E:vimshottari:26] Threat-model engine inputs, outputs, and dependencies",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1300"
+      },
+      {
+        "slot": 27,
+        "number": 1301,
+        "title": "[W3E:vimshottari:27] Build golden fixtures and reference validation",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1301"
+      },
+      {
+        "slot": 28,
+        "number": 1302,
+        "title": "[W3E:vimshottari:28] Prove the end-to-end engine journey",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1302"
+      },
+      {
+        "slot": 29,
+        "number": 1303,
+        "title": "[W3E:vimshottari:29] Gate release and consumer compatibility",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1303"
+      },
+      {
+        "slot": 30,
+        "number": 1304,
+        "title": "[W3E:vimshottari:30] Prove deployment, rollback, and operational recovery",
+        "state": "OPEN",
+        "url": "https://github.com/Sheshiyer/Selemene-engine/issues/1304"
+      }
+    ]
+  }
+}

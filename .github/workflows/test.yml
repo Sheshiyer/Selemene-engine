@@ -17,27 +17,27 @@ jobs:
     name: Workspace Gate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           version: 10.33.0
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1
         with:
           bun-version: 1.3.13
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
 
@@ -50,6 +50,9 @@ jobs:
           cd ts-engines
           bun install --frozen-lockfile
 
+      - name: Validate workflow action pins
+        run: python scripts/validate_action_pins.py
+
       - name: Run canonical repository gate
         run: pnpm run gate
 
@@ -58,17 +61,17 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
       
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
           components: rustfmt, clippy
       
       - name: Setup cache
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
       
       - name: Check formatting
         run: cargo fmt --all -- --check
@@ -81,15 +84,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
 
       - name: Setup cache
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
 
       - name: Run workflow parity tests
         run: cargo test -p noesis-api workflow_parity -- --nocapture
@@ -129,15 +132,15 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
 
       - name: Setup cache
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
 
       - name: Apply database migrations
         run: >-
@@ -186,15 +189,15 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
 
       - name: Setup cache
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
 
       - name: Apply database migrations
         run: >-
@@ -204,7 +207,7 @@ jobs:
           PGPASSWORD: noesis_test_password
 
       - name: Run integration tests
-        run: cargo test --test '*' -- --test-threads=1
+        run: cargo test --test '*' --no-fail-fast -- --test-threads=1
         env:
           REDIS_URL: redis://localhost:6379
           DATABASE_URL: postgresql://noesis_test:noesis_test_password@localhost:5432/noesis_test
@@ -214,7 +217,7 @@ jobs:
     name: Security Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
       - name: Install cargo-audit
@@ -227,13 +230,13 @@ jobs:
     name: Secret Scanning
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: TruffleHog secret scan
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@30a032af512f08a1d4e7d1aaf0d4119ad6910d63 # main
         with:
           extra_args: --only-verified
 
@@ -243,15 +246,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, test]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
       
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
       
       - name: Setup cache
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
       
       - name: Build release
         run: cargo build --release --bin noesis-server
@@ -270,12 +273,12 @@ jobs:
       run:
         working-directory: ts-engines
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
       
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1
         with:
           bun-version: 1.3.13
       
@@ -354,35 +357,39 @@ jobs:
     name: Python Sidecars (P1 W1 biofield contract smoke)
     runs-on: ubuntu-latest
     needs: [ts-engines]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
           cache: "pip"
 
       - name: Install python-services (biofield + dev)
         run: |
           cd python-services
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+          python -m pip install uv==0.7.13
+          uv sync --locked --extra dev
           # opencv-headless etc pulled by pyproject
 
       - name: Pytest contract shapes (11 metrics, quality, analyze)
         run: |
           cd python-services
-          python -m pytest tests/test_biofield_analyze.py -q --tb=line
+          uv run --locked --extra dev python -m pytest tests -q --tb=line
 
       - name: Biofield sidecar smoke (health + basic /analyze contract)
         run: |
           set -euo pipefail
           sudo apt-get update -qq && sudo apt-get install -y -qq jq
           cd python-services
-          python -m uvicorn biofield_cv_service.main:app --host 127.0.0.1 --port 8002 --log-level error &
+          uv run --locked --extra dev python -m uvicorn biofield_cv_service.main:app --host 127.0.0.1 --port 8002 --log-level error &
           UV_PID=$!
           cleanup() {
             kill "$UV_PID" 2>/dev/null || true
@@ -414,7 +421,7 @@ jobs:
           fi
 
           export BIOFIELD_SMOKE_IMAGE="$RUNNER_TEMP/biofield-smoke.png"
-          python - <<'PY'
+          uv run --locked --extra dev python - <<'PY'
           import os
           import cv2
           import numpy as np
@@ -444,6 +451,93 @@ jobs:
             (.processing_time_ms | type == "number")
           ' "$RUNNER_TEMP/biofield-analyze.json"
 
+  python-images:
+    name: Python Images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [biofield,mediapipe]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Build and validate imports
+        run: |
+          docker build --pull --file python-services/Dockerfile.${{ matrix.service }} --tag selemene-python-${{ matrix.service }}:ci python-services
+          if [[ "${{ matrix.service }}" == "biofield" ]]; then
+            docker run --rm --entrypoint python selemene-python-${{ matrix.service }}:ci -c "import cv2, numpy, biofield_cv_service.main; print('sidecar imports passed')"
+          elif [[ "${{ matrix.service }}" == "mediapipe" ]]; then
+            docker run --rm --entrypoint python selemene-python-${{ matrix.service }}:ci -c "import cv2, numpy, mediapipe, mediapipe_service.main; print('sidecar imports passed')"
+          else
+            echo "Unknown Python sidecar service: ${{ matrix.service }}" >&2
+            exit 1
+          fi
+
+  admin-web:
+    name: Required Admin Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10.33.0
+
+      - name: Setup workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build @noesis/witness-pipeline prerequisite
+        run: pnpm --filter @noesis/witness-pipeline run build
+
+      - name: Build @noesis/sdk prerequisite
+        run: pnpm --filter @noesis/sdk run build
+
+      - name: Build admin web
+        run: pnpm -C apps/admin-web run build
+
+      - name: Run admin web lint
+        run: pnpm -C apps/admin-web run lint
+
+      - name: Run admin web typecheck
+        run: pnpm -C apps/admin-web run typecheck
+
+      - name: Run admin web tests
+        run: pnpm -C apps/admin-web run test
+
+  node-security:
+    name: Node Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10.33.0
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit production and development dependencies
+        run: pnpm audit --audit-level=high
+
   ci-gate:
     name: CI Gate
     runs-on: ubuntu-latest
@@ -459,6 +553,9 @@ jobs:
       - build
       - ts-engines
       - python-sidecars
+      - admin-web
+      - node-security
+      - python-images
     steps:
       - name: Require every CI lane to succeed
         env:
@@ -472,11 +569,14 @@ jobs:
           BUILD: ${{ needs.build.result }}
           TS_ENGINES: ${{ needs.ts-engines.result }}
           PYTHON_SIDECARS: ${{ needs.python-sidecars.result }}
+          PYTHON_IMAGES: ${{ needs.python-images.result }}
+          ADMIN_WEB: ${{ needs.admin-web.result }}
+          NODE_SECURITY: ${{ needs.node-security.result }}
         run: |
           failed=0
           for result_name in \
             REPOSITORY_GATE LINT WORKFLOW_PARITY TEST INTEGRATION \
-            SECURITY SECRETS BUILD TS_ENGINES PYTHON_SIDECARS; do
+            SECURITY SECRETS BUILD TS_ENGINES PYTHON_SIDECARS PYTHON_IMAGES ADMIN_WEB NODE_SECURITY; do
             result="${!result_name}"
             echo "${result_name}=${result}"
             if [[ "${result}" != "success" ]]; then

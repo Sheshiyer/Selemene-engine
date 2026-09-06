@@ -4631,6 +4631,62 @@ pub async fn bridge_health(
         .into_response())
 }
 
+/// GET /api/v1/admin/engines/capabilities — Rust/API contract-v1 capability
+/// discovery for the bridge-proxied TypeScript engines.
+///
+/// Mirrors the `contracts/v1` `EngineCapability` shape already produced by
+/// the TypeScript `/engines/capabilities` endpoint, using the same bridge
+/// readiness self-check data source as `/admin/bridge/health`: a healthy
+/// self-check maps to `available`, a failing one maps to `unavailable`. This
+/// capability collection only probes bridge readiness and does not generate
+/// provider output. Permission resolution reads the admin database when configured.
+pub async fn engine_capabilities(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+) -> Result<Response, ApiError> {
+    let effective_permissions = effective_permissions(&state, &auth_user).await?;
+    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
+    {
+        return Ok(resp);
+    }
+
+    let readiness = state.bridge().readiness_status().await;
+    let healthy_by_engine_id: HashMap<String, bool> = match &readiness {
+        Ok(status) => status
+            .engines
+            .iter()
+            .map(|engine| (engine.engine_id.clone(), engine.healthy))
+            .collect(),
+        Err(_) => HashMap::new(),
+    };
+
+    let capabilities: Vec<noesis_core::contract::EngineCapability> = state
+        .bridge()
+        .engines()
+        .iter()
+        .map(|engine| {
+            let engine_id = engine.engine_id().to_string();
+            let availability = match healthy_by_engine_id.get(&engine_id) {
+                Some(true) => noesis_core::contract::CapabilityAvailability::Available,
+                _ => noesis_core::contract::CapabilityAvailability::Unavailable,
+            };
+
+            noesis_core::contract::EngineCapability {
+                contract_version: noesis_core::contract::ContractVersion::V1,
+                engine_id,
+                display_name: engine.engine_name().to_string(),
+                availability,
+                runtime_kind: noesis_core::contract::RuntimeKind::TypeScript,
+                dependencies: Vec::new(),
+                required_phase: Some(engine.required_phase()),
+                implementation_version: None,
+            }
+        })
+        .collect();
+
+    Ok((StatusCode::OK, Json(capabilities)).into_response())
+}
+
 /// GET /api/v1/admin/bridge/sidecar — sidecar detail with circuit breakers
 pub async fn sidecar_detail(
     State(state): State<AppState>,
