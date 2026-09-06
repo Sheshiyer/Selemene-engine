@@ -255,29 +255,91 @@
     }
   ],
   "rollback": {
-    "previous_source_revision": {
-      "status": "unavailable",
-      "reason": "the rollback source revision is not established"
-    },
-    "previous_deployment_id": {
-      "status": "unavailable",
-      "reason": "known deployment pointers are inventory and were not exercised as rollback targets"
-    },
-    "previous_artifact_digest": {
-      "status": "unavailable",
-      "reason": "no prior deployable artifact is bound to a rollback rehearsal"
-    },
+    "artifacts": [
+      {
+        "role": "api",
+        "repository": "ghcr.io/sheshiyer/selemene-engine",
+        "previous_digest": {
+          "status": "unavailable",
+          "reason": "no prior API artifact is bound to a rollback rehearsal"
+        },
+        "procedure": {
+          "status": "unavailable",
+          "reason": "no executable API artifact rollback procedure was verified"
+        },
+        "tested_at": {
+          "status": "unavailable",
+          "reason": "no API artifact rollback rehearsal timestamp exists"
+        }
+      },
+      {
+        "role": "typescript-engines",
+        "repository": "ghcr.io/sheshiyer/selemene-ts-engines",
+        "previous_digest": {
+          "status": "unavailable",
+          "reason": "no prior TypeScript artifact is bound to a rollback rehearsal"
+        },
+        "procedure": {
+          "status": "unavailable",
+          "reason": "no executable TypeScript artifact rollback procedure was verified"
+        },
+        "tested_at": {
+          "status": "unavailable",
+          "reason": "no TypeScript artifact rollback rehearsal timestamp exists"
+        }
+      }
+    ],
+    "services": [
+      {
+        "role": "api",
+        "provider": "railway",
+        "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+        "previous_deployment_id": {
+          "status": "unavailable",
+          "reason": "the prior API deployment was not exercised as a rollback target"
+        },
+        "previous_source_revision": {
+          "status": "unavailable",
+          "reason": "the prior API source revision is not established"
+        },
+        "procedure": {
+          "status": "unavailable",
+          "reason": "no executable API service rollback procedure was verified"
+        },
+        "tested_at": {
+          "status": "unavailable",
+          "reason": "no API service rollback rehearsal timestamp exists"
+        }
+      },
+      {
+        "role": "typescript-engines",
+        "provider": "railway",
+        "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "service_id": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
+        "previous_deployment_id": {
+          "status": "unavailable",
+          "reason": "the prior TypeScript deployment was not exercised as a rollback target"
+        },
+        "previous_source_revision": {
+          "status": "unavailable",
+          "reason": "the prior TypeScript source revision is not established"
+        },
+        "procedure": {
+          "status": "unavailable",
+          "reason": "no executable TypeScript service rollback procedure was verified"
+        },
+        "tested_at": {
+          "status": "unavailable",
+          "reason": "no TypeScript service rollback rehearsal timestamp exists"
+        }
+      }
+    ],
     "schema_restore": {
       "status": "unavailable",
       "reason": "no production schema restoration evidence was recorded"
-    },
-    "procedure": {
-      "status": "unavailable",
-      "reason": "no executable production rollback procedure was verified"
-    },
-    "tested_at": {
-      "status": "unavailable",
-      "reason": "no production rollback rehearsal timestamp exists"
     }
   },
   "test_fixture": {

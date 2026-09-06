@@ -514,40 +514,112 @@ def validate_release_receipt(
             errors.append(f"assets.{asset_id}.release_inclusion must be true")
 
     rollback = receipt["rollback"]
-    previous_source = evidence_value(
-        rollback["previous_source_revision"],
-        "rollback.previous_source_revision",
+
+    def validate_rollback_timestamp(evidence: dict[str, Any], label: str) -> None:
+        tested_at = evidence_value(evidence, label, errors)
+        if tested_at is None:
+            return
+        tested_at_value = validate_timestamp(tested_at, label, errors)
+        if now is None or tested_at_value is None:
+            return
+        rollback_age = (now - tested_at_value).total_seconds()
+        if rollback_age < -policy["max_clock_skew_seconds"]:
+            errors.append(f"{label} is too far in the future")
+        if rollback_age > policy["max_rollback_age_seconds"]:
+            errors.append(f"{label} rehearsal is stale")
+
+    rollback_artifacts = indexed_rows(
+        rollback["artifacts"], "role", "rollback artifact roles", errors
+    )
+    expected_rollback_artifacts = set(manifest["required_artifact_roles"])
+    set_difference_error(
+        "rollback artifact roles",
+        expected_rollback_artifacts,
+        set(rollback_artifacts),
         errors,
     )
-    for field in ("previous_deployment_id", "procedure"):
-        evidence_value(rollback[field], f"rollback.{field}", errors)
-    previous_artifact_digest = evidence_value(
-        rollback["previous_artifact_digest"],
-        "rollback.previous_artifact_digest",
+    artifact_targets = manifest["artifact_targets"]
+    set_difference_error(
+        "artifact target roles",
+        expected_rollback_artifacts,
+        set(artifact_targets),
         errors,
     )
+    for role in sorted(expected_rollback_artifacts & set(rollback_artifacts)):
+        rollback_artifact = rollback_artifacts[role]
+        expected_repository = artifact_targets[role]["repository"]
+        if rollback_artifact["repository"] != expected_repository:
+            errors.append(
+                f"rollback.artifacts.{role}.repository does not match release authority"
+            )
+        previous_digest = evidence_value(
+            rollback_artifact["previous_digest"],
+            f"rollback.artifacts.{role}.previous_digest",
+            errors,
+        )
+        evidence_value(
+            rollback_artifact["procedure"],
+            f"rollback.artifacts.{role}.procedure",
+            errors,
+        )
+        validate_rollback_timestamp(
+            rollback_artifact["tested_at"],
+            f"rollback.artifacts.{role}.tested_at",
+        )
+        if previous_digest is not None and previous_digest == built_digests.get(role):
+            errors.append(
+                f"rollback.artifacts.{role}.previous_digest must differ from its candidate digest"
+            )
+
+    rollback_services = indexed_rows(
+        rollback["services"], "role", "rollback service roles", errors
+    )
+    expected_rollback_services = (
+        set(manifest["deployment_service_roles"])
+        if receipt["promotion_mode"] == "source-redeploy"
+        else set()
+    )
+    set_difference_error(
+        "rollback service roles",
+        expected_rollback_services,
+        set(rollback_services),
+        errors,
+    )
+    for role in sorted(expected_rollback_services & set(rollback_services)):
+        rollback_service = rollback_services[role]
+        expected_service = service_authority[role]
+        for field in ("provider", "project_id", "environment_id", "service_id"):
+            if rollback_service[field] != expected_service[field]:
+                errors.append(
+                    f"rollback.services.{role}.{field} does not match release authority"
+                )
+        evidence_value(
+            rollback_service["previous_deployment_id"],
+            f"rollback.services.{role}.previous_deployment_id",
+            errors,
+        )
+        previous_source = evidence_value(
+            rollback_service["previous_source_revision"],
+            f"rollback.services.{role}.previous_source_revision",
+            errors,
+        )
+        evidence_value(
+            rollback_service["procedure"],
+            f"rollback.services.{role}.procedure",
+            errors,
+        )
+        validate_rollback_timestamp(
+            rollback_service["tested_at"],
+            f"rollback.services.{role}.tested_at",
+        )
+        if source_revision is not None and previous_source == source_revision:
+            errors.append(
+                f"rollback.services.{role}.previous_source_revision must differ from source.revision"
+            )
+
     schema_restore = evidence_value(
         rollback["schema_restore"], "rollback.schema_restore", errors
     )
-    tested_at = evidence_value(rollback["tested_at"], "rollback.tested_at", errors)
-    tested_at_value = None
-    if tested_at is not None:
-        tested_at_value = validate_timestamp(tested_at, "rollback.tested_at", errors)
-    if now is not None and tested_at_value is not None:
-        rollback_age = (now - tested_at_value).total_seconds()
-        if rollback_age < -policy["max_clock_skew_seconds"]:
-            errors.append("rollback.tested_at is too far in the future")
-        if rollback_age > policy["max_rollback_age_seconds"]:
-            errors.append("rollback rehearsal is stale")
-    if source_revision is not None and previous_source == source_revision:
-        errors.append("rollback.previous_source_revision must differ from source.revision")
-    if (
-        previous_artifact_digest is not None
-        and previous_artifact_digest in built_digests.values()
-    ):
-        errors.append(
-            "rollback.previous_artifact_digest must differ from candidate artifact digests"
-        )
     if rollback_compatibility == "verified-backward-compatible":
         if schema_restore != "not-required-backward-compatible":
             errors.append(

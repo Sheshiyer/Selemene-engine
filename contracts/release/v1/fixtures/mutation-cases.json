@@ -13,6 +13,7 @@
         {"op": "replace", "path": "/release/tag", "value": "v1.2.3"},
         {"op": "replace", "path": "/promotion_mode", "value": "immutable-image"},
         {"op": "replace", "path": "/target/provider_scope", "value": ["github", "ghcr"]},
+        {"op": "replace", "path": "/rollback/services", "value": []},
         {"op": "replace", "path": "/test_fixture/scenario", "value": "source-bound immutable image candidates"}
       ]
     },

@@ -168,7 +168,10 @@ def test_current_production_snapshot_remains_ineligible() -> None:
     assert result.returncode == 1
     assert "source.revision evidence is unavailable" in result.stderr
     assert "schema_identity.applied_revision evidence is unavailable" in result.stderr
-    assert "rollback.previous_source_revision evidence is unavailable" in result.stderr
+    assert (
+        "rollback.services.api.previous_source_revision evidence is unavailable"
+        in result.stderr
+    )
     assert "assets.ephemeris-data.integrity evidence is unavailable" in result.stderr
 
 
@@ -409,7 +412,8 @@ def test_operational_receipt_rejects_stale_authorization_and_rollback() -> None:
     receipt["target"]["environment"] = "production"
     receipt["issued_at"] = "2000-01-01T00:00:00Z"
     receipt["expires_at"] = "2000-01-01T00:15:00Z"
-    receipt["rollback"]["tested_at"]["value"] = "2000-01-01T00:00:00Z"
+    for unit in receipt["rollback"]["artifacts"] + receipt["rollback"]["services"]:
+        unit["tested_at"]["value"] = "2000-01-01T00:00:00Z"
 
     errors = validate_release_receipt(
         receipt,
@@ -428,7 +432,25 @@ def test_operational_receipt_rejects_stale_authorization_and_rollback() -> None:
 
     assert "release authorization is stale" in errors
     assert "release authorization is expired" in errors
-    assert "rollback rehearsal is stale" in errors
+    assert any("rollback.artifacts.api.tested_at rehearsal is stale" in error for error in errors)
+    assert any("rollback.services.api.tested_at rehearsal is stale" in error for error in errors)
+
+
+def test_rollback_requires_every_mutated_role_and_exact_target() -> None:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    receipt["rollback"]["services"] = receipt["rollback"]["services"][:1]
+    receipt["rollback"]["artifacts"][0]["repository"] = (
+        "ghcr.io/sheshiyer/fabricated-api"
+    )
+    receipt["rollback"]["services"][0]["service_id"] = "fabricated-service"
+
+    errors = validate_release_receipt(receipt, REPO_ROOT)
+
+    assert "missing rollback service roles: ['typescript-engines']" in errors
+    assert (
+        "rollback.artifacts.api.repository does not match release authority" in errors
+    )
+    assert "rollback.services.api.service_id does not match release authority" in errors
 
 
 def test_pre_deploy_receipt_rejects_fabricated_future_deployment_identity() -> None:
@@ -453,12 +475,13 @@ def test_pre_deploy_receipt_rejects_fabricated_future_deployment_identity() -> N
         (("schema_identity", "applied_revision", "value"), "x"),
         (("schema_identity", "rollback_compatibility", "value"), "x"),
         (("rollback", "schema_restore", "value"), "x"),
-        (("rollback", "procedure", "value"), "x"),
-        (("rollback", "tested_at", "value"), "x"),
+        (("rollback", "artifacts", 0, "procedure", "value"), "x"),
+        (("rollback", "services", 0, "previous_deployment_id", "value"), "x"),
+        (("rollback", "services", 0, "tested_at", "value"), "x"),
     ],
 )
 def test_schema_and_rollback_identity_reject_meaningless_strings(
-    path: tuple[str, ...],
+    path: tuple[str | int, ...],
     value: str,
 ) -> None:
     receipt = load_json(ELIGIBLE_SOURCE)

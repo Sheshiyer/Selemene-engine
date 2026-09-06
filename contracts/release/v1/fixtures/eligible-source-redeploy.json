@@ -269,34 +269,105 @@
     }
   ],
   "rollback": {
-    "previous_source_revision": {
-      "status": "available",
-      "value": "0123456789abcdef0123456789abcdef01234567",
-      "source": "synthetic previous deployment receipt"
-    },
-    "previous_deployment_id": {
-      "status": "available",
-      "value": "railway-fixture-api-previous",
-      "source": "synthetic previous deployment receipt"
-    },
-    "previous_artifact_digest": {
-      "status": "available",
-      "value": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-      "source": "synthetic previous image receipt"
-    },
+    "artifacts": [
+      {
+        "role": "api",
+        "repository": "ghcr.io/sheshiyer/selemene-engine",
+        "previous_digest": {
+          "status": "available",
+          "value": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "source": "synthetic previous image receipt"
+        },
+        "procedure": {
+          "status": "available",
+          "value": "runbook://synthetic/ghcr-api-rollback",
+          "source": "synthetic rollback rehearsal"
+        },
+        "tested_at": {
+          "status": "available",
+          "value": "2026-09-06T00:00:00Z",
+          "source": "synthetic rollback rehearsal"
+        }
+      },
+      {
+        "role": "typescript-engines",
+        "repository": "ghcr.io/sheshiyer/selemene-ts-engines",
+        "previous_digest": {
+          "status": "available",
+          "value": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "source": "synthetic previous image receipt"
+        },
+        "procedure": {
+          "status": "available",
+          "value": "runbook://synthetic/ghcr-typescript-rollback",
+          "source": "synthetic rollback rehearsal"
+        },
+        "tested_at": {
+          "status": "available",
+          "value": "2026-09-06T00:00:00Z",
+          "source": "synthetic rollback rehearsal"
+        }
+      }
+    ],
+    "services": [
+      {
+        "role": "api",
+        "provider": "railway",
+        "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+        "previous_deployment_id": {
+          "status": "available",
+          "value": "railway-fixture-api-previous",
+          "source": "synthetic previous deployment receipt"
+        },
+        "previous_source_revision": {
+          "status": "available",
+          "value": "0123456789abcdef0123456789abcdef01234567",
+          "source": "synthetic previous deployment receipt"
+        },
+        "procedure": {
+          "status": "available",
+          "value": "runbook://synthetic/railway-api-rollback",
+          "source": "synthetic rollback rehearsal"
+        },
+        "tested_at": {
+          "status": "available",
+          "value": "2026-09-06T00:00:00Z",
+          "source": "synthetic rollback rehearsal"
+        }
+      },
+      {
+        "role": "typescript-engines",
+        "provider": "railway",
+        "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "service_id": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
+        "previous_deployment_id": {
+          "status": "available",
+          "value": "railway-fixture-typescript-previous",
+          "source": "synthetic previous deployment receipt"
+        },
+        "previous_source_revision": {
+          "status": "available",
+          "value": "0123456789abcdef0123456789abcdef01234567",
+          "source": "synthetic previous deployment receipt"
+        },
+        "procedure": {
+          "status": "available",
+          "value": "runbook://synthetic/railway-typescript-rollback",
+          "source": "synthetic rollback rehearsal"
+        },
+        "tested_at": {
+          "status": "available",
+          "value": "2026-09-06T00:00:00Z",
+          "source": "synthetic rollback rehearsal"
+        }
+      }
+    ],
     "schema_restore": {
       "status": "available",
       "value": "not-required-backward-compatible",
-      "source": "synthetic rollback rehearsal"
-    },
-    "procedure": {
-      "status": "available",
-      "value": "runbook://synthetic/railway-source-rollback",
-      "source": "synthetic rollback rehearsal"
-    },
-    "tested_at": {
-      "status": "available",
-      "value": "2026-09-06T00:00:00Z",
       "source": "synthetic rollback rehearsal"
     }
   },

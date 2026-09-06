@@ -24,6 +24,14 @@
     "api",
     "typescript-engines"
   ],
+  "artifact_targets": {
+    "api": {
+      "repository": "ghcr.io/sheshiyer/selemene-engine"
+    },
+    "typescript-engines": {
+      "repository": "ghcr.io/sheshiyer/selemene-ts-engines"
+    }
+  },
   "required_service_roles": [
     "api",
     "typescript-engines",

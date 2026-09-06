@@ -207,20 +207,21 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "previous_source_revision",
-        "previous_deployment_id",
-        "previous_artifact_digest",
-        "schema_restore",
-        "procedure",
-        "tested_at"
+        "artifacts",
+        "services",
+        "schema_restore"
       ],
       "properties": {
-        "previous_source_revision": {"$ref": "#/$defs/revisionEvidence"},
-        "previous_deployment_id": {"$ref": "#/$defs/stringEvidence"},
-        "previous_artifact_digest": {"$ref": "#/$defs/digestEvidence"},
-        "schema_restore": {"$ref": "#/$defs/schemaRestoreEvidence"},
-        "procedure": {"$ref": "#/$defs/runbookEvidence"},
-        "tested_at": {"$ref": "#/$defs/dateTimeEvidence"}
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/rollbackArtifact"}
+        },
+        "services": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/rollbackService"}
+        },
+        "schema_restore": {"$ref": "#/$defs/schemaRestoreEvidence"}
       }
     },
     "test_fixture": {
@@ -415,6 +416,24 @@
         {"$ref": "#/$defs/unavailableEvidence"}
       ]
     },
+    "deploymentIdEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{7,119}$"
+            },
+            "source": {"type": "string", "minLength": 8}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"}
+      ]
+    },
     "artifactIdentity": {
       "type": "object",
       "additionalProperties": false,
@@ -423,6 +442,44 @@
         "build_id": {"$ref": "#/$defs/stringEvidence"},
         "source_revision": {"$ref": "#/$defs/revisionEvidence"},
         "image_digest": {"$ref": "#/$defs/digestEvidence"}
+      }
+    },
+    "rollbackArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "repository", "previous_digest", "procedure", "tested_at"],
+      "properties": {
+        "role": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "repository": {"type": "string", "pattern": "^ghcr\\.io/[a-z0-9._-]+/[a-z0-9._-]+$"},
+        "previous_digest": {"$ref": "#/$defs/digestEvidence"},
+        "procedure": {"$ref": "#/$defs/runbookEvidence"},
+        "tested_at": {"$ref": "#/$defs/dateTimeEvidence"}
+      }
+    },
+    "rollbackService": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "provider",
+        "project_id",
+        "environment_id",
+        "service_id",
+        "previous_deployment_id",
+        "previous_source_revision",
+        "procedure",
+        "tested_at"
+      ],
+      "properties": {
+        "role": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "provider": {"enum": ["railway", "vercel", "kubernetes"]},
+        "project_id": {"type": "string", "minLength": 1},
+        "environment_id": {"type": "string", "minLength": 1},
+        "service_id": {"type": "string", "minLength": 1},
+        "previous_deployment_id": {"$ref": "#/$defs/deploymentIdEvidence"},
+        "previous_source_revision": {"$ref": "#/$defs/revisionEvidence"},
+        "procedure": {"$ref": "#/$defs/runbookEvidence"},
+        "tested_at": {"$ref": "#/$defs/dateTimeEvidence"}
       }
     }
   }
