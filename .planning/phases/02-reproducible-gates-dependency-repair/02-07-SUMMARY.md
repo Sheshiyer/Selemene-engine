@@ -1,25 +1,25 @@
 ---
 phase: 02-reproducible-gates-dependency-repair
-plan: "07"
+plan: 07
 subsystem: release-engineering
 tags: [release-receipt, github-actions, railway, ghcr, fail-closed]
 
 requires:
   - phase: 02-reproducible-gates-dependency-repair
-    plan: "06"
+    plan: 06
     provides: versioned 19-row engine registry and executable runtime drift gates
 provides:
-  - versioned source-bound release receipt schema with explicit unavailable evidence
-  - offline fail-closed operational eligibility validator and negative fixtures
-  - mutation-ordered deployment and publication workflows bound to exact digests and targets
+  - versioned pre-mutation receipt bound to source, semver tag and short-lived operation identity
+  - exact artifact/deployment roles, role-keyed rollback, computed asset trees and repository provenance
+  - fail-closed workflows that expose immutable candidates only and disable unprovable production mutation
 affects: [phase-03-capability-contract-closure, phase-07-deployment-operational-proof]
 
 tech-stack:
   added: []
   patterns:
-    - operational receipts bind source, target profile, artifact digests, schema, checks, assets and rollback
-    - local image bytes are digest-checked before registry publication
-    - provider selectors are emitted only after receipt eligibility succeeds
+    - pre-mutation authorization and provider post-deploy attestation are separate evidence classes
+    - unavailable one-use, atomicity or image-inclusion proof disables the affected mutation profile
+    - provider scripts are executed under recording shims with exact condition, argv and cwd assertions
 
 key-files:
   created:
@@ -30,22 +30,25 @@ key-files:
     - contracts/release/v1/fixtures/mutation-cases.json
     - scripts/validate_release_receipt.py
     - tests/scripts/test_validate_release_receipt.py
+    - .planning/phases/02-reproducible-gates-dependency-repair/02-REVIEW-FIXES.md
   modified:
     - .github/workflows/deploy.yaml
     - .github/workflows/release.yml
+    - contracts/v1/registries/engines.json
+    - scripts/validate_contracts.py
+    - crates/noesis-api/src/lib.rs
     - tests/scripts/test_gate_wiring.py
-    - package.json
 
 key-decisions:
-  - "Operational receipts reject marked test fixtures and require an exact source, workflow target profile and every required artifact digest."
-  - "Main deployment and semver publication use distinct receipt variables; release.yml is the only semver tag owner."
-  - "Railway project, environment and service selectors come from validated receipt and manifest authority, with project-token scope checked before deployment."
-  - "Release receipt v1 covers container images only; native binary publication stays disabled until per-platform digest authority exists."
-  - "Vercel native main deployment remains outside the repository gate, so production promotion stays HOLD."
+  - Production receipts require canonical release identity, bounded time and exact run-attempt operation identity.
+  - Durable one-use consumption, provider attestation and atomic multi-artifact guarantees cannot be self-asserted by stateless CI.
+  - Deploy publication is limited to immutable source candidates; release alias and GitHub-release mutation is absent.
+  - API and TypeScript are deployed roles; biofield CV is topology-only for this authority.
+  - Vercel native main deployment remains outside the repository gate, so production promotion stays HOLD.
 
 patterns-established:
-  - "Mutation-order gate: prebuild without publication, validate the receipt, compare the same locally loaded bytes, then publish."
-  - "Evidence boundary: synthetic fixtures can prove policy behavior but can never satisfy operational validation."
+  - Evidence boundary: synthetic fixtures prove policy behavior but never satisfy operational validation.
+  - Safe disposition: retain a failing workflow/profile until its named external authority can be observed.
 
 requirements-completed: [GATE-05]
 requirements-progressed: [GATE-01]
@@ -56,160 +59,106 @@ completed: 2026-09-06
 
 # Phase 02 Plan 07: Release Receipt Authority Summary
 
-**Versioned release receipts now reject incomplete production evidence and bind every repository-controlled deployment or publication mutation to exact source, artifact, schema, service, check, asset and rollback identity.**
+**Release eligibility is now exact and fail-closed locally. Repository workflows cannot perform production promotion because the remaining one-use, provider-attestation, atomicity and image-inclusion guarantees are not yet provable.**
 
-## Performance
+## Source and Evidence Boundary
 
-- **Duration:** 69 min
-- **Started:** 2026-09-06T11:05:25Z
-- **Completed:** 2026-09-06T12:14:51Z
-- **Tasks:** 2
-- **Files modified:** 17 including execution evidence and state bookkeeping
+Plan 02-07 began from `cfeb34a69bd47c486ee8c9487f255a41691330c9`. Its initial implementation and audit remediation ended at `0441d03`; the committed deep review at `5846fd6` then identified ten Critical and four Warning defects. The review-fix code validated here ends at `941e3cfd059831330f7f3adb2f90f526384426c5`.
 
-## Source Precondition
+All work used repository fixtures, local builds, lazy/disposable resources or command shims. No workflow, deployment, publication, release, tag, provider, cloud/DNS, GitHub setting, schema/data, production database or secret mutation ran.
 
-Execution began from `cfeb34a69bd47c486ee8c9487f255a41691330c9`, the committed Plan 02-06 result with 19 runtime IDs, 17 public groups, 12 native / 1 database-conditional / 6 TypeScript registrations and passing registry drift gates. Production promotion was HOLD and remained HOLD throughout Plan 02-07.
+## Final Behavior
 
-## Accomplishments
+- Receipt v1 binds canonical release tag, source revision, workflow, run/attempt operation ID, issued/expiry window, exact built artifacts, service roles, required checks, dependencies, computed asset trees and role-keyed rollback.
+- Pre-mutation authorization rejects candidate deployment IDs. Railway-returned deployment ID, source and status must be captured and checked as separate post-deploy attestation.
+- API and TypeScript engines are the exact repository-owned deployment roles, with distinct roots, Railway configs, selectors and health authorities. Biofield CV is encoded as topology-only.
+- Deploy source admission rejects unsupported refs and environments before prebuild. A final result job fails whenever the authoritative deployment is skipped or unsuccessful.
+- Deploy image publication contains only immutable `sha-$GITHUB_SHA` candidates. Mutable branch, `latest` and semver aliases are absent.
+- Release permissions are read-only, runs are serialized and the workflow ends in an explicit failure. Alias and GitHub-release writes remain absent until atomic multi-registry promotion with compensation exists.
+- Required ephemeris and wisdom assets have canonical repository paths, deterministic `sha256-tree-v1` digests/file counts, artifact roles, build recipe and container paths. Operational authorization still requires source-bound post-build inclusion attestation.
+- Health origins, paths, expected status and source-revision fields come from manifest authority; both deploy roles must report the triggering revision.
+- Railway CLI installation runs without credentials. `RAILWAY_TOKEN` exists only for the scope and deployment steps.
+- Registry provenance validation rejects absolute, traversing, missing and unsupported `repo://` targets and verifies Markdown anchors or source symbols.
+- Both production app-state builders and focused tests share the database-conditional registration seam; the tests use no pool and a lazy local pool.
 
-- Added release receipt v1 authority for source revision, separate built and deployed artifacts, schema identity, exact Railway project/environment/service roles, required CI checks, dependency state, assets and rollback evidence.
-- Added realistic synthetic eligible and mutation fixtures plus an incomplete current-production snapshot that fails with 21 explicit unavailable facts; no unknown source, schema, asset or rollback value was guessed.
-- Made operational validation reject marked fixtures and require the exact source revision, target profile, provider scope and digest of every required container artifact.
-- Rewired main deployment so nonpublishing prebuilds feed receipt eligibility, locally loaded images are checked against those authorized digests before `docker push`, and Railway token scope plus all three exact selectors are checked before `railway up`.
-- Made `release.yml` the sole semver tag owner, resolve existing source-tag images by digest, validate them, and promote the exact registry manifests without rebuilding. Removed unbound main changelog writes and native binary publication outside v1 artifact authority.
-- Added static graph and mocked execution proofs: missing, synthetic, wrong-source, wrong-target, wrong-service and wrong-digest receipts make zero mocked mutation calls; eligible synthetic policy fixtures reach only the declared mocked mutation graph.
+## Atomic Commits
 
-## Task Commits
+Initial Plan 02-07 commits:
 
-Each task was committed atomically, followed by a bounded audit-remediation commit:
+1. `2541aca` — define and falsify release eligibility.
+2. `83440c3` — place receipt validation before release mutations.
+3. `0441d03` — bind the initial gates to exact targets.
 
-1. **Task 1: Define and falsify release eligibility** — `2541aca` (feat)
-2. **Task 2: Place receipt validation before release mutations** — `83440c3` (fix)
-3. **Independent audit remediation for Tasks 1–2** — `0441d03` (fix)
+Deep-review remediation commits:
 
-## Files Created/Modified
+1. `a28a983` — WR-02 exercise production conditional registration.
+2. `c6e6a0f` — WR-03 validate registry provenance targets.
+3. `8069ca9` — CR-01 bind receipts to release tags.
+4. `952b291` — CR-02 expire and bind release operations.
+5. `5839e96` — CR-03 separate predeploy authorization evidence.
+6. `db15032` — CR-05 model every deployment service role.
+7. `97a2a5a` — CR-06 bind rollback evidence by role.
+8. `b5295c7` — CR-07 publish immutable deploy candidates only.
+9. `0f22e90` — CR-08 disable non-atomic release promotion.
+10. `507e7d1` — CR-04 reject unsupported deployment dispatches.
+11. `89d1849` — CR-09 bind health checks to service authority.
+12. `ddfe062` — CR-10 bind required assets to computed trees.
+13. `c67635e` — WR-04 scope Railway token to credentialed steps.
+14. `2ba59c4` — WR-01 execute provider scripts under shims.
+15. `941e3cf` — WR-01 isolate concurrent shim logs.
 
-- `contracts/release/v1/receipt.schema.json` — Draft 2020-12 receipt contract with constrained timestamps, schema/rollback states and project/service evidence.
-- `contracts/release/v1/manifest.json` — Registry, migration, artifact, workflow-target and exact Railway service authority.
-- `contracts/release/v1/fixtures/*.json` — Eligible synthetic, current-production incomplete and nine negative mutation cases.
-- `scripts/validate_release_receipt.py` — Offline schema, authority, operational target/digest and evidence validator with post-eligibility GitHub outputs.
-- `tests/scripts/test_validate_release_receipt.py` — Positive, negative, operational and target-output tests.
-- `tests/scripts/test_gate_wiring.py` — Static workflow graph, step ordering and executable mocked mutation-spy tests.
-- `.github/workflows/deploy.yaml` — Main-only receipt-gated local-build publication and exact Railway source deployment.
-- `.github/workflows/release.yml` — Sole tag-triggered, receipt-gated immutable image promotion and GitHub release.
-- `package.json` — Adds release fixture validation to `gate:scripts`.
-- `ISA.md`, `02-VERIFICATION.md`, `STATE.md`, `ROADMAP.md`, `REQUIREMENTS.md` and this summary — Evidence and execution bookkeeping.
+Finding-by-finding code, tests and fail-closed dispositions are recorded in `02-REVIEW-FIXES.md`.
 
 ## Verification Evidence
 
-All validation used repository fixtures, mocks or local builds. Database-sensitive commands ran with `DATABASE_URL` and `TEST_DATABASE_URL` removed. No workflow, tag, release, deployment, provider mutation or production secret was used.
-
-| Command or review | Result |
+| Command or probe | Result |
 |---|---|
-| `python3 -m pytest tests/scripts/test_validate_release_receipt.py tests/scripts/test_gate_wiring.py -q` | 49 passed |
+| `python3 -m pytest tests/scripts/test_validate_release_receipt.py tests/scripts/test_gate_wiring.py tests/scripts/test_validate_contracts.py -q` | 95 passed |
+| `cargo test -p noesis-api database_conditional_registration --locked` | 2 passed |
+| `python3 scripts/validate_action_pins.py` | Passed |
+| Parse every `.github/workflows/*.{yml,yaml}` with PyYAML | Passed |
+| `python3 scripts/validate_contracts.py` | `schemas=6 fixtures=5 registries=1 engines=19` |
 | `python3 scripts/validate_release_receipt.py --validate-fixtures` | `receipts=2 mutation_cases=9` |
-| `python3 scripts/validate_release_receipt.py contracts/release/v1/fixtures/current-production-incomplete.json` | Exit 1 with 21 unavailable source/build, schema, asset and rollback facts |
-| `python3 scripts/validate_action_pins.py --path .github/workflows/deploy.yaml` | Exit 0 |
-| `python3 scripts/validate_action_pins.py --path .github/workflows/release.yml` | Exit 0 |
-| `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate:scripts` | 117 passed; contract, receipt, migration and Docker validators pass |
-| `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate` | Exit 0: 117 script, 9 core, 4 OpenAPI, 16 API integration, 35 engine SDK, 11 Noesis SDK, 36 verification and 94 TypeScript tests; all builds/typechecks pass |
-| `gsd-sdk query verify.artifacts .../02-07-PLAN.md` | 2/2 artifacts pass |
-| `gsd-sdk query verify.key-links .../02-07-PLAN.md` | 1/1 key link verified |
-| `scripts/sync-plans-to-github-issues.sh --repo Sheshiyer/Selemene-engine` | Dry-run; no matching plan JSON and no issue mutation |
-| Independent adversarial review | Initial BLOCK exposed six ordering/authority defects; final exact-source verdict GO with no internal blockers or warnings |
-| `git diff --check` | Exit 0 |
+| Current-production negative fixture | Exit 1 with 29 unavailable facts |
+| `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate:scripts` | 140 passed; contract, receipt, migration and Docker validators passed |
+| `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate` | Exit 0: 140 script, 9 core, 4 OpenAPI, 16 API integration, 35 engine SDK, 11 Noesis SDK, 36 verification and 94 TypeScript tests; all builds/typechecks passed |
+| `git diff --check` | Passed |
 
-## Decisions Made
+## Review Outcome
 
-- Source redeployment and immutable image promotion remain different receipt modes. A source deployment cannot claim that its separately built image was deployed.
-- `DEPLOY_RELEASE_RECEIPT_B64` and `PUBLISH_RELEASE_RECEIPT_B64` are intentionally separate, and neither accepts a receipt containing `test_fixture` metadata.
-- Main deploy prebuilds do not publish or upload build records. After receipt validation, the rebuilt image is loaded locally, its digest is compared before mutation, and those same tags are pushed.
-- Railway CLI is pinned to `5.41.0`. The project token is read-only queried for project/environment scope, while manifest-bound project, environment and service IDs are passed explicitly to the deployment command.
-- Semver publication reads the exact `sha-$GITHUB_SHA` registry digests and promotes `repository@digest` inputs. It does not rebuild images or write back to mutable `main`.
-- Receipt v1 explicitly excludes native binaries. Restoring their publication requires a later authority version that records each platform build and digest before release mutation.
+All CR-01 through CR-10 and WR-01 through WR-04 have tested code fixes or an explicit disabled mutation disposition. The authoritative review artifact remains unchanged as the record of what was found; `02-REVIEW-FIXES.md` records what closed each finding.
 
-## Deviations from Plan
+## Production Mutation Hold
 
-### Auto-fixed Issues
+`deploy-production` and `release-production` both declare `mutation_policy.status: disabled`. The validator refuses operational outputs or authorization before any repository-controlled provider write.
 
-**1. [Rule 3 - Blocking] Loaded the standalone validator directly in tests**
-- **Found during:** Task 1
-- **Issue:** `scripts/` is not a Python package, so negative fixture tests could not import mutation helpers through a package path.
-- **Fix:** Loaded the validator by exact file path with `importlib.util` while keeping the production script standalone and offline.
-- **Files modified:** `tests/scripts/test_validate_release_receipt.py`
-- **Committed in:** `2541aca`
+Re-enabling production requires observed and reviewed authority for:
 
-**2. [Rule 1 - Bug] Corrected a negative-mode test expectation**
-- **Found during:** Task 1 verification
-- **Issue:** One mutation exercised the validator's required workflow mode rather than the fixture mode expected by the assertion.
-- **Fix:** Bound the assertion to the actual fail-closed promotion-mode error.
-- **Files modified:** `tests/scripts/test_validate_release_receipt.py`
-- **Committed in:** `2541aca`
+- durable one-use receipt consumption;
+- Railway-returned deployment ID, source and status for API and TypeScript;
+- atomic API/TypeScript service coordination;
+- source-bound image asset inclusion attestation;
+- atomic multi-registry alias promotion with rollback compensation;
+- real production schema and rollback evidence;
+- provider-side protection for Vercel native main deployment.
 
-**3. [Rule 2 - Missing critical functionality] Closed independent audit findings before mutation**
-- **Found during:** Task 2 independent review
-- **Issue:** The first implementation could accept marked synthetic receipts operationally, did not bind exact provider/service targets or actual artifacts, gave two workflows the same tag/release ownership, checked rebuilt image drift only after push, allowed a mutable Railway service selector and retained an unbound mutable-main changelog write.
-- **Fix:** Added operational source/fixture/profile/digest enforcement, exact project/environment/service authority, pre-push local digest checks, manifest-derived Railway outputs and token-scope readback; consolidated tag ownership and removed the changelog write.
-- **Files modified:** Release manifest/schema/fixtures, validator/tests and both workflows.
-- **Committed in:** `0441d03`
-
-**4. [Rule 2 - Missing critical functionality] Constrained rollback identity and publication scope**
-- **Found during:** Task 2 independent review
-- **Issue:** Free-form schema and rollback strings could satisfy eligibility, and native binaries could be uploaded without per-platform receipt identity.
-- **Fix:** Added constrained migration, compatibility, restore, runbook and UTC timestamp evidence. Declared receipt v1 container-only and disabled native publication pending exact digest authority.
-- **Files modified:** Release manifest/schema/fixtures, validator/tests and release workflow.
-- **Committed in:** `0441d03`
-
-**5. [Rule 3 - Blocking] Added native UTC validation and pinned Railway CLI**
-- **Found during:** Task 2 remediation
-- **Issue:** The installed jsonschema format checker did not reject malformed date-time strings, and a floating Railway CLI could change selector semantics.
-- **Fix:** Added Python UTC parsing after schema validation and pinned the reviewed Railway CLI at `5.41.0` with a static regression test.
-- **Files modified:** `scripts/validate_release_receipt.py`, `tests/scripts/test_validate_release_receipt.py`, `.github/workflows/deploy.yaml`, `tests/scripts/test_gate_wiring.py`
-- **Committed in:** `0441d03`
-
----
-
-**Total deviations:** 5 auto-fixed (1 bug, 2 blocking, 2 missing critical functionality)
-
-**Impact on plan:** Each change strengthens the stated fail-closed and pre-mutation contract. No additional production surface was activated.
-
-## Issues Encountered
-
-- The first independent review returned BLOCK despite green tests. Its adversarial probes identified target, artifact and trigger gaps; all were reproduced, fixed and re-reviewed to GO.
-- `gsd-sdk query verify.decisions` is unavailable in the installed SDK and its compatibility fallback. The plan contains no checkpoint decision block, so artifact and key-link verification were run directly and this missing optional subcommand did not reduce evidence.
-
-## Known Stubs
-
-None. The `unavailable` values in `current-production-incomplete.json` are deliberate negative evidence and are required to keep that production snapshot ineligible.
-
-## Threat Flags
-
-| Flag | File | Description |
-|---|---|---|
-| threat_flag: repository-variable-input | `.github/workflows/deploy.yaml`, `.github/workflows/release.yml` | Base64 receipt input is decoded to a private temporary file and rejected unless strict offline schema and authority checks pass. |
-| threat_flag: provider-token-scope-read | `.github/workflows/deploy.yaml` | A Railway project token is used only after receipt validation for a read-only project/environment scope query, then an exact manifest-bound deployment. |
-| threat_flag: registry-tag-mutation | `.github/workflows/deploy.yaml`, `.github/workflows/release.yml` | GHCR tags move only after exact digest eligibility; deploy pushes already-checked loaded bytes and release promotes registry-read `repository@digest` manifests. |
+Staging, Kubernetes and native-binary publication also remain fail-closed until exact target or per-platform artifact authority is added.
 
 ## User Setup Required
 
-No setup was performed. A future authorized deployment or publication requires a reviewed operational receipt in the appropriate repository variable and the already-defined provider credentials.
+No setup was performed. Supplying a repository variable alone cannot enable either disabled production profile.
 
-## Remaining Critical Production Decisions
+## Remaining Phase Gap
 
-- Decide and apply provider-side Vercel deployment protection, or disable native production auto-deploy, so a push to `main` cannot bypass receipt authority.
-- Establish the real production API source/build identity, applied migration revision, asset integrity/retention/inclusion and an exercised rollback target/procedure/timestamp. The current snapshot remains ineligible until all are observed.
-- Review and set exact-source `DEPLOY_RELEASE_RECEIPT_B64` or `PUBLISH_RELEASE_RECEIPT_B64` only for a concrete candidate and its actual prebuilt or registry-read digests.
-- Prove on a current-source remote run that BuildKit's locally checked digest is preserved by GHCR publication and that Railway's token-scope query plus exact selector flags behave as designed.
-- Add exact staging and Kubernetes target profiles before enabling either path; current workflow inputs fail closed because those authorities are absent.
-- Add a later receipt version with per-platform binary build/digest identity before restoring native binary uploads.
-- Run current-source GitHub CI after parent reconciliation and push. Until that evidence exists, GATE-01 and Phase 2 verification remain open even though all seven plans are executed.
+Phase verification remains `gaps_found` because no full current-source GitHub Actions run exists for the review-fixed candidate. Production promotion remains **HOLD** independently of that remote CI gap.
 
 ## Self-Check: PASSED
 
-- All seven created release authority, fixture, validator and test files exist.
-- Task commits `2541aca`, `83440c3` and `0441d03` are present in repository history.
-- ISA progress recomputes to 331 checked criteria out of 335 total.
-- GSD artifact and key-link checks pass; documentation diff passes `git diff --check`.
+- All fourteen review findings appear once in `02-REVIEW-FIXES.md`.
+- All fifteen remediation commits are present in repository history.
+- Focused, script and full local gates pass with database variables removed.
+- Production profiles are disabled and release mutation is absent.
+- No external or production mutation was performed.
 
 ---
 *Phase: 02-reproducible-gates-dependency-repair*
