@@ -548,6 +548,51 @@ def test_registry_identity_must_match_plan_06_authority() -> None:
     assert "authority.engine_registry.sha256 does not match the release manifest" in errors
 
 
+def test_required_asset_source_and_integrity_match_repository_tree() -> None:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    ephemeris = next(row for row in receipt["assets"] if row["id"] == "ephemeris-data")
+    ephemeris["source"]["value"] = "claimed://nonexistent-assets"
+    ephemeris["integrity"]["value"] = (
+        "sha256:9999999999999999999999999999999999999999999999999999999999999999"
+    )
+
+    errors = validate_release_receipt(receipt, REPO_ROOT)
+
+    assert "assets.ephemeris-data.source does not match release authority" in errors
+    assert (
+        "assets.ephemeris-data.integrity does not match repository asset tree" in errors
+    )
+
+
+def test_operational_asset_inclusion_fails_without_postbuild_attestation() -> None:
+    receipt = operational_receipt()
+    receipt["target"]["environment"] = "production"
+
+    errors = validate_release_receipt(
+        receipt,
+        REPO_ROOT,
+        expected_source=SYNTHETIC_SOURCE,
+        target_profile="deploy-production",
+        expected_artifact_digests={
+            "api": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "typescript-engines": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        },
+        expected_operation_id="github-run-90000000001-attempt-1",
+        expected_workflow=".github/workflows/deploy.yaml",
+        now=datetime.now(timezone.utc).replace(microsecond=0),
+        operational=True,
+    )
+
+    assert (
+        "assets.ephemeris-data.image inclusion requires a source-bound post-build attestation"
+        in errors
+    )
+    assert (
+        "assets.wisdom-data.image inclusion requires a source-bound post-build attestation"
+        in errors
+    )
+
+
 def test_validator_has_no_network_or_provider_client_path() -> None:
     source = (REPO_ROOT / "scripts/validate_release_receipt.py").read_text(
         encoding="utf-8"

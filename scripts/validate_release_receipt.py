@@ -41,6 +41,34 @@ def sha256_path(path: Path) -> str:
     return f"sha256:{hashlib.sha256(payload).hexdigest()}"
 
 
+def sha256_tree(path: Path) -> tuple[str, int]:
+    """Hash a repository tree by ordered relative path and exact file bytes."""
+
+    if not path.is_dir():
+        raise ReleaseReceiptError(f"asset tree is not a directory: {path}")
+    entries = sorted(path.rglob("*"), key=lambda item: item.relative_to(path).as_posix())
+    symlinks = [entry.relative_to(path).as_posix() for entry in entries if entry.is_symlink()]
+    if symlinks:
+        raise ReleaseReceiptError(f"asset tree contains symlinks: {symlinks}")
+    files = [entry for entry in entries if entry.is_file()]
+    if not files:
+        raise ReleaseReceiptError(f"asset tree contains no files: {path}")
+
+    digest = hashlib.sha256()
+    digest.update(b"selemene-sha256-tree-v1\0")
+    for entry in files:
+        relative = entry.relative_to(path).as_posix().encode("utf-8")
+        try:
+            payload = entry.read_bytes()
+        except OSError as error:
+            raise ReleaseReceiptError(f"{entry}: {error}") from error
+        digest.update(len(relative).to_bytes(8, "big"))
+        digest.update(relative)
+        digest.update(len(payload).to_bytes(8, "big"))
+        digest.update(payload)
+    return f"sha256:{digest.hexdigest()}", len(files)
+
+
 def evidence_value(
     evidence: dict[str, Any],
     label: str,
@@ -529,20 +557,21 @@ def validate_release_receipt(
     set_difference_error("asset IDs", expected_assets, set(asset_rows), errors)
     for asset_id in sorted(expected_assets & set(asset_rows)):
         asset = asset_rows[asset_id]
-        expected_required = manifest["assets"][asset_id]["required"]
+        asset_authority = manifest["assets"][asset_id]
+        expected_required = asset_authority["required"]
         if asset["required"] is not expected_required:
             errors.append(f"assets.{asset_id}.required does not match release authority")
         allow_na = not expected_required
-        evidence_value(
+        asset_source = evidence_value(
             asset["source"], f"assets.{asset_id}.source", errors, allow_not_applicable=allow_na
         )
-        evidence_value(
+        asset_integrity = evidence_value(
             asset["integrity"],
             f"assets.{asset_id}.integrity",
             errors,
             allow_not_applicable=allow_na,
         )
-        evidence_value(
+        retention = evidence_value(
             asset["retention"],
             f"assets.{asset_id}.retention",
             errors,
@@ -554,8 +583,76 @@ def validate_release_receipt(
             errors,
             allow_not_applicable=allow_na,
         )
+        canonical_path = asset_authority["path"]
+        canonical_source = f"repo://{canonical_path}"
+        if asset_source is not None and asset_source != canonical_source:
+            errors.append(f"assets.{asset_id}.source does not match release authority")
+        asset_path = (repo_root / canonical_path).resolve()
+        try:
+            asset_path.relative_to(repo_root.resolve())
+        except ValueError:
+            errors.append(f"assets.{asset_id}.path escapes the repository")
+            actual_digest = None
+            actual_file_count = None
+        else:
+            try:
+                actual_digest, actual_file_count = sha256_tree(asset_path)
+            except ReleaseReceiptError as error:
+                errors.append(f"assets.{asset_id} repository tree is invalid: {error}")
+                actual_digest = None
+                actual_file_count = None
+        if actual_digest is not None and actual_file_count is not None:
+            declared_integrity = asset_authority["integrity"]
+            if declared_integrity["algorithm"] != "sha256-tree-v1":
+                errors.append(
+                    f"assets.{asset_id}.integrity algorithm is unsupported"
+                )
+            if declared_integrity["digest"] != actual_digest:
+                errors.append(
+                    f"assets.{asset_id} manifest digest is stale: declared={declared_integrity['digest']} actual={actual_digest}"
+                )
+            if declared_integrity["file_count"] != actual_file_count:
+                errors.append(
+                    f"assets.{asset_id} manifest file_count is stale: declared={declared_integrity['file_count']} actual={actual_file_count}"
+                )
+            if asset_integrity is not None and asset_integrity != actual_digest:
+                errors.append(
+                    f"assets.{asset_id}.integrity does not match repository asset tree"
+                )
+        if retention is not None and retention != asset_authority["retention"]:
+            errors.append(f"assets.{asset_id}.retention does not match release authority")
+        artifact_roles = set(asset_authority["artifact_roles"])
+        unknown_artifact_roles = artifact_roles - set(manifest["required_artifact_roles"])
+        if not artifact_roles or unknown_artifact_roles:
+            errors.append(
+                f"assets.{asset_id}.artifact_roles are invalid: {sorted(unknown_artifact_roles)}"
+            )
+        inclusion = asset_authority["image_inclusion"]
+        if not re.fullmatch(r"/[A-Za-z0-9._~/-]+", inclusion["container_path"]):
+            errors.append(f"assets.{asset_id}.image_inclusion.container_path is invalid")
+        recipe_path = (repo_root / inclusion["build_recipe"]).resolve()
+        try:
+            recipe_path.relative_to(repo_root.resolve())
+            recipe = recipe_path.read_text(encoding="utf-8")
+        except (OSError, ValueError) as error:
+            errors.append(
+                f"assets.{asset_id}.image_inclusion build recipe is unavailable: {error}"
+            )
+        else:
+            copy_pattern = re.compile(
+                rf"^COPY(?:\s+--[^\s]+)*\s+{re.escape(canonical_path)}/?\s+{re.escape(inclusion['container_path'])}/?\s*$",
+                re.MULTILINE,
+            )
+            if copy_pattern.search(recipe) is None:
+                errors.append(
+                    f"assets.{asset_id}.image_inclusion is absent from {inclusion['build_recipe']}"
+                )
         if expected_required and included is not None and included is not True:
             errors.append(f"assets.{asset_id}.release_inclusion must be true")
+        if expected_required and operational:
+            errors.append(
+                f"assets.{asset_id}.image inclusion requires a source-bound post-build attestation"
+            )
 
     rollback = receipt["rollback"]
 

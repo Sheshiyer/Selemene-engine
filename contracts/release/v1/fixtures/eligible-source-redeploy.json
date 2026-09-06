@@ -229,12 +229,12 @@
       },
       "integrity": {
         "status": "available",
-        "value": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-        "source": "synthetic asset manifest"
+        "value": "sha256:ec8d4062777ece3a37bde3e9e2a42ee474ccc577c0f9415ec4dfbc0744fbdda6",
+        "source": "repository sha256-tree-v1 computation"
       },
       "retention": {
         "status": "available",
-        "value": "retained with the candidate image and source revision",
+        "value": "embedded-in-api-image-for-source-revision",
         "source": "synthetic retention policy"
       },
       "release_inclusion": {
@@ -253,12 +253,12 @@
       },
       "integrity": {
         "status": "available",
-        "value": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-        "source": "synthetic asset manifest"
+        "value": "sha256:45d78a23e02e29a9285571afd258309eff5c765c06c3ee6da048e943663ba838",
+        "source": "repository sha256-tree-v1 computation"
       },
       "retention": {
         "status": "available",
-        "value": "retained with the candidate image and source revision",
+        "value": "embedded-in-api-image-for-source-revision",
         "source": "synthetic retention policy"
       },
       "release_inclusion": {

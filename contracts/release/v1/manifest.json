@@ -96,7 +96,8 @@
         "required_authority": [
           "durable-one-use-receipt-consumption",
           "railway-post-deploy-source-and-status-attestation",
-          "atomic-api-typescript-service-coordination"
+          "atomic-api-typescript-service-coordination",
+          "source-bound-image-asset-attestation"
         ]
       },
       "promotion_mode": "source-redeploy",
@@ -117,7 +118,8 @@
         "reason": "production release lacks durable one-use receipt consumption and atomic multi-registry alias promotion with compensation",
         "required_authority": [
           "durable-one-use-receipt-consumption",
-          "atomic-multi-registry-alias-promotion"
+          "atomic-multi-registry-alias-promotion",
+          "source-bound-image-asset-attestation"
         ]
       },
       "promotion_mode": "immutable-image",
@@ -151,10 +153,38 @@
   },
   "assets": {
     "ephemeris-data": {
-      "required": true
+      "required": true,
+      "path": "data/ephemeris",
+      "integrity": {
+        "algorithm": "sha256-tree-v1",
+        "digest": "sha256:ec8d4062777ece3a37bde3e9e2a42ee474ccc577c0f9415ec4dfbc0744fbdda6",
+        "file_count": 3
+      },
+      "retention": "embedded-in-api-image-for-source-revision",
+      "artifact_roles": [
+        "api"
+      ],
+      "image_inclusion": {
+        "build_recipe": "Dockerfile.prod",
+        "container_path": "/app/data/ephemeris"
+      }
     },
     "wisdom-data": {
-      "required": true
+      "required": true,
+      "path": "data/wisdom-docs",
+      "integrity": {
+        "algorithm": "sha256-tree-v1",
+        "digest": "sha256:45d78a23e02e29a9285571afd258309eff5c765c06c3ee6da048e943663ba838",
+        "file_count": 4
+      },
+      "retention": "embedded-in-api-image-for-source-revision",
+      "artifact_roles": [
+        "api"
+      ],
+      "image_inclusion": {
+        "build_recipe": "Dockerfile.prod",
+        "container_path": "/app/data/wisdom-docs"
+      }
     }
   },
   "receipt_fixtures": [
