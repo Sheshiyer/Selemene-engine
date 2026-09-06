@@ -460,7 +460,6 @@ jobs:
       vars.DEPLOY_TARGET != 'none' &&
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_API_PROJECT_ID: ${{ needs.validate-release-receipt.outputs.railway_api_project_id }}
       RAILWAY_API_ENVIRONMENT_ID: ${{ needs.validate-release-receipt.outputs.railway_api_environment_id }}
       RAILWAY_API_SERVICE_ID: ${{ needs.validate-release-receipt.outputs.railway_api_service_id }}
@@ -486,12 +485,19 @@ jobs:
         with:
           ref: ${{ needs.validate-source.outputs.source-sha }}
 
+      - name: Install Railway CLI
+        run: |
+          npm install -g @railway/cli@5.41.0
+          railway --version
+
       # Railway serves the live engine (selemene.tryambakam.space). If its
       # credentials are absent this job used to `exit 0` — reporting a green
       # deploy while shipping nothing. That is exactly how a merged fix sat
       # unshipped behind an all-green CD run. A deploy that cannot deploy is a
       # failure, not a pass.
       - name: Validate Railway configuration
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           required_values=(
             RAILWAY_TOKEN
@@ -515,6 +521,8 @@ jobs:
 
       - name: Verify Railway token scope
         shell: bash
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           set -euo pipefail
           scope_json="$(curl --fail-with-body --silent --show-error \
@@ -530,12 +538,10 @@ jobs:
             exit 1
           fi
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli@5.41.0
-
       - name: Deploy to Railway services
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway --version
           (
             cd "${RAILWAY_API_SOURCE_ROOT}"
             railway up \

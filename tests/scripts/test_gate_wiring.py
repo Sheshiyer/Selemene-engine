@@ -647,10 +647,27 @@ def test_railway_mutation_uses_only_manifest_bound_selector() -> None:
     assert "vars.RAILWAY_ENVIRONMENT" not in railway_source
     assert "secrets.RAILWAY_PROJECT_ID" not in railway_source
     assert "projectToken { projectId environmentId }" in railway_source
-    install_step = workflow_step_by_name(
-        deploy, "deploy-railway", "Install Railway CLI"
-    )["run"]
-    assert install_step == "npm install -g @railway/cli@5.41.0"
+    steps = railway_job["steps"]
+    install_index = next(
+        index for index, step in enumerate(steps) if step.get("name") == "Install Railway CLI"
+    )
+    credentialed_names = (
+        "Validate Railway configuration",
+        "Verify Railway token scope",
+        "Deploy to Railway services",
+    )
+    assert "RAILWAY_TOKEN" not in railway_job["env"]
+    assert "npm install -g @railway/cli@5.41.0" in steps[install_index]["run"]
+    assert "railway --version" in steps[install_index]["run"]
+    for name in credentialed_names:
+        index = next(i for i, step in enumerate(steps) if step.get("name") == name)
+        assert install_index < index
+        assert steps[index]["env"] == {
+            "RAILWAY_TOKEN": "${{ secrets.RAILWAY_TOKEN }}"
+        }
+    for index, step in enumerate(steps):
+        if index != install_index and step.get("name") not in credentialed_names:
+            assert "RAILWAY_TOKEN" not in step.get("env", {})
     deploy_step = workflow_step_by_name(
         deploy, "deploy-railway", "Deploy to Railway services"
     )["run"]
