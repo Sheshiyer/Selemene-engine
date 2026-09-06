@@ -27,6 +27,7 @@ assert SPEC is not None and SPEC.loader is not None
 validate_release_receipt_module = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(validate_release_receipt_module)
 apply_json_pointer = validate_release_receipt_module.apply_json_pointer
+emit_github_outputs = validate_release_receipt_module.emit_github_outputs
 validate_release_receipt = validate_release_receipt_module.validate_release_receipt
 
 
@@ -268,6 +269,33 @@ def test_service_target_identity_is_bound_to_manifest_authority() -> None:
     assert "service_roles.api.project_id does not match release authority" in errors
     assert "service_roles.api.service_id does not match release authority" in errors
     assert "service_roles.api.environment_id does not match release authority" in errors
+
+
+def test_deploy_profile_emits_every_owned_service_selector_and_root(
+    tmp_path: Path,
+) -> None:
+    receipt = load_json(ELIGIBLE_SOURCE)
+    output_path = tmp_path / "github-output"
+
+    emit_github_outputs(
+        output_path,
+        receipt,
+        REPO_ROOT,
+        "deploy-production",
+    )
+
+    assert output_path.read_text(encoding="utf-8").splitlines() == [
+        "railway_api_project_id=11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "railway_api_environment_id=702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "railway_api_service_id=48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+        "railway_api_source_root=.",
+        "railway_api_config_path=railway.toml",
+        "railway_typescript_engines_project_id=11eedde4-41e6-4f51-b86b-cf77111cf592",
+        "railway_typescript_engines_environment_id=702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "railway_typescript_engines_service_id=94419a41-9003-4a31-8bfe-d55b39ca4cb2",
+        "railway_typescript_engines_source_root=ts-engines",
+        "railway_typescript_engines_config_path=ts-engines/railway.toml",
+    ]
 
 
 def test_operational_validation_refuses_outputs_while_provider_attestation_is_unavailable(

@@ -29,21 +29,37 @@
     "typescript-engines",
     "biofield-cv"
   ],
+  "deployment_service_roles": [
+    "api",
+    "typescript-engines"
+  ],
+  "topology_only_service_roles": [
+    "biofield-cv"
+  ],
   "service_targets": {
     "api": {
       "provider": "railway",
+      "release_role": "deployment",
+      "source_root": ".",
+      "config_path": "railway.toml",
       "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
       "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
       "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592"
     },
     "typescript-engines": {
       "provider": "railway",
+      "release_role": "deployment",
+      "source_root": "ts-engines",
+      "config_path": "ts-engines/railway.toml",
       "service_id": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
       "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
       "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592"
     },
     "biofield-cv": {
       "provider": "railway",
+      "release_role": "topology-only",
+      "source_root": "python-services",
+      "config_path": "python-services/railway.toml",
       "service_id": "f596e31b-e190-409c-993d-a3b618d29a73",
       "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
       "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592"
@@ -67,7 +83,10 @@
         "ghcr",
         "railway"
       ],
-      "deployment_service_role": "api"
+      "deployment_service_roles": [
+        "api",
+        "typescript-engines"
+      ]
     },
     "release-production": {
       "workflow": ".github/workflows/release.yml",

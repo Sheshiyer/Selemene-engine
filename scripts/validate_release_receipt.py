@@ -345,6 +345,17 @@ def validate_release_receipt(
         receipt["service_roles"], "role", "service roles", errors
     )
     expected_services = set(manifest["required_service_roles"])
+    deployment_services = set(manifest["deployment_service_roles"])
+    topology_only_services = set(manifest["topology_only_service_roles"])
+    overlap = deployment_services & topology_only_services
+    if overlap:
+        errors.append(f"service release-role classifications overlap: {sorted(overlap)}")
+    set_difference_error(
+        "classified service roles",
+        expected_services,
+        deployment_services | topology_only_services,
+        errors,
+    )
     set_difference_error("service roles", expected_services, set(service_rows), errors)
     service_authority = manifest["service_targets"]
     set_difference_error(
@@ -363,6 +374,30 @@ def validate_release_receipt(
         )
         expected_service = service_authority.get(role)
         if expected_service is not None:
+            expected_release_role = (
+                "deployment" if role in deployment_services else "topology-only"
+            )
+            if expected_service.get("release_role") != expected_release_role:
+                errors.append(
+                    f"service_targets.{role}.release_role does not match its classification"
+                )
+            for path_field in ("source_root", "config_path"):
+                raw_path = expected_service.get(path_field)
+                if not isinstance(raw_path, str) or not raw_path:
+                    errors.append(f"service_targets.{role}.{path_field} is missing")
+                    continue
+                candidate = (repo_root / raw_path).resolve()
+                try:
+                    candidate.relative_to(repo_root.resolve())
+                except ValueError:
+                    errors.append(
+                        f"service_targets.{role}.{path_field} escapes the repository"
+                    )
+                    continue
+                if not candidate.exists():
+                    errors.append(
+                        f"service_targets.{role}.{path_field} does not exist: {raw_path}"
+                    )
             if service["provider"] != expected_service["provider"]:
                 errors.append(
                     f"service_roles.{role}.provider does not match release authority"
@@ -629,23 +664,42 @@ def emit_github_outputs(
 
     manifest = load_json(repo_root / MANIFEST_PATH)
     profile = manifest["workflow_targets"].get(target_profile or "")
-    if profile is None or "deployment_service_role" not in profile:
+    if profile is None or "deployment_service_roles" not in profile:
         raise ReleaseReceiptError(
-            "GitHub target output requires a workflow profile with deployment_service_role"
+            "GitHub target output requires a workflow profile with deployment_service_roles"
         )
-    role = profile["deployment_service_role"]
-    service = next(
-        (row for row in receipt["service_roles"] if row["role"] == role), None
-    )
-    if service is None or service["provider"] != "railway":
+    roles = profile["deployment_service_roles"]
+    if roles != manifest["deployment_service_roles"]:
         raise ReleaseReceiptError(
-            "workflow deployment_service_role must resolve to a validated Railway service"
+            "workflow deployment_service_roles must exactly match release authority"
         )
-    values = {
-        "railway_project_id": service["project_id"]["value"],
-        "railway_environment_id": service["environment_id"]["value"],
-        "railway_service_id": service["service_id"]["value"],
+    receipt_services = {
+        row["role"]: row for row in receipt["service_roles"]
     }
+    values: dict[str, str] = {}
+    for role in roles:
+        service = receipt_services.get(role)
+        authority = manifest["service_targets"].get(role)
+        if (
+            service is None
+            or authority is None
+            or service["provider"] != "railway"
+            or authority["provider"] != "railway"
+            or authority["release_role"] != "deployment"
+        ):
+            raise ReleaseReceiptError(
+                f"workflow deployment service role {role} must resolve to a validated Railway deployment service"
+            )
+        key_role = role.replace("-", "_")
+        values.update(
+            {
+                f"railway_{key_role}_project_id": service["project_id"]["value"],
+                f"railway_{key_role}_environment_id": service["environment_id"]["value"],
+                f"railway_{key_role}_service_id": service["service_id"]["value"],
+                f"railway_{key_role}_source_root": authority["source_root"],
+                f"railway_{key_role}_config_path": authority["config_path"],
+            }
+        )
     try:
         with output_path.open("a", encoding="utf-8") as output:
             for key, value in values.items():

@@ -141,9 +141,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate-source, prebuild-api, prebuild-ts-engines]
     outputs:
-      railway_project_id: ${{ steps.receipt.outputs.railway_project_id }}
-      railway_environment_id: ${{ steps.receipt.outputs.railway_environment_id }}
-      railway_service_id: ${{ steps.receipt.outputs.railway_service_id }}
+      railway_api_project_id: ${{ steps.receipt.outputs.railway_api_project_id }}
+      railway_api_environment_id: ${{ steps.receipt.outputs.railway_api_environment_id }}
+      railway_api_service_id: ${{ steps.receipt.outputs.railway_api_service_id }}
+      railway_api_source_root: ${{ steps.receipt.outputs.railway_api_source_root }}
+      railway_api_config_path: ${{ steps.receipt.outputs.railway_api_config_path }}
+      railway_typescript_engines_project_id: ${{ steps.receipt.outputs.railway_typescript_engines_project_id }}
+      railway_typescript_engines_environment_id: ${{ steps.receipt.outputs.railway_typescript_engines_environment_id }}
+      railway_typescript_engines_service_id: ${{ steps.receipt.outputs.railway_typescript_engines_service_id }}
+      railway_typescript_engines_source_root: ${{ steps.receipt.outputs.railway_typescript_engines_source_root }}
+      railway_typescript_engines_config_path: ${{ steps.receipt.outputs.railway_typescript_engines_config_path }}
     env:
       RELEASE_RECEIPT_B64: ${{ vars.DEPLOY_RELEASE_RECEIPT_B64 }}
       REQUESTED_ENVIRONMENT: ${{ github.event.inputs.environment || 'production' }}
@@ -445,9 +452,16 @@ jobs:
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      RAILWAY_PROJECT_ID: ${{ needs.validate-release-receipt.outputs.railway_project_id }}
-      RAILWAY_ENVIRONMENT_ID: ${{ needs.validate-release-receipt.outputs.railway_environment_id }}
-      RAILWAY_SERVICE_ID: ${{ needs.validate-release-receipt.outputs.railway_service_id }}
+      RAILWAY_API_PROJECT_ID: ${{ needs.validate-release-receipt.outputs.railway_api_project_id }}
+      RAILWAY_API_ENVIRONMENT_ID: ${{ needs.validate-release-receipt.outputs.railway_api_environment_id }}
+      RAILWAY_API_SERVICE_ID: ${{ needs.validate-release-receipt.outputs.railway_api_service_id }}
+      RAILWAY_API_SOURCE_ROOT: ${{ needs.validate-release-receipt.outputs.railway_api_source_root }}
+      RAILWAY_API_CONFIG_PATH: ${{ needs.validate-release-receipt.outputs.railway_api_config_path }}
+      RAILWAY_TS_PROJECT_ID: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_project_id }}
+      RAILWAY_TS_ENVIRONMENT_ID: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_environment_id }}
+      RAILWAY_TS_SERVICE_ID: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_service_id }}
+      RAILWAY_TS_SOURCE_ROOT: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_source_root }}
+      RAILWAY_TS_CONFIG_PATH: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_config_path }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -460,10 +474,23 @@ jobs:
       # failure, not a pass.
       - name: Validate Railway configuration
         run: |
-          if [[ -z "${RAILWAY_TOKEN}" || -z "${RAILWAY_PROJECT_ID}" || -z "${RAILWAY_ENVIRONMENT_ID}" || -z "${RAILWAY_SERVICE_ID}" ]]; then
-            echo "::error title=Railway not configured::The Railway project token or a manifest-bound deployment selector is missing. Set RAILWAY_TOKEN, or set vars.DEPLOY_TARGET=none to declare that this repo intentionally does not deploy."
+          required_values=(
+            RAILWAY_TOKEN
+            RAILWAY_API_PROJECT_ID RAILWAY_API_ENVIRONMENT_ID RAILWAY_API_SERVICE_ID RAILWAY_API_SOURCE_ROOT RAILWAY_API_CONFIG_PATH
+            RAILWAY_TS_PROJECT_ID RAILWAY_TS_ENVIRONMENT_ID RAILWAY_TS_SERVICE_ID RAILWAY_TS_SOURCE_ROOT RAILWAY_TS_CONFIG_PATH
+          )
+          for name in "${required_values[@]}"; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error title=Railway not configured::${name} is missing; the multi-service deployment cannot start."
+              exit 1
+            fi
+          done
+          if [[ "${RAILWAY_API_PROJECT_ID}" != "${RAILWAY_TS_PROJECT_ID}" || "${RAILWAY_API_ENVIRONMENT_ID}" != "${RAILWAY_TS_ENVIRONMENT_ID}" ]]; then
+            echo "::error title=Railway target mismatch::API and TypeScript services must share the manifest-authorized project and environment."
             exit 1
           fi
+          [[ -d "${RAILWAY_API_SOURCE_ROOT}" && -f "${RAILWAY_API_CONFIG_PATH}" ]]
+          [[ -d "${RAILWAY_TS_SOURCE_ROOT}" && -f "${RAILWAY_TS_CONFIG_PATH}" ]]
 
       - name: Verify Railway token scope
         shell: bash
@@ -477,7 +504,7 @@ jobs:
             --data '{"query":"query { projectToken { projectId environmentId } }"}')"
           actual_project_id="$(jq -er '.data.projectToken.projectId' <<< "${scope_json}")"
           actual_environment_id="$(jq -er '.data.projectToken.environmentId' <<< "${scope_json}")"
-          if [[ "${actual_project_id}" != "${RAILWAY_PROJECT_ID}" || "${actual_environment_id}" != "${RAILWAY_ENVIRONMENT_ID}" ]]; then
+          if [[ "${actual_project_id}" != "${RAILWAY_API_PROJECT_ID}" || "${actual_environment_id}" != "${RAILWAY_API_ENVIRONMENT_ID}" ]]; then
             echo "::error title=Railway token scope mismatch::The project token is not scoped to the manifest-authorized production project and environment."
             exit 1
           fi
@@ -485,14 +512,25 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli@5.41.0
 
-      - name: Deploy to Railway service
+      - name: Deploy to Railway services
         run: |
           railway --version
-          railway up \
-            --project "${RAILWAY_PROJECT_ID}" \
-            --environment "${RAILWAY_ENVIRONMENT_ID}" \
-            --service "${RAILWAY_SERVICE_ID}" \
-            --ci
+          (
+            cd "${RAILWAY_API_SOURCE_ROOT}"
+            railway up \
+              --project "${RAILWAY_API_PROJECT_ID}" \
+              --environment "${RAILWAY_API_ENVIRONMENT_ID}" \
+              --service "${RAILWAY_API_SERVICE_ID}" \
+              --ci
+          )
+          (
+            cd "${RAILWAY_TS_SOURCE_ROOT}"
+            railway up \
+              --project "${RAILWAY_TS_PROJECT_ID}" \
+              --environment "${RAILWAY_TS_ENVIRONMENT_ID}" \
+              --service "${RAILWAY_TS_SERVICE_ID}" \
+              --ci
+          )
 
       - name: Verify Railway health
         env:

@@ -521,19 +521,15 @@ def test_railway_mutation_uses_only_manifest_bound_selector() -> None:
     railway_job = deploy["jobs"]["deploy-railway"]
     railway_source = json.dumps(railway_job)
 
-    assert receipt_job["outputs"] == {
-        "railway_project_id": "${{ steps.receipt.outputs.railway_project_id }}",
-        "railway_environment_id": "${{ steps.receipt.outputs.railway_environment_id }}",
-        "railway_service_id": "${{ steps.receipt.outputs.railway_service_id }}",
-    }
-    assert railway_job["env"]["RAILWAY_PROJECT_ID"] == (
-        "${{ needs.validate-release-receipt.outputs.railway_project_id }}"
+    for role in ("api", "typescript_engines"):
+        for field in ("project_id", "environment_id", "service_id", "source_root", "config_path"):
+            key = f"railway_{role}_{field}"
+            assert receipt_job["outputs"][key] == f"${{{{ steps.receipt.outputs.{key} }}}}"
+    assert railway_job["env"]["RAILWAY_API_SERVICE_ID"] == (
+        "${{ needs.validate-release-receipt.outputs.railway_api_service_id }}"
     )
-    assert railway_job["env"]["RAILWAY_ENVIRONMENT_ID"] == (
-        "${{ needs.validate-release-receipt.outputs.railway_environment_id }}"
-    )
-    assert railway_job["env"]["RAILWAY_SERVICE_ID"] == (
-        "${{ needs.validate-release-receipt.outputs.railway_service_id }}"
+    assert railway_job["env"]["RAILWAY_TS_SERVICE_ID"] == (
+        "${{ needs.validate-release-receipt.outputs.railway_typescript_engines_service_id }}"
     )
     assert "vars.RAILWAY_SERVICE" not in railway_source
     assert "vars.RAILWAY_ENVIRONMENT" not in railway_source
@@ -544,11 +540,13 @@ def test_railway_mutation_uses_only_manifest_bound_selector() -> None:
     )["run"]
     assert install_step == "npm install -g @railway/cli@5.41.0"
     deploy_step = workflow_step_by_name(
-        deploy, "deploy-railway", "Deploy to Railway service"
+        deploy, "deploy-railway", "Deploy to Railway services"
     )["run"]
-    assert '--project "${RAILWAY_PROJECT_ID}"' in deploy_step
-    assert '--environment "${RAILWAY_ENVIRONMENT_ID}"' in deploy_step
-    assert '--service "${RAILWAY_SERVICE_ID}"' in deploy_step
+    assert deploy_step.count("railway up") == 2
+    assert 'cd "${RAILWAY_API_SOURCE_ROOT}"' in deploy_step
+    assert '--service "${RAILWAY_API_SERVICE_ID}"' in deploy_step
+    assert 'cd "${RAILWAY_TS_SOURCE_ROOT}"' in deploy_step
+    assert '--service "${RAILWAY_TS_SERVICE_ID}"' in deploy_step
 
 
 def test_release_workflows_retain_immutable_action_pins() -> None:
