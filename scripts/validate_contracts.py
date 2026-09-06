@@ -7,6 +7,7 @@ import argparse
 import ast
 import json
 import re
+import subprocess
 import sys
 from collections import Counter
 from functools import lru_cache
@@ -69,6 +70,7 @@ SOURCE_SYMBOL = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)
 SENSITIVE_KEY = re.compile(
     r"(^|_)(api_)?(token|secret|password|credential|stack|endpoint)(_|$)", re.IGNORECASE
 )
+TYPESCRIPT_ANCHOR_HELPER = Path(__file__).with_name("resolve_typescript_anchors.cjs")
 
 
 class ContractValidationError(ValueError):
@@ -195,7 +197,7 @@ def _blank_non_newlines(characters: list[str], start: int, end: int) -> None:
             characters[index] = " "
 
 
-def _quoted_literal_end(source: str, start: int, quote: str) -> int:
+def _quoted_literal_end(source: str, start: int, quote: str) -> int | None:
     index = start + 1
     while index < len(source):
         if source[index] == "\\":
@@ -203,15 +205,13 @@ def _quoted_literal_end(source: str, start: int, quote: str) -> int:
             continue
         if source[index] == quote:
             return index + 1
-        if quote != "`" and source[index] in {"\n", "\r"}:
-            return index
         index += 1
-    return len(source)
+    return None
 
 
 @lru_cache(maxsize=None)
-def _strip_c_like_comments_and_literals(source: str, *, rust: bool) -> str:
-    """Blank comments and literals while retaining source layout and braces."""
+def _strip_rust_comments_and_literals(source: str) -> str:
+    """Blank Rust comments and literals while retaining delimiter layout."""
 
     characters = list(source)
     index = 0
@@ -227,7 +227,7 @@ def _strip_c_like_comments_and_literals(source: str, *, rust: bool) -> str:
             depth = 1
             end = index + 2
             while end < len(source) and depth:
-                if rust and source.startswith("/*", end):
+                if source.startswith("/*", end):
                     depth += 1
                     end += 2
                 elif source.startswith("*/", end):
@@ -235,30 +235,41 @@ def _strip_c_like_comments_and_literals(source: str, *, rust: bool) -> str:
                     end += 2
                 else:
                     end += 1
+            if depth:
+                raise ContractValidationError(
+                    "unterminated Rust block comment prevents declaration scope proof"
+                )
             _blank_non_newlines(characters, index, end)
             index = end
             continue
 
-        if rust:
-            raw_match = re.match(r'(?:br|cr|r)(?P<hashes>#{0,255})"', source[index:])
-            if raw_match and (index == 0 or not re.match(r"[A-Za-z0-9_]", source[index - 1])):
-                terminator = '"' + raw_match.group("hashes")
-                content_start = index + raw_match.end()
-                close = source.find(terminator, content_start)
-                end = len(source) if close == -1 else close + len(terminator)
-                _blank_non_newlines(characters, index, end)
-                index = end
-                continue
+        raw_match = re.match(r'(?:br|cr|r)(?P<hashes>#{0,255})"', source[index:])
+        if raw_match and (index == 0 or not re.match(r"[A-Za-z0-9_]", source[index - 1])):
+            terminator = '"' + raw_match.group("hashes")
+            content_start = index + raw_match.end()
+            close = source.find(terminator, content_start)
+            if close == -1:
+                raise ContractValidationError(
+                    "unterminated Rust raw literal prevents declaration scope proof"
+                )
+            end = close + len(terminator)
+            _blank_non_newlines(characters, index, end)
+            index = end
+            continue
 
-            char_match = re.match(r"'(?:\\.|[^\\'\r\n])'", source[index:])
-            if char_match:
-                end = index + char_match.end()
-                _blank_non_newlines(characters, index, end)
-                index = end
-                continue
+        char_match = re.match(r"'(?:\\.|[^\\'\r\n])'", source[index:])
+        if char_match:
+            end = index + char_match.end()
+            _blank_non_newlines(characters, index, end)
+            index = end
+            continue
 
-        if source[index] == '"' or (not rust and source[index] in {"'", "`"}):
+        if source[index] == '"':
             end = _quoted_literal_end(source, index, source[index])
+            if end is None:
+                raise ContractValidationError(
+                    "unterminated Rust string literal prevents declaration scope proof"
+                )
             _blank_non_newlines(characters, index, end)
             index = end
             continue
@@ -281,44 +292,22 @@ def _matching_brace(source: str, opening: int) -> int | None:
 
 
 def _top_level_block_body(source: str, opening: int, closing: int) -> str:
-    """Keep declarations directly inside a brace block and blank nested bodies."""
+    """Keep declarations directly inside a block across every delimiter kind."""
 
-    characters: list[str] = []
-    depth = 1
-    for character in source[opening + 1 : closing]:
-        if character == "{":
-            depth += 1
-            characters.append(" ")
-        elif character == "}":
-            depth -= 1
-            characters.append(" ")
-        elif depth == 1 or character in {"\n", "\r"}:
-            characters.append(character)
-        else:
-            characters.append(" ")
-    return "".join(characters)
+    return _file_scope_source(source[opening + 1 : closing])
 
 
 def _file_scope_source(source: str) -> str:
-    """Blank brace-nested code so unqualified anchors stay file-scoped."""
+    """Blank delimiter-nested code so unqualified anchors stay file-scoped."""
 
-    characters: list[str] = []
-    depth = 0
-    for character in source:
-        if character == "{":
-            if depth == 0:
-                characters.append("\n")
-            else:
-                characters.append(" ")
-            depth += 1
-        elif character == "}":
-            depth = max(0, depth - 1)
-            characters.append("\n" if depth == 0 else " ")
-        elif depth == 0 or character in {"\n", "\r"}:
-            characters.append(character)
-        else:
-            characters.append(" ")
-    return "".join(characters)
+    depths = _delimiter_depths(source)
+    return "".join(
+        character
+        if character in {"\n", "\r"}
+        or (depths[index] == 0 and character not in "()[]{}")
+        else " "
+        for index, character in enumerate(source)
+    )
 
 
 def _rust_has_declaration(source: str, symbol: str) -> bool:
@@ -362,13 +351,52 @@ def _rust_impl_target(header: str) -> str | None:
     return match.group("path").removeprefix("::")
 
 
+def _rust_impl_body_opening(source: str, start: int) -> int | None:
+    """Find an impl body while rejecting ambiguous brace-bearing headers."""
+
+    angle_depth = 0
+    delimiters: list[str] = []
+    opening_delimiters = {"(": ")", "[": "]"}
+    closing_delimiters = {
+        closing: opening for opening, closing in opening_delimiters.items()
+    }
+    for index in range(start, len(source)):
+        character = source[index]
+        if character in opening_delimiters:
+            delimiters.append(character)
+        elif character in closing_delimiters:
+            if not delimiters or delimiters[-1] != closing_delimiters[character]:
+                raise ContractValidationError(
+                    "ambiguous Rust impl header prevents declaration scope proof"
+                )
+            delimiters.pop()
+        elif character == "<":
+            angle_depth += 1
+        elif character == ">" and angle_depth:
+            angle_depth -= 1
+        elif character == "{":
+            if delimiters or angle_depth:
+                raise ContractValidationError(
+                    "brace-bearing Rust impl header is unsupported for "
+                    "declaration scope proof"
+                )
+            return index
+        elif character in ";}" and not delimiters and angle_depth == 0:
+            return None
+    if delimiters or angle_depth:
+        raise ContractValidationError(
+            "unterminated Rust impl header prevents declaration scope proof"
+        )
+    return None
+
+
 def _rust_has_qualified_declaration(source: str, qualifier: str, symbol: str) -> bool:
-    depths = _brace_depths(source)
+    depths = _delimiter_depths(source)
     for implementation in re.finditer(r"\bimpl\b", source):
         if depths[implementation.start()] != 0:
             continue
-        opening = source.find("{", implementation.end())
-        if opening == -1:
+        opening = _rust_impl_body_opening(source, implementation.end())
+        if opening is None:
             continue
         header = source[implementation.end() : opening]
         if "}" in header or ";" in header:
@@ -388,43 +416,50 @@ def _rust_has_qualified_declaration(source: str, qualifier: str, symbol: str) ->
     return False
 
 
-def _typescript_has_declaration(source: str, symbol: str) -> bool:
-    escaped = re.escape(symbol)
-    named = re.compile(
-        rf"(?m)^\s*(?:(?:export|default|declare|abstract|async)\s+)*"
-        rf"(?:function|class|interface|type|enum|namespace)\s+{escaped}\b"
-    )
-    variable = re.compile(
-        rf"(?m)^\s*(?:(?:export|default|declare)\s+)*"
-        rf"(?:const|let|var)\s+{escaped}\b"
-    )
-    return named.search(source) is not None or variable.search(source) is not None
+@lru_cache(maxsize=None)
+def _typescript_declarations(source: str, file_name: str) -> frozenset[str]:
+    """Resolve JS/TS declarations through the locked TypeScript compiler API."""
 
-
-def _typescript_has_qualified_declaration(
-    source: str, qualifier: str, symbol: str
-) -> bool:
-    depths = _brace_depths(source)
-    qualifier_pattern = re.escape(qualifier)
-    for declaration in re.finditer(
-        rf"\b(?:class|interface|namespace)\s+{qualifier_pattern}\b[^{{;]*{{",
-        source,
-    ):
-        if depths[declaration.start()] != 0:
-            continue
-        opening = declaration.end() - 1
-        closing = _matching_brace(source, opening)
-        if closing is None:
-            continue
-        body = _top_level_block_body(source, opening, closing)
-        escaped = re.escape(symbol)
-        member = re.compile(
-            rf"(?m)^\s*(?:(?:public|private|protected|static|readonly|abstract|async|"
-            rf"declare|override|get|set)\s+)*{escaped}\s*(?:<[^;{{}}]*>)?\s*(?:\(|[:=])"
+    request = json.dumps({"fileName": file_name, "source": source})
+    try:
+        result = subprocess.run(
+            ["node", str(TYPESCRIPT_ANCHOR_HELPER)],
+            input=request,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=15,
         )
-        if member.search(body) is not None:
-            return True
-    return False
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise ContractValidationError(
+            f"TypeScript parser helper unavailable: {error}"
+        ) from error
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip().splitlines()
+        summary = detail[0][:500] if detail else "no diagnostic output"
+        raise ContractValidationError(f"TypeScript parser helper failed: {summary}")
+
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as error:
+        raise ContractValidationError(
+            "TypeScript parser helper returned malformed JSON"
+        ) from error
+    if not isinstance(payload, dict) or set(payload) != {"anchors"}:
+        raise ContractValidationError(
+            "TypeScript parser helper returned an invalid response shape"
+        )
+    anchors = payload["anchors"]
+    if (
+        not isinstance(anchors, list)
+        or any(not isinstance(anchor, str) for anchor in anchors)
+        or any(SOURCE_SYMBOL.fullmatch(anchor) is None for anchor in anchors)
+        or len(set(anchors)) != len(anchors)
+    ):
+        raise ContractValidationError(
+            "TypeScript parser helper returned invalid source anchors"
+        )
+    return frozenset(anchors)
 
 
 def _python_declarations(source: str, path: Path, context: str) -> set[str]:
@@ -467,17 +502,29 @@ def _python_declarations(source: str, path: Path, context: str) -> set[str]:
 
 
 @lru_cache(maxsize=None)
-def _brace_depths(source: str) -> tuple[int, ...]:
-    """Return lexical brace depth at every character in sanitized source."""
+def _delimiter_depths(source: str) -> tuple[int, ...]:
+    """Return lexical `()[]{}` depth and fail closed on unbalanced source."""
 
+    opening_delimiters = {"(": ")", "[": "]", "{": "}"}
+    closing_delimiters = {
+        closing: opening for opening, closing in opening_delimiters.items()
+    }
+    stack: list[str] = []
     depths: list[int] = []
-    depth = 0
     for character in source:
-        depths.append(depth)
-        if character == "{":
-            depth += 1
-        elif character == "}":
-            depth = max(0, depth - 1)
+        depths.append(len(stack))
+        if character in opening_delimiters:
+            stack.append(character)
+        elif character in closing_delimiters:
+            if not stack or stack[-1] != closing_delimiters[character]:
+                raise ContractValidationError(
+                    "unbalanced source delimiters prevent declaration scope proof"
+                )
+            stack.pop()
+    if stack:
+        raise ContractValidationError(
+            "unbalanced source delimiters prevent declaration scope proof"
+        )
     return tuple(depths)
 
 
@@ -490,7 +537,7 @@ def source_anchor_exists(
     parts = fragment.split("::")
     suffix = path.suffix.lower()
     if suffix == ".rs":
-        cleaned = _strip_c_like_comments_and_literals(source, rust=True)
+        cleaned = _strip_rust_comments_and_literals(source)
         if len(parts) == 1:
             return _rust_has_declaration(_file_scope_source(cleaned), parts[0])
         qualifier = "::".join(parts[:-1])
@@ -500,11 +547,7 @@ def source_anchor_exists(
             f"{context}: unsupported repo:// source file type for anchor: {path.suffix!r}"
         )
     if suffix in {".ts", ".mts", ".cts", ".js", ".mjs", ".cjs"}:
-        cleaned = _strip_c_like_comments_and_literals(source, rust=False)
-        if len(parts) == 1:
-            return _typescript_has_declaration(_file_scope_source(cleaned), parts[0])
-        qualifier = "::".join(parts[:-1])
-        return _typescript_has_qualified_declaration(cleaned, qualifier, parts[-1])
+        return fragment in _typescript_declarations(source, path.name)
     if suffix == ".py":
         return fragment in _python_declarations(source, path, context)
     raise ContractValidationError(

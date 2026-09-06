@@ -68,6 +68,31 @@ def assert_rust_compiles(source_path: Path, output_path: Path) -> None:
     assert result.returncode == 0, result.stderr
 
 
+def assert_javascript_or_typescript_parses(source_path: Path) -> None:
+    if source_path.suffix == ".js":
+        command = ["node", "--check", str(source_path)]
+    else:
+        command = [
+            str(REPO_ROOT / "node_modules" / ".bin" / "tsc"),
+            "--pretty",
+            "false",
+            "--noEmit",
+            "--skipLibCheck",
+            "--target",
+            "ES2022",
+            "--module",
+            "ESNext",
+            str(source_path),
+        ]
+    result = subprocess.run(
+        command,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
 def engine_registry(authority: Path) -> tuple[Path, dict[str, object]]:
     registry_path = authority / "registries" / "engines.json"
     return registry_path, read_json(registry_path)
@@ -782,7 +807,10 @@ def test_rust_byte_c_character_lifetime_and_label_syntax_preserves_scope(
     assert_rust_compiles(source_path, tmp_path / "rust-literals.rmeta")
 
     for rejected in ("byte_literal_anchor", "c_literal_anchor"):
-        with pytest.raises(ContractValidationError, match="source anchor does not exist"):
+        with pytest.raises(
+            ContractValidationError,
+            match="source anchor does not exist",
+        ):
             validate_repo_reference(
                 f"repo://rust-literals.rs#{rejected}",
                 tmp_path,
@@ -793,6 +821,471 @@ def test_rust_byte_c_character_lifetime_and_label_syntax_preserves_scope(
         tmp_path,
         "test evidence",
     )
+
+
+@pytest.mark.parametrize(
+    ("delimiter_name", "opening", "closing"),
+    [
+        ("parentheses", "(", ")"),
+        ("brackets", "[", "]"),
+        ("braces", "{", "}"),
+    ],
+)
+@pytest.mark.parametrize(
+    ("token_tree", "fragment"),
+    [
+        ("fn macro_function_anchor() {}", "macro_function_anchor"),
+        (
+            "impl MacroOwner { fn macro_method_anchor() {} }",
+            "MacroOwner::macro_method_anchor",
+        ),
+    ],
+)
+def test_rust_macro_token_tree_cannot_satisfy_source_anchor(
+    tmp_path: Path,
+    delimiter_name: str,
+    opening: str,
+    closing: str,
+    token_tree: str,
+    fragment: str,
+) -> None:
+    source_path = tmp_path / f"macro-{delimiter_name}-{fragment.split('::')[-1]}.rs"
+    terminator = "" if opening == "{" else ";"
+    source_path.write_text(
+        "macro_rules! discard { ($($tokens:tt)*) => {}; }\n"
+        "struct MacroOwner;\n"
+        f"discard!{opening}\n{token_tree}\n{closing}{terminator}\n",
+        encoding="utf-8",
+    )
+    assert_rust_compiles(source_path, source_path.with_suffix(".rmeta"))
+
+    with pytest.raises(ContractValidationError, match="source anchor does not exist"):
+        validate_repo_reference(
+            f"repo://{source_path.name}#{fragment}",
+            tmp_path,
+            "test evidence",
+        )
+
+
+def test_rust_macro_definition_tokens_cannot_satisfy_source_anchors(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "macro-definition.rs"
+    source_path.write_text(
+        "struct MacroDefinitionOwner;\n"
+        "macro_rules! hidden_items {\n"
+        "    () => {\n"
+        "        fn macro_definition_anchor() {}\n"
+        "        impl MacroDefinitionOwner { fn hidden_method_anchor() {} }\n"
+        "    };\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    assert_rust_compiles(source_path, source_path.with_suffix(".rmeta"))
+
+    for fragment in (
+        "macro_definition_anchor",
+        "MacroDefinitionOwner::hidden_method_anchor",
+    ):
+        with pytest.raises(ContractValidationError, match="source anchor does not exist"):
+            validate_repo_reference(
+                f"repo://{source_path.name}#{fragment}",
+                tmp_path,
+                "test evidence",
+            )
+
+
+def test_rust_impl_scope_accepts_direct_member_and_rejects_macro_input(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "direct-impl.rs"
+    source_path.write_text(
+        "macro_rules! discard { ($($tokens:tt)*) => {}; }\n"
+        "struct DirectOwner;\n"
+        "impl DirectOwner {\n"
+        "    discard!(fn impl_macro_anchor() {});\n"
+        "    #[allow(dead_code)]\n"
+        "    pub(crate) fn direct_impl_anchor(&self) {}\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    assert_rust_compiles(source_path, source_path.with_suffix(".rmeta"))
+
+    validate_repo_reference(
+        "repo://direct-impl.rs#DirectOwner::direct_impl_anchor",
+        tmp_path,
+        "test evidence",
+    )
+    with pytest.raises(ContractValidationError, match="source anchor does not exist"):
+        validate_repo_reference(
+            "repo://direct-impl.rs#DirectOwner::impl_macro_anchor",
+            tmp_path,
+            "test evidence",
+        )
+
+
+def test_rust_const_generic_brace_impl_header_fails_closed(tmp_path: Path) -> None:
+    source_path = tmp_path / "const-generic-impl.rs"
+    source_path.write_text(
+        "struct ConstOwner<const VALUE: usize>;\n"
+        "impl ConstOwner<{ 1 }> {\n"
+        "    fn const_generic_method_anchor(&self) {}\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    assert_rust_compiles(source_path, source_path.with_suffix(".rmeta"))
+
+    with pytest.raises(ContractValidationError, match="brace-bearing Rust impl header"):
+        validate_repo_reference(
+            "repo://const-generic-impl.rs#ConstOwner::const_generic_method_anchor",
+            tmp_path,
+            "test evidence",
+        )
+
+
+@pytest.mark.parametrize(
+    ("name", "source", "diagnostic"),
+    [
+        (
+            "block-comment",
+            "/* outer /* nested */\nfn hidden_anchor() {}\n",
+            "unterminated Rust block comment",
+        ),
+        (
+            "string",
+            'const TEXT: &str = "ignored\nfn hidden_anchor() {}\n',
+            "unterminated Rust string literal",
+        ),
+        (
+            "raw-string",
+            'const TEXT: &str = r##"ignored\nfn hidden_anchor() {}\n',
+            "unterminated Rust raw literal",
+        ),
+    ],
+)
+def test_unterminated_rust_lexical_regions_fail_closed(
+    tmp_path: Path,
+    name: str,
+    source: str,
+    diagnostic: str,
+) -> None:
+    source_path = tmp_path / f"unterminated-{name}.rs"
+    source_path.write_text(source, encoding="utf-8")
+
+    with pytest.raises(ContractValidationError, match=diagnostic):
+        validate_repo_reference(
+            f"repo://{source_path.name}#hidden_anchor",
+            tmp_path,
+            "test evidence",
+        )
+
+
+@pytest.mark.parametrize("suffix", [".ts", ".js"])
+@pytest.mark.parametrize(
+    "expression_context",
+    ["parenthesized", "array", "assigned", "argument", "conditional", "arrow"],
+)
+@pytest.mark.parametrize("declaration_kind", ["function", "class"])
+def test_javascript_typescript_named_expression_cannot_satisfy_source_anchor(
+    tmp_path: Path,
+    suffix: str,
+    expression_context: str,
+    declaration_kind: str,
+) -> None:
+    if declaration_kind == "function":
+        declaration = "function expressionFunctionAnchor() {}"
+        fragment = "expressionFunctionAnchor"
+    else:
+        declaration = "class ExpressionOwner { method() {} }"
+        fragment = "ExpressionOwner::method"
+
+    source = {
+        "parenthesized": f"const value = (\n{declaration}\n);\n",
+        "array": f"const value = [\n{declaration}\n];\n",
+        "assigned": f"const value =\n{declaration};\n",
+        "argument": (
+            "function consume(value) { return value; }\n"
+            f"consume(\n{declaration}\n);\n"
+        ),
+        "conditional": f"const value = true ?\n{declaration}\n: null;\n",
+        "arrow": f"const value = () =>\n{declaration};\n",
+    }[expression_context]
+    source_path = tmp_path / f"named-{expression_context}-{declaration_kind}{suffix}"
+    source_path.write_text(source, encoding="utf-8")
+    assert_javascript_or_typescript_parses(source_path)
+
+    with pytest.raises(ContractValidationError, match="source anchor does not exist"):
+        validate_repo_reference(
+            f"repo://{source_path.name}#{fragment}",
+            tmp_path,
+            "test evidence",
+        )
+
+
+@pytest.mark.parametrize("suffix", [".ts", ".js"])
+def test_javascript_regex_opening_brace_does_not_hide_top_level_declaration(
+    tmp_path: Path,
+    suffix: str,
+) -> None:
+    source_path = tmp_path / f"regex-opening{suffix}"
+    source_path.write_text(
+        "const pattern = /\\{/;\nfunction regexOpeningAnchor() {}\n",
+        encoding="utf-8",
+    )
+    assert_javascript_or_typescript_parses(source_path)
+
+    validate_repo_reference(
+        f"repo://{source_path.name}#regexOpeningAnchor",
+        tmp_path,
+        "test evidence",
+    )
+
+
+@pytest.mark.parametrize("suffix", [".ts", ".js"])
+def test_javascript_regex_closing_brace_does_not_expose_nested_declaration(
+    tmp_path: Path,
+    suffix: str,
+) -> None:
+    source_path = tmp_path / f"regex-closing{suffix}"
+    source_path.write_text(
+        "function outer() {\n"
+        "    const pattern = /\\}/;\n"
+        "    function regexNestedAnchor() {}\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    assert_javascript_or_typescript_parses(source_path)
+
+    with pytest.raises(ContractValidationError, match="source anchor does not exist"):
+        validate_repo_reference(
+            f"repo://{source_path.name}#regexNestedAnchor",
+            tmp_path,
+            "test evidence",
+        )
+
+
+@pytest.mark.parametrize("suffix", [".ts", ".js"])
+def test_javascript_regex_escapes_character_class_and_flags_preserve_scope(
+    tmp_path: Path,
+    suffix: str,
+) -> None:
+    source_path = tmp_path / f"regex-complex{suffix}"
+    source_path.write_text(
+        "const pattern = /https?:\\/\\/[a-z{}]+/giu;\n"
+        "function regexComplexAnchor() {}\n",
+        encoding="utf-8",
+    )
+    assert_javascript_or_typescript_parses(source_path)
+
+    validate_repo_reference(
+        f"repo://{source_path.name}#regexComplexAnchor",
+        tmp_path,
+        "test evidence",
+    )
+
+
+@pytest.mark.parametrize("suffix", [".ts", ".js"])
+@pytest.mark.parametrize(
+    "division_expression",
+    ["numerator / denominator", "(numerator + 1) / denominator"],
+)
+def test_javascript_division_around_declaration_preserves_scope(
+    tmp_path: Path,
+    suffix: str,
+    division_expression: str,
+) -> None:
+    source_path = tmp_path / f"division{suffix}"
+    source_path.write_text(
+        "const numerator = 8\n"
+        "const denominator = 2\n"
+        f"const ratio = {division_expression}\n"
+        "function divisionAnchor() {}\n",
+        encoding="utf-8",
+    )
+    assert_javascript_or_typescript_parses(source_path)
+
+    validate_repo_reference(
+        f"repo://{source_path.name}#divisionAnchor",
+        tmp_path,
+        "test evidence",
+    )
+
+
+@pytest.mark.parametrize("suffix", [".ts", ".js"])
+def test_javascript_post_block_regex_uses_parser_context(
+    tmp_path: Path,
+    suffix: str,
+) -> None:
+    source_path = tmp_path / f"ambiguous-slash{suffix}"
+    source_path.write_text(
+        "if (true) {}\n"
+        "/\\}/.test(\"}\")\n"
+        "function ambiguousSlashAnchor() {}\n",
+        encoding="utf-8",
+    )
+    assert_javascript_or_typescript_parses(source_path)
+
+    validate_repo_reference(
+        f"repo://{source_path.name}#ambiguousSlashAnchor",
+        tmp_path,
+        "test evidence",
+    )
+
+
+@pytest.mark.parametrize("suffix", [".ts", ".js"])
+def test_javascript_control_header_regex_uses_parser_context(
+    tmp_path: Path,
+    suffix: str,
+) -> None:
+    source_path = tmp_path / f"control-header-regex{suffix}"
+    source_path.write_text(
+        'if (/\\{/.test("{")) {}\nfunction controlRegexAnchor() {}\n',
+        encoding="utf-8",
+    )
+    assert_javascript_or_typescript_parses(source_path)
+
+    validate_repo_reference(
+        f"repo://{source_path.name}#controlRegexAnchor",
+        tmp_path,
+        "test evidence",
+    )
+
+
+@pytest.mark.parametrize("suffix", [".ts", ".js"])
+def test_javascript_slash_equals_operator_and_regex_use_parser_context(
+    tmp_path: Path,
+    suffix: str,
+) -> None:
+    source_path = tmp_path / f"slash-equals{suffix}"
+    source_path.write_text(
+        "let value = 4;\n"
+        "value /= 2;\n"
+        "const equality = /=/;\n"
+        "function slashEqualsAnchor() {}\n",
+        encoding="utf-8",
+    )
+    assert_javascript_or_typescript_parses(source_path)
+
+    validate_repo_reference(
+        f"repo://{source_path.name}#slashEqualsAnchor",
+        tmp_path,
+        "test evidence",
+    )
+
+
+def test_typescript_parse_diagnostics_fail_closed(tmp_path: Path) -> None:
+    source_path = tmp_path / "invalid-source.ts"
+    source_path.write_text("export function broken( {\n", encoding="utf-8")
+
+    with pytest.raises(
+        ContractValidationError,
+        match="TypeScript parser helper failed",
+    ):
+        validate_repo_reference(
+            "repo://invalid-source.ts#broken",
+            tmp_path,
+            "test evidence",
+        )
+
+
+def test_typescript_parser_runtime_failure_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_path = tmp_path / "runtime-failure.ts"
+    source_path.write_text("export function runtimeAnchor() {}\n", encoding="utf-8")
+    validate_contracts_module._typescript_declarations.cache_clear()
+
+    def missing_runtime(*args: object, **kwargs: object) -> object:
+        raise FileNotFoundError("node unavailable")
+
+    monkeypatch.setattr(validate_contracts_module.subprocess, "run", missing_runtime)
+    with pytest.raises(ContractValidationError, match="parser helper unavailable"):
+        validate_repo_reference(
+            "repo://runtime-failure.ts#runtimeAnchor",
+            tmp_path,
+            "test evidence",
+        )
+
+
+def test_typescript_parser_dependency_failure_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_path = tmp_path / "dependency-failure.ts"
+    source_path.write_text("export function dependencyAnchor() {}\n", encoding="utf-8")
+    isolated_helper = tmp_path / "isolated" / "resolve_typescript_anchors.cjs"
+    isolated_helper.parent.mkdir()
+    shutil.copy(validate_contracts_module.TYPESCRIPT_ANCHOR_HELPER, isolated_helper)
+    monkeypatch.setattr(
+        validate_contracts_module,
+        "TYPESCRIPT_ANCHOR_HELPER",
+        isolated_helper,
+    )
+    monkeypatch.setenv("NODE_PATH", "")
+    validate_contracts_module._typescript_declarations.cache_clear()
+
+    with pytest.raises(
+        ContractValidationError,
+        match="TypeScript parser helper failed: TypeScript compiler API is unavailable",
+    ):
+        validate_repo_reference(
+            "repo://dependency-failure.ts#dependencyAnchor",
+            tmp_path,
+            "test evidence",
+        )
+
+
+@pytest.mark.parametrize(
+    ("helper_source", "diagnostic"),
+    [
+        (
+            'process.stderr.write("forced failure\\n"); process.exit(9);\n',
+            "parser helper failed",
+        ),
+        ('process.stdout.write("not-json\\n");\n', "returned malformed JSON"),
+        (
+            'process.stdout.write(JSON.stringify({ anchors: "bad" }));\n',
+            "returned invalid source anchors",
+        ),
+    ],
+)
+def test_typescript_parser_helper_failures_fail_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    helper_source: str,
+    diagnostic: str,
+) -> None:
+    source_path = tmp_path / "helper-failure.ts"
+    source_path.write_text("export function helperAnchor() {}\n", encoding="utf-8")
+    helper = tmp_path / "failing-helper.cjs"
+    helper.write_text(helper_source, encoding="utf-8")
+    monkeypatch.setattr(validate_contracts_module, "TYPESCRIPT_ANCHOR_HELPER", helper)
+    validate_contracts_module._typescript_declarations.cache_clear()
+
+    with pytest.raises(ContractValidationError, match=diagnostic):
+        validate_repo_reference(
+            "repo://helper-failure.ts#helperAnchor",
+            tmp_path,
+            "test evidence",
+        )
+
+
+def test_typescript_parser_is_an_exact_root_dependency() -> None:
+    package = read_json(REPO_ROOT / "package.json")
+    dev_dependencies = package["devDependencies"]
+    assert isinstance(dev_dependencies, dict)
+    assert dev_dependencies["typescript"] == "5.9.3"
+
+    result = subprocess.run(
+        ["node", "-e", "process.stdout.write(require('typescript').version)"],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "5.9.3"
 
 
 @pytest.mark.parametrize(

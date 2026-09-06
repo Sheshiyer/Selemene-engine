@@ -15,7 +15,11 @@ second_rechecked_at: 2026-09-06T15:08:34Z
 final_recheck_findings: 1
 final_recheck_fixed: 1
 final_rechecked_at: 2026-09-06T15:18:15Z
-status: all_fixed
+third_recheck_findings: 4
+third_recheck_fixes_applied: 4
+third_recheck_reviewed_head: 5e3f2df52c3ab38775f1dc8e5a3863750bbb85c7
+third_recheck_fixed_at: 2026-09-06T15:54:11Z
+status: fixes_complete_pending_independent_recheck
 production_promotion: HOLD
 ---
 
@@ -135,6 +139,94 @@ The earlier two-pass implementation removed HTML comments across the whole docum
 
 **Commit:** Atomic final Markdown state-ordering follow-up containing this evidence entry.
 
+## Third Independent Recheck Follow-up
+
+The third recheck reviewed exact head `5e3f2df52c3ab38775f1dc8e5a3863750bbb85c7`
+and reported four warnings. The dispositions below describe the current local repair;
+they remain pending an independent review of the resulting committed snapshot.
+
+### WR-R3-01: Expression and macro token trees crossed declaration scope
+
+**Disposition:** Fix applied; pending independent recheck.
+
+Rust source scope now uses a strict stack for every `()[]{}` delimiter. Unqualified
+items must be in the empty file frame, and qualified methods must be in the direct
+body frame of a file-level `impl`. Compile-backed probes reject function and impl
+tokens in all three macro invocation delimiters, tokens retained in a macro
+definition, and a method token passed to a macro inside a real impl. A direct
+`pub(crate)` impl method with an attribute still resolves.
+
+The Rust lexical pass fails closed on mismatched or unclosed delimiters,
+unterminated nested block comments, unterminated normal strings and unterminated
+`r`, `br`, or `cr` raw literals. Impl headers with brace groups are deliberately
+unsupported: a valid const-generic `impl Owner<{ 1 }>` probe rejects rather than
+mistaking the const-expression brace for the impl body. Lifetime/generic inherent
+and trait impl controls remain valid.
+
+JavaScript and TypeScript declarations are now derived from the TypeScript compiler
+AST. Only direct `SourceFile.statements` and direct named class, interface, and
+namespace members become anchors. Named function and class expressions in
+assignments, parentheses, arrays, arguments, conditionals, or arrow bodies do not.
+
+### WR-R3-02: Regex literals corrupted JavaScript and TypeScript brace depth
+
+**Disposition:** Fix applied; pending independent recheck.
+
+The handwritten JavaScript slash classifier was removed. A small Node helper parses
+the original source through the exact root dependency `typescript@5.9.3`; its
+results are cached by file name and source. Compiler context now handles escaped
+slashes, character classes, flags, regex braces, `/=` versus `/=/`, regex literals
+after control or block syntax, and ordinary numeric or parenthesized division.
+
+The resolver fails closed when Node or TypeScript is unavailable, the helper exits
+nonzero or times out, the compiler reports parse diagnostics, or helper output is
+malformed, incorrectly shaped, duplicated, or contains an unsupported anchor.
+`.tsx` and `.jsx` remain explicitly unsupported rather than treating JSX text as
+source evidence.
+
+### WR-R3-03: Fence-contained comment markers hid later Markdown headings
+
+**Disposition:** Fixed in `962ac1850a0667b9aadb56f7faf33c0692b8373a`.
+
+The ordered Markdown block-state parser and its backtick, tilde, closed-comment and
+unclosed-comment probes are recorded in the preceding follow-up. This repair does
+not alter that parser.
+
+### WR-R3-04: The ledger asserted clean status despite residual defects
+
+**Disposition:** Fixed as a status correction; pending independent recheck.
+
+This ledger now records the exact third-recheck head and uses
+`fixes_complete_pending_independent_recheck`. It does not assert a clean result from
+its own local tests. Production promotion remains `HOLD`, and both production
+mutation profiles remain disabled.
+
+**Red/green evidence:** Before the initial R3 implementation, its focused selection
+reported 22 failed, 6 passed and 75 deselected. After the parser-backed repair and
+the expanded reviewer and design-audit matrix, the focused selection passed 59
+cases with 75 deselected.
+
+**Current local verification:**
+
+- `python3 -m pytest tests/scripts/test_validate_contracts.py -q`: 134 passed.
+- Focused R3 adversarial selection: 59 passed, 75 deselected.
+- `python3 scripts/validate_contracts.py`: `schemas=6 fixtures=5 registries=1 engines=19`.
+- `python3 -m pytest tests/scripts/test_validate_release_receipt.py -q`: 40 passed.
+- `python3 scripts/validate_release_receipt.py --validate-fixtures`: `receipts=2 mutation_cases=9`.
+- `python3 -m py_compile scripts/validate_contracts.py tests/scripts/test_validate_contracts.py`: passed.
+- `node --check scripts/resolve_typescript_anchors.cjs`: passed.
+- `pnpm install --offline --ignore-scripts --frozen-lockfile`: passed with the lockfile unchanged.
+- `git diff --check`: passed before the ledger update and is rerun before commit.
+- Registry digest: `sha256:c801fb49332f5c78cdf78417b6efd343cfcf30dc26e6ce7259cfc6157b707896`; no contract or release fixture changed in this repair.
+
+**Files:** `scripts/validate_contracts.py`,
+`scripts/resolve_typescript_anchors.cjs`,
+`tests/scripts/test_validate_contracts.py`, `package.json`, `pnpm-lock.yaml`, and
+this ledger.
+
+**Commit:** Atomic WR-R3 parser-backed source-resolver follow-up containing this
+evidence entry.
+
 ## Production Mutation Disposition
 
 `deploy-production` and `release-production` both have `mutation_policy.status: disabled` in `contracts/release/v1/manifest.json`. Operational validation fails before provider outputs or writes. Re-enabling either profile requires repository-independent authority that this local repair cannot invent:
@@ -166,4 +258,8 @@ All commands ran with production database variables removed where applicable.
 
 ## Remaining Evidence Boundary
 
-No Critical or Warning review finding remains accepted by an enabled mutation path. Phase 2 remains `gaps_found` until this exact candidate has current-source remote CI. The disabled production profiles and the production HOLD remain until their named external authorities are observed and reviewed.
+The WR-R3 repair has local test and canonical-validator evidence, but it has not yet
+received an independent committed-snapshot recheck. Phase 2 remains `gaps_found`
+until that recheck and current-source remote CI exist. The disabled production
+profiles and the production `HOLD` remain until their named external authorities
+are observed and reviewed.

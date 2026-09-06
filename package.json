@@ -13,7 +13,8 @@
     "gate": "pnpm run gate:scripts && pnpm run gate:contracts && pnpm run gate:verification && pnpm run gate:ts"
   },
   "devDependencies": {
-    "shadcn": "^4.21.0"
+    "shadcn": "^4.21.0",
+    "typescript": "5.9.3"
   },
   "pnpm": {
     "overrides": {

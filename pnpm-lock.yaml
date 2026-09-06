@@ -27,6 +27,9 @@ importers:
       shadcn:
         specifier: ^4.21.0
         version: 4.21.0(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
 
   apps/admin-web:
     dependencies:
