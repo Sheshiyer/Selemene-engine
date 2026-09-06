@@ -153,11 +153,21 @@ jobs:
       railway_api_service_id: ${{ steps.receipt.outputs.railway_api_service_id }}
       railway_api_source_root: ${{ steps.receipt.outputs.railway_api_source_root }}
       railway_api_config_path: ${{ steps.receipt.outputs.railway_api_config_path }}
+      railway_api_health_origin: ${{ steps.receipt.outputs.railway_api_health_origin }}
+      railway_api_health_path: ${{ steps.receipt.outputs.railway_api_health_path }}
+      railway_api_health_status_field: ${{ steps.receipt.outputs.railway_api_health_status_field }}
+      railway_api_health_status_value: ${{ steps.receipt.outputs.railway_api_health_status_value }}
+      railway_api_source_revision_field: ${{ steps.receipt.outputs.railway_api_source_revision_field }}
       railway_typescript_engines_project_id: ${{ steps.receipt.outputs.railway_typescript_engines_project_id }}
       railway_typescript_engines_environment_id: ${{ steps.receipt.outputs.railway_typescript_engines_environment_id }}
       railway_typescript_engines_service_id: ${{ steps.receipt.outputs.railway_typescript_engines_service_id }}
       railway_typescript_engines_source_root: ${{ steps.receipt.outputs.railway_typescript_engines_source_root }}
       railway_typescript_engines_config_path: ${{ steps.receipt.outputs.railway_typescript_engines_config_path }}
+      railway_typescript_engines_health_origin: ${{ steps.receipt.outputs.railway_typescript_engines_health_origin }}
+      railway_typescript_engines_health_path: ${{ steps.receipt.outputs.railway_typescript_engines_health_path }}
+      railway_typescript_engines_health_status_field: ${{ steps.receipt.outputs.railway_typescript_engines_health_status_field }}
+      railway_typescript_engines_health_status_value: ${{ steps.receipt.outputs.railway_typescript_engines_health_status_value }}
+      railway_typescript_engines_source_revision_field: ${{ steps.receipt.outputs.railway_typescript_engines_source_revision_field }}
     env:
       RELEASE_RECEIPT_B64: ${{ vars.DEPLOY_RELEASE_RECEIPT_B64 }}
       REQUESTED_ENVIRONMENT: ${{ github.event.inputs.environment || 'production' }}
@@ -456,11 +466,21 @@ jobs:
       RAILWAY_API_SERVICE_ID: ${{ needs.validate-release-receipt.outputs.railway_api_service_id }}
       RAILWAY_API_SOURCE_ROOT: ${{ needs.validate-release-receipt.outputs.railway_api_source_root }}
       RAILWAY_API_CONFIG_PATH: ${{ needs.validate-release-receipt.outputs.railway_api_config_path }}
+      RAILWAY_API_HEALTH_ORIGIN: ${{ needs.validate-release-receipt.outputs.railway_api_health_origin }}
+      RAILWAY_API_HEALTH_PATH: ${{ needs.validate-release-receipt.outputs.railway_api_health_path }}
+      RAILWAY_API_HEALTH_STATUS_FIELD: ${{ needs.validate-release-receipt.outputs.railway_api_health_status_field }}
+      RAILWAY_API_HEALTH_STATUS_VALUE: ${{ needs.validate-release-receipt.outputs.railway_api_health_status_value }}
+      RAILWAY_API_SOURCE_REVISION_FIELD: ${{ needs.validate-release-receipt.outputs.railway_api_source_revision_field }}
       RAILWAY_TS_PROJECT_ID: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_project_id }}
       RAILWAY_TS_ENVIRONMENT_ID: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_environment_id }}
       RAILWAY_TS_SERVICE_ID: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_service_id }}
       RAILWAY_TS_SOURCE_ROOT: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_source_root }}
       RAILWAY_TS_CONFIG_PATH: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_config_path }}
+      RAILWAY_TS_HEALTH_ORIGIN: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_health_origin }}
+      RAILWAY_TS_HEALTH_PATH: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_health_path }}
+      RAILWAY_TS_HEALTH_STATUS_FIELD: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_health_status_field }}
+      RAILWAY_TS_HEALTH_STATUS_VALUE: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_health_status_value }}
+      RAILWAY_TS_SOURCE_REVISION_FIELD: ${{ needs.validate-release-receipt.outputs.railway_typescript_engines_source_revision_field }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -476,7 +496,9 @@ jobs:
           required_values=(
             RAILWAY_TOKEN
             RAILWAY_API_PROJECT_ID RAILWAY_API_ENVIRONMENT_ID RAILWAY_API_SERVICE_ID RAILWAY_API_SOURCE_ROOT RAILWAY_API_CONFIG_PATH
+            RAILWAY_API_HEALTH_ORIGIN RAILWAY_API_HEALTH_PATH RAILWAY_API_HEALTH_STATUS_FIELD RAILWAY_API_HEALTH_STATUS_VALUE RAILWAY_API_SOURCE_REVISION_FIELD
             RAILWAY_TS_PROJECT_ID RAILWAY_TS_ENVIRONMENT_ID RAILWAY_TS_SERVICE_ID RAILWAY_TS_SOURCE_ROOT RAILWAY_TS_CONFIG_PATH
+            RAILWAY_TS_HEALTH_ORIGIN RAILWAY_TS_HEALTH_PATH RAILWAY_TS_HEALTH_STATUS_FIELD RAILWAY_TS_HEALTH_STATUS_VALUE RAILWAY_TS_SOURCE_REVISION_FIELD
           )
           for name in "${required_values[@]}"; do
             if [[ -z "${!name:-}" ]]; then
@@ -531,29 +553,39 @@ jobs:
               --ci
           )
 
-      - name: Verify Railway health
-        env:
-          HEALTH_BASE: ${{ vars.API_BASE_URL }}
+      - name: Verify manifest-bound Railway health and source
+        shell: bash
         run: |
-          # A project token can't run `railway status` to discover the .railway.app
-          # URL (also an account op), so verify the real production endpoint
-          # (custom domain) directly.
-          BASE="${HEALTH_BASE:-https://selemene.tryambakam.space}"
-          echo "Checking ${BASE}/health/live after deploy..."
-          for attempt in {1..18}; do
-            STATUS_CODE=$(curl -sS -o /tmp/railway-health.json -w "%{http_code}" "${BASE}/health/live" || echo "000")
-            if [[ "${STATUS_CODE}" == "200" ]]; then
-              echo "Health check passed on attempt ${attempt}."
-              cat /tmp/railway-health.json
-              exit 0
-            fi
-            echo "Attempt ${attempt}/18: health returned ${STATUS_CODE}; retrying in 10s..."
-            sleep 10
-          done
-
-          echo "Health check failed after retries."
-          cat /tmp/railway-health.json || true
-          exit 1
+          set -euo pipefail
+          verify_service() {
+            local role="$1"
+            local origin="$2"
+            local path="$3"
+            local status_field="$4"
+            local status_value="$5"
+            local source_field="$6"
+            local response_file="/tmp/railway-health-${role}.json"
+            for attempt in {1..18}; do
+              if curl --fail-with-body --silent --show-error \
+                --output "${response_file}" "${origin}${path}" && \
+                jq -e \
+                  --arg status_field "${status_field}" \
+                  --arg status_value "${status_value}" \
+                  --arg source_field "${source_field}" \
+                  --arg source_revision "${GITHUB_SHA}" \
+                  '.[ $status_field ] == $status_value and .[ $source_field ] == $source_revision' \
+                  "${response_file}" >/dev/null; then
+                echo "${role} health and source marker passed on attempt ${attempt}."
+                return 0
+              fi
+              echo "${role} attempt ${attempt}/18 did not attest the authorized source; retrying in 10s..."
+              sleep 10
+            done
+            echo "::error title=Railway source attestation failed::${role} did not return the manifest-bound health contract for ${GITHUB_SHA}."
+            return 1
+          }
+          verify_service api "${RAILWAY_API_HEALTH_ORIGIN}" "${RAILWAY_API_HEALTH_PATH}" "${RAILWAY_API_HEALTH_STATUS_FIELD}" "${RAILWAY_API_HEALTH_STATUS_VALUE}" "${RAILWAY_API_SOURCE_REVISION_FIELD}"
+          verify_service typescript-engines "${RAILWAY_TS_HEALTH_ORIGIN}" "${RAILWAY_TS_HEALTH_PATH}" "${RAILWAY_TS_HEALTH_STATUS_FIELD}" "${RAILWAY_TS_HEALTH_STATUS_VALUE}" "${RAILWAY_TS_SOURCE_REVISION_FIELD}"
 
   # Post-deploy verification. Runs after the Railway deploy — the K8s job being
   # skipped (opt-in) must NOT cascade-skip this, or the mode-contract gate below
@@ -561,7 +593,7 @@ jobs:
   smoke-test:
     name: API Smoke Tests
     runs-on: ubuntu-latest
-    needs: [validate-source, deploy, deploy-railway]
+    needs: [validate-source, validate-release-receipt, deploy, deploy-railway]
     if: |
       always() &&
       needs.validate-source.result == 'success' &&
@@ -569,7 +601,7 @@ jobs:
       (needs.deploy.result == 'success' || needs.deploy.result == 'skipped') &&
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     env:
-      API_BASE_URL: ${{ vars.API_BASE_URL }}
+      API_BASE_URL: ${{ needs.validate-release-receipt.outputs.railway_api_health_origin }}
       SMOKE_TEST_JWT: ${{ secrets.SMOKE_TEST_JWT }}
       SMOKE_TEST_API_KEY: ${{ secrets.SMOKE_TEST_API_KEY }}
       SKIP_SMOKE: ${{ vars.SKIP_SMOKE }}
@@ -590,7 +622,7 @@ jobs:
             exit 0
           fi
           if [[ -z "${API_BASE_URL}" || ( -z "${SMOKE_TEST_JWT}" && -z "${SMOKE_TEST_API_KEY}" ) ]]; then
-            echo "::error title=Smoke not configured::A deploy ran but cannot be verified — set vars.API_BASE_URL and secrets.SMOKE_TEST_JWT (or SMOKE_TEST_API_KEY), or set vars.SKIP_SMOKE=true to opt out deliberately."
+            echo "::error title=Smoke not configured::A deploy ran but cannot be verified with the manifest-bound API origin and configured smoke credential."
             exit 1
           fi
           echo "skip=false" >> "$GITHUB_OUTPUT"
@@ -607,7 +639,7 @@ jobs:
       - name: Verify mode contract on the deployed engine
         if: steps.smoke-gate.outputs.skip != 'true'
         env:
-          ENGINE_URL: ${{ vars.API_BASE_URL }}
+          ENGINE_URL: ${{ needs.validate-release-receipt.outputs.railway_api_health_origin }}
           # The engine takes a Bearer JWT or an X-API-Key; the gate uses whichever
           # is provided, so the Selemene API key works here too.
           ENGINE_TOKEN: ${{ secrets.SMOKE_TEST_JWT }}
@@ -617,7 +649,7 @@ jobs:
   admin-smoke:
     name: Admin Smoke Checks
     runs-on: ubuntu-latest
-    needs: [validate-source, deploy, deploy-railway]
+    needs: [validate-source, validate-release-receipt, deploy, deploy-railway]
     if: |
       always() &&
       needs.validate-source.result == 'success' &&
@@ -626,7 +658,7 @@ jobs:
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     env:
       ADMIN_WEB_URL: ${{ vars.ADMIN_WEB_URL }}
-      API_BASE_URL: ${{ vars.API_BASE_URL }}
+      API_BASE_URL: ${{ needs.validate-release-receipt.outputs.railway_api_health_origin }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -635,7 +667,7 @@ jobs:
       - name: Validate smoke env configuration
         run: |
           if [[ -z "${ADMIN_WEB_URL}" || -z "${API_BASE_URL}" ]]; then
-            echo "ERROR: ADMIN_WEB_URL or API_BASE_URL is not configured as a repository variable." >&2
+            echo "ERROR: ADMIN_WEB_URL is unavailable or the manifest-bound API origin was not emitted." >&2
             exit 1
           fi
 

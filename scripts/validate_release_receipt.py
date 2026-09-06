@@ -9,6 +9,7 @@ import hashlib
 import json
 import re
 import sys
+import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -398,6 +399,49 @@ def validate_release_receipt(
                     errors.append(
                         f"service_targets.{role}.{path_field} does not exist: {raw_path}"
                     )
+            health = expected_service.get("health")
+            if role in deployment_services:
+                if not isinstance(health, dict):
+                    errors.append(f"service_targets.{role}.health is missing")
+                else:
+                    origin = health.get("origin")
+                    health_path = health.get("path")
+                    if not isinstance(origin, str) or not re.fullmatch(
+                        r"https://[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?", origin
+                    ):
+                        errors.append(
+                            f"service_targets.{role}.health.origin must be an HTTPS origin"
+                        )
+                    if not isinstance(health_path, str) or not re.fullmatch(
+                        r"/[A-Za-z0-9._~/-]*", health_path
+                    ):
+                        errors.append(
+                            f"service_targets.{role}.health.path must be an absolute path"
+                        )
+                    for field in ("status_field", "source_revision_field"):
+                        if not re.fullmatch(
+                            r"[a-z][a-z0-9_]*", str(health.get(field, ""))
+                        ):
+                            errors.append(
+                                f"service_targets.{role}.health.{field} is invalid"
+                            )
+                    if health.get("status_value") != "healthy":
+                        errors.append(
+                            f"service_targets.{role}.health.status_value must be healthy"
+                        )
+                    config_path = repo_root / expected_service["config_path"]
+                    try:
+                        config = tomllib.loads(config_path.read_text(encoding="utf-8"))
+                        configured_path = config["deploy"]["healthcheckPath"]
+                    except (OSError, tomllib.TOMLDecodeError, KeyError, TypeError) as error:
+                        errors.append(
+                            f"service_targets.{role}.config_path health authority is unreadable: {error}"
+                        )
+                    else:
+                        if configured_path != health_path:
+                            errors.append(
+                                f"service_targets.{role}.health.path does not match {expected_service['config_path']}"
+                            )
             if service["provider"] != expected_service["provider"]:
                 errors.append(
                     f"service_roles.{role}.provider does not match release authority"
@@ -770,6 +814,11 @@ def emit_github_outputs(
                 f"railway_{key_role}_service_id": service["service_id"]["value"],
                 f"railway_{key_role}_source_root": authority["source_root"],
                 f"railway_{key_role}_config_path": authority["config_path"],
+                f"railway_{key_role}_health_origin": authority["health"]["origin"],
+                f"railway_{key_role}_health_path": authority["health"]["path"],
+                f"railway_{key_role}_health_status_field": authority["health"]["status_field"],
+                f"railway_{key_role}_health_status_value": authority["health"]["status_value"],
+                f"railway_{key_role}_source_revision_field": authority["health"]["source_revision_field"],
             }
         )
     try:

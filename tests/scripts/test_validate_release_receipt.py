@@ -293,11 +293,21 @@ def test_deploy_profile_emits_every_owned_service_selector_and_root(
         "railway_api_service_id=48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
         "railway_api_source_root=.",
         "railway_api_config_path=railway.toml",
+        "railway_api_health_origin=https://selemene.tryambakam.space",
+        "railway_api_health_path=/health/live",
+        "railway_api_health_status_field=status",
+        "railway_api_health_status_value=healthy",
+        "railway_api_source_revision_field=source_revision",
         "railway_typescript_engines_project_id=11eedde4-41e6-4f51-b86b-cf77111cf592",
         "railway_typescript_engines_environment_id=702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
         "railway_typescript_engines_service_id=94419a41-9003-4a31-8bfe-d55b39ca4cb2",
         "railway_typescript_engines_source_root=ts-engines",
         "railway_typescript_engines_config_path=ts-engines/railway.toml",
+        "railway_typescript_engines_health_origin=https://ts-engines-production.up.railway.app",
+        "railway_typescript_engines_health_path=/health",
+        "railway_typescript_engines_health_status_field=status",
+        "railway_typescript_engines_health_status_value=healthy",
+        "railway_typescript_engines_source_revision_field=source_revision",
     ]
 
 

@@ -50,6 +50,13 @@
       "release_role": "deployment",
       "source_root": ".",
       "config_path": "railway.toml",
+      "health": {
+        "origin": "https://selemene.tryambakam.space",
+        "path": "/health/live",
+        "status_field": "status",
+        "status_value": "healthy",
+        "source_revision_field": "source_revision"
+      },
       "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
       "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
       "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592"
@@ -59,6 +66,13 @@
       "release_role": "deployment",
       "source_root": "ts-engines",
       "config_path": "ts-engines/railway.toml",
+      "health": {
+        "origin": "https://ts-engines-production.up.railway.app",
+        "path": "/health",
+        "status_field": "status",
+        "status_value": "healthy",
+        "source_revision_field": "source_revision"
+      },
       "service_id": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
       "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
       "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592"

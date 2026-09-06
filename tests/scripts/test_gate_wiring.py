@@ -623,7 +623,18 @@ def test_railway_mutation_uses_only_manifest_bound_selector() -> None:
     railway_source = json.dumps(railway_job)
 
     for role in ("api", "typescript_engines"):
-        for field in ("project_id", "environment_id", "service_id", "source_root", "config_path"):
+        for field in (
+            "project_id",
+            "environment_id",
+            "service_id",
+            "source_root",
+            "config_path",
+            "health_origin",
+            "health_path",
+            "health_status_field",
+            "health_status_value",
+            "source_revision_field",
+        ):
             key = f"railway_{role}_{field}"
             assert receipt_job["outputs"][key] == f"${{{{ steps.receipt.outputs.{key} }}}}"
     assert railway_job["env"]["RAILWAY_API_SERVICE_ID"] == (
@@ -648,6 +659,30 @@ def test_railway_mutation_uses_only_manifest_bound_selector() -> None:
     assert '--service "${RAILWAY_API_SERVICE_ID}"' in deploy_step
     assert 'cd "${RAILWAY_TS_SOURCE_ROOT}"' in deploy_step
     assert '--service "${RAILWAY_TS_SERVICE_ID}"' in deploy_step
+
+
+def test_health_checks_use_only_manifest_outputs_and_require_source_markers() -> None:
+    deploy = load_workflow("deploy.yaml")
+    source = (REPO_ROOT / ".github/workflows/deploy.yaml").read_text(encoding="utf-8")
+    railway_job = deploy["jobs"]["deploy-railway"]
+    health_step = workflow_step_by_name(
+        deploy, "deploy-railway", "Verify manifest-bound Railway health and source"
+    )["run"]
+
+    assert "vars.API_BASE_URL" not in source
+    assert railway_job["env"]["RAILWAY_API_HEALTH_ORIGIN"] == (
+        "${{ needs.validate-release-receipt.outputs.railway_api_health_origin }}"
+    )
+    assert railway_job["env"]["RAILWAY_TS_HEALTH_ORIGIN"] == (
+        "${{ needs.validate-release-receipt.outputs.railway_typescript_engines_health_origin }}"
+    )
+    assert 'verify_service api "${RAILWAY_API_HEALTH_ORIGIN}"' in health_step
+    assert (
+        'verify_service typescript-engines "${RAILWAY_TS_HEALTH_ORIGIN}"'
+        in health_step
+    )
+    assert '--arg source_revision "${GITHUB_SHA}"' in health_step
+    assert ".[ $source_field ] == $source_revision" in health_step
 
 
 def test_deploy_publishes_only_source_immutable_candidate_tags() -> None:
