@@ -67,7 +67,7 @@
         "integrated": {
           "status": "partial",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -179,7 +179,7 @@
         "integrated": {
           "status": "evidenced",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -292,7 +292,7 @@
         "integrated": {
           "status": "partial",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -348,7 +348,7 @@
         "integrated": {
           "status": "evidenced",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -404,7 +404,7 @@
         "integrated": {
           "status": "evidenced",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -460,7 +460,7 @@
         "integrated": {
           "status": "evidenced",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -573,7 +573,7 @@
         "integrated": {
           "status": "evidenced",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -629,7 +629,7 @@
         "integrated": {
           "status": "evidenced",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -685,7 +685,7 @@
         "integrated": {
           "status": "evidenced",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -969,7 +969,7 @@
         "integrated": {
           "status": "evidenced",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -1025,7 +1025,7 @@
         "integrated": {
           "status": "evidenced",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },
@@ -1081,7 +1081,7 @@
         "integrated": {
           "status": "evidenced",
           "references": [
-            "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+            "repo://crates/noesis-orchestrator/src/lib.rs#WorkflowOrchestrator::register_native_runtime_engines",
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#engine-runtime-ledger"
           ]
         },

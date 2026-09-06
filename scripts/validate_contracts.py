@@ -132,6 +132,45 @@ def markdown_anchor(heading: str) -> str:
     return re.sub(r"[ _-]+", "-", normalized).strip("-")
 
 
+def markdown_anchors(source: str) -> set[str]:
+    """Collect rendered ATX headings, excluding comments and fenced code."""
+
+    characters = list(source)
+    index = 0
+    while index < len(source):
+        opening = source.find("<!--", index)
+        if opening == -1:
+            break
+        closing = source.find("-->", opening + 4)
+        end = len(source) if closing == -1 else closing + 3
+        _blank_non_newlines(characters, opening, end)
+        index = end
+
+    anchors: set[str] = set()
+    fence: tuple[str, int] | None = None
+    for line in "".join(characters).splitlines():
+        indent = len(line) - len(line.lstrip(" "))
+        candidate = line[indent:] if indent <= 3 else line
+        fence_match = re.match(r"(?P<run>`{3,}|~{3,})(?P<rest>.*)$", candidate)
+        if fence is not None:
+            if (
+                fence_match is not None
+                and fence_match.group("run")[0] == fence[0]
+                and len(fence_match.group("run")) >= fence[1]
+                and not fence_match.group("rest").strip()
+            ):
+                fence = None
+            continue
+        if fence_match is not None:
+            run = fence_match.group("run")
+            fence = (run[0], len(run))
+            continue
+        heading = re.match(r"^ {0,3}#{1,6}\s+(.+?)\s*$", line)
+        if heading is not None:
+            anchors.add(markdown_anchor(heading.group(1)))
+    return anchors
+
+
 def _blank_non_newlines(characters: list[str], start: int, end: int) -> None:
     for index in range(start, end):
         if characters[index] not in {"\n", "\r"}:
@@ -183,7 +222,7 @@ def _strip_c_like_comments_and_literals(source: str, *, rust: bool) -> str:
             continue
 
         if rust:
-            raw_match = re.match(r'(?:br|r)(?P<hashes>#{0,255})"', source[index:])
+            raw_match = re.match(r'(?:br|cr|r)(?P<hashes>#{0,255})"', source[index:])
             if raw_match and (index == 0 or not re.match(r"[A-Za-z0-9_]", source[index - 1])):
                 terminator = '"' + raw_match.group("hashes")
                 content_start = index + raw_match.end()
@@ -200,7 +239,7 @@ def _strip_c_like_comments_and_literals(source: str, *, rust: bool) -> str:
                 index = end
                 continue
 
-        if source[index] in {'"', "'"} or (not rust and source[index] == "`"):
+        if source[index] == '"' or (not rust and source[index] in {"'", "`"}):
             end = _quoted_literal_end(source, index, source[index])
             _blank_non_newlines(characters, index, end)
             index = end
@@ -236,6 +275,28 @@ def _top_level_block_body(source: str, opening: int, closing: int) -> str:
             depth -= 1
             characters.append(" ")
         elif depth == 1 or character in {"\n", "\r"}:
+            characters.append(character)
+        else:
+            characters.append(" ")
+    return "".join(characters)
+
+
+def _file_scope_source(source: str) -> str:
+    """Blank brace-nested code so unqualified anchors stay file-scoped."""
+
+    characters: list[str] = []
+    depth = 0
+    for character in source:
+        if character == "{":
+            if depth == 0:
+                characters.append("\n")
+            else:
+                characters.append(" ")
+            depth += 1
+        elif character == "}":
+            depth = max(0, depth - 1)
+            characters.append("\n" if depth == 0 else " ")
+        elif depth == 0 or character in {"\n", "\r"}:
             characters.append(character)
         else:
             characters.append(" ")
@@ -284,7 +345,10 @@ def _rust_impl_target(header: str) -> str | None:
 
 
 def _rust_has_qualified_declaration(source: str, qualifier: str, symbol: str) -> bool:
+    depths = _brace_depths(source)
     for implementation in re.finditer(r"\bimpl\b", source):
+        if depths[implementation.start()] != 0:
+            continue
         opening = source.find("{", implementation.end())
         if opening == -1:
             continue
@@ -322,11 +386,14 @@ def _typescript_has_declaration(source: str, symbol: str) -> bool:
 def _typescript_has_qualified_declaration(
     source: str, qualifier: str, symbol: str
 ) -> bool:
+    depths = _brace_depths(source)
     qualifier_pattern = re.escape(qualifier)
     for declaration in re.finditer(
         rf"\b(?:class|interface|namespace)\s+{qualifier_pattern}\b[^{{;]*{{",
         source,
     ):
+        if depths[declaration.start()] != 0:
+            continue
         opening = declaration.end() - 1
         closing = _matching_brace(source, opening)
         if closing is None:
@@ -353,8 +420,9 @@ def _python_declarations(source: str, path: Path, context: str) -> set[str]:
     declarations: set[str] = set()
 
     def add_name(name: str, qualifiers: tuple[str, ...]) -> None:
-        declarations.add(name)
         declarations.add("::".join((*qualifiers, name)))
+        if not qualifiers:
+            declarations.add(name)
 
     def add_assignment(target: ast.expr, qualifiers: tuple[str, ...]) -> None:
         if isinstance(target, ast.Name):
@@ -380,6 +448,21 @@ def _python_declarations(source: str, path: Path, context: str) -> set[str]:
     return declarations
 
 
+@lru_cache(maxsize=None)
+def _brace_depths(source: str) -> tuple[int, ...]:
+    """Return lexical brace depth at every character in sanitized source."""
+
+    depths: list[int] = []
+    depth = 0
+    for character in source:
+        depths.append(depth)
+        if character == "{":
+            depth += 1
+        elif character == "}":
+            depth = max(0, depth - 1)
+    return tuple(depths)
+
+
 def source_anchor_exists(
     path: Path,
     source: str,
@@ -391,13 +474,17 @@ def source_anchor_exists(
     if suffix == ".rs":
         cleaned = _strip_c_like_comments_and_literals(source, rust=True)
         if len(parts) == 1:
-            return _rust_has_declaration(cleaned, parts[0])
+            return _rust_has_declaration(_file_scope_source(cleaned), parts[0])
         qualifier = "::".join(parts[:-1])
         return _rust_has_qualified_declaration(cleaned, qualifier, parts[-1])
-    if suffix in {".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"}:
+    if suffix in {".tsx", ".jsx"}:
+        raise ContractValidationError(
+            f"{context}: unsupported repo:// source file type for anchor: {path.suffix!r}"
+        )
+    if suffix in {".ts", ".mts", ".cts", ".js", ".mjs", ".cjs"}:
         cleaned = _strip_c_like_comments_and_literals(source, rust=False)
         if len(parts) == 1:
-            return _typescript_has_declaration(cleaned, parts[0])
+            return _typescript_has_declaration(_file_scope_source(cleaned), parts[0])
         qualifier = "::".join(parts[:-1])
         return _typescript_has_qualified_declaration(cleaned, qualifier, parts[-1])
     if suffix == ".py":
@@ -448,11 +535,7 @@ def validate_repo_reference(reference: str, repo_root: Path, context: str) -> No
 
     source = resolved.read_text(encoding="utf-8")
     if resolved.suffix.lower() == ".md":
-        anchors = {
-            markdown_anchor(match.group(1))
-            for line in source.splitlines()
-            if (match := re.match(r"^#{1,6}\s+(.+?)\s*$", line))
-        }
+        anchors = markdown_anchors(source)
         if fragment not in anchors:
             raise ContractValidationError(
                 f"{context}: repo:// Markdown anchor does not exist: {reference!r}"

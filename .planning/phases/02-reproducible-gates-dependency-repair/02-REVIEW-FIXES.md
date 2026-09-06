@@ -9,6 +9,9 @@ skipped: 0
 recheck_findings: 1
 recheck_fixed: 1
 rechecked_at: 2026-09-06T14:49:30Z
+second_recheck_findings: 5
+second_recheck_fixed: 5
+second_rechecked_at: 2026-09-06T15:08:34Z
 status: all_fixed
 production_promotion: HOLD
 ---
@@ -36,19 +39,19 @@ The ten Critical and four Warning findings in `02-REVIEW.md` are closed in sourc
 | WR-03 | Fixed; strengthened after recheck | `repo://` validation rejects absolute/traversing/missing paths and resolves supported Markdown anchors. Stale TypeScript and database-conditional references now name real symbols; the WR-R01 follow-up below makes source resolution declaration-aware. | Missing path, missing anchor and traversal cases fail in `test_validate_contracts.py`; canonical registry validation passes. | `c6e6a0f` plus the containing WR-R01 follow-up commit |
 | WR-04 | Fixed | Railway CLI installation and version verification run without `RAILWAY_TOKEN`; the token is injected only into credentialed scope and deployment steps. | Static wiring and exact credentialed script execution assertions in `test_gate_wiring.py`. | `c67635e` |
 
-## Independent Recheck Follow-up
+## First Independent Recheck Follow-up
 
 ### WR-R01: Source evidence anchors accepted comment-only symbol names
 
 **Disposition:** Fixed.
 
-Non-Markdown `repo://` anchors now resolve against language-specific declarations and definitions. Rust anchors match items and, for qualified references, require the terminal declaration inside the named type's `impl` block. TypeScript and JavaScript anchors match named declarations, variables and qualified class/interface/namespace members. Python anchors use the standard-library AST to match functions, classes, assignments and qualified class members. Unsupported source suffixes fail closed.
+Non-Markdown `repo://` anchors resolve against language-specific declarations and definitions. This first repair rejected ordinary comment-only and string-only names, required an explicit owner for qualified Rust methods, and used the Python standard-library AST. The second adversarial recheck below narrowed the exact lexical-scope and literal guarantees.
 
-The resolver strips C-style comments and string/template/raw/character literals before Rust and TypeScript/JavaScript matching. Python parsing inherently excludes comments and literal contents. A terminal method under another Rust type cannot satisfy a qualified anchor.
+The resolver strips C-style comments and conventional quoted/template literals before Rust and TypeScript/JavaScript matching. Python parsing inherently excludes comments and literal contents. A terminal method under another Rust type cannot satisfy a qualified anchor.
 
 **Red/green evidence:** Before the resolver change, the focused adversarial selection produced nine failures: four comment-only cases, four string-only cases and one wrong-Rust-qualifier case. After the change, the same selection passed 20 cases, including preservation probes for every canonical qualified and unqualified source reference plus valid Rust, TypeScript, JavaScript and Python declarations.
 
-**Final verification:**
+**First-fix verification:**
 
 - `python3 -m pytest tests/scripts/test_validate_contracts.py -q`: 45 passed.
 - `python3 scripts/validate_contracts.py`: `schemas=6 fixtures=5 registries=1 engines=19`.
@@ -57,6 +60,56 @@ The resolver strips C-style comments and string/template/raw/character literals 
 **Files:** `scripts/validate_contracts.py`, `tests/scripts/test_validate_contracts.py`.
 
 **Commit:** Atomic WR-R01 follow-up commit containing this evidence entry.
+
+## Second Adversarial Recheck Follow-up
+
+### WR-R2-01: Nested and class-scoped decoys satisfied broader anchors
+
+**Disposition:** Fixed.
+
+Unqualified Rust, TypeScript and JavaScript anchors now scan only file-scope declarations; nested functions, local variables and impl/class members are blanked before declaration matching. Qualified Rust impls and TypeScript/JavaScript owners must themselves be at file scope. Python still uses its AST, but only module-scope declarations receive unqualified names; class members require their complete class qualifier, and function-local owners are not collected.
+
+All twelve registry occurrences of the native registration method now use `WorkflowOrchestrator::register_native_runtime_engines`. The registry remains 158 anchored occurrences and seven unique references, all resolved by the canonical validator.
+
+### WR-R2-02: Rust raw C strings and lifetime impls were mishandled
+
+**Disposition:** Fixed.
+
+The bounded Rust scanner now recognizes `r`, `br`, and `cr` raw literals, blanks normal string, byte-string, C-string and character contents, and leaves lifetime and label apostrophes intact. Compile-backed probes cover embedded quotes and newlines in all three raw forms, normal byte/C strings, characters, labels, lifetime-parameterized inherent impls, and lifetime-parameterized trait impls.
+
+### WR-R2-03: TSX JSX text was interpreted as a declaration
+
+**Disposition:** Fixed fail closed.
+
+Anchored `.tsx` and `.jsx` references now fail as unsupported until a JSX-aware AST resolver exists. Regression cases cover child text, attribute strings, expressions, nested components, fragments, and `.jsx` files. Plain `.ts`, `.mts`, `.cts`, `.js`, `.mjs`, and `.cjs` retain declaration-aware support.
+
+### WR-R2-04: Non-rendered Markdown headings satisfied anchors
+
+**Disposition:** Fixed.
+
+Markdown anchor collection now tracks backtick and tilde fences and removes multiline HTML comments before recognizing ATX headings. Headings inside either non-rendered region reject, while a rendered ATX heading resolves.
+
+### WR-R2-05: The fix ledger overstated the first resolver
+
+**Disposition:** Fixed.
+
+The first follow-up language above now states only what its tests proved. This second entry records the independent recheck findings, exact scope restrictions, fail-closed JSX disposition, compile-backed Rust syntax matrix, refreshed authority digest, and current green results.
+
+**Red/green evidence:** Before the second repair, the focused residual selection reported 11 failed, 3 passed and 45 deselected. After implementation and expansion to every exact reviewer case, the residual selection passed 25 cases with 47 deselected.
+
+**Final verification:**
+
+- `python3 -m pytest tests/scripts/test_validate_contracts.py -q`: 72 passed.
+- Residual adversarial `-k` selection: 25 passed, 47 deselected.
+- `python3 scripts/validate_contracts.py`: `schemas=6 fixtures=5 registries=1 engines=19`.
+- `python3 -m pytest tests/scripts/test_validate_release_receipt.py -q`: 40 passed.
+- `python3 scripts/validate_release_receipt.py --validate-fixtures`: `receipts=2 mutation_cases=9`.
+- `python3 -m py_compile scripts/validate_contracts.py tests/scripts/test_validate_contracts.py`: passed.
+- Registry digest recomputation: `sha256:c801fb49332f5c78cdf78417b6efd343cfcf30dc26e6ce7259cfc6157b707896`, matched by the release manifest and both digest-bearing fixtures.
+
+**Files:** `scripts/validate_contracts.py`, `tests/scripts/test_validate_contracts.py`, `contracts/v1/registries/engines.json`, `contracts/release/v1/manifest.json`, `contracts/release/v1/fixtures/eligible-source-redeploy.json`, `contracts/release/v1/fixtures/current-production-incomplete.json`.
+
+**Commit:** Atomic WR-R2 follow-up commit containing this evidence entry.
 
 ## Production Mutation Disposition
 
