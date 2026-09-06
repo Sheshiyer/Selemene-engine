@@ -1,14 +1,27 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import shutil
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from .conftest import REPO_ROOT, run_python_script
 
 
 AUTHORITY_ROOT = REPO_ROOT / "contracts" / "v1"
+
+SPEC = importlib.util.spec_from_file_location(
+    "validate_contracts",
+    REPO_ROOT / "scripts/validate_contracts.py",
+)
+assert SPEC is not None and SPEC.loader is not None
+validate_contracts_module = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(validate_contracts_module)
+ContractValidationError = validate_contracts_module.ContractValidationError
+validate_repo_reference = validate_contracts_module.validate_repo_reference
 
 
 def run_validator(root: Path) -> subprocess.CompletedProcess[str]:
@@ -412,3 +425,118 @@ def test_registry_evidence_traversal_path_fails_closed(tmp_path: Path) -> None:
 
     assert result.returncode != 0
     assert "unsafe repo:// path" in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("suffix", "source"),
+    [
+        (".rs", "// fn comment_only_anchor() {}\n"),
+        (".ts", "// export function comment_only_anchor() {}\n"),
+        (".js", "/* function comment_only_anchor() {} */\n"),
+        (".py", "# def comment_only_anchor(): pass\n"),
+    ],
+)
+def test_source_anchor_rejects_comment_only_declaration(
+    tmp_path: Path,
+    suffix: str,
+    source: str,
+) -> None:
+    source_path = tmp_path / f"comment-only{suffix}"
+    source_path.write_text(source, encoding="utf-8")
+
+    with pytest.raises(ContractValidationError, match="source anchor does not exist"):
+        validate_repo_reference(
+            f"repo://{source_path.name}#comment_only_anchor",
+            tmp_path,
+            "test evidence",
+        )
+
+
+@pytest.mark.parametrize(
+    ("suffix", "source"),
+    [
+        (".rs", 'const NOTE: &str = "fn string_only_anchor() {}";\n'),
+        (".ts", 'const note = "function string_only_anchor() {}";\n'),
+        (".js", 'const note = "function string_only_anchor() {}";\n'),
+        (".py", 'note = "def string_only_anchor(): pass"\n'),
+    ],
+)
+def test_source_anchor_rejects_string_literal_only_declaration(
+    tmp_path: Path,
+    suffix: str,
+    source: str,
+) -> None:
+    source_path = tmp_path / f"string-only{suffix}"
+    source_path.write_text(source, encoding="utf-8")
+
+    with pytest.raises(ContractValidationError, match="source anchor does not exist"):
+        validate_repo_reference(
+            f"repo://{source_path.name}#string_only_anchor",
+            tmp_path,
+            "test evidence",
+        )
+
+
+def test_qualified_rust_anchor_rejects_method_under_wrong_type(
+    tmp_path: Path,
+) -> None:
+    source_path = tmp_path / "wrong-qualifier.rs"
+    source_path.write_text(
+        "struct Expected;\n"
+        "struct Wrong;\n"
+        "impl Expected {\n"
+        "    fn terminal_method() {}\n"
+        "}\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ContractValidationError, match="source anchor does not exist"):
+        validate_repo_reference(
+            "repo://wrong-qualifier.rs#Wrong::terminal_method",
+            tmp_path,
+            "test evidence",
+        )
+
+
+@pytest.mark.parametrize(
+    "reference",
+    [
+        "repo://crates/noesis-orchestrator/src/lib.rs#SUPPORTED_ENGINE_IDS",
+        "repo://crates/noesis-orchestrator/src/lib.rs#register_native_runtime_engines",
+        "repo://crates/noesis-api/src/lib.rs#register_database_conditional_engines",
+        "repo://crates/noesis-bridge/src/lib.rs#BridgeManager::new",
+        "repo://ts-engines/src/server/registry.ts#registerTypeScriptRuntimeEngines",
+    ],
+)
+def test_existing_source_anchor_declarations_remain_valid(reference: str) -> None:
+    validate_repo_reference(reference, REPO_ROOT, "test evidence")
+
+
+@pytest.mark.parametrize(
+    ("suffix", "source", "fragment"),
+    [
+        (".rs", "pub fn rust_anchor() {}\n", "rust_anchor"),
+        (".ts", "export function typescriptAnchor() {}\n", "typescriptAnchor"),
+        (".js", "export const javascriptAnchor = () => {};\n", "javascriptAnchor"),
+        (".py", "def python_anchor():\n    pass\n", "python_anchor"),
+        (
+            ".py",
+            "class PythonOwner:\n    def method(self):\n        pass\n",
+            "PythonOwner::method",
+        ),
+    ],
+)
+def test_supported_source_declarations_resolve(
+    tmp_path: Path,
+    suffix: str,
+    source: str,
+    fragment: str,
+) -> None:
+    source_path = tmp_path / f"valid{suffix}"
+    source_path.write_text(source, encoding="utf-8")
+
+    validate_repo_reference(
+        f"repo://{source_path.name}#{fragment}",
+        tmp_path,
+        "test evidence",
+    )

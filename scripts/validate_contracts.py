@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import sys
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from urllib.parse import urldefrag, urljoin
@@ -130,6 +132,281 @@ def markdown_anchor(heading: str) -> str:
     return re.sub(r"[ _-]+", "-", normalized).strip("-")
 
 
+def _blank_non_newlines(characters: list[str], start: int, end: int) -> None:
+    for index in range(start, end):
+        if characters[index] not in {"\n", "\r"}:
+            characters[index] = " "
+
+
+def _quoted_literal_end(source: str, start: int, quote: str) -> int:
+    index = start + 1
+    while index < len(source):
+        if source[index] == "\\":
+            index += 2
+            continue
+        if source[index] == quote:
+            return index + 1
+        if quote != "`" and source[index] in {"\n", "\r"}:
+            return index
+        index += 1
+    return len(source)
+
+
+@lru_cache(maxsize=None)
+def _strip_c_like_comments_and_literals(source: str, *, rust: bool) -> str:
+    """Blank comments and literals while retaining source layout and braces."""
+
+    characters = list(source)
+    index = 0
+    while index < len(source):
+        if source.startswith("//", index):
+            end = source.find("\n", index + 2)
+            end = len(source) if end == -1 else end
+            _blank_non_newlines(characters, index, end)
+            index = end
+            continue
+
+        if source.startswith("/*", index):
+            depth = 1
+            end = index + 2
+            while end < len(source) and depth:
+                if rust and source.startswith("/*", end):
+                    depth += 1
+                    end += 2
+                elif source.startswith("*/", end):
+                    depth -= 1
+                    end += 2
+                else:
+                    end += 1
+            _blank_non_newlines(characters, index, end)
+            index = end
+            continue
+
+        if rust:
+            raw_match = re.match(r'(?:br|r)(?P<hashes>#{0,255})"', source[index:])
+            if raw_match and (index == 0 or not re.match(r"[A-Za-z0-9_]", source[index - 1])):
+                terminator = '"' + raw_match.group("hashes")
+                content_start = index + raw_match.end()
+                close = source.find(terminator, content_start)
+                end = len(source) if close == -1 else close + len(terminator)
+                _blank_non_newlines(characters, index, end)
+                index = end
+                continue
+
+            char_match = re.match(r"'(?:\\.|[^\\'\r\n])'", source[index:])
+            if char_match:
+                end = index + char_match.end()
+                _blank_non_newlines(characters, index, end)
+                index = end
+                continue
+
+        if source[index] in {'"', "'"} or (not rust and source[index] == "`"):
+            end = _quoted_literal_end(source, index, source[index])
+            _blank_non_newlines(characters, index, end)
+            index = end
+            continue
+
+        index += 1
+
+    return "".join(characters)
+
+
+def _matching_brace(source: str, opening: int) -> int | None:
+    depth = 0
+    for index in range(opening, len(source)):
+        if source[index] == "{":
+            depth += 1
+        elif source[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return index
+    return None
+
+
+def _top_level_block_body(source: str, opening: int, closing: int) -> str:
+    """Keep declarations directly inside a brace block and blank nested bodies."""
+
+    characters: list[str] = []
+    depth = 1
+    for character in source[opening + 1 : closing]:
+        if character == "{":
+            depth += 1
+            characters.append(" ")
+        elif character == "}":
+            depth -= 1
+            characters.append(" ")
+        elif depth == 1 or character in {"\n", "\r"}:
+            characters.append(character)
+        else:
+            characters.append(" ")
+    return "".join(characters)
+
+
+def _rust_has_declaration(source: str, symbol: str) -> bool:
+    escaped = re.escape(symbol)
+    item = re.compile(
+        rf"(?m)^\s*(?:pub(?:\s*\([^)]*\))?\s+)?"
+        rf"(?:(?:async|unsafe|const)\s+)*(?:extern\s+)?"
+        rf"(?:fn|struct|enum|union|trait|type|mod|const|static)\s+{escaped}\b"
+    )
+    macro = re.compile(rf"(?m)^\s*macro_rules!\s*{escaped}\b")
+    return item.search(source) is not None or macro.search(source) is not None
+
+
+def _strip_leading_rust_generics(header: str) -> str:
+    header = header.lstrip()
+    if not header.startswith("<"):
+        return header
+    depth = 0
+    for index, character in enumerate(header):
+        if character == "<":
+            depth += 1
+        elif character == ">":
+            depth -= 1
+            if depth == 0:
+                return header[index + 1 :].lstrip()
+    return header
+
+
+def _rust_impl_target(header: str) -> str | None:
+    header = _strip_leading_rust_generics(header)
+    header = re.split(r"\bwhere\b", header, maxsplit=1)[0].strip()
+    trait_split = re.split(r"\bfor\b", header)
+    target = trait_split[-1].strip()
+    target = re.sub(r"^&\s*(?:'[A-Za-z_][A-Za-z0-9_]*\s*)?(?:mut\s+)?", "", target)
+    match = re.match(
+        r"(?P<path>(?:::)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)",
+        target,
+    )
+    if match is None:
+        return None
+    return match.group("path").removeprefix("::")
+
+
+def _rust_has_qualified_declaration(source: str, qualifier: str, symbol: str) -> bool:
+    for implementation in re.finditer(r"\bimpl\b", source):
+        opening = source.find("{", implementation.end())
+        if opening == -1:
+            continue
+        header = source[implementation.end() : opening]
+        if "}" in header or ";" in header:
+            continue
+        target = _rust_impl_target(header)
+        if target is None or not (
+            target == qualifier or target.endswith(f"::{qualifier}")
+        ):
+            continue
+        closing = _matching_brace(source, opening)
+        if closing is None:
+            continue
+        if _rust_has_declaration(
+            _top_level_block_body(source, opening, closing), symbol
+        ):
+            return True
+    return False
+
+
+def _typescript_has_declaration(source: str, symbol: str) -> bool:
+    escaped = re.escape(symbol)
+    named = re.compile(
+        rf"(?m)^\s*(?:(?:export|default|declare|abstract|async)\s+)*"
+        rf"(?:function|class|interface|type|enum|namespace)\s+{escaped}\b"
+    )
+    variable = re.compile(
+        rf"(?m)^\s*(?:(?:export|default|declare)\s+)*"
+        rf"(?:const|let|var)\s+{escaped}\b"
+    )
+    return named.search(source) is not None or variable.search(source) is not None
+
+
+def _typescript_has_qualified_declaration(
+    source: str, qualifier: str, symbol: str
+) -> bool:
+    qualifier_pattern = re.escape(qualifier)
+    for declaration in re.finditer(
+        rf"\b(?:class|interface|namespace)\s+{qualifier_pattern}\b[^{{;]*{{",
+        source,
+    ):
+        opening = declaration.end() - 1
+        closing = _matching_brace(source, opening)
+        if closing is None:
+            continue
+        body = _top_level_block_body(source, opening, closing)
+        escaped = re.escape(symbol)
+        member = re.compile(
+            rf"(?m)^\s*(?:(?:public|private|protected|static|readonly|abstract|async|"
+            rf"declare|override|get|set)\s+)*{escaped}\s*(?:<[^;{{}}]*>)?\s*(?:\(|[:=])"
+        )
+        if member.search(body) is not None:
+            return True
+    return False
+
+
+def _python_declarations(source: str, path: Path, context: str) -> set[str]:
+    try:
+        tree = ast.parse(source, filename=str(path))
+    except SyntaxError as error:
+        raise ContractValidationError(
+            f"{context}: cannot parse repo:// Python source {path}: {error.msg}"
+        ) from error
+
+    declarations: set[str] = set()
+
+    def add_name(name: str, qualifiers: tuple[str, ...]) -> None:
+        declarations.add(name)
+        declarations.add("::".join((*qualifiers, name)))
+
+    def add_assignment(target: ast.expr, qualifiers: tuple[str, ...]) -> None:
+        if isinstance(target, ast.Name):
+            add_name(target.id, qualifiers)
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            for item in target.elts:
+                add_assignment(item, qualifiers)
+
+    def visit_body(body: list[ast.stmt], qualifiers: tuple[str, ...]) -> None:
+        for node in body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                add_name(node.name, qualifiers)
+            elif isinstance(node, ast.ClassDef):
+                add_name(node.name, qualifiers)
+                visit_body(node.body, (*qualifiers, node.name))
+            elif isinstance(node, ast.Assign):
+                for target in node.targets:
+                    add_assignment(target, qualifiers)
+            elif isinstance(node, ast.AnnAssign):
+                add_assignment(node.target, qualifiers)
+
+    visit_body(tree.body, ())
+    return declarations
+
+
+def source_anchor_exists(
+    path: Path,
+    source: str,
+    fragment: str,
+    context: str,
+) -> bool:
+    parts = fragment.split("::")
+    suffix = path.suffix.lower()
+    if suffix == ".rs":
+        cleaned = _strip_c_like_comments_and_literals(source, rust=True)
+        if len(parts) == 1:
+            return _rust_has_declaration(cleaned, parts[0])
+        qualifier = "::".join(parts[:-1])
+        return _rust_has_qualified_declaration(cleaned, qualifier, parts[-1])
+    if suffix in {".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"}:
+        cleaned = _strip_c_like_comments_and_literals(source, rust=False)
+        if len(parts) == 1:
+            return _typescript_has_declaration(cleaned, parts[0])
+        qualifier = "::".join(parts[:-1])
+        return _typescript_has_qualified_declaration(cleaned, qualifier, parts[-1])
+    if suffix == ".py":
+        return fragment in _python_declarations(source, path, context)
+    raise ContractValidationError(
+        f"{context}: unsupported repo:// source file type for anchor: {path.suffix!r}"
+    )
+
+
 def validate_repo_reference(reference: str, repo_root: Path, context: str) -> None:
     """Resolve one repo:// path and its supported source or Markdown anchor."""
 
@@ -186,11 +463,10 @@ def validate_repo_reference(reference: str, repo_root: Path, context: str) -> No
         raise ContractValidationError(
             f"{context}: unsupported repo:// source anchor: {reference!r}"
         )
-    for symbol in fragment.split("::"):
-        if re.search(rf"\b{re.escape(symbol)}\b", source) is None:
-            raise ContractValidationError(
-                f"{context}: repo:// source anchor does not exist: {reference!r}"
-            )
+    if not source_anchor_exists(resolved, source, fragment, context):
+        raise ContractValidationError(
+            f"{context}: repo:// source anchor does not exist: {reference!r}"
+        )
 
 
 def resolve_fragment(document: Any, fragment: str, context: str) -> None:

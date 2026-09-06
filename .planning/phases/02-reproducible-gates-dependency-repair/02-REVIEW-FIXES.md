@@ -6,6 +6,9 @@ iteration: 1
 findings_in_scope: 14
 fixed: 14
 skipped: 0
+recheck_findings: 1
+recheck_fixed: 1
+rechecked_at: 2026-09-06T14:49:30Z
 status: all_fixed
 production_promotion: HOLD
 ---
@@ -30,8 +33,30 @@ The ten Critical and four Warning findings in `02-REVIEW.md` are closed in sourc
 | CR-10 | Fixed with fail-closed production hold | Required assets use canonical repository paths and deterministic `sha256-tree-v1` digests/file counts, with artifact role, build recipe and container path authority. Operational eligibility refuses self-asserted image inclusion until a source-bound post-build inspection attestation exists. | Wrong path/digest cases fail in `test_required_asset_source_and_integrity_match_repository_tree`; missing image attestation fails in `test_operational_asset_inclusion_fails_without_postbuild_attestation`. | `ddfe062` |
 | WR-01 | Fixed | Tests evaluate actual job conditions and execute extracted provider scripts under recording Docker, Railway, Kustomize, Kubectl, curl and release shims, asserting exact argv, cwd and outcomes. Concurrent pipe participants use isolated logs. | Provider-script tests in `test_gate_wiring.py`; removing commands or changing conditions now breaks direct assertions. | `2ba59c4`, `941e3cf` |
 | WR-02 | Fixed | Both production app-state builders call `register_database_conditional_engines`; tests exercise the same seam with no pool and a lazy local pool. | `cargo test -p noesis-api database_conditional_registration --locked`: 2 passed without production database access. | `a28a983` |
-| WR-03 | Fixed | `repo://` validation rejects absolute/traversing/missing paths and resolves supported Markdown anchors or source symbols. Stale TypeScript and database-conditional references now name real symbols; manifest registry digest was refreshed. | Missing path, missing anchor and traversal cases fail in `test_validate_contracts.py`; canonical registry validation passes. | `c6e6a0f` |
+| WR-03 | Fixed; strengthened after recheck | `repo://` validation rejects absolute/traversing/missing paths and resolves supported Markdown anchors. Stale TypeScript and database-conditional references now name real symbols; the WR-R01 follow-up below makes source resolution declaration-aware. | Missing path, missing anchor and traversal cases fail in `test_validate_contracts.py`; canonical registry validation passes. | `c6e6a0f` plus the containing WR-R01 follow-up commit |
 | WR-04 | Fixed | Railway CLI installation and version verification run without `RAILWAY_TOKEN`; the token is injected only into credentialed scope and deployment steps. | Static wiring and exact credentialed script execution assertions in `test_gate_wiring.py`. | `c67635e` |
+
+## Independent Recheck Follow-up
+
+### WR-R01: Source evidence anchors accepted comment-only symbol names
+
+**Disposition:** Fixed.
+
+Non-Markdown `repo://` anchors now resolve against language-specific declarations and definitions. Rust anchors match items and, for qualified references, require the terminal declaration inside the named type's `impl` block. TypeScript and JavaScript anchors match named declarations, variables and qualified class/interface/namespace members. Python anchors use the standard-library AST to match functions, classes, assignments and qualified class members. Unsupported source suffixes fail closed.
+
+The resolver strips C-style comments and string/template/raw/character literals before Rust and TypeScript/JavaScript matching. Python parsing inherently excludes comments and literal contents. A terminal method under another Rust type cannot satisfy a qualified anchor.
+
+**Red/green evidence:** Before the resolver change, the focused adversarial selection produced nine failures: four comment-only cases, four string-only cases and one wrong-Rust-qualifier case. After the change, the same selection passed 20 cases, including preservation probes for every canonical qualified and unqualified source reference plus valid Rust, TypeScript, JavaScript and Python declarations.
+
+**Final verification:**
+
+- `python3 -m pytest tests/scripts/test_validate_contracts.py -q`: 45 passed.
+- `python3 scripts/validate_contracts.py`: `schemas=6 fixtures=5 registries=1 engines=19`.
+- `python3 -m py_compile scripts/validate_contracts.py tests/scripts/test_validate_contracts.py`: passed.
+
+**Files:** `scripts/validate_contracts.py`, `tests/scripts/test_validate_contracts.py`.
+
+**Commit:** Atomic WR-R01 follow-up commit containing this evidence entry.
 
 ## Production Mutation Disposition
 
