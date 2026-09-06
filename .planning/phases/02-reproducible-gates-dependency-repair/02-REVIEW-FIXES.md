@@ -19,6 +19,10 @@ third_recheck_findings: 4
 third_recheck_fixes_applied: 4
 third_recheck_reviewed_head: 5e3f2df52c3ab38775f1dc8e5a3863750bbb85c7
 third_recheck_fixed_at: 2026-09-06T15:54:11Z
+fourth_recheck_findings: 1
+fourth_recheck_fixes_applied: 1
+fourth_recheck_reviewed_head: f2e45efe3386692a6fdec6858dc6e00d47352e35
+fourth_recheck_fixed_at: 2026-09-06T16:08:22Z
 status: fixes_complete_pending_independent_recheck
 production_promotion: HOLD
 ---
@@ -226,6 +230,50 @@ this ledger.
 
 **Commit:** Atomic WR-R3 parser-backed source-resolver follow-up containing this
 evidence entry.
+
+## Callable-Bound Rust Exact-Head Follow-up
+
+The independent review of exact head
+`f2e45efe3386692a6fdec6858dc6e00d47352e35` found one residual warning in
+qualified Rust impl resolution. The local repair below remains pending review of
+its resulting committed snapshot.
+
+### WR-R4-01: Function return arrows terminated leading Rust impl generics
+
+**Disposition:** Fix applied; pending independent recheck.
+
+Both bounded impl-header scans counted every `>` while stripping or locating
+leading generics. In a valid header such as
+`impl<F: Fn() -> bool> Owner<F>`, the `>` in `->` prematurely closed the generic
+parameter list, so `Owner::target` rejected. The shared angle-close predicate now
+ignores only a `>` immediately preceded by `-`, which is the Rust return-arrow
+token. Ordinary `>` and adjacent nested `>>` closes retain their prior handling,
+and brace-bearing const-generic impl headers still fail closed.
+
+Compile-backed regressions cover `Fn`, `FnMut`, and `FnOnce` return bounds, a
+nested `Option<Result<Vec<_>, _>>` return type, an `Iterator` associated type with
+nested `>>` closes, and trait impls with both exact `Fn() -> bool` and nested
+callable return bounds. Existing
+lifetime/generic impl, macro-frame, direct impl-body, and const-generic rejection
+controls run in the focused selection.
+
+**Red/green evidence:** Before the angle-close change, the new six-case callable
+matrix reported 4 failed and 2 passed. After the change, the expanded focused
+selection passed all 17 cases with 124 deselected.
+
+**Current local verification:**
+
+- `python3 -m pytest tests/scripts/test_validate_contracts.py -q`: 141 passed.
+- Focused callable and Rust boundary selection: 17 passed, 124 deselected.
+- `python3 scripts/validate_contracts.py`: `schemas=6 fixtures=5 registries=1 engines=19`.
+- `python3 -m py_compile scripts/validate_contracts.py tests/scripts/test_validate_contracts.py`: passed.
+- `git diff --check`: passed before the ledger update and is rerun before commit.
+
+**Files:** `scripts/validate_contracts.py`,
+`tests/scripts/test_validate_contracts.py`, and this ledger.
+
+**Commit:** Atomic callable-bound Rust resolver follow-up containing this evidence
+entry.
 
 ## Production Mutation Disposition
 

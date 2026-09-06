@@ -321,6 +321,12 @@ def _rust_has_declaration(source: str, symbol: str) -> bool:
     return item.search(source) is not None or macro.search(source) is not None
 
 
+def _rust_angle_close(source: str, index: int) -> bool:
+    """Return whether `>` closes a type angle rather than Rust's `->` token."""
+
+    return source[index] == ">" and (index == 0 or source[index - 1] != "-")
+
+
 def _strip_leading_rust_generics(header: str) -> str:
     header = header.lstrip()
     if not header.startswith("<"):
@@ -329,7 +335,7 @@ def _strip_leading_rust_generics(header: str) -> str:
     for index, character in enumerate(header):
         if character == "<":
             depth += 1
-        elif character == ">":
+        elif _rust_angle_close(header, index):
             depth -= 1
             if depth == 0:
                 return header[index + 1 :].lstrip()
@@ -372,7 +378,7 @@ def _rust_impl_body_opening(source: str, start: int) -> int | None:
             delimiters.pop()
         elif character == "<":
             angle_depth += 1
-        elif character == ">" and angle_depth:
+        elif angle_depth and _rust_angle_close(source, index):
             angle_depth -= 1
         elif character == "{":
             if delimiters or angle_depth:

@@ -762,6 +762,50 @@ def test_qualified_rust_anchor_accepts_lifetime_generic_trait_impl(
     )
 
 
+@pytest.mark.parametrize(
+    ("case_name", "bound", "trait_impl"),
+    [
+        ("fn", "Fn() -> bool", False),
+        ("fn-mut", "FnMut() -> bool", False),
+        ("fn-once", "FnOnce() -> bool", False),
+        ("nested-return", "Fn() -> Option<Result<Vec<u8>, ()>>", False),
+        ("nested-closes", "Iterator<Item = Option<Vec<u8>>>", False),
+        ("trait-fn", "Fn() -> bool", True),
+        ("trait-fn-once", "FnOnce() -> Option<Vec<u8>>", True),
+    ],
+)
+def test_qualified_rust_anchor_accepts_callable_generic_bounds(
+    tmp_path: Path,
+    case_name: str,
+    bound: str,
+    trait_impl: bool,
+) -> None:
+    source_path = tmp_path / f"callable-{case_name}.rs"
+    trait_source = (
+        "trait Callable { fn callable_anchor(&self); }\n" if trait_impl else ""
+    )
+    implementation = (
+        f"impl<F: {bound}> Callable for CallableOwner<F>"
+        if trait_impl
+        else f"impl<F: {bound}> CallableOwner<F>"
+    )
+    source_path.write_text(
+        f"{trait_source}"
+        "struct CallableOwner<F>(F);\n"
+        f"{implementation} {{\n"
+        "    fn callable_anchor(&self) {}\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    assert_rust_compiles(source_path, source_path.with_suffix(".rmeta"))
+
+    validate_repo_reference(
+        f"repo://{source_path.name}#CallableOwner::callable_anchor",
+        tmp_path,
+        "test evidence",
+    )
+
+
 @pytest.mark.parametrize("prefix", ["r", "br", "cr"])
 def test_rust_raw_string_contents_cannot_satisfy_anchor(
     tmp_path: Path,
