@@ -1,1 +1,6 @@
-export { createServer, registry, EngineRegistry } from './app'
+export {
+  createServer,
+  EngineRegistry,
+  registerTypeScriptRuntimeEngines,
+  registry,
+} from './app'

@@ -29,6 +29,20 @@ def write_json(path: Path, payload: object) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
+def engine_registry(authority: Path) -> tuple[Path, dict[str, object]]:
+    registry_path = authority / "registries" / "engines.json"
+    return registry_path, read_json(registry_path)
+
+
+def engine_row(registry: dict[str, object], engine_id: str) -> dict[str, object]:
+    rows = registry["engines"]
+    assert isinstance(rows, list)
+    row = next(
+        item for item in rows if isinstance(item, dict) and item.get("id") == engine_id
+    )
+    return row
+
+
 def test_repository_contract_authority_is_valid() -> None:
     result = run_validator(AUTHORITY_ROOT)
     assert result.returncode == 0, result.stderr
@@ -89,7 +103,9 @@ def test_invalid_schema_fails_closed(tmp_path: Path) -> None:
 
 def test_invalid_fixture_fails_closed(tmp_path: Path) -> None:
     authority = copy_authority(tmp_path)
-    write_json(authority / "fixtures" / "engine-result.json", {"contract_version": "v1"})
+    write_json(
+        authority / "fixtures" / "engine-result.json", {"contract_version": "v1"}
+    )
 
     result = run_validator(authority)
 
@@ -219,3 +235,128 @@ def test_negative_seed_is_not_a_canonical_v1_request(tmp_path: Path) -> None:
 
     assert result.returncode != 0
     assert "seed" in result.stderr
+
+
+def test_missing_registry_manifest_entry_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    manifest_path = authority / "manifest.json"
+    manifest = read_json(manifest_path)
+    manifest["registries"] = []
+    write_json(manifest_path, manifest)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "registry manifest drift" in result.stderr
+    assert "engines.json" in result.stderr
+
+
+def test_missing_runtime_id_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    rows = registry["engines"]
+    assert isinstance(rows, list)
+    rows.pop()
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "runtime ID count mismatch" in result.stderr
+    assert "actual=18" in result.stderr
+
+
+def test_duplicate_runtime_id_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    rows = registry["engines"]
+    assert isinstance(rows, list)
+    assert isinstance(rows[0], dict)
+    assert isinstance(rows[-1], dict)
+    rows[-1]["id"] = rows[0]["id"]
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "duplicate runtime ID biofield" in result.stderr
+
+
+def test_duplicate_public_mirror_group_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    engine_row(registry, "biorhythm")["public_mirror_group"] = "biofield"
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "duplicate public mirror group biofield" in result.stderr
+
+
+def test_wrong_database_conditional_class_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    engine_row(registry, "biofield-capture")["runtime_class"] = "native"
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "runtime class count mismatch" in result.stderr
+    assert "database-conditional" in result.stderr
+
+
+def test_wrong_typescript_runtime_class_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    engine_row(registry, "tarot")["runtime_class"] = "native"
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "runtime class count mismatch" in result.stderr
+    assert "typescript" in result.stderr
+
+
+def test_missing_registry_owner_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    engine_row(registry, "panchanga")["owner"] = ""
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "owner must be a safe repository-relative path" in result.stderr
+
+
+def test_missing_evidence_axis_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    evidence = engine_row(registry, "raaga")["evidence"]
+    assert isinstance(evidence, dict)
+    del evidence["operational"]
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "evidence must contain all six axes" in result.stderr
+
+
+def test_evidenced_axis_without_reference_fails_closed(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    evidence = engine_row(registry, "numerology")["evidence"]
+    assert isinstance(evidence, dict)
+    declared = evidence["declared"]
+    assert isinstance(declared, dict)
+    declared["references"] = []
+    write_json(registry_path, registry)
+
+    result = run_validator(authority)
+
+    assert result.returncode != 0
+    assert "evidenced status requires at least one reference" in result.stderr

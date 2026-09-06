@@ -600,6 +600,50 @@ mod tests {
     use async_trait::async_trait;
     use noesis_core::{CalculationMetadata, ValidationResult};
 
+    fn canonical_runtime_ids(runtime_class: &str) -> Vec<String> {
+        let authority: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../contracts/v1/registries/engines.json"
+        ))
+        .expect("canonical engine registry must be valid JSON");
+        let mut ids = authority["engines"]
+            .as_array()
+            .expect("canonical engine registry must contain rows")
+            .iter()
+            .filter(|row| row["runtime_class"].as_str() == Some(runtime_class))
+            .map(|row| {
+                row["id"]
+                    .as_str()
+                    .expect("canonical registry row must have an ID")
+                    .to_string()
+            })
+            .collect::<Vec<_>>();
+        ids.sort();
+        ids
+    }
+
+    fn canonical_runtime_ids_for_configuration(database_configured: bool) -> Vec<String> {
+        let authority: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../contracts/v1/registries/engines.json"
+        ))
+        .expect("canonical engine registry must be valid JSON");
+        let mut ids = authority["engines"]
+            .as_array()
+            .expect("canonical engine registry must contain rows")
+            .iter()
+            .filter(|row| {
+                database_configured || row["runtime_class"].as_str() != Some("database-conditional")
+            })
+            .map(|row| {
+                row["id"]
+                    .as_str()
+                    .expect("canonical registry row must have an ID")
+                    .to_string()
+            })
+            .collect::<Vec<_>>();
+        ids.sort();
+        ids
+    }
+
     // -- Mock engine for testing ------------------------------------------
 
     /// A simple mock engine that returns a predictable output.
@@ -928,25 +972,7 @@ mod tests {
         let mut orchestrator = WorkflowOrchestrator::new();
         orchestrator.register_native_runtime_engines();
 
-        let engines = orchestrator.list_engines();
-        // 11 lens engines plus the composed decision-reflection surface.
-        assert_eq!(engines.len(), 12);
-        for engine_id in [
-            "panchanga",
-            "numerology",
-            "biorhythm",
-            "human-design",
-            "gene-keys",
-            "vimshottari",
-            "biofield",
-            "vedic-clock",
-            "face-reading",
-            "nadabrahman",
-            "transits",
-            "financial-biosensor",
-        ] {
-            assert!(engines.contains(&engine_id.to_string()));
-        }
+        assert_eq!(orchestrator.list_engines(), canonical_runtime_ids("native"));
     }
 
     #[test]
@@ -956,13 +982,46 @@ mod tests {
         let bridge = BridgeManager::new("http://127.0.0.1:1");
         orchestrator.register_bridge_engines(&bridge);
 
-        let mut registered = orchestrator.list_engines();
-        registered.push("biofield-capture".to_string());
-        registered.sort();
+        let expected_without_database = canonical_runtime_ids_for_configuration(false);
+        assert_eq!(orchestrator.list_engines(), expected_without_database);
 
         let mut supported = SUPPORTED_ENGINE_IDS.map(str::to_string).to_vec();
         supported.sort();
-        assert_eq!(registered, supported);
+        assert_eq!(
+            supported,
+            canonical_runtime_ids_for_configuration(true),
+            "SUPPORTED_ENGINE_IDS must stay aligned with canonical registry authority"
+        );
+        let mut bridge_ids = bridge
+            .engines()
+            .iter()
+            .map(|engine| engine.engine_id().to_string())
+            .collect::<Vec<_>>();
+        bridge_ids.sort();
+        assert_eq!(bridge_ids, canonical_runtime_ids("typescript"));
+    }
+
+    #[tokio::test]
+    async fn database_conditional_registration_matches_authority_with_local_fixture() {
+        let mut orchestrator = WorkflowOrchestrator::new();
+        orchestrator.register_native_runtime_engines();
+        let bridge = BridgeManager::new("http://127.0.0.1:1");
+        orchestrator.register_bridge_engines(&bridge);
+        assert_eq!(
+            orchestrator.list_engines(),
+            canonical_runtime_ids_for_configuration(false)
+        );
+
+        let pool = sqlx::postgres::PgPoolOptions::new()
+            .connect_lazy("postgres://127.0.0.1:1/noesis_registry_fixture")
+            .expect("local lazy fixture URL must parse");
+        orchestrator.register_engine(Arc::new(BiofieldCaptureEngine::new(pool.clone())));
+
+        assert_eq!(
+            orchestrator.list_engines(),
+            canonical_runtime_ids_for_configuration(true)
+        );
+        pool.close().await;
     }
 
     #[tokio::test]

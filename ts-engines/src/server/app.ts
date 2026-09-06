@@ -14,7 +14,7 @@ import type {
   ReadinessResponse,
 } from '../types'
 import { isEngineValidationError } from '../utils'
-import { EngineRegistry, registry } from './registry'
+import { type EngineRegistry, registry } from './registry'
 
 const startTime = Date.now()
 
@@ -296,7 +296,10 @@ async function proxyToSuno(
   try {
     const res = await fetch(`${SUNO_BRIDGE_URL}${path}`, {
       ...init,
-      headers: { ...headers, ...((init.headers as Record<string, string>) ?? {}) },
+      headers: {
+        ...headers,
+        ...((init.headers as Record<string, string>) ?? {}),
+      },
     })
     const body = await res.json().catch(() => ({ error: 'non-json response' }))
     return { status: res.status, body }
@@ -311,4 +314,8 @@ async function proxyToSuno(
   }
 }
 
-export { EngineRegistry, registry }
+export {
+  EngineRegistry,
+  registerTypeScriptRuntimeEngines,
+  registry,
+} from './registry'

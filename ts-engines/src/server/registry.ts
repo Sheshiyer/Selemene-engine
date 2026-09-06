@@ -1,3 +1,9 @@
+import { EnneagramEngine } from '../engines/enneagram'
+import { IChingEngine } from '../engines/i-ching'
+import { RaagaEngine } from '../engines/raaga'
+import { SacredGeometryEngine } from '../engines/sacred-geometry'
+import { SigilForgeEngine } from '../engines/sigil-forge'
+import { TarotEngine } from '../engines/tarot'
 import type {
   CapabilityAvailability,
   ConsciousnessEngine,
@@ -67,6 +73,17 @@ export class EngineRegistry {
   count(): number {
     return this.engines.size
   }
+}
+
+/** Register the complete TypeScript runtime set used by the server entrypoint. */
+export function registerTypeScriptRuntimeEngines(engineRegistry: EngineRegistry): EngineRegistry {
+  engineRegistry.register(new TarotEngine())
+  engineRegistry.register(new IChingEngine())
+  engineRegistry.register(new EnneagramEngine())
+  engineRegistry.register(new SacredGeometryEngine())
+  engineRegistry.register(new SigilForgeEngine())
+  engineRegistry.register(new RaagaEngine())
+  return engineRegistry
 }
 
 /** Global engine registry singleton */
