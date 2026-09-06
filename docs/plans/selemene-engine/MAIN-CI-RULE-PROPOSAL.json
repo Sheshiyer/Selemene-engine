@@ -32,12 +32,15 @@
     "Main updates require a successful up-to-date CI Gate",
     "No review-count, bypass, branch deletion, force push or deployment policy is changed"
   ],
-  "approvalStatus": "pending",
+  "approvalStatus": "applied",
   "verifiedEvidence": {
     "githubActionsAppId": 15368,
-    "ciGateHead": "520e439f3fb7ad79f9d838885dfe40a9d8af8801",
-    "ciRun": 33962684609,
-    "conclusion": "success"
+    "pullRequest": 1488,
+    "candidateHead": "7a5793d94bc850976f29db9277527e475d7f127b",
+    "ciRun": 33973728459,
+    "jobCount": 16,
+    "conclusion": "success",
+    "verifiedAt": "2026-09-06T10:17:48Z"
   },
   "expectedCurrentState": {
     "name": "noesis-admin",
@@ -134,5 +137,49 @@
     "pullRequest": 1488,
     "base": "main",
     "rule": "Re-query the reviewed head and require current successful CI Gate from GitHub Actions before applying"
+  },
+  "approvedAt": "2026-09-06T10:17:48Z",
+  "approvalSource": "Explicit user approval in the active Codex task",
+  "appliedReceipt": {
+    "appliedAt": "2026-09-06T10:17:48Z",
+    "rulesetId": 15597830,
+    "freshReadback": {
+      "name": "noesis-admin",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "~DEFAULT_BRANCH",
+            "refs/heads/main"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "type": "deletion"
+        },
+        {
+          "type": "non_fast_forward"
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              {
+                "context": "CI Gate",
+                "integration_id": 15368
+              }
+            ]
+          }
+        }
+      ],
+      "bypass_actors": []
+    },
+    "resolvedForMain": true,
+    "mergeOrDeploymentAuthorized": false
   }
 }

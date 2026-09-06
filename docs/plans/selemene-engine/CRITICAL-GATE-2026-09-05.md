@@ -1,8 +1,10 @@
 # Critical repository protection decision
 
-The next human decision is the additive main-branch CI rule in [MAIN-CI-RULE-PROPOSAL.json](MAIN-CI-RULE-PROPOSAL.json). It includes the full proposed API request and the preserved baseline. The rule requires an up-to-date successful `CI Gate` check from GitHub Actions app `15368`; it preserves the existing deletion/force-push rules, conditions and empty bypass list. No review-count or deployment policy changes are included.
+**Decision state: APPLIED 2026-09-06T10:17:48Z.** The user explicitly approved the additive repository protection change. Immediately before mutation, draft PR #1488 remained at `7a5793d94bc850976f29db9277527e475d7f127b`, run 33973728459 still passed all 16 jobs, and ruleset `15597830` exactly matched the preserved baseline. The update response, a separate fresh readback, and resolved rules for `main` all show strict `CI Gate` with GitHub Actions integration `15368`. Existing deletion and non-fast-forward protections, conditions and the empty bypass list remain intact.
 
-Before applying it, read the current ruleset again, compare the preserved baseline and verify the current reviewed head of [PR #1488](https://github.com/Sheshiyer/Selemene-engine/pull/1488). The reviewed source `19b80826fcc1ef787d95960a44dd4762ceb74968` passes all 16 jobs in [run 33971363162](https://github.com/Sheshiyer/Selemene-engine/actions/runs/33971363162), including CI Gate from GitHub Actions app `15368`; its PR merge tree equals the source tree. Re-querying immediately before applying avoids treating this dated receipt as current evidence.
+The applied main-branch CI rule and rollback body are in [MAIN-CI-RULE-PROPOSAL.json](MAIN-CI-RULE-PROPOSAL.json). The rule requires an up-to-date successful `CI Gate` check from GitHub Actions app `15368`; it preserves the existing deletion/force-push rules, conditions and empty bypass list. No review-count or deployment policy changes were included.
+
+The application precondition used the reviewed source `7a5793d94bc850976f29db9277527e475d7f127b`, which passes all 16 jobs in [run 33973728459](https://github.com/Sheshiyer/Selemene-engine/actions/runs/33973728459), including CI Gate from GitHub Actions app `15368`; its PR merge tree equals the source tree. Fresh queries immediately before applying prevented a dated receipt from serving as current evidence.
 
 ## Candidate and remaining promotion conditions
 
@@ -21,4 +23,4 @@ The public repository Actions variable `ADMIN_WEB_URL` was absent. It now points
 
 ## Continuation after the decision
 
-Apply and read back the approved protection rule only if the baseline and reviewed CI preconditions still match. Continue the remaining registry, immutable release and schema/rollback evidence work in Phase 2 before moving into broad Phase 3/4 execution. All 570 engine issues and the original wave exits retain their individual acceptance obligations.
+The approved protection rule has been applied and read back. Continue the remaining registry, immutable release and schema/rollback evidence work in Phase 2 before moving into broad Phase 3/4 execution. All 570 engine issues and the original wave exits retain their individual acceptance obligations.
