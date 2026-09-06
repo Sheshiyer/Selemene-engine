@@ -5,7 +5,7 @@ Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase nu
 ## Phases
 
 - [x] **Phase 1: Authority and infrastructure recovery** — original Wave 0; #896. (completed 2026-09-05)
-- [ ] **Phase 2: Reproducible gates and dependency repair** — original Wave 1; #901.
+- [ ] **Phase 2: Reproducible gates and dependency repair** — original Wave 1; #901. (all plans executed; current-source CI pending)
 - [ ] **Phase 3: Capability and contract closure** — original Wave 2; #894.
 - [ ] **Phase 4: Engine and media truth** — original Wave 3; #897.
 - [ ] **Phase 5: State auth and durability** — original Wave 4; #913.
@@ -47,7 +47,7 @@ Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase nu
 5. Complete remaining registry/release receipt authority and immutable action pins.
 6. Prepare protected release and promotion decisions before any production-triggering merge.
 
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans executed; phase verification pending current-source CI
 
 ### Phase 3: Capability and contract closure
 
@@ -125,7 +125,7 @@ Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase nu
 | Phase | Plans Complete | Status | Completed |
 |---|---|---|---|
 | 1. Authority and infrastructure recovery | 2/2 | Complete    | 2026-09-05 |
-| 2. Reproducible gates and dependency repair | 6/7 | In Progress|  |
+| 2. Reproducible gates and dependency repair | 7/7 | Verification pending | - |
 | 3. Capability and contract closure | 0/TBD | Pending | - |
 | 4. Engine and media truth | 0/TBD | Pending | - |
 | 5. State auth and durability | 0/TBD | Pending | - |

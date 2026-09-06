@@ -16,7 +16,7 @@ Stable project acceptance IDs live in `ISA.md`. These GSD requirement IDs map ex
 - [x] **GATE-02**: Remove high production dependency findings or record an explicit unresolved compatibility gate.
 - [x] **GATE-03**: Prove clean installs and lockfile/toolchain reproducibility including Python.
 - [x] **GATE-04**: Validate source Railway build/watch and Cloudflare account binding configuration.
-- [ ] **GATE-05**: Complete remaining registry/release receipt authority and immutable action pins.
+- [x] **GATE-05**: Complete remaining registry/release receipt authority and immutable action pins.
 - [x] **GATE-06**: Prepare protected release and promotion decisions before any production-triggering merge.
 
 ## Phase 3: Capability and contract closure

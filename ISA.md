@@ -4,11 +4,11 @@ task: "Continue Selemene waves through verified planning, gates and infrastructu
 effort: E4
 effort_source: classifier
 phase: verify
-progress: 326/330
+progress: 331/335
 mode: algorithm
 iteration: 5
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-09-06T10:47:50+00:00
+updated: 2026-09-06T12:13:42+00:00
 ---
 
 > **Active continuation — 2026-09-05:** Restore the existing seven-wave Selemene program, use GSD research/discuss/plan/execute/verify with recommended defaults, review infrastructure/dependencies and refresh CodeGraph. Criteria ISC-279 onward describe this continuation. Older entries are preserved dated evidence; their checked status does not imply current production acceptance. This file is the acceptance ledger; `.planning/` is the execution adapter.
@@ -499,6 +499,11 @@ Complete the existing dependency-ordered Selemene program through the GSD phase 
 - [x] ISC-321: Actual native Rust, TypeScript bridge and TypeScript startup registrations match their class-specific canonical registry rows.
 - [x] ISC-322: Database-conditional registration is absent without configuration and present with a disposable lazy local fixture, without production database access or skipped required cases.
 - [x] ISC-323: The canonical repository gate passes after registry binding without changing calculation semantics or claiming deployed or operational completion.
+- [x] ISC-324: A versioned release receipt binds source, separate built and deployed artifacts, schema, service roles, required checks, dependencies, assets and rollback evidence to the Plan 02-06 registry authority.
+- [x] ISC-325: Release eligibility fails closed for missing or mismatched source, image/build, schema, service-role, required-check, asset and rollback identity; unavailable evidence is distinct from justified not-applicable evidence.
+- [x] ISC-326: The current-production fixture remains ineligible because API source/build, applied schema, asset inclusion and rollback evidence are unknown; no unknown value is inferred from deployment metadata.
+- [x] ISC-327: Both release workflows validate an exact-source receipt before every detected deployment or publication mutation, compare locally built bytes before registry push, derive Railway selectors from manifest authority, preserve immutable Action pins and expose no workflow-dispatch bypass.
+- [x] ISC-328: Executable mocked workflow tests prove missing or mismatched receipts reach zero mutation jobs and valid synthetic receipts reach only the declared mocked mutation graph; independent review returns GO and the complete local canonical gate passes without live mutation.
 
 ## Test Strategy
 
@@ -548,6 +553,7 @@ Complete the existing dependency-ordered Selemene program through the GSD phase 
 
 | ISC-315–318 | audit/browser/executable mock | Complete audit, merge rejection fixtures, targeted DNS/admin readback | Each explicit probe passes | pnpm/pytest/IAB |
 | ISC-319–323 | registry authority | Exact counts, negative drift fixtures, real Rust/TS enumeration, conditional local fixture and canonical gate | All focused and canonical checks pass; no live mutation | JSON/Python/Cargo/Bun/pnpm |
+| ISC-324–328 | release receipt authority | Versioned evidence schema, incomplete-production rejection, mutation cases, static workflow graph and executed mocked steps | Missing/mismatched evidence reaches zero mutations; eligible synthetic evidence reaches only mocked mutations; canonical gate passes | JSON Schema/Python/Pytest/PyYAML/pnpm |
 
 ## Features
 
@@ -612,6 +618,7 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 | Infrastructure and CodeGraph | ISC-287–296 | provider read access | true |
 | Dependency/CI/config repairs | ISC-297–300, ISC-305–306 | recovered gate scope | true, disjoint files/worktrees |
 | Executable registry authority | ISC-319–323 | dependency/CI/config repairs | false |
+| Release receipt authority | ISC-324–328 | executable registry authority | false |
 | Contract/native capability closure | existing Wave 2 criteria | required gates | false |
 | Engine/state/distribution/ops continuation | ISC-307–308, ISC-312 | original wave prerequisites | per phase plan |
 | Preservation, privacy and evidence | ISC-309–311, ISC-313–314 | every phase | continuous |
@@ -714,6 +721,8 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 
 - 2026-09-05T13:47:55.589355+00:00: GitHub control bodies are reconciled with readback hashes; the missing public admin smoke URL is configured to its verified origin. The next critical decision is the additive main CI requirement. Production promotion remains held for release identity and rollback evidence.
 - 2026-09-06 10:47: The versioned engine registry is the canonical identity, ownership, public grouping and evidence-axis authority. Runtime registration tests consume it directly, while deployed and operational cells remain evidence-qualified and do not close GATE-05 without Plan 02-07 release receipts.
+- 2026-09-06 12:13: Release eligibility is a versioned, offline, source-bound receipt decision. Source redeployment and immutable-image promotion remain distinct modes; locally built bytes are checked before registry push, and exact Railway selectors are emitted only after eligibility.
+- 2026-09-06 11:34: The incomplete current-production snapshot is a negative fixture, not a release candidate. Production API source/build identity, applied schema, asset inclusion/retention and exercised rollback remain Phase 7 evidence obligations.
 
 ## Changelog
 
@@ -880,3 +889,7 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 - ISC-321: executable enumeration — `noesis-orchestrator` reports `97 passed; 0 failed`; the complete TypeScript suite reports `94 pass, 0 fail`, including canonical startup registration.
 - ISC-322: local conditional probe — `database_conditional_registration_matches_authority_with_local_fixture ... ok` with `DATABASE_URL_present= False` and `TEST_DATABASE_URL_present= False`.
 - ISC-323: canonical command gate — `pnpm run gate` exited zero after contract, script, verification and TypeScript stages; no deployment, schema/data mutation or calculation-semantic change was performed.
+- ISC-324–326: receipt validator — `python3 scripts/validate_release_receipt.py --validate-fixtures` reports `receipts=2 mutation_cases=9`; the 49-test focused receipt/wiring suite includes wrong-source, wrong-image, missing-build, wrong project/service/check, missing-schema/rollback, synthetic operational receipt and unknown-asset rejection. The current-production fixture exits 1 with 21 unavailable API, schema, asset and rollback facts.
+- ISC-327–328: workflow gate — both release workflows retain immutable Action pins and execute source-bound validation before all six detected deployment/publication mutation jobs. Deploy image bytes are locally built and digest-checked before push; Railway project/environment/service selectors are manifest-bound and token scope is checked before deploy. Missing and mismatched mocked receipts reach zero mutations. Independent review returns GO with no internal blockers or warnings. `env -u DATABASE_URL -u TEST_DATABASE_URL pnpm run gate` exits zero with 117 script, 9 core, 4 OpenAPI, 16 API integration, 35 engine SDK, 11 Noesis SDK, 36 verification and 94 TypeScript tests plus all builds/typechecks.
+- Plan sync: `scripts/sync-plans-to-github-issues.sh --repo Sheshiyer/Selemene-engine` ran in dry-run mode, found no matching plan JSON inputs and performed no issue mutation.
+- Evidence boundary: source commit `0441d03b8c0fcde4333d2d0a32c48e51939fa054` has local canonical-gate and independent-review evidence. No current-source remote CI run exists before parent reconciliation/push, and no deployment, publication, tag, cloud/DNS, schema/data or production-secret mutation was performed. Vercel's provider-side native main deployment remains outside the repository gate, so production promotion stays HOLD.
