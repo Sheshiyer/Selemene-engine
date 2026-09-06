@@ -1,0 +1,147 @@
+{
+  "fixture_version": "v1",
+  "description": "Synthetic test-only mutations applied to eligible-source-redeploy.json; no case authorizes a real release.",
+  "base": "fixtures/eligible-source-redeploy.json",
+  "cases": [
+    {
+      "id": "eligible-immutable-image",
+      "expected_eligible": true,
+      "expected_error": null,
+      "mutations": [
+        {"op": "replace", "path": "/receipt_id", "value": "fixture.immutable-image.eligible"},
+        {"op": "replace", "path": "/promotion_mode", "value": "immutable-image"},
+        {
+          "op": "replace",
+          "path": "/artifacts/0/deployed/image_digest",
+          "value": {
+            "status": "available",
+            "value": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "source": "synthetic deployed image readback"
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/artifacts/1/deployed/image_digest",
+          "value": {
+            "status": "available",
+            "value": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "source": "synthetic deployed image readback"
+          }
+        },
+        {"op": "replace", "path": "/test_fixture/scenario", "value": "built image digests equal deployed image digests"}
+      ]
+    },
+    {
+      "id": "wrong-source",
+      "expected_eligible": false,
+      "expected_error": "source.validated_revision must equal source.revision",
+      "mutations": [
+        {
+          "op": "replace",
+          "path": "/source/validated_revision/value",
+          "value": "2222222222222222222222222222222222222222"
+        }
+      ]
+    },
+    {
+      "id": "wrong-image",
+      "expected_eligible": false,
+      "expected_error": "deployed image digest must equal built image digest",
+      "mutations": [
+        {"op": "replace", "path": "/promotion_mode", "value": "immutable-image"},
+        {
+          "op": "replace",
+          "path": "/artifacts/0/deployed/image_digest",
+          "value": {
+            "status": "available",
+            "value": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "source": "synthetic mismatched deployment readback"
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/artifacts/1/deployed/image_digest",
+          "value": {
+            "status": "available",
+            "value": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "source": "synthetic deployed image readback"
+          }
+        }
+      ]
+    },
+    {
+      "id": "missing-build-identity",
+      "expected_eligible": false,
+      "expected_error": "artifacts.api.built.build_id evidence is unavailable",
+      "mutations": [
+        {
+          "op": "replace",
+          "path": "/artifacts/0/built/build_id",
+          "value": {
+            "status": "unavailable",
+            "reason": "the producing build record is unknown"
+          }
+        }
+      ]
+    },
+    {
+      "id": "wrong-service-role",
+      "expected_eligible": false,
+      "expected_error": "missing service roles",
+      "mutations": [
+        {
+          "op": "replace",
+          "path": "/service_roles/0/role",
+          "value": "unregistered-api-role"
+        }
+      ]
+    },
+    {
+      "id": "wrong-required-check",
+      "expected_eligible": false,
+      "expected_error": "missing required check identity",
+      "mutations": [
+        {"op": "replace", "path": "/required_checks/0/app_id", "value": 99999}
+      ]
+    },
+    {
+      "id": "missing-schema",
+      "expected_eligible": false,
+      "expected_error": "schema_identity",
+      "mutations": [
+        {"op": "remove", "path": "/schema_identity"}
+      ]
+    },
+    {
+      "id": "missing-rollback",
+      "expected_eligible": false,
+      "expected_error": "rollback",
+      "mutations": [
+        {"op": "remove", "path": "/rollback"}
+      ]
+    },
+    {
+      "id": "unknown-asset",
+      "expected_eligible": false,
+      "expected_error": "unknown asset IDs",
+      "mutations": [
+        {
+          "op": "add",
+          "path": "/assets/-",
+          "value": {
+            "id": "unregistered-provider-media",
+            "required": false,
+            "source": {"status": "available", "value": "fixture://unknown", "source": "synthetic mutation"},
+            "integrity": {
+              "status": "available",
+              "value": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+              "source": "synthetic mutation"
+            },
+            "retention": {"status": "available", "value": "test only", "source": "synthetic mutation"},
+            "release_inclusion": {"status": "available", "value": false, "source": "synthetic mutation"}
+          }
+        }
+      ]
+    }
+  ]
+}

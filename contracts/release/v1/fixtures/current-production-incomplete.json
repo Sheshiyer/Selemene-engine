@@ -1,0 +1,256 @@
+{
+  "$schema": "https://schemas.selemene.dev/release/v1/receipt.schema.json",
+  "receipt_version": "v1",
+  "receipt_id": "fixture.current-production.incomplete",
+  "generated_at": "2026-09-05T10:32:24Z",
+  "promotion_mode": "source-redeploy",
+  "target": {
+    "environment": "production",
+    "provider_scope": ["railway", "vercel"]
+  },
+  "authority": {
+    "contract_id": "selemene.release-receipt/v1",
+    "schema_id": "https://schemas.selemene.dev/release/v1/receipt.schema.json",
+    "engine_registry": {
+      "path": "contracts/v1/registries/engines.json",
+      "registry_version": "v1",
+      "contract_version": "v1",
+      "sha256": "sha256:fad914e23c79eda16420b57ddcbdf0bec62feedb38319a9fd71a810002d4bdd2"
+    }
+  },
+  "source": {
+    "repository": "Sheshiyer/Selemene-engine",
+    "revision": {
+      "status": "unavailable",
+      "reason": "Railway returned no source commit for the active API deployment"
+    },
+    "validated_revision": {
+      "status": "unavailable",
+      "reason": "no required-check receipt is bound to the unknown deployed API source"
+    }
+  },
+  "artifacts": [
+    {
+      "role": "api",
+      "built": {
+        "build_id": {
+          "status": "unavailable",
+          "reason": "no build record is bound to the active API deployment"
+        },
+        "source_revision": {
+          "status": "unavailable",
+          "reason": "the active API deployment source revision is unknown"
+        },
+        "image_digest": {
+          "status": "unavailable",
+          "reason": "the deployed API digest is not tied to a repository build receipt"
+        }
+      },
+      "deployed": {
+        "deployment_id": {
+          "status": "available",
+          "value": "075f03de-7b60-42fd-8cc2-e0119d5ff2c9",
+          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+        },
+        "source_revision": {
+          "status": "unavailable",
+          "reason": "Railway returned no source commit for the active API deployment"
+        },
+        "image_digest": {
+          "status": "available",
+          "value": "sha256:ac78840ad8e33b58c72e2cefcc56f1f012670559c147271f4cee43cf2173bc5e",
+          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+        }
+      }
+    },
+    {
+      "role": "typescript-engines",
+      "built": {
+        "build_id": {
+          "status": "unavailable",
+          "reason": "the infrastructure snapshot does not identify the producing CI run"
+        },
+        "source_revision": {
+          "status": "available",
+          "value": "ae3e2cef402bd0cf28d1c7a102800d215cc5f2c2",
+          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+        },
+        "image_digest": {
+          "status": "available",
+          "value": "sha256:d7d80604b63b89d8707375a9c1b5de11ed83dd23e9ce7f5af181cfa45776423b",
+          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+        }
+      },
+      "deployed": {
+        "deployment_id": {
+          "status": "available",
+          "value": "e13dcbfa-fc0d-4493-85fc-3f3799f6b6cd",
+          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+        },
+        "source_revision": {
+          "status": "available",
+          "value": "ae3e2cef402bd0cf28d1c7a102800d215cc5f2c2",
+          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+        },
+        "image_digest": {
+          "status": "available",
+          "value": "sha256:d7d80604b63b89d8707375a9c1b5de11ed83dd23e9ce7f5af181cfa45776423b",
+          "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+        }
+      }
+    }
+  ],
+  "schema_identity": {
+    "migration_history_path": "migrations/history.sha256",
+    "migration_history_digest": {
+      "status": "available",
+      "value": "sha256:857f35af41c8f60e98acff63c3dbf02fe065c46d7114fbe85915b10a9f1b534c",
+      "source": "repository migration ledger only; not a production readback"
+    },
+    "applied_revision": {
+      "status": "unavailable",
+      "reason": "production migration journal identity was not read"
+    },
+    "rollback_compatibility": {
+      "status": "unavailable",
+      "reason": "no production schema rollback compatibility rehearsal exists"
+    }
+  },
+  "service_roles": [
+    {
+      "role": "api",
+      "provider": "railway",
+      "service_id": {
+        "status": "available",
+        "value": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+        "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+      },
+      "environment_id": {
+        "status": "available",
+        "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+      }
+    },
+    {
+      "role": "typescript-engines",
+      "provider": "railway",
+      "service_id": {
+        "status": "available",
+        "value": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
+        "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+      },
+      "environment_id": {
+        "status": "available",
+        "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+      }
+    },
+    {
+      "role": "biofield-cv",
+      "provider": "railway",
+      "service_id": {
+        "status": "available",
+        "value": "f596e31b-e190-409c-993d-a3b618d29a73",
+        "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+      },
+      "environment_id": {
+        "status": "available",
+        "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": "docs/plans/selemene-engine/INFRASTRUCTURE-MAP.json"
+      }
+    }
+  ],
+  "required_checks": [
+    {
+      "name": "CI Gate",
+      "app_id": 15368,
+      "workflow": ".github/workflows/test.yml",
+      "run_id": {
+        "status": "available",
+        "value": "33973728459",
+        "source": "docs/plans/selemene-engine/CRITICAL-GATE-2026-09-05.md"
+      },
+      "source_revision": {
+        "status": "available",
+        "value": "7a5793d94bc850976f29db9277527e475d7f127b",
+        "source": "docs/plans/selemene-engine/CRITICAL-GATE-2026-09-05.md"
+      },
+      "conclusion": "success"
+    }
+  ],
+  "dependencies": [
+    {
+      "id": "postgresql",
+      "required": true,
+      "state": {"status": "available", "value": "enabled", "source": "production readiness probe"}
+    },
+    {
+      "id": "redis",
+      "required": true,
+      "state": {"status": "available", "value": "enabled", "source": "production readiness probe"}
+    },
+    {
+      "id": "biofield-cv",
+      "required": false,
+      "state": {"status": "available", "value": "enabled", "source": "Railway running-instance snapshot"}
+    },
+    {
+      "id": "mediapipe",
+      "required": false,
+      "state": {
+        "status": "not-applicable",
+        "reason": "repository Railway configuration explicitly excludes this undeployed sidecar"
+      }
+    }
+  ],
+  "assets": [
+    {
+      "id": "ephemeris-data",
+      "required": true,
+      "source": {"status": "available", "value": "repo://data/ephemeris", "source": "Dockerfile.prod"},
+      "integrity": {"status": "unavailable", "reason": "no production asset manifest checksum was captured"},
+      "retention": {"status": "unavailable", "reason": "no production asset retention receipt was captured"},
+      "release_inclusion": {"status": "unavailable", "reason": "the active API image contents were not inspected"}
+    },
+    {
+      "id": "wisdom-data",
+      "required": true,
+      "source": {"status": "available", "value": "repo://data/wisdom-docs", "source": "Dockerfile.prod"},
+      "integrity": {"status": "unavailable", "reason": "no production asset manifest checksum was captured"},
+      "retention": {"status": "unavailable", "reason": "no production asset retention receipt was captured"},
+      "release_inclusion": {"status": "unavailable", "reason": "the active API image contents were not inspected"}
+    }
+  ],
+  "rollback": {
+    "previous_source_revision": {
+      "status": "unavailable",
+      "reason": "the rollback source revision is not established"
+    },
+    "previous_deployment_id": {
+      "status": "unavailable",
+      "reason": "known deployment pointers are inventory and were not exercised as rollback targets"
+    },
+    "previous_artifact_digest": {
+      "status": "unavailable",
+      "reason": "no prior deployable artifact is bound to a rollback rehearsal"
+    },
+    "schema_restore": {
+      "status": "unavailable",
+      "reason": "no production schema restoration evidence was recorded"
+    },
+    "procedure": {
+      "status": "unavailable",
+      "reason": "no executable production rollback procedure was verified"
+    },
+    "tested_at": {
+      "status": "unavailable",
+      "reason": "no production rollback rehearsal timestamp exists"
+    }
+  },
+  "test_fixture": {
+    "synthetic": false,
+    "expected_eligible": false,
+    "scenario": "current public infrastructure snapshot with unknown API source, schema, assets, and rollback evidence",
+    "data_classification": "public-infrastructure-snapshot"
+  }
+}

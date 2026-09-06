@@ -1,0 +1,285 @@
+{
+  "$schema": "https://schemas.selemene.dev/release/v1/receipt.schema.json",
+  "receipt_version": "v1",
+  "receipt_id": "fixture.source-redeploy.eligible",
+  "generated_at": "2026-09-06T00:00:00Z",
+  "promotion_mode": "source-redeploy",
+  "target": {
+    "environment": "test",
+    "provider_scope": ["ghcr", "railway"]
+  },
+  "authority": {
+    "contract_id": "selemene.release-receipt/v1",
+    "schema_id": "https://schemas.selemene.dev/release/v1/receipt.schema.json",
+    "engine_registry": {
+      "path": "contracts/v1/registries/engines.json",
+      "registry_version": "v1",
+      "contract_version": "v1",
+      "sha256": "sha256:fad914e23c79eda16420b57ddcbdf0bec62feedb38319a9fd71a810002d4bdd2"
+    }
+  },
+  "source": {
+    "repository": "Sheshiyer/Selemene-engine",
+    "revision": {
+      "status": "available",
+      "value": "1111111111111111111111111111111111111111",
+      "source": "synthetic CI checkout witness"
+    },
+    "validated_revision": {
+      "status": "available",
+      "value": "1111111111111111111111111111111111111111",
+      "source": "synthetic CI Gate check suite"
+    }
+  },
+  "artifacts": [
+    {
+      "role": "api",
+      "built": {
+        "build_id": {
+          "status": "available",
+          "value": "ci-build-api-90000000001",
+          "source": "synthetic build record"
+        },
+        "source_revision": {
+          "status": "available",
+          "value": "1111111111111111111111111111111111111111",
+          "source": "synthetic build provenance"
+        },
+        "image_digest": {
+          "status": "available",
+          "value": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "source": "synthetic GHCR manifest"
+        }
+      },
+      "deployed": {
+        "deployment_id": {
+          "status": "available",
+          "value": "railway-fixture-api-candidate",
+          "source": "synthetic Railway deployment record"
+        },
+        "source_revision": {
+          "status": "available",
+          "value": "1111111111111111111111111111111111111111",
+          "source": "synthetic Railway source deployment record"
+        },
+        "image_digest": {
+          "status": "not-applicable",
+          "reason": "source-redeploy mode does not claim promotion of the separately built image"
+        }
+      }
+    },
+    {
+      "role": "typescript-engines",
+      "built": {
+        "build_id": {
+          "status": "available",
+          "value": "ci-build-ts-90000000001",
+          "source": "synthetic build record"
+        },
+        "source_revision": {
+          "status": "available",
+          "value": "1111111111111111111111111111111111111111",
+          "source": "synthetic build provenance"
+        },
+        "image_digest": {
+          "status": "available",
+          "value": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "source": "synthetic GHCR manifest"
+        }
+      },
+      "deployed": {
+        "deployment_id": {
+          "status": "available",
+          "value": "railway-fixture-ts-candidate",
+          "source": "synthetic Railway deployment record"
+        },
+        "source_revision": {
+          "status": "available",
+          "value": "1111111111111111111111111111111111111111",
+          "source": "synthetic Railway source deployment record"
+        },
+        "image_digest": {
+          "status": "not-applicable",
+          "reason": "source-redeploy mode does not claim promotion of the separately built image"
+        }
+      }
+    }
+  ],
+  "schema_identity": {
+    "migration_history_path": "migrations/history.sha256",
+    "migration_history_digest": {
+      "status": "available",
+      "value": "sha256:857f35af41c8f60e98acff63c3dbf02fe065c46d7114fbe85915b10a9f1b534c",
+      "source": "repository migration ledger"
+    },
+    "applied_revision": {
+      "status": "available",
+      "value": "migration-ledger-through-037",
+      "source": "synthetic migration journal readback"
+    },
+    "rollback_compatibility": {
+      "status": "available",
+      "value": "candidate verified backward-compatible with previous schema",
+      "source": "synthetic rollback rehearsal"
+    }
+  },
+  "service_roles": [
+    {
+      "role": "api",
+      "provider": "railway",
+      "service_id": {
+        "status": "available",
+        "value": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+        "source": "infrastructure map service role"
+      },
+      "environment_id": {
+        "status": "available",
+        "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": "infrastructure map environment"
+      }
+    },
+    {
+      "role": "typescript-engines",
+      "provider": "railway",
+      "service_id": {
+        "status": "available",
+        "value": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
+        "source": "infrastructure map service role"
+      },
+      "environment_id": {
+        "status": "available",
+        "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": "infrastructure map environment"
+      }
+    },
+    {
+      "role": "biofield-cv",
+      "provider": "railway",
+      "service_id": {
+        "status": "available",
+        "value": "f596e31b-e190-409c-993d-a3b618d29a73",
+        "source": "infrastructure map service role"
+      },
+      "environment_id": {
+        "status": "available",
+        "value": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+        "source": "infrastructure map environment"
+      }
+    }
+  ],
+  "required_checks": [
+    {
+      "name": "CI Gate",
+      "app_id": 15368,
+      "workflow": ".github/workflows/test.yml",
+      "run_id": {
+        "status": "available",
+        "value": "90000000001",
+        "source": "synthetic GitHub check run"
+      },
+      "source_revision": {
+        "status": "available",
+        "value": "1111111111111111111111111111111111111111",
+        "source": "synthetic GitHub check suite"
+      },
+      "conclusion": "success"
+    }
+  ],
+  "dependencies": [
+    {
+      "id": "postgresql",
+      "required": true,
+      "state": {"status": "available", "value": "enabled", "source": "synthetic readiness receipt"}
+    },
+    {
+      "id": "redis",
+      "required": true,
+      "state": {"status": "available", "value": "enabled", "source": "synthetic readiness receipt"}
+    },
+    {
+      "id": "biofield-cv",
+      "required": false,
+      "state": {"status": "available", "value": "enabled", "source": "synthetic sidecar receipt"}
+    },
+    {
+      "id": "mediapipe",
+      "required": false,
+      "state": {
+        "status": "not-applicable",
+        "reason": "the synthetic candidate does not claim the undeployed MediaPipe sidecar"
+      }
+    }
+  ],
+  "assets": [
+    {
+      "id": "ephemeris-data",
+      "required": true,
+      "source": {"status": "available", "value": "repo://data/ephemeris", "source": "synthetic asset manifest"},
+      "integrity": {
+        "status": "available",
+        "value": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "source": "synthetic asset manifest"
+      },
+      "retention": {
+        "status": "available",
+        "value": "retained with the candidate image and source revision",
+        "source": "synthetic retention policy"
+      },
+      "release_inclusion": {"status": "available", "value": true, "source": "synthetic image inspection"}
+    },
+    {
+      "id": "wisdom-data",
+      "required": true,
+      "source": {"status": "available", "value": "repo://data/wisdom-docs", "source": "synthetic asset manifest"},
+      "integrity": {
+        "status": "available",
+        "value": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "source": "synthetic asset manifest"
+      },
+      "retention": {
+        "status": "available",
+        "value": "retained with the candidate image and source revision",
+        "source": "synthetic retention policy"
+      },
+      "release_inclusion": {"status": "available", "value": true, "source": "synthetic image inspection"}
+    }
+  ],
+  "rollback": {
+    "previous_source_revision": {
+      "status": "available",
+      "value": "0123456789abcdef0123456789abcdef01234567",
+      "source": "synthetic previous deployment receipt"
+    },
+    "previous_deployment_id": {
+      "status": "available",
+      "value": "railway-fixture-api-previous",
+      "source": "synthetic previous deployment receipt"
+    },
+    "previous_artifact_digest": {
+      "status": "available",
+      "value": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "source": "synthetic previous image receipt"
+    },
+    "schema_restore": {
+      "status": "available",
+      "value": "restore prior image only after verifying migration 037 backward compatibility",
+      "source": "synthetic rollback rehearsal"
+    },
+    "procedure": {
+      "status": "available",
+      "value": "runbook://synthetic/railway-source-rollback",
+      "source": "synthetic rollback rehearsal"
+    },
+    "tested_at": {
+      "status": "available",
+      "value": "2026-09-06T00:00:00Z",
+      "source": "synthetic rollback rehearsal"
+    }
+  },
+  "test_fixture": {
+    "synthetic": true,
+    "expected_eligible": true,
+    "scenario": "complete source redeploy evidence with separately identified built images",
+    "data_classification": "synthetic-test-data"
+  }
+}

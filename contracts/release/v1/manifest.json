@@ -1,0 +1,48 @@
+{
+  "contract_id": "selemene.release-receipt/v1",
+  "schema_id": "https://schemas.selemene.dev/release/v1/receipt.schema.json",
+  "schema": "receipt.schema.json",
+  "repository": "Sheshiyer/Selemene-engine",
+  "engine_registry": {
+    "path": "contracts/v1/registries/engines.json",
+    "registry_version": "v1",
+    "contract_version": "v1",
+    "sha256": "sha256:fad914e23c79eda16420b57ddcbdf0bec62feedb38319a9fd71a810002d4bdd2"
+  },
+  "migration_history": {
+    "path": "migrations/history.sha256",
+    "sha256": "sha256:857f35af41c8f60e98acff63c3dbf02fe065c46d7114fbe85915b10a9f1b534c"
+  },
+  "required_artifact_roles": ["api", "typescript-engines"],
+  "required_service_roles": ["api", "typescript-engines", "biofield-cv"],
+  "required_checks": [
+    {
+      "name": "CI Gate",
+      "app_id": 15368,
+      "workflow": ".github/workflows/test.yml"
+    }
+  ],
+  "dependencies": {
+    "postgresql": {"required": true},
+    "redis": {"required": true},
+    "biofield-cv": {"required": false},
+    "mediapipe": {"required": false}
+  },
+  "assets": {
+    "ephemeris-data": {"required": true},
+    "wisdom-data": {"required": true}
+  },
+  "receipt_fixtures": [
+    {
+      "path": "fixtures/eligible-source-redeploy.json",
+      "expected_eligible": true,
+      "promotion_mode": "source-redeploy"
+    },
+    {
+      "path": "fixtures/current-production-incomplete.json",
+      "expected_eligible": false,
+      "promotion_mode": "source-redeploy"
+    }
+  ],
+  "mutation_cases": "fixtures/mutation-cases.json"
+}

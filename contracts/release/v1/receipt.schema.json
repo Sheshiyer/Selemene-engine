@@ -1,0 +1,321 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.selemene.dev/release/v1/receipt.schema.json",
+  "title": "Selemene release eligibility receipt v1",
+  "description": "Source-bound, offline-verifiable evidence required before release or deployment mutation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receipt_version",
+    "receipt_id",
+    "generated_at",
+    "promotion_mode",
+    "target",
+    "authority",
+    "source",
+    "artifacts",
+    "schema_identity",
+    "service_roles",
+    "required_checks",
+    "dependencies",
+    "assets",
+    "rollback"
+  ],
+  "properties": {
+    "$schema": {"const": "https://schemas.selemene.dev/release/v1/receipt.schema.json"},
+    "receipt_version": {"const": "v1"},
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+      "minLength": 3,
+      "maxLength": 120
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "promotion_mode": {"enum": ["source-redeploy", "immutable-image"]},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["environment", "provider_scope"],
+      "properties": {
+        "environment": {"enum": ["test", "staging", "production"]},
+        "provider_scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"enum": ["github", "ghcr", "railway", "vercel", "kubernetes"]}
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_id", "schema_id", "engine_registry"],
+      "properties": {
+        "contract_id": {"const": "selemene.release-receipt/v1"},
+        "schema_id": {"const": "https://schemas.selemene.dev/release/v1/receipt.schema.json"},
+        "engine_registry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "registry_version", "contract_version", "sha256"],
+          "properties": {
+            "path": {"const": "contracts/v1/registries/engines.json"},
+            "registry_version": {"const": "v1"},
+            "contract_version": {"const": "v1"},
+            "sha256": {"$ref": "#/$defs/sha256"}
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "revision", "validated_revision"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "revision": {"$ref": "#/$defs/revisionEvidence"},
+        "validated_revision": {"$ref": "#/$defs/revisionEvidence"}
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "built", "deployed"],
+        "properties": {
+          "role": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+          "built": {"$ref": "#/$defs/artifactIdentity"},
+          "deployed": {"$ref": "#/$defs/deployedArtifactIdentity"}
+        }
+      }
+    },
+    "schema_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["migration_history_path", "migration_history_digest", "applied_revision", "rollback_compatibility"],
+      "properties": {
+        "migration_history_path": {"const": "migrations/history.sha256"},
+        "migration_history_digest": {"$ref": "#/$defs/digestEvidence"},
+        "applied_revision": {"$ref": "#/$defs/stringEvidence"},
+        "rollback_compatibility": {"$ref": "#/$defs/stringEvidence"}
+      }
+    },
+    "service_roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "provider", "service_id", "environment_id"],
+        "properties": {
+          "role": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+          "provider": {"enum": ["railway", "vercel", "kubernetes"]},
+          "service_id": {"$ref": "#/$defs/stringEvidence"},
+          "environment_id": {"$ref": "#/$defs/stringEvidence"}
+        }
+      }
+    },
+    "required_checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "app_id", "workflow", "run_id", "source_revision", "conclusion"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "app_id": {"type": "integer", "minimum": 1},
+          "workflow": {"type": "string", "minLength": 1},
+          "run_id": {"$ref": "#/$defs/stringEvidence"},
+          "source_revision": {"$ref": "#/$defs/revisionEvidence"},
+          "conclusion": {"enum": ["success", "failure", "cancelled", "pending", "skipped"]}
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "required", "state"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+          "required": {"type": "boolean"},
+          "state": {"$ref": "#/$defs/dependencyStateEvidence"}
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "required", "source", "integrity", "retention", "release_inclusion"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+          "required": {"type": "boolean"},
+          "source": {"$ref": "#/$defs/stringEvidence"},
+          "integrity": {"$ref": "#/$defs/digestEvidence"},
+          "retention": {"$ref": "#/$defs/stringEvidence"},
+          "release_inclusion": {"$ref": "#/$defs/booleanEvidence"}
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "previous_source_revision",
+        "previous_deployment_id",
+        "previous_artifact_digest",
+        "schema_restore",
+        "procedure",
+        "tested_at"
+      ],
+      "properties": {
+        "previous_source_revision": {"$ref": "#/$defs/revisionEvidence"},
+        "previous_deployment_id": {"$ref": "#/$defs/stringEvidence"},
+        "previous_artifact_digest": {"$ref": "#/$defs/digestEvidence"},
+        "schema_restore": {"$ref": "#/$defs/stringEvidence"},
+        "procedure": {"$ref": "#/$defs/stringEvidence"},
+        "tested_at": {"$ref": "#/$defs/stringEvidence"}
+      }
+    },
+    "test_fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["synthetic", "expected_eligible", "scenario", "data_classification"],
+      "properties": {
+        "synthetic": {"type": "boolean"},
+        "expected_eligible": {"type": "boolean"},
+        "scenario": {"type": "string", "minLength": 1},
+        "data_classification": {"enum": ["synthetic-test-data", "public-infrastructure-snapshot"]}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "unavailableEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason"],
+      "properties": {
+        "status": {"const": "unavailable"},
+        "reason": {"type": "string", "minLength": 8}
+      }
+    },
+    "notApplicableEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason"],
+      "properties": {
+        "status": {"const": "not-applicable"},
+        "reason": {"type": "string", "minLength": 8}
+      }
+    },
+    "stringEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {"type": "string", "minLength": 1},
+            "source": {"type": "string", "minLength": 1}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"},
+        {"$ref": "#/$defs/notApplicableEvidence"}
+      ]
+    },
+    "revisionEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {"$ref": "#/$defs/revision"},
+            "source": {"type": "string", "minLength": 1}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"},
+        {"$ref": "#/$defs/notApplicableEvidence"}
+      ]
+    },
+    "digestEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {"$ref": "#/$defs/sha256"},
+            "source": {"type": "string", "minLength": 1}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"},
+        {"$ref": "#/$defs/notApplicableEvidence"}
+      ]
+    },
+    "booleanEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {"type": "boolean"},
+            "source": {"type": "string", "minLength": 1}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"},
+        {"$ref": "#/$defs/notApplicableEvidence"}
+      ]
+    },
+    "dependencyStateEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "value", "source"],
+          "properties": {
+            "status": {"const": "available"},
+            "value": {"enum": ["enabled", "disabled", "degraded"]},
+            "source": {"type": "string", "minLength": 1}
+          }
+        },
+        {"$ref": "#/$defs/unavailableEvidence"},
+        {"$ref": "#/$defs/notApplicableEvidence"}
+      ]
+    },
+    "artifactIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["build_id", "source_revision", "image_digest"],
+      "properties": {
+        "build_id": {"$ref": "#/$defs/stringEvidence"},
+        "source_revision": {"$ref": "#/$defs/revisionEvidence"},
+        "image_digest": {"$ref": "#/$defs/digestEvidence"}
+      }
+    },
+    "deployedArtifactIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deployment_id", "source_revision", "image_digest"],
+      "properties": {
+        "deployment_id": {"$ref": "#/$defs/stringEvidence"},
+        "source_revision": {"$ref": "#/$defs/revisionEvidence"},
+        "image_digest": {"$ref": "#/$defs/digestEvidence"}
+      }
+    }
+  }
+}
