@@ -549,6 +549,31 @@ def test_railway_mutation_uses_only_manifest_bound_selector() -> None:
     assert '--service "${RAILWAY_TS_SERVICE_ID}"' in deploy_step
 
 
+def test_deploy_publishes_only_source_immutable_candidate_tags() -> None:
+    deploy = load_workflow("deploy.yaml")
+    expected = "type=raw,value=sha-${{ needs.validate-source.outputs.source-sha }}"
+
+    for job_name in (
+        "prebuild-api",
+        "prebuild-ts-engines",
+        "build-api",
+        "build-ts-engines",
+    ):
+        metadata = next(
+            step
+            for step in deploy["jobs"][job_name]["steps"]
+            if "docker/metadata-action@" in step.get("uses", "")
+        )
+        assert metadata["with"]["tags"].strip() == expected
+
+    workflow_source = (REPO_ROOT / ".github/workflows/deploy.yaml").read_text(
+        encoding="utf-8"
+    )
+    assert "type=ref,event=" not in workflow_source
+    assert "type=semver" not in workflow_source
+    assert "value=latest" not in workflow_source
+
+
 def test_release_workflows_retain_immutable_action_pins() -> None:
     for workflow_name in ("deploy.yaml", "release.yml"):
         result = subprocess.run(

@@ -69,9 +69,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}
           tags: |
-            type=ref,event=branch
             type=raw,value=sha-${{ needs.validate-source.outputs.source-sha }}
-            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build candidate without publication
         id: build
@@ -110,9 +108,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_TS }}
           tags: |
-            type=ref,event=branch
             type=raw,value=sha-${{ needs.validate-source.outputs.source-sha }}
-            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build candidate without publication
         id: build
@@ -239,12 +235,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
             type=raw,value=sha-${{ needs.validate-source.outputs.source-sha }}
-            type=raw,value=latest,enable={{is_default_branch}}
       
       - name: Build API image locally
         id: build
@@ -326,10 +317,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_TS }}
           tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
             type=raw,value=sha-${{ needs.validate-source.outputs.source-sha }}
-            type=raw,value=latest,enable={{is_default_branch}}
       
       - name: Build TypeScript image locally
         id: build
