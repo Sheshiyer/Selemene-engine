@@ -4,11 +4,11 @@ task: "Continue Selemene waves through verified planning, gates and infrastructu
 effort: E4
 effort_source: classifier
 phase: verify
-progress: 321/325
+progress: 326/330
 mode: algorithm
 iteration: 5
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-09-05T13:47:55.589355+00:00
+updated: 2026-09-06T10:47:50+00:00
 ---
 
 > **Active continuation — 2026-09-05:** Restore the existing seven-wave Selemene program, use GSD research/discuss/plan/execute/verify with recommended defaults, review infrastructure/dependencies and refresh CodeGraph. Criteria ISC-279 onward describe this continuation. Older entries are preserved dated evidence; their checked status does not imply current production acceptance. This file is the acceptance ledger; `.planning/` is the execution adapter.
@@ -494,6 +494,11 @@ Complete the existing dependency-ordered Selemene program through the GSD phase 
 - [x] ISC-316: Agent merge lane rejects missing, pending, stale and untrusted CI results in executable mocked workflow tests.
 - [x] ISC-317: Authenticated browser verifies the Selemene API, admin and witness DNS records in the 9d9d zone.
 - [x] ISC-318: Authenticated admin observations distinguish nineteen registry rows from six TypeScript health results.
+- [x] ISC-319: A versioned machine-readable authority enumerates exactly 19 runtime IDs, 17 public mirror groups and runtime classes 12 native, one database-conditional and six TypeScript.
+- [x] ISC-320: The canonical validator rejects missing or duplicate IDs, duplicate public groupings, incorrect runtime classes, missing owners and incomplete evidence axes.
+- [x] ISC-321: Actual native Rust, TypeScript bridge and TypeScript startup registrations match their class-specific canonical registry rows.
+- [x] ISC-322: Database-conditional registration is absent without configuration and present with a disposable lazy local fixture, without production database access or skipped required cases.
+- [x] ISC-323: The canonical repository gate passes after registry binding without changing calculation semantics or claiming deployed or operational completion.
 
 ## Test Strategy
 
@@ -542,6 +547,7 @@ Complete the existing dependency-ordered Selemene program through the GSD phase 
 | 310–311,313–314 | anti/evidence | preserved state, artifact scan, permission decisions, evidence separation | no violation | git, bounded scans, review |
 
 | ISC-315–318 | audit/browser/executable mock | Complete audit, merge rejection fixtures, targeted DNS/admin readback | Each explicit probe passes | pnpm/pytest/IAB |
+| ISC-319–323 | registry authority | Exact counts, negative drift fixtures, real Rust/TS enumeration, conditional local fixture and canonical gate | All focused and canonical checks pass; no live mutation | JSON/Python/Cargo/Bun/pnpm |
 
 ## Features
 
@@ -605,6 +611,7 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 | Authority/GSD recovery | ISC-279–286, ISC-301–304 | preserved history | true |
 | Infrastructure and CodeGraph | ISC-287–296 | provider read access | true |
 | Dependency/CI/config repairs | ISC-297–300, ISC-305–306 | recovered gate scope | true, disjoint files/worktrees |
+| Executable registry authority | ISC-319–323 | dependency/CI/config repairs | false |
 | Contract/native capability closure | existing Wave 2 criteria | required gates | false |
 | Engine/state/distribution/ops continuation | ISC-307–308, ISC-312 | original wave prerequisites | per phase plan |
 | Preservation, privacy and evidence | ISC-309–311, ISC-313–314 | every phase | continuous |
@@ -706,6 +713,7 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 - 2026-09-05T10:35:44.959123+00:00: Selected analytical capabilities: ContextSearch (prior planning evidence), ISA (history reconciliation), Advisor (bounded plan review), FirstPrinciples, SystemsThinking, Science and ReReadCheck (explicit lenses in the external review). None of those reviews substitutes for source verification.
 
 - 2026-09-05T13:47:55.589355+00:00: GitHub control bodies are reconciled with readback hashes; the missing public admin smoke URL is configured to its verified origin. The next critical decision is the additive main CI requirement. Production promotion remains held for release identity and rollback evidence.
+- 2026-09-06 10:47: The versioned engine registry is the canonical identity, ownership, public grouping and evidence-axis authority. Runtime registration tests consume it directly, while deployed and operational cells remain evidence-qualified and do not close GATE-05 without Plan 02-07 release receipts.
 
 ## Changelog
 
@@ -867,3 +875,8 @@ _Last refreshed: 2026-08-25T17:34:40.307Z_
 - Capability fixture: disposable PostgreSQL 18.4 reproduces the original 500/timeout; a shared test-binary runtime passes all three existing cases against the same migrated database. GitHub's PostgreSQL 16 integration rerun passes all three cases.
 - ISC-305: GitHub run 33971363162 passes all 16 jobs at 19b80826fcc1ef787d95960a44dd4762ceb74968, including the full integration suite and CI Gate. GitHub's pull-request merge tree is byte-identical to the source tree. Vercel reports READY for the same candidate. PR #1488 remains draft, mergeable, without auto-merge.
 - Plan sync: an explicit dry run against the candidate finds no docs/planning JSON inputs and performs no issue changes. A main push will start the workflow because its file changed, but the same tree has no rows to apply.
+- ISC-319: contract validator — `contract authority v1 valid: schemas=6 fixtures=5 registries=1 engines=19`.
+- ISC-320: negative fixture suite — `23 passed in 3.34s`; mutated missing/duplicate IDs, grouping, class, owner and evidence cases all fail closed.
+- ISC-321: executable enumeration — `noesis-orchestrator` reports `97 passed; 0 failed`; the complete TypeScript suite reports `94 pass, 0 fail`, including canonical startup registration.
+- ISC-322: local conditional probe — `database_conditional_registration_matches_authority_with_local_fixture ... ok` with `DATABASE_URL_present= False` and `TEST_DATABASE_URL_present= False`.
+- ISC-323: canonical command gate — `pnpm run gate` exited zero after contract, script, verification and TypeScript stages; no deployment, schema/data mutation or calculation-semantic change was performed.

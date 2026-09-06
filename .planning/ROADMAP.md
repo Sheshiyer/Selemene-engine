@@ -47,7 +47,7 @@ Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase nu
 5. Complete remaining registry/release receipt authority and immutable action pins.
 6. Prepare protected release and promotion decisions before any production-triggering merge.
 
-**Plans:** 7 validated plans; 01–05 verified to the main-protection gate, 06–07 verified gap-closure plans for registry/release authority
+**Plans:** 6/7 plans executed
 
 ### Phase 3: Capability and contract closure
 
@@ -125,7 +125,7 @@ Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase nu
 | Phase | Plans Complete | Status | Completed |
 |---|---|---|---|
 | 1. Authority and infrastructure recovery | 2/2 | Complete    | 2026-09-05 |
-| 2. Reproducible gates and dependency repair | 3/5 source tasks | Executing / verifying | - |
+| 2. Reproducible gates and dependency repair | 6/7 | In Progress|  |
 | 3. Capability and contract closure | 0/TBD | Pending | - |
 | 4. Engine and media truth | 0/TBD | Pending | - |
 | 5. State auth and durability | 0/TBD | Pending | - |
