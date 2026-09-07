@@ -83,6 +83,18 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [
+        {
+          "dependency_id": "python:biofield-cv",
+          "dependency_kind": "python",
+          "requirement": "optional"
+        }
+      ],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     },
     {
@@ -139,6 +151,18 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [
+        {
+          "dependency_id": "database:postgres",
+          "dependency_kind": "database",
+          "requirement": "required"
+        }
+      ],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": false
       }
     },
     {
@@ -195,6 +219,12 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     },
     {
@@ -252,6 +282,18 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [
+        {
+          "dependency_id": "typescript:bridge",
+          "dependency_kind": "typescript",
+          "requirement": "required"
+        }
+      ],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": true
       }
     },
     {
@@ -308,6 +350,18 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [
+        {
+          "dependency_id": "python:mediapipe-face-mesh",
+          "dependency_kind": "python",
+          "requirement": "optional"
+        }
+      ],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     },
     {
@@ -364,6 +418,12 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [],
+      "operations": {
+        "calculate": "unsupported",
+        "validate": "supported",
+        "witness_eligible": false
       }
     },
     {
@@ -420,6 +480,12 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     },
     {
@@ -476,6 +542,12 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     },
     {
@@ -533,6 +605,18 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [
+        {
+          "dependency_id": "typescript:bridge",
+          "dependency_kind": "typescript",
+          "requirement": "required"
+        }
+      ],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": true
       }
     },
     {
@@ -589,6 +673,12 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     },
     {
@@ -645,6 +735,12 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     },
     {
@@ -701,6 +797,12 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     },
     {
@@ -758,6 +860,18 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [
+        {
+          "dependency_id": "typescript:bridge",
+          "dependency_kind": "typescript",
+          "requirement": "required"
+        }
+      ],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": false
       }
     },
     {
@@ -815,6 +929,18 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [
+        {
+          "dependency_id": "typescript:bridge",
+          "dependency_kind": "typescript",
+          "requirement": "required"
+        }
+      ],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": true
       }
     },
     {
@@ -872,6 +998,18 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [
+        {
+          "dependency_id": "typescript:bridge",
+          "dependency_kind": "typescript",
+          "requirement": "required"
+        }
+      ],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": true
       }
     },
     {
@@ -929,6 +1067,18 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [
+        {
+          "dependency_id": "typescript:bridge",
+          "dependency_kind": "typescript",
+          "requirement": "required"
+        }
+      ],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": true
       }
     },
     {
@@ -985,6 +1135,12 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     },
     {
@@ -1041,6 +1197,12 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     },
     {
@@ -1097,6 +1259,12 @@
             "repo://docs/plans/selemene-engine/CAPABILITY-LEDGER.md#fresh-probe-receipt"
           ]
         }
+      },
+      "dependency_requirements": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
       }
     }
   ]

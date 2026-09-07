@@ -1,0 +1,310 @@
+{
+  "contract_version": "v1",
+  "capabilities": [
+    {
+      "contract_version": "v1",
+      "engine_id": "biofield",
+      "display_name": "Biofield",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [
+        "python:biofield-cv"
+      ],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "biofield-capture",
+      "display_name": "Biofield Capture",
+      "availability": "declared",
+      "runtime_kind": "database-conditional",
+      "dependencies": [
+        "database:postgres"
+      ],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": false
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "biorhythm",
+      "display_name": "Biorhythm",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "enneagram",
+      "display_name": "Enneagram",
+      "availability": "declared",
+      "runtime_kind": "typescript",
+      "dependencies": [
+        "typescript:bridge"
+      ],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "face-reading",
+      "display_name": "Face Reading",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [
+        "python:mediapipe-face-mesh"
+      ],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "financial-biosensor",
+      "display_name": "Financial Biosensor",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "unsupported",
+        "validate": "supported",
+        "witness_eligible": false
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "gene-keys",
+      "display_name": "Gene Keys",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "human-design",
+      "display_name": "Human Design",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "i-ching",
+      "display_name": "I Ching",
+      "availability": "declared",
+      "runtime_kind": "typescript",
+      "dependencies": [
+        "typescript:bridge"
+      ],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "nadabrahman",
+      "display_name": "Nada Brahman",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "numerology",
+      "display_name": "Numerology",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "panchanga",
+      "display_name": "Panchanga",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "raaga",
+      "display_name": "Raaga",
+      "availability": "declared",
+      "runtime_kind": "typescript",
+      "dependencies": [
+        "typescript:bridge"
+      ],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": false
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "sacred-geometry",
+      "display_name": "Sacred Geometry",
+      "availability": "declared",
+      "runtime_kind": "typescript",
+      "dependencies": [
+        "typescript:bridge"
+      ],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "sigil-forge",
+      "display_name": "Sigil Forge",
+      "availability": "declared",
+      "runtime_kind": "typescript",
+      "dependencies": [
+        "typescript:bridge"
+      ],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "tarot",
+      "display_name": "Tarot",
+      "availability": "declared",
+      "runtime_kind": "typescript",
+      "dependencies": [
+        "typescript:bridge"
+      ],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "unsupported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "transits",
+      "display_name": "Transits",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "vedic-clock",
+      "display_name": "Vedic Clock",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    },
+    {
+      "contract_version": "v1",
+      "engine_id": "vimshottari",
+      "display_name": "Vimshottari",
+      "availability": "declared",
+      "runtime_kind": "native",
+      "dependencies": [],
+      "reason_code": "NOT_OBSERVED",
+      "dependency_observations": [],
+      "operations": {
+        "calculate": "supported",
+        "validate": "supported",
+        "witness_eligible": true
+      }
+    }
+  ],
+  "count": 19,
+  "public_mirror_count": 17
+}

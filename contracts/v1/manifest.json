@@ -7,16 +7,36 @@
     "schemas/error.schema.json",
     "schemas/consent.schema.json",
     "schemas/provenance.schema.json",
-    "schemas/engine-capability.schema.json"
+    "schemas/engine-capability.schema.json",
+    "schemas/engine-capability-list.schema.json"
   ],
   "registries": [
     "registries/engines.json"
   ],
   "fixtures": [
-    { "path": "fixtures/engine-request.json", "schema": "schemas/engine-request.schema.json" },
-    { "path": "fixtures/engine-request-legacy.json", "schema": "schemas/engine-request.schema.json" },
-    { "path": "fixtures/engine-result.json", "schema": "schemas/engine-result.schema.json" },
-    { "path": "fixtures/error.json", "schema": "schemas/error.schema.json" },
-    { "path": "fixtures/engine-capability.json", "schema": "schemas/engine-capability.schema.json" }
+    {
+      "path": "fixtures/engine-request.json",
+      "schema": "schemas/engine-request.schema.json"
+    },
+    {
+      "path": "fixtures/engine-request-legacy.json",
+      "schema": "schemas/engine-request.schema.json"
+    },
+    {
+      "path": "fixtures/engine-result.json",
+      "schema": "schemas/engine-result.schema.json"
+    },
+    {
+      "path": "fixtures/error.json",
+      "schema": "schemas/error.schema.json"
+    },
+    {
+      "path": "fixtures/engine-capability.json",
+      "schema": "schemas/engine-capability.schema.json"
+    },
+    {
+      "path": "fixtures/engine-capability-list.json",
+      "schema": "schemas/engine-capability-list.schema.json"
+    }
   ]
 }

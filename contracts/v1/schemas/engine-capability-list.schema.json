@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noesis.tryambakam.org/contracts/v1/engine-capability-list.schema.json",
+  "title": "Selemene Engine Capability List v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "capabilities",
+    "count",
+    "public_mirror_count"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "v1"
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 19,
+      "maxItems": 19,
+      "items": {
+        "$ref": "engine-capability.schema.json"
+      }
+    },
+    "count": {
+      "const": 19
+    },
+    "public_mirror_count": {
+      "const": 17
+    }
+  }
+}
