@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "bun run src/cli.ts",
     "build": "bun build src/cli.ts --outdir dist --target node",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

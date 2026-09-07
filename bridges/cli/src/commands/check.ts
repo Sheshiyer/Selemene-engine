@@ -16,13 +16,14 @@ export async function checkCommand(): Promise<void> {
   }
 
   // Check Rust server
-  const rustHealth = await checkHealth(`${config.rustUrl}/health/live`);
+  const auth = { apiKey: config.apiKey, bearerToken: config.bearerToken };
+  const rustHealth = await checkHealth(`${config.rustUrl}/health/live`, auth);
   if (rustHealth.ok) {
     let endpointCount = "?";
     try {
       const spec = await fetchJSON<OpenAPISpec>(
         `${config.rustUrl}/api/openapi.json`,
-        { apiKey: config.apiKey }
+        auth
       );
       endpointCount = String(Object.keys(spec.paths ?? {}).length);
     } catch {
@@ -38,12 +39,12 @@ export async function checkCommand(): Promise<void> {
   }
 
   // Check TS server
-  const tsHealth = await checkHealth(`${config.tsUrl}/health`);
+  const tsHealth = await checkHealth(`${config.tsUrl}/health`, auth);
   if (tsHealth.ok) {
     let endpointCount = "?";
     try {
       const spec = await fetchJSON<OpenAPISpec>(`${config.tsUrl}/docs/json`, {
-        apiKey: config.apiKey,
+        ...auth,
       });
       endpointCount = String(Object.keys(spec.paths ?? {}).length);
     } catch {

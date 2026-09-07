@@ -59,7 +59,8 @@ export async function doctorCommand(): Promise<void> {
   const spin = p.spinner();
   spin.start("Running diagnostics...");
 
-  const rustHealth = await checkHealth(`${config.rustUrl}/health/live`);
+  const auth = { apiKey: config.apiKey, bearerToken: config.bearerToken };
+  const rustHealth = await checkHealth(`${config.rustUrl}/health/live`, auth);
   if (rustHealth.ok) {
     rows.push({ check: "Rust server", status: "pass", detail: config.rustUrl });
 
@@ -67,7 +68,7 @@ export async function doctorCommand(): Promise<void> {
     try {
       const spec = await fetchJSON<OpenAPISpec>(
         `${config.rustUrl}/api/openapi.json`,
-        { apiKey: config.apiKey }
+        auth
       );
       const count = Object.keys(spec.paths ?? {}).length;
       rows.push({
@@ -96,14 +97,14 @@ export async function doctorCommand(): Promise<void> {
   }
 
   // 5. TS server
-  const tsHealth = await checkHealth(`${config.tsUrl}/health`);
+  const tsHealth = await checkHealth(`${config.tsUrl}/health`, auth);
   if (tsHealth.ok) {
     rows.push({ check: "TS server", status: "pass", detail: config.tsUrl });
 
     // 6. TS OpenAPI
     try {
       const spec = await fetchJSON<OpenAPISpec>(`${config.tsUrl}/docs/json`, {
-        apiKey: config.apiKey,
+        ...auth,
       });
       const count = Object.keys(spec.paths ?? {}).length;
       rows.push({

@@ -7,9 +7,18 @@ export const SelemeneConfigSchema = z.object({
   rustUrl: z.string().url(),
   tsUrl: z.string().url(),
   apiKey: z.string().optional(),
+  bearerToken: z.string().optional(),
   frameworks: z.array(z.enum(["claude", "openai", "langchain"])),
   outputDir: z.string().default("./selemene-tools"),
   lastGenerated: z.string().optional(),
+}).superRefine((config, context) => {
+  if (config.apiKey && config.bearerToken) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["apiKey"],
+      message: "Choose either apiKey or bearerToken, not both",
+    });
+  }
 });
 
 export type SelemeneConfig = z.infer<typeof SelemeneConfigSchema>;
