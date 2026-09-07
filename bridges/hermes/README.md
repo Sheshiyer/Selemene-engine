@@ -1,6 +1,8 @@
 # Hermes Bridge for Noesis
 
-Connect [NousResearch Hermes](https://huggingface.co/NousResearch) models to all 16 Noesis consciousness engines via OpenAI-compatible function calling.
+Connect [NousResearch Hermes](https://huggingface.co/NousResearch) models to
+the 19 canonical Noesis runtime identities (17 public mirrors) via
+OpenAI-compatible function calling.
 
 Works with any OpenAI-compatible server: **ollama**, **llama.cpp**, **vLLM**, **Together AI**, **Groq**, or a local `hermes3` instance.
 
@@ -88,17 +90,32 @@ config = HermesAgentConfig(
 
 ## Tool Surface
 
-The bridge exposes **22 tools** by default:
+Hermes consumes the authenticated canonical catalogue. Requests use exactly
+one `X-API-Key` or `Authorization: Bearer` header and preserve `declared`,
+`available`, `degraded`, and `unavailable` capability states. The five
+producer-backed workflows are `birth-blueprint`, `daily-practice`,
+`decision-support`, `self-inquiry`, and `creative-expression`; Full Spectrum
+remains visible but `unsupported` until its lossless adapter is proven.
 
-### Meta tools (4)
+The locked repository gate validates the bridge with:
+
+```bash
+(cd python-services && PYTHONPATH=.. uv run --locked --extra dev python -m pytest ../bridges/hermes/tests -q)
+```
+
+The bridge exposes the canonical tools for 19 runtime identities and the
+workflow catalogue by default:
+
+### Meta tools (5)
 | Tool | Description |
 |------|-------------|
-| `noesis_list_engines` | List all 16 engines |
-| `noesis_list_workflows` | List all 6 workflows |
+| `noesis_list_engines` | List all 19 runtime identities and 17 public mirrors |
+| `noesis_list_capabilities` | List canonical capability states |
+| `noesis_list_workflows` | List five supported workflows plus Full Spectrum unsupported |
 | `noesis_engine_info` | Get schema for a specific engine |
 | `noesis_workflow_info` | Get details for a specific workflow |
 
-### Engine tools (16)
+### Engine tools (17 public mirrors)
 | Tool | Engine |
 |------|--------|
 | `noesis_engine_panchanga` | Vedic calendar |
@@ -117,6 +134,7 @@ The bridge exposes **22 tools** by default:
 | `noesis_engine_enneagram` | Enneagram |
 | `noesis_engine_sacred_geometry` | Sacred geometry |
 | `noesis_engine_sigil_forge` | Sigil creation |
+| `noesis_engine_raaga` | Raga consciousness |
 
 ### Workflow tools (6)
 | Tool | Workflow |
@@ -233,7 +251,7 @@ print(f'Engines available: {len(r.get(\"engines\", []))}')
 "
 ```
 
-Expected output: `Engines available: 16`
+Expected output: `Engines available: 17`
 
 Full end-to-end test:
 
@@ -253,7 +271,7 @@ print(agent.run("List the available Noesis engines."))
 | **Hermes (this)** | `bridges/hermes/` | OpenAI function calling + XML |
 | OpenClaw | `docs/api/OPENCLAW_INTEGRATION.md` | skill-based |
 
-**For rich narrative witness reports (2026-07+):** Use the current contract in `docs/api/AGENT_FLOW.md` (subjects + relationship_context + language + Folio header + NotebookLM shaper). The classic 22 engine/workflow tools remain for direct calls.
+**For rich narrative witness reports (2026-07+):** Use the current contract in `docs/api/AGENT_FLOW.md` (subjects + relationship_context + language + Folio header + NotebookLM shaper). The canonical 17 engine, 5 meta and 6 workflow tools remain for direct calls; Full Spectrum is unsupported.
 
 ## Architecture
 

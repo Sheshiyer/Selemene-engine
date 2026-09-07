@@ -1203,3 +1203,6 @@ components:
 # Contract v1 notes: 19 runtime identities, 17 public mirrors, four availability states.
 # Authenticated requests use exactly one of X-API-Key or Authorization: Bearer.
 # Full Spectrum workflow is unsupported pending a lossless adapter test.
+# Canonical v1 parity: 19 runtime identities, 17 public mirrors; capability states are declared, available, degraded, unavailable; calculate is the canonical engine operation.
+# Protected requests use exactly one X-API-Key or Authorization: Bearer header.
+# Supported workflows: birth-blueprint, daily-practice, decision-support, self-inquiry, creative-expression. Full Spectrum is unsupported.

@@ -9,12 +9,7 @@ Python sidecar services for Selemene Engine. Two FastAPI services:
 
 ```bash
 cd python-services
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-
-# Optional: install mediapipe + opencv
-pip install -e ".[mediapipe]"
+uv sync --locked --extra dev
 ```
 
 ## Run
@@ -32,7 +27,27 @@ uvicorn biofield_cv_service.main:app --port 8002 --reload
 ## Test
 
 ```bash
-pytest
+uv run --locked --extra dev python -m pytest
+```
+
+## Contract authority
+
+The sidecars are dependency observers for the canonical Selemene catalogue:
+19 runtime identities and 17 public mirrors. They do not create additional
+public engines. Observations preserve `declared`, `available`, `degraded`, and
+`unavailable`; the protected Rust API uses exactly one `X-API-Key` or
+`Authorization: Bearer` header. The five executable workflows are
+`birth-blueprint`, `daily-practice`, `decision-support`, `self-inquiry`, and
+`creative-expression`; Full Spectrum is visible but `unsupported` pending a
+lossless adapter.
+
+The locked gate runs sidecar health checks from the repository root with:
+
+```bash
+uv run --project python-services --locked --extra dev python -m pytest \
+  python-services/tests/test_capability_health.py \
+  python-services/tests/test_biofield_health.py \
+  python-services/tests/test_mediapipe_health.py -q --tb=line
 ```
 
 ## Capability observations

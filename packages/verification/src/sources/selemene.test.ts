@@ -1,6 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { decodeEngineCapabilityList } from '@selemene/engine-sdk';
 import { fetchEngineResult, SelemeneApiError } from './selemene.js';
 import type { Subject } from '../types.js';
+
+const capabilityFixture = JSON.parse(
+  readFileSync(new URL('../../../../contracts/v1/fixtures/engine-capability-list.json', import.meta.url), 'utf8'),
+);
 
 const mockFetchAllEngines = vi.fn();
 const mockLoadSelemeneKey = vi.fn();
@@ -27,6 +33,10 @@ const subject: Subject = {
 };
 
 describe('fetchEngineResult', () => {
+  it('uses the public canonical capability decoder', () => {
+    expect(decodeEngineCapabilityList(capabilityFixture).count).toBe(19);
+  });
+
   it('throws SelemeneApiError when the API key is missing', async () => {
     mockLoadSelemeneKey.mockResolvedValue(undefined);
 

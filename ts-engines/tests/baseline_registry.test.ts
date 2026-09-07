@@ -31,6 +31,13 @@ interface EngineCapabilitySummary {
   dependencies: string[]
   required_phase?: number
   implementation_version?: string
+  reason_code?: string
+  dependency_observations?: unknown[]
+  operations?: {
+    calculate: string
+    validate: string
+    witness_eligible: boolean
+  }
 }
 
 interface EngineCapabilityListBody {
@@ -169,11 +176,18 @@ describe('TS baseline registry', () => {
       contract_version: 'v1',
       engine_id: 'tarot',
       display_name: 'Tarot Consciousness Engine',
-      availability: 'available',
+      availability: 'declared',
       runtime_kind: 'typescript',
-      dependencies: [],
+      dependencies: ['typescript:bridge'],
       required_phase: 0,
       implementation_version: '1.0.0',
+      reason_code: 'NOT_OBSERVED',
+      dependency_observations: [],
+      operations: {
+        calculate: 'supported',
+        validate: 'unsupported',
+        witness_eligible: true,
+      },
     })
     expect(body.capabilities.every((capability) => capability.runtime_kind === 'typescript')).toBe(
       true,

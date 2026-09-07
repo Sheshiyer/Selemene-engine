@@ -72,3 +72,5 @@ Uses shared `EngineInput`:
 ## Contract v1 support
 
 `transits` is one of 19 runtime identities; the public projection contains 17 mirrors. Calculate is **supported** and validation is **supported** according to `contracts/v1/registries/engines.json`. Call the authenticated Rust route `/api/v1/engines/transits/calculate` with exactly one `X-API-Key` or `Authorization: Bearer` header. Preserve `declared`, `available`, `degraded`, and `unavailable` capability states. Full Spectrum workflow execution is explicitly `unsupported`.
+
+> Canonical v1 parity: this maintained view covers 19 runtime identities and 17 public mirrors. Capability states are `declared`, `available`, `degraded`, and `unavailable`; `calculate` is the canonical engine operation; protected requests use exactly one `X-API-Key` or `Authorization: Bearer` header. The five executable workflows are `birth-blueprint`, `daily-practice`, `decision-support`, `self-inquiry`, and `creative-expression`; Full Spectrum is visibly `unsupported` pending a lossless adapter.

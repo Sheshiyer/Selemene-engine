@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { fetchAllEngines, SELEMENE_BASE_URL, type BirthData } from './fetcher.js';
+import type { SelemeneEngineId } from './types.js';
 import capabilityFixture from '../../../../contracts/v1/fixtures/engine-capability-list.json';
 import { decodeEngineCapabilityList } from '@selemene/engine-sdk';
 
@@ -50,7 +51,7 @@ describe('fetchAllEngines', () => {
     const fakeFetch = vi.fn();
     await expect(fetchAllEngines(
       { date: '1990-01-01', timezone: 'UTC' },
-      { api_key: 'test-key', engines: ['raaga'], capabilities: capabilityFixture, fetchImpl: fakeFetch as unknown as typeof fetch },
+      { api_key: 'test-key', engines: ['raaga' as SelemeneEngineId], capabilities: capabilityFixture, fetchImpl: fakeFetch as unknown as typeof fetch },
     )).rejects.toThrow(/not an eligible/);
     expect(fakeFetch).not.toHaveBeenCalled();
   });

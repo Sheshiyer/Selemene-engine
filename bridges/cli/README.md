@@ -181,3 +181,5 @@ MIT
 ## Contract v1 capability boundary
 
 The CLI consumes 19 runtime identities and exposes the exact 17 public mirrors. It calls authenticated Rust routes with either `X-API-Key` or `Authorization: Bearer`, never both, and reports all four capability states. Full Spectrum remains explicitly `unsupported` pending a lossless adapter.
+
+> Canonical v1 parity: this maintained view covers 19 runtime identities and 17 public mirrors. Capability states are `declared`, `available`, `degraded`, and `unavailable`; `calculate` is the canonical engine operation; protected requests use exactly one `X-API-Key` or `Authorization: Bearer` header. The five executable workflows are `birth-blueprint`, `daily-practice`, `decision-support`, `self-inquiry`, and `creative-expression`; Full Spectrum is visibly `unsupported` pending a lossless adapter.

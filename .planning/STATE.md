@@ -2,28 +2,28 @@
 gsd_state_version: 1.0
 milestone: v1.0-continuation
 milestone_name: Existing Selemene wave completion
-status: verifying
-stopped_at: Phase 03 context gathered
-last_updated: "2026-09-06T17:10:45.559Z"
-last_activity: 2026-09-06 — GitHub run 34046002390 passed all 16 jobs at exact evidence head ba2d149
+status: complete
+stopped_at: Phase 03 contract closure and final gate
+last_updated: "2026-09-08T00:00:00Z"
+last_activity: 2026-09-08 -- Phase 3 contract closure verified
 progress:
   total_phases: 7
-  completed_phases: 2
-  total_plans: 9
-  completed_plans: 9
-  percent: 29
+  completed_phases: 3
+  total_plans: 36
+  completed_plans: 36
+  percent: 43
 ---
 
 # Project state
 
 ## Current Position
 
-Phase: 03 (capability-and-contract-closure) — READY FOR DISCUSSION
-Plan: 0 of TBD
-Status: Phase 02 verified; Phase 03 discussion and research ready
-Last activity: 2026-09-06 — GitHub run 34046002390 passed all 16 jobs at exact evidence head ba2d149
+Phase: 03 (capability-and-contract-closure) — COMPLETE
+Plan: 21 of 21 (27 plan files)
+Status: Verified locally; external promotion held
+Last activity: 2026-09-08 -- Phase 3 contract closure and final gate verified
 
-Progress: [███░░░░░░░] 29%
+Progress: [████░░░░░░] 43%
 
 ## Performance Metrics
 
@@ -48,12 +48,12 @@ Reuse Waves 0–6 and stable GitHub issue IDs. ISA owns acceptance; GSD is the e
 
 ## Blockers and Concerns
 
-Draft recovery PR #1488 is open, draft and mergeable at evidence head `ba2d149106345bb9637e1d31fec8160e703c5501`. GitHub run 34046002390 passed all 16 jobs, including strict `CI Gate`; its pull-request merge tree is byte-identical to the branch tree. Ruleset 15597830 requires that strict check on main after explicit user approval and verified readback. The authoritative deep review reported ten Critical and four Warning findings; all have tested fixes or explicit fail-closed dispositions, and five independent rechecks ended with zero findings. Production mutation still requires durable one-use receipt consumption, Railway post-deploy attestation, atomic service/registry coordination, source-bound image asset attestation, real schema/rollback evidence and Vercel deployment protection, so promotion stays HOLD.
+Draft recovery PR #1488 remains open, draft and mergeable; its prior exact-head CI receipt and strict main ruleset remain preserved. Phase 3 now has 27 plan files (54 tasks) and a final database-free gate receipt: 268 locked Python script/contract tests, all Rust contract/orchestrator/API/bridge/SDK/TUI/Witness suites, focused TypeScript/SDK/admin/Witness/verification suites, locked Universal/Hermes suites and 104 Bun tests passed. The forced CodeGraph rebuild is synchronized at 876 files, 15,560 nodes and 38,206 edges with zero pending changes. Railway selectors remain manifest-bound; Cloudflare source configurations bind account `9d9d23b27f32e70ae3afb6a1aa2c0f10`, while the default Wrangler OAuth account is different and cannot refresh live 9d9d inventory. Production mutation still requires durable one-use receipt consumption, Railway post-deploy attestation, atomic service/registry coordination, source-bound image asset attestation, real schema/rollback evidence and Vercel deployment protection, so promotion stays HOLD.
 
 ## Session Continuity
 
-Resume from this file, the current ISA continuation criteria and Phase 3 issue #894. Phases 1 and 2 are verified. Phase 2 has complete local, independent-review and exact-head remote-CI evidence; both production profiles remain disabled until their named external authorities are proven. Begin Phase 3 in a fresh isolated `codex/selemene-contract-convergence` worktree from the verified recovery head, using the user-authorized recommended discussion defaults before research and planning.
+Phases 1–3 are verified in the isolated `codex/selemene-contract-convergence` worktree. Phase 3 planning, implementation, focused receipts, dependency-locked full gate and forced CodeGraph synchronization are complete. Continue with Phase 4 from the committed closure head; keep Railway/Cloudflare inventory, merge, deployment, release, schema/data, DNS and other production mutations behind their named critical receipts.
 
-Last session: 2026-09-06T17:10:45.548Z
-Stopped At: Phase 03 context gathered
-Resume File: .planning/phases/03-capability-and-contract-closure/03-CONTEXT.md
+Last session: 2026-09-08T00:00:00Z
+Stopped At: Phase 03 contract closure and final gate
+Resume File: .planning/phases/03-capability-and-contract-closure/03-21-SUMMARY.md

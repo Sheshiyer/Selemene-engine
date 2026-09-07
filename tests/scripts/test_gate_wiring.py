@@ -20,12 +20,157 @@ API_DIGEST = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 TS_DIGEST = "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 RELEASE_FIXTURE_ROOT = REPO_ROOT / "contracts/release/v1/fixtures"
 
+LOCKED_PY = "uv run --project python-services --locked --extra dev python"
+FOCUSED_TS = (
+    "cd ts-engines && bun test src/server/__tests__/registry-authority.test.ts "
+    "src/server/__tests__/capability-route.test.ts && bun run typecheck"
+)
+FOCUSED_PY = (
+    "cd python-services && uv run --locked --extra dev python -m pytest "
+    "tests/test_capability_health.py tests/test_biofield_health.py "
+    "tests/test_mediapipe_health.py -q --tb=line"
+)
+FOCUSED_RUST = "cargo test -p noesis-sdk -p noesis-tui --locked"
+UNIVERSAL_PY = (
+    "cd python-services && PYTHONPATH=.. uv run --locked --extra dev python -m pytest "
+    "../bridges/universal-tool-server/tests -q"
+)
+HERMES_PY = (
+    "cd python-services && PYTHONPATH=.. uv run --locked --extra dev python -m pytest "
+    "../bridges/hermes/tests -q"
+)
+
+MAINTAINED_DOCS = [
+    REPO_ROOT / relative
+    for relative in (
+        "llms.txt",
+        "docs/api/openapi.yaml",
+        "docs/api/TUI_INTEGRATION.md",
+        "docs/API_QUICKSTART.md",
+        "docs/engines/README.md",
+        "bridges/cli/README.md",
+        "python-services/README.md",
+        "bridges/hermes/README.md",
+        "docs/portal/README.md",
+        "docs/portal/docs/index.md",
+        "docs/portal/docs/authentication.md",
+        "docs/portal/docs/engines/index.md",
+        "docs/portal/docs/workflows/index.md",
+    )
+]
+MAINTAINED_DOCS += sorted(
+    path for path in (REPO_ROOT / "docs/portal/docs/engines").glob("*.md") if path.name != "index.md"
+)
+MAINTAINED_DOCS += sorted(
+    path for path in (REPO_ROOT / "docs/portal/docs/workflows").glob("*.md") if path.name != "index.md"
+)
+
+
+def receipt(command: str, path: str) -> dict[str, str]:
+    """Return one auditable command-to-source receipt link."""
+    return {"command": command, "path": path}
+
+
+# This is intentionally data, rather than a prose checklist. A decision or
+# threat cannot be considered covered unless its exact command and repository
+# path are both present in the map and validated below.
+GATE_RECEIPT_MAP: dict[str, list[dict[str, str]]] = {
+    "D-01": [
+        receipt(f"{LOCKED_PY} scripts/validate_contracts.py", "contracts/v1/fixtures/engine-capability-list.json"),
+        receipt(FOCUSED_TS, "ts-engines/src/server/__tests__/registry-authority.test.ts"),
+        receipt(FOCUSED_PY, "python-services/tests/test_capability_health.py"),
+        receipt(FOCUSED_RUST, "crates/noesis-sdk/src/client.rs"),
+    ],
+    "D-02": [
+        receipt("cargo test -p noesis-orchestrator capability --locked", "crates/noesis-orchestrator/src/workflow/registry.rs"),
+        receipt(FOCUSED_PY, "python-services/tests/test_biofield_health.py"),
+        receipt(FOCUSED_RUST, "crates/noesis-tui/src/screens/engine_picker.rs"),
+    ],
+    "D-03": [
+        receipt(f"{LOCKED_PY} scripts/validate_contracts.py", "contracts/v1/schemas/engine-capability-list.schema.json"),
+        receipt("pnpm --filter @selemene/engine-sdk build && test -s packages/noesis-engine-sdk/dist/index.js && test -s packages/noesis-engine-sdk/dist/index.d.ts", "packages/noesis-engine-sdk/package.json"),
+        receipt("pnpm --filter @noesis/sdk test", "packages/noesis-sdk-ts/src/index.test.ts"),
+        receipt("pnpm --filter admin-web test", "apps/admin-web/src/lib/engine-capability.test.mjs"),
+        receipt("pnpm --filter @noesis/witness-pipeline test -- src/selemene/fetcher.test.ts", "packages/witness-pipeline/src/selemene/fetcher.test.ts"),
+        receipt("pnpm --filter @noesis/verification test", "packages/verification/src/sources/selemene.test.ts"),
+        receipt(FOCUSED_RUST, "crates/noesis-tui/src/screens/engine_picker.rs"),
+        receipt(FOCUSED_PY, "python-services/tests/test_capability_health.py"),
+    ],
+    "D-04": [
+        receipt("cargo test -p noesis-core --test contract_v1_authority --locked", "crates/noesis-core/src/contract.rs"),
+    ],
+    "D-05": [
+        receipt("cargo test -p noesis-api --test capability_route_tests --locked", "crates/noesis-api/tests/capability_route_tests.rs"),
+        receipt("cargo test -p noesis-api --test error_handling_tests --locked", "crates/noesis-api/tests/error_handling_tests.rs"),
+        receipt(FOCUSED_TS, "ts-engines/src/server/__tests__/capability-route.test.ts"),
+        receipt(FOCUSED_PY, "python-services/tests/test_mediapipe_health.py"),
+        receipt(UNIVERSAL_PY, "bridges/universal-tool-server/tests"),
+        receipt(HERMES_PY, "bridges/hermes/tests"),
+    ],
+    "D-06": [
+        receipt("cargo test -p noesis-bridge --locked", "crates/noesis-bridge/src/lib.rs"),
+        receipt("cargo test -p noesis-api --test routing_enforcement_tests --locked", "crates/noesis-api/tests/routing_enforcement_tests.rs"),
+        receipt(FOCUSED_RUST, "crates/noesis-tui/src/screens/workflow_picker.rs"),
+    ],
+    "D-07": [
+        receipt("cargo test -p noesis-orchestrator workflow --locked", "crates/noesis-orchestrator/src/workflow/registry.rs"),
+        receipt("cargo test -p noesis-api --test workflow_execution_tests --locked", "crates/noesis-api/tests/workflow_execution_tests.rs"),
+        receipt("cargo test -p noesis-witness --locked", "crates/noesis-witness/src/interpret.rs"),
+    ],
+    "T3-01": [
+        receipt(FOCUSED_TS, "ts-engines/src/server/__tests__/capability-route.test.ts"),
+        receipt(FOCUSED_PY, "python-services/tests/test_capability_health.py"),
+        receipt(FOCUSED_RUST, "crates/noesis-sdk/src/client.rs"),
+        receipt(UNIVERSAL_PY, "bridges/universal-tool-server/tests"),
+        receipt(HERMES_PY, "bridges/hermes/tests"),
+    ],
+    "T3-02": [
+        receipt("cargo test -p noesis-api --test error_handling_tests --locked", "crates/noesis-api/tests/error_handling_tests.rs"),
+        receipt("pnpm --filter @noesis/sdk test", "packages/noesis-sdk-ts/src/index.test.ts"),
+        receipt(FOCUSED_PY, "python-services/tests/test_biofield_health.py"),
+        receipt(UNIVERSAL_PY, "bridges/universal-tool-server/tests"),
+        receipt(HERMES_PY, "bridges/hermes/tests"),
+    ],
+    "T3-03": [
+        receipt(f"{LOCKED_PY} scripts/validate_contracts.py", "contracts/v1/fixtures/engine-capability-list.json"),
+        receipt(FOCUSED_TS, "ts-engines/src/server/__tests__/registry-authority.test.ts"),
+        receipt(FOCUSED_PY, "python-services/tests/test_capability_health.py"),
+        receipt(FOCUSED_RUST, "crates/noesis-tui/src/screens/engine_picker.rs"),
+    ],
+    "T3-04": [
+        receipt("cargo test -p noesis-api --test capability_route_tests --locked", "crates/noesis-api/tests/capability_route_tests.rs"),
+        receipt("cargo test -p noesis-api --test routing_enforcement_tests --locked", "crates/noesis-api/tests/routing_enforcement_tests.rs"),
+        receipt(FOCUSED_RUST, "crates/noesis-tui/src/screens/workflow_picker.rs"),
+        receipt(UNIVERSAL_PY, "bridges/universal-tool-server/tests"),
+    ],
+    "T3-05": [
+        receipt("pnpm --filter @selemene/engine-sdk build && test -s packages/noesis-engine-sdk/dist/index.js && test -s packages/noesis-engine-sdk/dist/index.d.ts", "packages/noesis-engine-sdk/package.json"),
+        receipt(FOCUSED_TS, "ts-engines/src/server/__tests__/registry-authority.test.ts"),
+        receipt(FOCUSED_PY, "python-services/tests/test_capability_health.py"),
+        receipt(FOCUSED_RUST, "crates/noesis-sdk/src/client.rs"),
+    ],
+    "T3-06": [
+        receipt("cargo test -p noesis-api --test route_inventory_tests --locked", "crates/noesis-api/tests/route_inventory_tests.rs"),
+        receipt(FOCUSED_RUST, "crates/noesis-sdk/src/client.rs"),
+    ],
+    "T3-07": [
+        receipt("cargo test -p noesis-orchestrator workflow --locked", "crates/noesis-orchestrator/src/workflow/synthesis/mod.rs"),
+        receipt("cargo test -p noesis-api --test workflow_execution_tests --locked", "crates/noesis-api/tests/workflow_execution_tests.rs"),
+        receipt("cargo test -p noesis-witness --locked", "crates/noesis-witness/src/interpret.rs"),
+    ],
+    "T3-08": [
+        receipt("cargo test -p noesis-api --test routing_enforcement_tests --locked", "crates/noesis-api/tests/routing_enforcement_tests.rs"),
+        receipt(FOCUSED_RUST, "crates/noesis-tui/src/screens/workflow_picker.rs"),
+        receipt(HERMES_PY, "bridges/hermes/tests"),
+    ],
+}
+
 
 def test_gate_scripts_runs_contract_validator() -> None:
     scripts = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))["scripts"]
 
-    assert "python3 scripts/validate_contracts.py" in scripts["gate:scripts"]
-    assert "python3 scripts/validate_release_receipt.py --validate-fixtures" in scripts["gate:scripts"]
+    assert f"{LOCKED_PY} scripts/validate_contracts.py" in scripts["gate:scripts"]
+    assert f"{LOCKED_PY} scripts/validate_release_receipt.py --validate-fixtures" in scripts["gate:scripts"]
 
 
 def test_root_gate_runs_cross_language_contract_parity() -> None:
@@ -618,6 +763,8 @@ def test_prepublication_builds_and_registry_reads_feed_exact_digest_gate() -> No
     assert "docker/build-push-action@" not in release_source
     assert "docker buildx imagetools inspect" in release_source
     assert "--target-profile release-production" in release_source
+
+
     assert '--expected-release-tag "$GITHUB_REF_NAME"' in release_source
     assert "--expected-operation-id" in release_source
     assert "--expected-workflow .github/workflows/release.yml" in release_source
@@ -633,6 +780,139 @@ def test_prepublication_builds_and_registry_reads_feed_exact_digest_gate() -> No
         "excluded_publications": ["native-binaries"],
     }
 
+
+def test_phase3_security_configuration_is_fail_closed() -> None:
+    config = json.loads((REPO_ROOT / ".planning/config.json").read_text(encoding="utf-8"))
+    workflow = config["workflow"]
+    assert workflow["security_enforcement"] is True
+    assert workflow["security_asvs_level"] == 1
+    assert workflow["security_block_on"] == "high"
+
+
+def test_gate_receipt_map_covers_each_decision_and_threat_once_per_link() -> None:
+    expected = {*(f"D-{index:02d}" for index in range(1, 8)), *(f"T3-{index:02d}" for index in range(1, 9))}
+    assert set(GATE_RECEIPT_MAP) == expected
+    links = [
+        (target, item["command"], item["path"])
+        for target, receipts in GATE_RECEIPT_MAP.items()
+        for item in receipts
+    ]
+    assert len(links) == len(set(links)), "duplicate decision/threat receipt link"
+    for target, command, path in links:
+        assert command.strip()
+        assert path.strip()
+        assert (REPO_ROOT / path).exists(), f"{target} points at missing path: {path}"
+
+
+def test_gate_scripts_and_contracts_use_only_locked_python() -> None:
+    scripts = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))["scripts"]
+    gate_scripts = scripts["gate:scripts"]
+    gate_contracts = scripts["gate:contracts"]
+    validators = (
+        "scripts/validate_action_pins.py",
+        "scripts/validate_contracts.py",
+        "scripts/validate_release_receipt.py",
+        "scripts/validate_migrations.py",
+        "scripts/validate_docker_workspace.py",
+    )
+    for validator in validators:
+        assert f"{LOCKED_PY} {validator}" in gate_scripts
+    assert f"{LOCKED_PY} -m pytest tests/scripts -q" in gate_scripts
+    assert f"{LOCKED_PY} scripts/validate_contracts.py" in gate_contracts
+    assert f"{LOCKED_PY} -m pytest tests/scripts -q" in gate_contracts
+    assert "python3" not in gate_scripts + gate_contracts
+    assert "&& pytest" not in gate_scripts + gate_contracts
+    for script in (gate_scripts, gate_contracts):
+        for match in re.finditer(r"(?<!python -m )pytest", script):
+            prefix = script[max(0, match.start() - 12) : match.start()]
+            assert prefix.endswith("python -m "), f"ambient pytest near {script[match.start()-20:match.start()+20]}"
+    assert scripts["gate"].count("gate:contracts") == 1
+
+
+def test_gate_contracts_contains_reader_before_producer_receipts() -> None:
+    scripts = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))["scripts"]
+    gate_contracts = scripts["gate:contracts"]
+    required = (
+        "pnpm --filter @selemene/engine-sdk build",
+        "test -s packages/noesis-engine-sdk/dist/index.js",
+        "test -s packages/noesis-engine-sdk/dist/index.d.ts",
+        "cargo test -p noesis-core --test contract_v1_authority --locked",
+        "cargo test -p noesis-orchestrator capability --locked",
+        "cargo test -p noesis-orchestrator workflow --locked",
+        "cargo test -p noesis-bridge --locked",
+        "cargo test -p noesis-api --test capability_route_tests --locked",
+        "cargo test -p noesis-witness --locked",
+        FOCUSED_TS,
+        FOCUSED_PY,
+        FOCUSED_RUST,
+        UNIVERSAL_PY,
+        HERMES_PY,
+    )
+    for command in required:
+        assert command in gate_contracts, command
+    assert gate_contracts.index("scripts/validate_contracts.py") < gate_contracts.index("cargo test -p noesis-core")
+    assert gate_contracts.index("cargo test -p noesis-core") < gate_contracts.index("cargo test -p noesis-api")
+
+
+def test_shared_sdk_workspace_provenance_and_public_decoder_usage() -> None:
+    runtime_consumers = (
+        "packages/noesis-sdk-ts/package.json",
+        "apps/admin-web/package.json",
+        "packages/witness-pipeline/package.json",
+        "packages/verification/package.json",
+    )
+    for relative in runtime_consumers:
+        package = json.loads((REPO_ROOT / relative).read_text(encoding="utf-8"))
+        assert package.get("dependencies", {}).get("@selemene/engine-sdk") == "workspace:*"
+    workspace = (REPO_ROOT / "pnpm-workspace.yaml").read_text(encoding="utf-8")
+    assert "ts-engines" not in workspace
+    engine_package = json.loads((REPO_ROOT / "packages/noesis-engine-sdk/package.json").read_text(encoding="utf-8"))
+    exports = engine_package["exports"]["."]
+    assert exports["import"] == "./dist/index.js"
+    assert exports["types"] == "./dist/index.d.ts"
+    for relative in (
+        "packages/noesis-sdk-ts/src/index.test.ts",
+        "apps/admin-web/src/lib/engine-capability.test.mjs",
+        "packages/witness-pipeline/src/selemene/fetcher.test.ts",
+        "packages/verification/src/sources/selemene.test.ts",
+    ):
+        source = (REPO_ROOT / relative).read_text(encoding="utf-8")
+        assert "@selemene/engine-sdk" in source
+        assert "decodeEngineCapabilityList" in source
+
+
+def test_workflow_and_documentation_parity_is_derived_from_producers() -> None:
+    registry = (REPO_ROOT / "crates/noesis-orchestrator/src/workflow/registry.rs").read_text(encoding="utf-8")
+    synthesis = (REPO_ROOT / "crates/noesis-orchestrator/src/workflow/synthesis/mod.rs").read_text(encoding="utf-8")
+    supported = (
+        "birth-blueprint",
+        "daily-practice",
+        "decision-support",
+        "self-inquiry",
+        "creative-expression",
+    )
+    assert "SUPPORTED_WORKFLOW_IDS" in registry
+    for workflow_id in supported:
+        assert workflow_id in registry
+        assert workflow_id in synthesis
+    assert "full-spectrum" in registry
+    assert "unsupported" in synthesis
+
+    capability = json.loads((REPO_ROOT / "contracts/v1/fixtures/engine-capability-list.json").read_text(encoding="utf-8"))
+    assert capability["count"] == 19
+    assert capability["public_mirror_count"] == 17
+    assert len(capability["capabilities"]) == capability["count"]
+    assert {row["availability"] for row in capability["capabilities"]} == {"declared"}
+    assert all(row["operations"]["calculate"] in {"supported", "unsupported"} for row in capability["capabilities"])
+
+    assert len(MAINTAINED_DOCS) == len(set(MAINTAINED_DOCS))
+    for path in MAINTAINED_DOCS:
+        text = path.read_text(encoding="utf-8")
+        assert "19 runtime" in text, path
+        assert "17 public" in text, path
+        assert "Full Spectrum" in text and "unsupported" in text, path
+        assert "X-API-Key" in text and "Authorization: Bearer" in text, path
+        assert "declared" in text and "available" in text and "degraded" in text and "unavailable" in text, path
 
 def test_railway_mutation_uses_only_manifest_bound_selector() -> None:
     deploy = load_workflow("deploy.yaml")

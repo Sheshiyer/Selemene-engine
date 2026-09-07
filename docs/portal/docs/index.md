@@ -25,3 +25,5 @@ Continue with [Authentication](./authentication) and [SDK Quickstarts](./sdk-qui
 ## Contract v1 capability boundary
 
 Noesis exposes 19 runtime identities and 17 public mirrors through authenticated Rust routes. Use exactly one `X-API-Key` or `Authorization: Bearer` header. Full Spectrum is `unsupported` pending a lossless adapter test.
+
+> Canonical v1 parity: this maintained view covers 19 runtime identities and 17 public mirrors. Capability states are `declared`, `available`, `degraded`, and `unavailable`; `calculate` is the canonical engine operation; protected requests use exactly one `X-API-Key` or `Authorization: Bearer` header. The five executable workflows are `birth-blueprint`, `daily-practice`, `decision-support`, `self-inquiry`, and `creative-expression`; Full Spectrum is visibly `unsupported` pending a lossless adapter.

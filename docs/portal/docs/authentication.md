@@ -55,3 +55,5 @@ curl -X POST "https://selemene.tryambakam.space/api/v1/engines/numerology/calcul
 ## Contract v1 capability boundary
 
 The 19-row runtime catalogue (17 public mirrors) is available only through authenticated routes. Send exactly one `X-API-Key` or `Authorization: Bearer` header. Capability states remain `declared`, `available`, `degraded`, or `unavailable`; Full Spectrum is explicitly `unsupported`.
+
+> Canonical v1 parity: this maintained view covers 19 runtime identities and 17 public mirrors. Capability states are `declared`, `available`, `degraded`, and `unavailable`; `calculate` is the canonical engine operation; protected requests use exactly one `X-API-Key` or `Authorization: Bearer` header. The five executable workflows are `birth-blueprint`, `daily-practice`, `decision-support`, `self-inquiry`, and `creative-expression`; Full Spectrum is visibly `unsupported` pending a lossless adapter.

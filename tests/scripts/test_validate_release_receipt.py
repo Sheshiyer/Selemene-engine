@@ -60,6 +60,12 @@ def operational_receipt(*, workflow: str = ".github/workflows/deploy.yaml") -> d
         "run_id": "90000000001",
         "run_attempt": 1,
     }
+    # Keep the synthetic operational fixture fresh as the calendar advances;
+    # the dedicated stale-rehearsal test below supplies an intentionally old
+    # timestamp when expiry behavior needs to be exercised.
+    tested_at = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    for rehearsal in receipt["rollback"]["artifacts"] + receipt["rollback"]["services"]:
+        rehearsal["tested_at"]["value"] = tested_at
     return receipt
 
 
