@@ -25,8 +25,7 @@ function pathToSnakeCase(path: string, _method: string): string {
     clean = parts[parts.length - 1] || "root";
   }
 
-  const prefix = path.includes("/ts/") ? "selemene_ts_" : "selemene_";
-  return prefix + clean.toLowerCase();
+  return "selemene_" + clean.toLowerCase();
 }
 
 function pythonTypeFromSchema(schema: JSONSchema): string {
@@ -130,7 +129,7 @@ function buildFunction(
   description: string
 ): string {
   const funcName = toolName.replace(/^selemene_(ts_)?/, "");
-  const baseUrl = path.includes("/ts/") ? "TS_URL" : "RUST_URL";
+  const baseUrl = "RUST_URL";
 
   // Build param definitions
   const paramDefs: string[] = [];
@@ -217,6 +216,7 @@ export function generateLangChainTools(
   const methods: HttpMethod[] = ["get", "post", "put", "patch", "delete"];
 
   for (const [path, pathItem] of Object.entries(spec.paths)) {
+    if (path.startsWith("/ts") || path.includes("/validate")) continue;
     for (const method of methods) {
       const operation = pathItem[method] as OpenAPIOperation | undefined;
       if (!operation) continue;
@@ -269,15 +269,19 @@ from langchain_core.tools import StructuredTool
 
 
 RUST_URL = os.environ.get("SELEMENE_RUST_URL", "${config.rustUrl}")
-TS_URL = os.environ.get("SELEMENE_TS_URL", "${config.tsUrl}")
 API_KEY = os.environ.get("SELEMENE_API_KEY", "")
+BEARER_TOKEN = os.environ.get("SELEMENE_BEARER_TOKEN", "")
 
 
 def _headers() -> dict:
-    """Build request headers with optional API key."""
+    """Build protected Rust headers with one explicit credential mode."""
     h = {"Content-Type": "application/json"}
+    if API_KEY and BEARER_TOKEN:
+        raise ValueError("Choose either SELEMENE_API_KEY or SELEMENE_BEARER_TOKEN")
     if API_KEY:
-        h["Authorization"] = f"Bearer {API_KEY}"
+        h["X-API-Key"] = API_KEY
+    elif BEARER_TOKEN:
+        h["Authorization"] = f"Bearer {BEARER_TOKEN}"
     return h
 
 

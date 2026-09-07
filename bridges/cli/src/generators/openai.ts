@@ -84,6 +84,7 @@ export function generateOpenAIFunctions(
   const methods: HttpMethod[] = ["get", "post", "put", "patch", "delete"];
 
   for (const [path, pathItem] of Object.entries(spec.paths)) {
+    if (path.startsWith("/ts") || path.includes("/validate")) continue;
     for (const method of methods) {
       const operation = pathItem[method] as OpenAPIOperation | undefined;
       if (!operation) continue;

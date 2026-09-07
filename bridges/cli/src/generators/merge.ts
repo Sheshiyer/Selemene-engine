@@ -1,6 +1,8 @@
 /**
- * Fetch and merge Rust + TypeScript OpenAPI specs into a unified spec.
- * Port of scripts/merge-openapi.py
+ * Fetch the protected Rust OpenAPI contract for public tool generation.
+ *
+ * The TypeScript URL remains in configuration for legacy diagnostics, but
+ * direct sidecar paths are intentionally never merged into generated tools.
  */
 import { fetchJSON } from "../core/http.js";
 import type { OpenAPISpec } from "../core/types.js";
@@ -9,6 +11,7 @@ interface MergeOptions {
   rustUrl: string;
   tsUrl: string;
   apiKey?: string;
+  bearerToken?: string;
 }
 
 interface MergeResult {
@@ -20,12 +23,20 @@ interface MergeResult {
   errors: string[];
 }
 
+function isPublicRustPath(path: string): boolean {
+  return (
+    path === "/api/v1/status" ||
+    path.startsWith("/api/v1/engines") ||
+    path.startsWith("/api/v1/workflows")
+  );
+}
+
 async function fetchSpec(
   url: string,
-  apiKey?: string
+  credentials: Pick<MergeOptions, "apiKey" | "bearerToken">
 ): Promise<OpenAPISpec | null> {
   try {
-    return await fetchJSON<OpenAPISpec>(url, { apiKey });
+    return await fetchJSON<OpenAPISpec>(url, credentials);
   } catch {
     return null;
   }
@@ -35,15 +46,9 @@ export async function mergeSpecs(opts: MergeOptions): Promise<MergeResult> {
   const errors: string[] = [];
 
   const rustSpecUrl = `${opts.rustUrl}/api/openapi.json`;
-  const tsSpecUrl = `${opts.tsUrl}/docs/json`;
-
-  const [rustSpec, tsSpec] = await Promise.all([
-    fetchSpec(rustSpecUrl, opts.apiKey),
-    fetchSpec(tsSpecUrl, opts.apiKey),
-  ]);
+  const rustSpec = await fetchSpec(rustSpecUrl, opts);
 
   if (!rustSpec) errors.push(`Failed to fetch Rust spec from ${rustSpecUrl}`);
-  if (!tsSpec) errors.push(`Failed to fetch TS spec from ${tsSpecUrl}`);
 
   const unified: OpenAPISpec = {
     openapi: "3.0.3",
@@ -51,7 +56,7 @@ export async function mergeSpecs(opts: MergeOptions): Promise<MergeResult> {
       title: "Noesis Unified API",
       version: "1.0.0",
       description:
-        "Unified API for all 14 Selemene consciousness engines (9 Rust + 5 TypeScript) and 6 workflows",
+        "Protected Rust API for canonical Selemene engine and workflow operations",
     },
     paths: {},
     components: { schemas: {}, securitySchemes: {} },
@@ -64,8 +69,10 @@ export async function mergeSpecs(opts: MergeOptions): Promise<MergeResult> {
   // Add Rust paths directly
   if (rustSpec) {
     const rustPaths = rustSpec.paths ?? {};
-    Object.assign(unified.paths, rustPaths);
-    rustPathCount = Object.keys(rustPaths).length;
+    for (const [path, operations] of Object.entries(rustPaths)) {
+      if (isPublicRustPath(path)) unified.paths[path] = operations;
+    }
+    rustPathCount = Object.keys(unified.paths).length;
 
     // Merge Rust schemas
     const rustSchemas = rustSpec.components?.schemas ?? {};
@@ -77,28 +84,6 @@ export async function mergeSpecs(opts: MergeOptions): Promise<MergeResult> {
 
     // Merge Rust tags
     unified.tags = [...(rustSpec.tags ?? [])];
-  }
-
-  // Add TS paths with /ts prefix
-  if (tsSpec) {
-    const tsPaths = tsSpec.paths ?? {};
-    for (const [path, operations] of Object.entries(tsPaths)) {
-      unified.paths[`/ts${path}`] = operations;
-    }
-    tsPathCount = Object.keys(tsPaths).length;
-
-    // Merge TS schemas with "Ts" prefix to avoid collisions
-    const tsSchemas = tsSpec.components?.schemas ?? {};
-    for (const [name, schema] of Object.entries(tsSchemas)) {
-      unified.components!.schemas![`Ts${name}`] = schema;
-    }
-
-    // Merge TS security schemes
-    const tsSecurity = tsSpec.components?.securitySchemes ?? {};
-    Object.assign(unified.components!.securitySchemes!, tsSecurity);
-
-    // Merge TS tags
-    unified.tags = [...(unified.tags ?? []), ...(tsSpec.tags ?? [])];
   }
 
   return {

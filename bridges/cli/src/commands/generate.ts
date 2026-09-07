@@ -26,6 +26,7 @@ export async function generateCommand(): Promise<void> {
     rustUrl: config.rustUrl,
     tsUrl: config.tsUrl,
     apiKey: config.apiKey,
+    bearerToken: config.bearerToken,
   });
 
   if (mergeResult.totalPaths === 0) {

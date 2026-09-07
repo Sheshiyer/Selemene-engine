@@ -120,6 +120,7 @@ export async function initCommand(): Promise<void> {
     rustUrl: rustUrl as string,
     tsUrl: tsUrl as string,
     apiKey: apiKey || undefined,
+    bearerToken: undefined,
   });
 
   const config: SelemeneConfig = {
