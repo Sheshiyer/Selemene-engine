@@ -95,7 +95,7 @@
       "dependency_observations": [],
       "operations": {
         "calculate": "unsupported",
-        "validate": "supported",
+        "validate": "unsupported",
         "witness_eligible": false
       }
     },

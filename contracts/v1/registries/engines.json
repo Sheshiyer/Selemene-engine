@@ -422,7 +422,7 @@
       "dependency_requirements": [],
       "operations": {
         "calculate": "unsupported",
-        "validate": "supported",
+        "validate": "unsupported",
         "witness_eligible": false
       }
     },
