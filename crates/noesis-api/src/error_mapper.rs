@@ -66,6 +66,12 @@ impl ErrorMapper {
                 err.to_string(),
                 None,
             ),
+            EngineError::ValidationError(msg) if msg.starts_with("OPERATION_UNSUPPORTED:") => (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "OPERATION_UNSUPPORTED".to_string(),
+                "The requested operation is unsupported for this engine".to_string(),
+                Some(serde_json::json!({ "operation": "validate" })),
+            ),
             EngineError::ValidationError(msg) => (
                 StatusCode::UNPROCESSABLE_ENTITY,
                 "VALIDATION_ERROR".to_string(),
@@ -116,7 +122,21 @@ impl ErrorMapper {
             ),
         };
 
-        Self::response_internal(status, error_code, message, details, Some(err_display))
+        let sentry_message = match &err {
+            EngineError::BridgeError(_) => "Bridge error".to_string(),
+            EngineError::AuthError(_) => "Authentication error".to_string(),
+            EngineError::ValidationError(msg) if msg.starts_with("OPERATION_UNSUPPORTED:") => {
+                "Unsupported operation".to_string()
+            }
+            EngineError::CalculationError(_) => "Calculation error".to_string(),
+            EngineError::CacheError(_) => "Cache error".to_string(),
+            EngineError::ConfigError(_) => "Configuration error".to_string(),
+            EngineError::SwissEphemerisError(_) => "Swiss Ephemeris error".to_string(),
+            EngineError::InternalError(_) => "Internal error".to_string(),
+            EngineError::ServiceUnavailable(_) => "Service unavailable".to_string(),
+            _ => err_display,
+        };
+        Self::response_internal(status, error_code, message, details, Some(sentry_message))
     }
 
     pub fn response(
@@ -505,5 +525,15 @@ mod tests {
         assert!(!serialized.contains("super-secret"));
         assert!(!serialized.contains("hunter2"));
         assert!(serialized.contains("[REDACTED]"));
+    }
+
+    #[test]
+    fn unsupported_operation_uses_stable_error_code() {
+        let (status, body) = ErrorMapper::map(EngineError::ValidationError(
+            "OPERATION_UNSUPPORTED: tarot validate".to_string(),
+        ));
+        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(body.0.error_code, "OPERATION_UNSUPPORTED");
+        assert_eq!(body.0.details, Some(json!({"operation": "validate"})));
     }
 }

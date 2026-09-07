@@ -547,6 +547,19 @@ impl ConsciousnessEngine for BridgeEngine {
     }
 
     async fn validate(&self, output: &EngineOutput) -> Result<ValidationResult, EngineError> {
+        // The v1 capability registry explicitly marks all six TypeScript
+        // validators unsupported. Fail before URL construction or transport;
+        // a stub success here would falsely certify an engine result.
+        if matches!(
+            self.engine_id.as_str(),
+            "tarot" | "i-ching" | "enneagram" | "sacred-geometry" | "sigil-forge" | "raaga"
+        ) {
+            return Err(EngineError::ValidationError(format!(
+                "OPERATION_UNSUPPORTED: {} validate",
+                self.engine_id
+            )));
+        }
+
         let url = format!("{}/engines/{}/validate", self.base_url, self.engine_id);
 
         debug!(engine = %self.engine_id, %url, "bridge validate request");
@@ -1002,6 +1015,37 @@ mod tests {
         assert_eq!(request.quality, Some(json!({"sufficient": true})));
         assert!(request.consent.is_some());
         assert!(!request.parameters.contains_key("audio_ref"));
+    }
+
+    #[tokio::test]
+    async fn typescript_validation_is_explicitly_unsupported_before_transport() {
+        let engine = BridgeEngine::tarot_with_url("http://127.0.0.1:1");
+        let output = EngineOutput {
+            engine_id: "tarot".to_string(),
+            result: json!({"card": "The Fool"}),
+            witness_prompt: "What do you notice?".to_string(),
+            consciousness_level: 0,
+            metadata: CalculationMetadata {
+                calculation_time_ms: 0.0,
+                backend: "test".to_string(),
+                precision_achieved: "exact".to_string(),
+                cached: false,
+                timestamp: Utc::now(),
+                engine_version: "test".to_string(),
+            },
+        };
+
+        let error = engine
+            .validate(&output)
+            .await
+            .expect_err("TypeScript validation must not issue a request");
+        match error {
+            EngineError::ValidationError(message) => {
+                assert!(message.starts_with("OPERATION_UNSUPPORTED:"));
+                assert!(message.contains("tarot"));
+            }
+            other => panic!("expected explicit unsupported validation, got {other:?}"),
+        }
     }
 
     #[test]
