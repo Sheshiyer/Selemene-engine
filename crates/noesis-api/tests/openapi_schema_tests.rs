@@ -135,6 +135,50 @@ async fn contract_v1_openapi_surfaces_canonical_compatibility_fields() {
 }
 
 #[tokio::test]
+async fn canonical_capability_route_is_protected_and_has_public_schema() {
+    let spec = openapi_spec().await;
+    let operation = spec["paths"]["/api/v1/engines/capabilities"]["get"]
+        .as_object()
+        .expect("canonical capability GET operation");
+
+    let security = operation["security"]
+        .as_array()
+        .expect("capability route security requirements");
+    assert!(security
+        .iter()
+        .any(|entry| entry.get("bearer_auth").is_some()));
+    assert!(security.iter().any(|entry| entry.get("api_key").is_some()));
+
+    let response_schema = &operation["responses"]["200"]["content"]["application/json"]["schema"];
+    assert_eq!(
+        response_schema["$ref"],
+        "#/components/schemas/EngineCapabilityList"
+    );
+
+    let schema = &spec["components"]["schemas"]["EngineCapabilityList"];
+    let properties = schema["properties"]
+        .as_object()
+        .expect("capability list properties");
+    for field in [
+        "contract_version",
+        "capabilities",
+        "count",
+        "public_mirror_count",
+    ] {
+        assert!(
+            properties.contains_key(field),
+            "missing public field {field}"
+        );
+    }
+    for forbidden in ["admin_analytics", "internal_url", "sidecar_target"] {
+        assert!(
+            !properties.contains_key(forbidden),
+            "public schema leaked {forbidden}"
+        );
+    }
+}
+
+#[tokio::test]
 async fn contract_v1_result_schema_accepts_the_additive_api_envelope() {
     let canonical: Value = serde_json::from_str(include_str!(
         "../../../contracts/v1/schemas/engine-result.schema.json"

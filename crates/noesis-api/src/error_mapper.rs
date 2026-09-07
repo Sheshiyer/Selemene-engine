@@ -135,15 +135,15 @@ impl ErrorMapper {
         details: Option<serde_json::Value>,
         sentry_message: Option<String>,
     ) -> (StatusCode, Json<ErrorResponse>) {
+        let message = redact_sensitive_text(&message);
+        let details = details.map(redact_json_value);
+        let sentry_message = sentry_message
+            .as_deref()
+            .map(redact_sensitive_text)
+            .unwrap_or_else(|| message.clone());
         let trace_id = Self::current_trace_id();
         record_api_error(&error_code);
-        Self::record_sentry_context(
-            status,
-            &error_code,
-            &message,
-            &trace_id,
-            sentry_message.as_deref().unwrap_or(&message),
-        );
+        Self::record_sentry_context(status, &error_code, &message, &trace_id, &sentry_message);
 
         (
             status,
@@ -204,6 +204,52 @@ impl ErrorMapper {
             });
             sentry::capture_message(sentry_message, sentry::Level::Error);
         }
+    }
+}
+
+const SENSITIVE_MARKERS: [&str; 7] = [
+    "token=",
+    "password=",
+    "secret=",
+    "api_key=",
+    "authorization=",
+    "x-api-key=",
+    "cookie=",
+];
+
+fn redact_sensitive_text(value: &str) -> String {
+    let mut output = value.to_string();
+    for marker in SENSITIVE_MARKERS {
+        let mut search_from = 0;
+        while let Some(relative) = output[search_from..].to_ascii_lowercase().find(marker) {
+            let start = search_from + relative + marker.len();
+            let end = output[start..]
+                .find(|character: char| character.is_whitespace() || ",;&}\"'".contains(character))
+                .map(|offset| start + offset)
+                .unwrap_or(output.len());
+            output.replace_range(start..end, "[REDACTED]");
+            search_from = start + "[REDACTED]".len();
+            if search_from >= output.len() {
+                break;
+            }
+        }
+    }
+    output
+}
+
+fn redact_json_value(value: serde_json::Value) -> serde_json::Value {
+    match value {
+        serde_json::Value::String(text) => serde_json::Value::String(redact_sensitive_text(&text)),
+        serde_json::Value::Array(values) => {
+            serde_json::Value::Array(values.into_iter().map(redact_json_value).collect())
+        }
+        serde_json::Value::Object(values) => serde_json::Value::Object(
+            values
+                .into_iter()
+                .map(|(key, value)| (key, redact_json_value(value)))
+                .collect(),
+        ),
+        other => other,
     }
 }
 
@@ -448,5 +494,16 @@ mod tests {
             }),
             "expected 4xx breadcrumb with trace_id on the captured event"
         );
+    }
+
+    #[test]
+    fn sensitive_values_are_redacted_from_response_and_telemetry_inputs() {
+        let (_status, body) = ErrorMapper::map(EngineError::AuthError(
+            "token=super-secret password=hunter2".to_string(),
+        ));
+        let serialized = serde_json::to_string(&body.0).expect("error response should serialize");
+        assert!(!serialized.contains("super-secret"));
+        assert!(!serialized.contains("hunter2"));
+        assert!(serialized.contains("[REDACTED]"));
     }
 }

@@ -15,6 +15,7 @@ use utoipa::ToSchema;
 pub const CONTRACT_VERSION: &str = "v1";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub enum ContractVersion {
     #[serde(rename = "v1")]
     V1,
@@ -182,6 +183,7 @@ pub struct ContractError {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum CapabilityAvailability {
     Declared,
@@ -191,6 +193,7 @@ pub enum CapabilityAvailability {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct EngineCapability {
     pub contract_version: ContractVersion,
@@ -214,6 +217,7 @@ pub struct EngineCapability {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CapabilityReasonCode {
     NotObserved,
@@ -232,6 +236,7 @@ pub enum CapabilityReasonCode {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum DependencyKind {
     Rust,
@@ -243,6 +248,7 @@ pub enum DependencyKind {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum DependencyRequirement {
     Required,
@@ -250,6 +256,7 @@ pub enum DependencyRequirement {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct DependencyObservation {
     pub dependency_id: String,
@@ -260,6 +267,7 @@ pub struct DependencyObservation {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum OperationSupport {
     Supported,
@@ -267,6 +275,7 @@ pub enum OperationSupport {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct CapabilityOperations {
     pub calculate: OperationSupport,
@@ -275,6 +284,7 @@ pub struct CapabilityOperations {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct EngineCapabilityList {
     pub contract_version: ContractVersion,

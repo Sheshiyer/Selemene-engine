@@ -44,6 +44,7 @@ use chrono::{
 use chrono_tz::Tz;
 use noesis_auth::{AuthService, AuthUser};
 use noesis_cache::CacheManager;
+use noesis_core::contract::{DependencyObservation, EngineCapabilityList};
 use noesis_core::{
     BiofieldResultSchema, BiorhythmResultSchema, Coordinates, EngineError, EngineInput,
     EngineOutput, EngineResultData, EnneagramResultSchema, FaceReadingResultSchema,
@@ -53,7 +54,6 @@ use noesis_core::{
     TransitsResultSchema, ValidationResult, VedicClockResultSchema, VimshottariResultSchema,
     WorkflowResult,
 };
-use noesis_core::contract::{EngineCapabilityList, DependencyObservation};
 use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::admin_repository::AdminRepository;
 use noesis_data::repositories::billing_repository::BillingRepository;
@@ -97,6 +97,7 @@ use workflow_parity::log_workflow_registry_parity;
         engine_info_handler,
         list_workflows_handler,
         workflow_execute_handler,
+        capability_list_handler,
         birth_blueprint_execute_doc,
         daily_practice_execute_doc,
         decision_support_execute_doc,
@@ -186,6 +187,15 @@ use workflow_parity::log_workflow_registry_parity;
             WorkflowSummary,
             EngineInfoResponse,
             EngineListResponse,
+            noesis_core::contract::EngineCapabilityList,
+            noesis_core::contract::EngineCapability,
+            noesis_core::contract::CapabilityAvailability,
+            noesis_core::contract::CapabilityReasonCode,
+            noesis_core::contract::DependencyKind,
+            noesis_core::contract::DependencyRequirement,
+            noesis_core::contract::DependencyObservation,
+            noesis_core::contract::OperationSupport,
+            noesis_core::contract::CapabilityOperations,
             WorkflowListResponse,
             WorkflowInfoResponse,
             VedicChartBundleResponseSchema,
@@ -1019,10 +1029,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         )
         .route("/status", get(status_handler))
         .route("/charts/vedic", post(vedic_chart_handler))
-        .route(
-            "/engines/capabilities",
-            get(capability_list_handler),
-        )
+        .route("/engines/capabilities", get(capability_list_handler))
         .route("/engines", get(list_engines_handler))
         .route("/engines/:engine_id/calculate", post(calculate_handler))
         .route(
@@ -3167,10 +3174,7 @@ pub(crate) fn canonical_capability_list(
 
     let response = EngineCapabilityList {
         contract_version: noesis_core::contract::ContractVersion::V1,
-        capabilities: resolved
-            .into_iter()
-            .map(|entry| entry.capability)
-            .collect(),
+        capabilities: resolved.into_iter().map(|entry| entry.capability).collect(),
         count: 19,
         public_mirror_count: 17,
     };
@@ -3193,6 +3197,20 @@ pub(crate) fn canonical_capability_list(
 /// handler only resolves checked-in declarations plus bounded observations;
 /// it never performs engine calculations, provider generation, or database
 /// discovery.
+#[utoipa::path(
+    get,
+    path = "/api/v1/engines/capabilities",
+    tag = "engines",
+    responses(
+        (status = 200, description = "Canonical v1 engine capability list", body = EngineCapabilityList),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 429, description = "Rate limit exceeded", body = ErrorResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
 async fn capability_list_handler(
     State(state): State<AppState>,
 ) -> Result<Json<EngineCapabilityList>, (StatusCode, Json<ErrorResponse>)> {

@@ -99,12 +99,8 @@ fn test_capability_route_requires_auth() {
 #[test]
 fn test_public_capability_route_requires_auth() {
     test_runtime().block_on(async {
-        let (status, _body) = common::make_unauthenticated_request(
-            "GET",
-            "/api/v1/engines/capabilities",
-            None,
-        )
-        .await;
+        let (status, _body) =
+            common::make_unauthenticated_request("GET", "/api/v1/engines/capabilities", None).await;
 
         assert_eq!(status, StatusCode::UNAUTHORIZED);
     });
@@ -114,13 +110,9 @@ fn test_public_capability_route_requires_auth() {
 fn test_public_capability_route_returns_canonical_19_row_envelope() {
     test_runtime().block_on(async {
         let token = generate_user_token();
-        let (status, body) = common::make_authenticated_request(
-            "GET",
-            "/api/v1/engines/capabilities",
-            &token,
-            None,
-        )
-        .await;
+        let (status, body) =
+            common::make_authenticated_request("GET", "/api/v1/engines/capabilities", &token, None)
+                .await;
 
         assert_eq!(status, StatusCode::OK, "body={body:?}");
         assert_eq!(body["contract_version"], "v1");

@@ -567,24 +567,23 @@ fn map_bridge_error(error: BridgeError) -> Response {
                 "timeout_secs": timeout_secs,
             })))
         }
-        BridgeError::ConnectionRefused { url } => {
+        BridgeError::ConnectionRefused { .. } => {
             biofield_analysis_unavailable_response(Some(serde_json::json!({
                 "reason": "connection_refused",
-                "url": url,
             })))
         }
-        BridgeError::ServerUnavailable(message)
-        | BridgeError::HttpError(message)
-        | BridgeError::DeserializationError(message) => {
+        BridgeError::ServerUnavailable(_)
+        | BridgeError::HttpError(_)
+        | BridgeError::DeserializationError(_) => {
             biofield_analysis_unavailable_response(Some(serde_json::json!({
-                "reason": message,
+                "reason": "upstream_unavailable",
             })))
         }
         BridgeError::EngineResponse { status, body } => {
             let parsed_body = serde_json::from_str::<Value>(&body).ok();
-            let details = parsed_body
-                .clone()
-                .or_else(|| Some(serde_json::json!({ "upstream_body": body })));
+            // Never forward an upstream URL, body, parser detail or stack
+            // trace. Only the bounded HTTP status crosses this boundary.
+            let details = Some(serde_json::json!({ "upstream_status": status }));
 
             if status == StatusCode::PAYLOAD_TOO_LARGE.as_u16() {
                 return capture_too_large_response(details);
@@ -595,27 +594,25 @@ fn map_bridge_error(error: BridgeError) -> Response {
                     .as_ref()
                     .and_then(|value| value.get("error_code"))
                     .and_then(|value| value.as_str());
-                let error_message = parsed_body
-                    .as_ref()
-                    .and_then(|value| {
-                        value
-                            .get("error_message")
-                            .or_else(|| value.get("message"))
-                            .or_else(|| value.get("detail"))
-                    })
-                    .and_then(|value| value.as_str())
-                    .unwrap_or("Biofield capture was rejected by the analysis service");
+                let error_message = "Biofield capture was rejected by the analysis service";
 
                 if error_code == Some("BIOFIELD_CAPTURE_REJECTED_QUALITY") {
-                    let quality = parsed_body
-                        .as_ref()
-                        .and_then(|value| value.get("quality_assessment"))
-                        .cloned()
-                        .unwrap_or_else(|| serde_json::json!({}));
+                    let quality = bounded_quality_assessment(
+                        parsed_body
+                            .as_ref()
+                            .and_then(|value| value.get("quality_assessment")),
+                    );
                     let analysis_version = parsed_body
                         .as_ref()
                         .and_then(|value| value.get("analysis_version"))
-                        .and_then(|value| value.as_str());
+                        .and_then(Value::as_str)
+                        .filter(|value| {
+                            !value.is_empty()
+                                && value.len() <= 64
+                                && value.chars().all(|character| {
+                                    character.is_ascii_alphanumeric() || "._/-".contains(character)
+                                })
+                        });
                     return capture_rejected_quality_response(
                         error_message,
                         quality,
@@ -643,6 +640,29 @@ fn map_bridge_error(error: BridgeError) -> Response {
             biofield_analysis_unavailable_response(details)
         }
     }
+}
+
+/// Keep only the numeric/boolean quality fields used by the public contract.
+/// Upstream diagnostic strings and unknown keys are deliberately discarded.
+fn bounded_quality_assessment(value: Option<&Value>) -> Value {
+    let Some(object) = value.and_then(Value::as_object) else {
+        return serde_json::json!({});
+    };
+    let mut bounded = serde_json::Map::new();
+    for key in [
+        "sharpness",
+        "contrast",
+        "noise_level",
+        "exposure",
+        "sufficient_quality",
+    ] {
+        if let Some(candidate) = object.get(key) {
+            if candidate.is_number() || candidate.is_boolean() {
+                bounded.insert(key.to_string(), candidate.clone());
+            }
+        }
+    }
+    Value::Object(bounded)
 }
 
 fn create_input_hash(
