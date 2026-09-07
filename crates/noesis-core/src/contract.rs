@@ -347,12 +347,24 @@ pub enum WorkflowExecutionStatus {
     Failed,
 }
 
+impl Default for WorkflowExecutionStatus {
+    fn default() -> Self {
+        Self::Failed
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum WorkflowSynthesisStatus {
     Available,
     Failed,
     Unsupported,
+}
+
+impl Default for WorkflowSynthesisStatus {
+    fn default() -> Self {
+        Self::Failed
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

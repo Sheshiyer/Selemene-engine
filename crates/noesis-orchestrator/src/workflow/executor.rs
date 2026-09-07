@@ -2,14 +2,21 @@
 //!
 //! Executes workflows by running engines in parallel and coordinating synthesis.
 
-use super::models::{SynthesisResult, WorkflowOutput};
+use super::models::{bounded_workflow_failure, SynthesisResult, WorkflowOutput};
 use super::registry::WorkflowRegistry;
-use super::synthesis::{BirthBlueprintSynthesizer, DailyPracticeSynthesizer, Synthesizer};
+use super::synthesis::{
+    synthesize_supported, BirthBlueprintSynthesizer, CreativeExpressionSynthesis,
+    DailyPracticeSynthesizer, DecisionSupportSynthesis, SelfInquirySynthesis, Synthesizer,
+};
 use super::witness::generate_workflow_witness_prompts;
 use super::{ExtendedWorkflowDefinition, SynthesisType};
 use crate::{EngineRegistry, ExecutionRoutingSnapshot};
 use chrono::Utc;
 use futures::future::join_all;
+use noesis_core::contract::{
+    ContractVersion, WorkflowEngineOutput, WorkflowExecutionStatus, WorkflowOutcome,
+    WorkflowSynthesis, WorkflowSynthesisStatus,
+};
 use noesis_core::{EngineError, EngineInput, EngineOutput};
 use noesis_metrics::NoesisMetrics;
 use std::collections::HashMap;
@@ -77,6 +84,12 @@ impl WorkflowExecutor {
             });
         }
 
+        if !self.workflow_registry.is_supported(workflow_id) {
+            return Err(EngineError::ValidationError(format!(
+                "OPERATION_UNSUPPORTED: {workflow_id}"
+            )));
+        }
+
         self.execute_workflow(workflow, input, user_phase).await
     }
 
@@ -95,6 +108,19 @@ impl WorkflowExecutor {
         let start = Instant::now();
         let engine_count = workflow.engine_ids.len();
         tracing::Span::current().record("engine_count", engine_count);
+
+        if workflow.required_phase > user_phase {
+            return Err(EngineError::PhaseAccessDenied {
+                required: workflow.required_phase,
+                current: user_phase,
+            });
+        }
+        if !self.workflow_registry.is_supported(&workflow.id) {
+            return Err(EngineError::ValidationError(format!(
+                "OPERATION_UNSUPPORTED: {}",
+                workflow.id
+            )));
+        }
 
         info!(
             workflow_id = %workflow.id,
@@ -138,7 +164,145 @@ impl WorkflowExecutor {
             witness_prompts,
             execution_time_ms,
             timestamp: Utc::now(),
+            requested_engine_ids: workflow.engine_ids.clone(),
+            engine_failures: Vec::new(),
+            execution_status: WorkflowExecutionStatus::Complete,
+            synthesis_status: WorkflowSynthesisStatus::Available,
         })
+    }
+
+    /// Execute a producer-backed workflow and return the canonical lossless
+    /// outcome. Every requested engine is represented by one output or one
+    /// bounded failure; unsupported Full Spectrum performs no engine calls.
+    pub async fn execute_outcome(
+        &self,
+        workflow_id: &str,
+        input: EngineInput,
+        user_phase: u8,
+    ) -> Result<WorkflowOutcome, EngineError> {
+        let workflow = self
+            .workflow_registry
+            .get(workflow_id)
+            .ok_or_else(|| EngineError::WorkflowNotFound(workflow_id.to_string()))?;
+        if workflow.required_phase > user_phase {
+            return Err(EngineError::PhaseAccessDenied {
+                required: workflow.required_phase,
+                current: user_phase,
+            });
+        }
+        if !self.workflow_registry.is_supported(workflow_id) {
+            let failures = workflow
+                .engine_ids
+                .iter()
+                .map(|engine_id| {
+                    bounded_workflow_failure(
+                        engine_id.clone(),
+                        &EngineError::ValidationError(
+                            "OPERATION_UNSUPPORTED: full-spectrum".into(),
+                        ),
+                    )
+                })
+                .collect();
+            let outcome = WorkflowOutcome {
+                contract_version: ContractVersion::V1,
+                workflow_id: workflow_id.to_string(),
+                requested_engine_ids: workflow.engine_ids.clone(),
+                engine_outputs: Default::default(),
+                engine_failures: failures,
+                execution_status: WorkflowExecutionStatus::Failed,
+                synthesis_status: WorkflowSynthesisStatus::Unsupported,
+                synthesis: None,
+                engine_results: Some(Default::default()),
+            };
+            outcome
+                .validate()
+                .map_err(|error| EngineError::InternalError(error.to_string()))?;
+            return Ok(outcome);
+        }
+        let attempts = self
+            .execute_engine_attempts(&workflow.engine_ids, input.clone(), user_phase)
+            .await;
+        let mut engine_outputs = std::collections::BTreeMap::new();
+        let mut engine_failures = Vec::new();
+        let mut successful = HashMap::new();
+        for (engine_id, result) in attempts {
+            match result {
+                Ok(output) => {
+                    let result = output
+                        .result
+                        .as_object()
+                        .cloned()
+                        .unwrap_or_default()
+                        .into_iter()
+                        .collect();
+                    engine_outputs.insert(
+                        engine_id.clone(),
+                        WorkflowEngineOutput {
+                            result,
+                            provenance: None,
+                        },
+                    );
+                    successful.insert(engine_id, output);
+                }
+                Err(error) => engine_failures.push(bounded_workflow_failure(engine_id, &error)),
+            }
+        }
+        let execution_status = if engine_failures.is_empty() {
+            WorkflowExecutionStatus::Complete
+        } else if engine_outputs.is_empty() {
+            WorkflowExecutionStatus::Failed
+        } else {
+            WorkflowExecutionStatus::Partial
+        };
+        let synthesis = (execution_status != WorkflowExecutionStatus::Failed
+            && !successful.is_empty())
+        .then(|| synthesize_supported(workflow_id, &successful, &input))
+        .flatten();
+        let synthesis_status = if synthesis.is_some() {
+            WorkflowSynthesisStatus::Available
+        } else {
+            WorkflowSynthesisStatus::Failed
+        };
+        let outcome = WorkflowOutcome {
+            contract_version: ContractVersion::V1,
+            workflow_id: workflow_id.to_string(),
+            requested_engine_ids: workflow.engine_ids.clone(),
+            engine_outputs: engine_outputs.clone(),
+            engine_failures,
+            execution_status,
+            synthesis_status,
+            synthesis: synthesis.map(|value| WorkflowSynthesis {
+                text: value.summary,
+            }),
+            engine_results: Some(engine_outputs),
+        };
+        outcome
+            .validate()
+            .map_err(|error| EngineError::InternalError(error.to_string()))?;
+        Ok(outcome)
+    }
+
+    async fn execute_engine_attempts(
+        &self,
+        engine_ids: &[String],
+        input: EngineInput,
+        user_phase: u8,
+    ) -> Vec<(String, Result<EngineOutput, EngineError>)> {
+        let futures: Vec<_> = engine_ids
+            .iter()
+            .map(|engine_id| {
+                let engine_registry = Arc::clone(&self.engine_registry);
+                let input_clone = input.clone();
+                let engine_id_owned = engine_id.clone();
+                async move {
+                    let result = engine_registry
+                        .execute_routed(&engine_id_owned, input_clone, user_phase)
+                        .await;
+                    (engine_id_owned, result)
+                }
+            })
+            .collect();
+        join_all(futures).await
     }
 
     /// Execute multiple engines in parallel, each within its own child span.
@@ -206,24 +370,12 @@ impl WorkflowExecutor {
         match synthesis_type {
             SynthesisType::BirthBlueprint => BirthBlueprintSynthesizer::synthesize(results, input),
             SynthesisType::DailyPractice => DailyPracticeSynthesizer::synthesize(results, input),
-            // TODO: Implement other synthesizers
-            _ => self.generic_synthesis(results),
-        }
-    }
-
-    /// Generic synthesis for unimplemented types
-    fn generic_synthesis(&self, results: &HashMap<String, EngineOutput>) -> SynthesisResult {
-        let engine_names: Vec<String> = results.keys().cloned().collect();
-
-        SynthesisResult {
-            themes: Vec::new(),
-            alignments: Vec::new(),
-            tensions: Vec::new(),
-            summary: format!(
-                "Synthesis from {} engines: {}. Full synthesis implementation pending.",
-                results.len(),
-                engine_names.join(", ")
-            ),
+            SynthesisType::DecisionSupport => DecisionSupportSynthesis::synthesize(results, input),
+            SynthesisType::SelfInquiry => SelfInquirySynthesis::synthesize(results, input),
+            SynthesisType::CreativeExpression => {
+                CreativeExpressionSynthesis::synthesize(results, input)
+            }
+            _ => SynthesisResult::default(),
         }
     }
 
@@ -435,5 +587,45 @@ mod tests {
             text.contains(r#"noesis_workflow_engines_succeeded{workflow_id="birth-blueprint"}"#),
             "engines_succeeded gauge missing from /metrics"
         );
+    }
+
+    #[tokio::test]
+    async fn canonical_outcome_conserves_requested_engine_failures() {
+        let executor = WorkflowExecutor::new(Arc::new(EngineRegistry::new()));
+        let outcome = executor
+            .execute_outcome("birth-blueprint", test_input(), 5)
+            .await
+            .unwrap();
+        assert_eq!(outcome.requested_engine_ids.len(), 5);
+        assert!(outcome.engine_outputs.is_empty());
+        assert_eq!(outcome.engine_failures.len(), 5);
+        assert_eq!(outcome.execution_status, WorkflowExecutionStatus::Failed);
+        assert_eq!(outcome.synthesis_status, WorkflowSynthesisStatus::Failed);
+        outcome.validate().unwrap();
+    }
+
+    #[tokio::test]
+    async fn full_spectrum_outcome_is_unsupported_without_engine_calls() {
+        let executor = setup_executor_with_mocks();
+        let outcome = executor
+            .execute_outcome("full-spectrum", test_input(), 5)
+            .await
+            .unwrap();
+        assert_eq!(
+            outcome.synthesis_status,
+            WorkflowSynthesisStatus::Unsupported
+        );
+        assert!(outcome.engine_outputs.is_empty());
+        assert_eq!(
+            outcome.engine_failures.len(),
+            outcome.requested_engine_ids.len()
+        );
+        assert_eq!(
+            executor
+                .execution_routing_snapshot()
+                .orchestrated_execute_calls,
+            0
+        );
+        outcome.validate().unwrap();
     }
 }

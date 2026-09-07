@@ -33,7 +33,11 @@ pub use capability::{
     DependencyDeclaration, RegistrationObservation, ResolvedCapability,
 };
 
-use noesis_core::contract::DependencyObservation;
+use noesis_core::contract::{ContractVersion, DependencyObservation};
+pub use noesis_core::contract::{
+    WorkflowEngineFailure, WorkflowEngineOutput, WorkflowErrorCode, WorkflowExecutionStatus,
+    WorkflowOutcome, WorkflowSynthesis, WorkflowSynthesisStatus,
+};
 pub use noesis_core::{
     ConsciousnessEngine, EngineError, EngineInput, EngineOutput, WorkflowDefinition, WorkflowResult,
 };
@@ -74,6 +78,7 @@ pub use engine_biofield_capture::BiofieldCaptureEngine;
 pub use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet, PlanetPosition};
 
 use chrono::Utc;
+use futures::future::join_all;
 use futures::stream::{self, StreamExt};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -570,6 +575,152 @@ impl WorkflowOrchestrator {
             total_time_ms,
             timestamp: Utc::now(),
         })
+    }
+
+    /// Execute a workflow and return the canonical lossless v1 outcome. This
+    /// is the producer-facing API for authenticated consumers; the legacy
+    /// `execute_workflow` method remains available for existing callers.
+    #[instrument(skip(self, input), fields(workflow_id = %workflow_id, user_phase))]
+    pub async fn execute_workflow_outcome(
+        &self,
+        workflow_id: &str,
+        input: EngineInput,
+        user_phase: u8,
+    ) -> Result<WorkflowOutcome, EngineError> {
+        let workflow = self
+            .workflows
+            .get(workflow_id)
+            .ok_or_else(|| EngineError::WorkflowNotFound(workflow_id.to_string()))?;
+        let requested_engine_ids = workflow.engine_ids.clone();
+
+        if workflow_id == "full-spectrum" {
+            let engine_failures = requested_engine_ids
+                .iter()
+                .map(|engine_id| WorkflowEngineFailure {
+                    engine_id: engine_id.clone(),
+                    error_code: WorkflowErrorCode::OperationUnsupported,
+                    message: "Operation unsupported".into(),
+                })
+                .collect();
+            let outcome = WorkflowOutcome {
+                contract_version: ContractVersion::V1,
+                workflow_id: workflow_id.to_string(),
+                requested_engine_ids,
+                engine_outputs: Default::default(),
+                engine_failures,
+                execution_status: WorkflowExecutionStatus::Failed,
+                synthesis_status: WorkflowSynthesisStatus::Unsupported,
+                synthesis: None,
+                engine_results: Some(Default::default()),
+            };
+            outcome
+                .validate()
+                .map_err(|error| EngineError::InternalError(error.to_string()))?;
+            return Ok(outcome);
+        }
+
+        let start = Instant::now();
+        let futures: Vec<_> = workflow
+            .engine_ids
+            .iter()
+            .map(|engine_id| {
+                let input_clone = input.clone();
+                let engine_id = engine_id.clone();
+                async move {
+                    let result = self
+                        .registry
+                        .execute_routed(&engine_id, input_clone, user_phase)
+                        .await;
+                    (engine_id, result)
+                }
+            })
+            .collect();
+        let results = join_all(futures).await;
+        let mut engine_outputs = std::collections::BTreeMap::new();
+        let mut engine_failures = Vec::new();
+        let mut successful = HashMap::new();
+        for (engine_id, result) in results {
+            match result {
+                Ok(output) => {
+                    let result = output
+                        .result
+                        .as_object()
+                        .cloned()
+                        .unwrap_or_default()
+                        .into_iter()
+                        .collect();
+                    engine_outputs.insert(
+                        engine_id.clone(),
+                        WorkflowEngineOutput {
+                            result,
+                            provenance: None,
+                        },
+                    );
+                    successful.insert(engine_id, output);
+                }
+                Err(error) => {
+                    let (error_code, message) = match &error {
+                        EngineError::EngineNotFound(_) => {
+                            (WorkflowErrorCode::EngineNotFound, "Engine unavailable")
+                        }
+                        EngineError::ServiceUnavailable(_)
+                        | EngineError::BridgeError(_)
+                        | EngineError::ConfigError(_) => (
+                            WorkflowErrorCode::DependencyUnavailable,
+                            "Dependency unavailable",
+                        ),
+                        EngineError::ValidationError(value)
+                            if value.starts_with("OPERATION_UNSUPPORTED:") =>
+                        {
+                            (
+                                WorkflowErrorCode::OperationUnsupported,
+                                "Operation unsupported",
+                            )
+                        }
+                        _ => (WorkflowErrorCode::UpstreamInvalidResponse, "Engine failed"),
+                    };
+                    engine_failures.push(WorkflowEngineFailure {
+                        engine_id,
+                        error_code,
+                        message: message.into(),
+                    });
+                }
+            }
+        }
+        let execution_status = if engine_failures.is_empty() {
+            WorkflowExecutionStatus::Complete
+        } else if engine_outputs.is_empty() {
+            WorkflowExecutionStatus::Failed
+        } else {
+            WorkflowExecutionStatus::Partial
+        };
+        let synthesis = (execution_status != WorkflowExecutionStatus::Failed
+            && !successful.is_empty())
+        .then(|| workflow::synthesis::synthesize_supported(workflow_id, &successful, &input))
+        .flatten();
+        let synthesis_status = if synthesis.is_some() {
+            WorkflowSynthesisStatus::Available
+        } else {
+            WorkflowSynthesisStatus::Failed
+        };
+        let outcome = WorkflowOutcome {
+            contract_version: ContractVersion::V1,
+            workflow_id: workflow_id.to_string(),
+            requested_engine_ids,
+            engine_outputs: engine_outputs.clone(),
+            engine_failures,
+            execution_status,
+            synthesis_status,
+            synthesis: synthesis.map(|value| WorkflowSynthesis {
+                text: value.summary,
+            }),
+            engine_results: Some(engine_outputs),
+        };
+        let _elapsed_ms = start.elapsed().as_millis();
+        outcome
+            .validate()
+            .map_err(|error| EngineError::InternalError(error.to_string()))?;
+        Ok(outcome)
     }
 
     // -- Query methods -----------------------------------------------------

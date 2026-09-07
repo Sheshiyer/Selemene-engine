@@ -38,3 +38,22 @@ pub trait Synthesizer {
         input: &EngineInput,
     ) -> ExtSynthesisResult;
 }
+
+/// Dispatch the producer-backed synthesis modules by canonical workflow ID.
+/// Full Spectrum intentionally returns `None` until its aggregate contract has
+/// a lossless adapter; callers must surface that as `unsupported`.
+pub fn synthesize_supported(
+    workflow_id: &str,
+    results: &HashMap<String, EngineOutput>,
+    input: &EngineInput,
+) -> Option<ExtSynthesisResult> {
+    let synthesis = match workflow_id {
+        "birth-blueprint" => BirthBlueprintSynthesizer::synthesize(results, input),
+        "daily-practice" => DailyPracticeSynthesizer::synthesize(results, input),
+        "decision-support" => DecisionSupportSynthesis::synthesize(results, input),
+        "self-inquiry" => SelfInquirySynthesis::synthesize(results, input),
+        "creative-expression" => CreativeExpressionSynthesis::synthesize(results, input),
+        _ => return None,
+    };
+    (!synthesis.summary.trim().is_empty()).then_some(synthesis)
+}

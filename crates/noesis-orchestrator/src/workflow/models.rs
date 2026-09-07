@@ -8,7 +8,13 @@
 use chrono::{DateTime, Utc};
 use noesis_core::EngineOutput;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use std::collections::HashMap;
+
+use noesis_core::contract::{
+    ContractVersion, WorkflowEngineFailure, WorkflowEngineOutput, WorkflowErrorCode,
+    WorkflowExecutionStatus, WorkflowOutcome, WorkflowSynthesis, WorkflowSynthesisStatus,
+};
 
 /// Complete output from workflow execution including synthesis
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -25,6 +31,106 @@ pub struct WorkflowOutput {
     pub execution_time_ms: u64,
     /// When the workflow was executed
     pub timestamp: DateTime<Utc>,
+    /// Canonical v1 requested-engine ledger. Kept additive for legacy callers.
+    #[serde(default)]
+    pub requested_engine_ids: Vec<String>,
+    /// Bounded failures paired with requested IDs.
+    #[serde(default)]
+    pub engine_failures: Vec<WorkflowEngineFailure>,
+    #[serde(default)]
+    pub execution_status: WorkflowExecutionStatus,
+    #[serde(default)]
+    pub synthesis_status: WorkflowSynthesisStatus,
+}
+
+impl Default for WorkflowOutput {
+    fn default() -> Self {
+        Self {
+            workflow_id: String::new(),
+            engine_results: HashMap::new(),
+            synthesis: SynthesisResult::default(),
+            witness_prompts: Vec::new(),
+            execution_time_ms: 0,
+            timestamp: Utc::now(),
+            requested_engine_ids: Vec::new(),
+            engine_failures: Vec::new(),
+            execution_status: WorkflowExecutionStatus::Failed,
+            synthesis_status: WorkflowSynthesisStatus::Failed,
+        }
+    }
+}
+
+impl WorkflowOutput {
+    /// Adapt the rich legacy model into the canonical lossless v1 outcome.
+    pub fn to_contract_outcome(&self) -> Result<WorkflowOutcome, String> {
+        let mut outputs = BTreeMap::new();
+        for (engine_id, output) in &self.engine_results {
+            let result = output
+                .result
+                .as_object()
+                .cloned()
+                .ok_or_else(|| format!("engine {engine_id} result must be an object"))?
+                .into_iter()
+                .collect();
+            outputs.insert(
+                engine_id.clone(),
+                WorkflowEngineOutput {
+                    result,
+                    provenance: None,
+                },
+            );
+        }
+        let synthesis = (self.synthesis_status == WorkflowSynthesisStatus::Available).then(|| {
+            WorkflowSynthesis {
+                text: self.synthesis.summary.clone(),
+            }
+        });
+        let outcome = WorkflowOutcome {
+            contract_version: ContractVersion::V1,
+            workflow_id: self.workflow_id.clone(),
+            requested_engine_ids: self.requested_engine_ids.clone(),
+            engine_outputs: outputs.clone(),
+            engine_failures: self.engine_failures.clone(),
+            execution_status: self.execution_status.clone(),
+            synthesis_status: self.synthesis_status.clone(),
+            synthesis,
+            engine_results: Some(outputs),
+        };
+        outcome.validate().map_err(|error| error.to_string())?;
+        Ok(outcome)
+    }
+}
+
+/// Map an internal engine error to the bounded workflow contract vocabulary.
+pub fn bounded_workflow_failure(
+    engine_id: String,
+    error: &noesis_core::EngineError,
+) -> WorkflowEngineFailure {
+    let (error_code, message) = match error {
+        noesis_core::EngineError::EngineNotFound(_) => {
+            (WorkflowErrorCode::EngineNotFound, "Engine unavailable")
+        }
+        noesis_core::EngineError::ServiceUnavailable(_)
+        | noesis_core::EngineError::BridgeError(_)
+        | noesis_core::EngineError::ConfigError(_) => (
+            WorkflowErrorCode::DependencyUnavailable,
+            "Dependency unavailable",
+        ),
+        noesis_core::EngineError::ValidationError(value)
+            if value.starts_with("OPERATION_UNSUPPORTED:") =>
+        {
+            (
+                WorkflowErrorCode::OperationUnsupported,
+                "Operation unsupported",
+            )
+        }
+        _ => (WorkflowErrorCode::UpstreamInvalidResponse, "Engine failed"),
+    };
+    WorkflowEngineFailure {
+        engine_id,
+        error_code,
+        message: message.to_string(),
+    }
 }
 
 /// Cross-engine pattern analysis result

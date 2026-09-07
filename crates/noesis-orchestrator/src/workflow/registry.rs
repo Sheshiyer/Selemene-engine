@@ -5,6 +5,16 @@
 use super::{ExtendedWorkflowDefinition, SynthesisType};
 use std::collections::HashMap;
 
+/// Canonical producer-backed workflows. Full Spectrum remains registered for
+/// catalogue compatibility, but has no executable adapter in contract v1.
+pub const SUPPORTED_WORKFLOW_IDS: [&str; 5] = [
+    "birth-blueprint",
+    "daily-practice",
+    "decision-support",
+    "self-inquiry",
+    "creative-expression",
+];
+
 /// Registry of all available workflow definitions
 pub struct WorkflowRegistry {
     workflows: HashMap<String, ExtendedWorkflowDefinition>,
@@ -166,6 +176,20 @@ impl WorkflowRegistry {
         workflows
     }
 
+    /// Return the five workflows with producer-backed synthesis in canonical
+    /// contract order. This deliberately keeps Full Spectrum out of execution
+    /// projections while `get`/`list` continue to expose it as unsupported.
+    pub fn list_supported(&self) -> Vec<&ExtendedWorkflowDefinition> {
+        SUPPORTED_WORKFLOW_IDS
+            .iter()
+            .filter_map(|id| self.workflows.get(*id))
+            .collect()
+    }
+
+    pub fn is_supported(&self, id: &str) -> bool {
+        SUPPORTED_WORKFLOW_IDS.contains(&id)
+    }
+
     /// Check if a workflow exists
     pub fn contains(&self, id: &str) -> bool {
         self.workflows.contains_key(id)
@@ -246,6 +270,27 @@ mod tests {
         // Phase 3 should get all
         let phase3 = registry.list_for_phase(3);
         assert_eq!(phase3.len(), 6);
+    }
+
+    #[test]
+    fn supported_workflows_are_canonical_and_exclude_full_spectrum() {
+        let registry = WorkflowRegistry::new();
+        let ids: Vec<_> = registry
+            .list_supported()
+            .into_iter()
+            .map(|workflow| workflow.id.as_str())
+            .collect();
+        assert_eq!(
+            ids,
+            vec![
+                "birth-blueprint",
+                "daily-practice",
+                "decision-support",
+                "self-inquiry",
+                "creative-expression"
+            ]
+        );
+        assert!(!registry.is_supported("full-spectrum"));
     }
 
     #[test]
