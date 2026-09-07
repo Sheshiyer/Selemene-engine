@@ -7,7 +7,7 @@
  * Tags: phase:integration-p1 wave:integration-w2 area:engine-integration
  */
 
-export { EngineClient } from './client.js'
+export { EngineClient, FOCUS_ENGINE_IDS } from './client.js'
 export type { EngineClientConfig } from './client.js'
 export { BiofieldEngineApi, FaceReadingEngineApi, RaagaEngineApi, SigilForgeEngineApi } from './client.js'
 export { EngineSdkError, ConsentError } from './errors.js'

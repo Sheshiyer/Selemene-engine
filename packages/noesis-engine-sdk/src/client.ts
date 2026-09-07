@@ -26,6 +26,10 @@
 
 import { CONSENT_SCOPES, requireConsent, resolveConsent } from './consent.js'
 import { EngineSdkError } from './errors.js'
+import {
+  decodeEngineCapabilityList,
+  type ContractEngineCapabilityList,
+} from './contract-v1.js'
 import type {
   BiofieldAnalyzeInput,
   BiofieldAnalyzeResponse,
@@ -54,6 +58,12 @@ export interface EngineClientConfig {
   pythonBiofieldUrl?: string
   /** noesis-api base URL (P4). When set, engine calculate calls route here instead of ts-engines. */
   apiUrl?: string
+  /** API key for the protected Rust API (sent only as X-API-Key). */
+  apiKey?: string
+  /** Bearer token for the protected Rust API (sent only as Authorization). */
+  bearerToken?: string
+  /** Explicit opt-in for direct sidecars, intended for local tests only. */
+  allowDirectSidecars?: boolean
   /** Injectable fetch (tests / Electron main proxy). Defaults to global fetch. */
   fetchImpl?: typeof fetch
   /** Extra headers on every request (e.g. auth once P4 api lands). */
@@ -62,6 +72,9 @@ export interface EngineClientConfig {
 
 const DEFAULT_TS_URL = 'http://localhost:3001'
 const DEFAULT_PY_URL = 'http://localhost:8002'
+export const FOCUS_ENGINE_IDS = ['biofield', 'face-reading', 'raaga', 'sigil-forge'] as const
+const FOCUS_ENGINE_ID_SET = new Set<string>(FOCUS_ENGINE_IDS)
+const VALIDATE_UNSUPPORTED_IDS = new Set(['raaga', 'sigil-forge'])
 
 interface ErrorPayloadShape {
   error?: string
@@ -101,9 +114,24 @@ function resolveErrorMessage(payload: unknown, status: number): { message: strin
       (typeof candidate.error_message === 'string' && candidate.error_message) ||
       (typeof candidate.detail === 'string' && candidate.detail) ||
       undefined
-    if (message) return { message, code: candidate.error_code }
+    if (message && message.length <= 200 && !/token|secret|password|api[_-]?key|authorization|cookie/i.test(message)) {
+      return { message, code: candidate.error_code }
+    }
   }
   return { message: `Request failed: ${status}` }
+}
+
+function safeErrorDetails(payload: unknown): Record<string, unknown> {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return { error_code: 'UPSTREAM_INVALID_RESPONSE' }
+  }
+  const record = payload as Record<string, unknown>
+  const details: Record<string, unknown> = {}
+  for (const key of ['error_code', 'trace_id', 'status']) {
+    const value = record[key]
+    if (typeof value === 'string' || typeof value === 'number') details[key] = value
+  }
+  return details
 }
 
 export class EngineClient {
@@ -115,13 +143,20 @@ export class EngineClient {
   private readonly tsUrl: string
   private readonly pyUrl: string
   private readonly apiUrl?: string
+  private readonly apiKey?: string
+  private readonly bearerToken?: string
   private readonly fetchImpl: typeof fetch
   private readonly defaultHeaders: Record<string, string>
 
   constructor(config: EngineClientConfig = {}) {
+    if (config.apiKey && config.bearerToken) {
+      throw new EngineSdkError('Configure either apiKey or bearerToken, not both.', 0, 'AUTH_CONFIGURATION_INVALID')
+    }
     this.tsUrl = stripTrailingSlash(config.tsEnginesUrl ?? DEFAULT_TS_URL)
     this.pyUrl = stripTrailingSlash(config.pythonBiofieldUrl ?? DEFAULT_PY_URL)
     this.apiUrl = config.apiUrl ? stripTrailingSlash(config.apiUrl) : undefined
+    this.apiKey = config.apiKey
+    this.bearerToken = config.bearerToken
     this.fetchImpl = config.fetchImpl ?? (globalThis.fetch.bind(globalThis) as typeof fetch)
     this.defaultHeaders = config.defaultHeaders ?? {}
 
@@ -140,11 +175,38 @@ export class EngineClient {
     return { ts, python }
   }
 
+  /** Fetch the protected canonical capability envelope; sidecar URLs are never constructed. */
+  async listCapabilities(): Promise<ContractEngineCapabilityList> {
+    const base = this.requireApiUrl('capability listing')
+    const payload = await this.request<unknown>('GET', `${base}/api/v1/engines/capabilities`)
+    return decodeEngineCapabilityList(payload)
+  }
+
+  /** Validate one of the four focus engines against the canonical operation metadata. */
+  async validate(engineId: string): Promise<{ valid: boolean }> {
+    if (!FOCUS_ENGINE_ID_SET.has(engineId)) {
+      throw new EngineSdkError('Unknown focus engine.', 0, 'ENGINE_NOT_FOUND')
+    }
+    if (VALIDATE_UNSUPPORTED_IDS.has(engineId)) {
+      throw new EngineSdkError('Operation unsupported.', 422, 'OPERATION_UNSUPPORTED')
+    }
+    const capabilities = await this.listCapabilities()
+    const capability = capabilities.capabilities.find((row) => row.engine_id === engineId)
+    if (!capability) throw new EngineSdkError('Unknown focus engine.', 0, 'ENGINE_NOT_FOUND')
+    if (capability.operations?.validate === 'unsupported') {
+      throw new EngineSdkError('Operation unsupported.', 422, 'OPERATION_UNSUPPORTED')
+    }
+    return { valid: capability.availability !== 'unavailable' }
+  }
+
   /** @internal POST an EngineInput to the calculate route for `engineId` (api when P4 configured, else ts server). */
   async engineCalculate<TResult>(
     engineId: string,
     input: EngineInput,
   ): Promise<EngineOutput<TResult>> {
+    if (!FOCUS_ENGINE_ID_SET.has(engineId)) {
+      throw new EngineSdkError('Unknown focus engine.', 0, 'ENGINE_NOT_FOUND')
+    }
     const base = this.apiUrl ?? this.tsUrl
     const path = this.apiUrl
       ? `/api/v1/engines/${encodeURIComponent(engineId)}/calculate`
@@ -252,6 +314,13 @@ export class EngineClient {
   /** @internal shared fetch with JSON/error handling. */
   async request<T>(method: string, url: string, init: RequestInit = {}): Promise<T> {
     const headers: Record<string, string> = { ...this.defaultHeaders }
+    if (this.apiKey) {
+      headers['X-API-Key'] = this.apiKey
+      delete headers.Authorization
+    } else if (this.bearerToken) {
+      headers.Authorization = `Bearer ${this.bearerToken}`
+      delete headers['X-API-Key']
+    }
     const isForm = typeof FormData !== 'undefined' && init.body instanceof FormData
     if (init.body && !isForm) headers['Content-Type'] = 'application/json'
 
@@ -260,11 +329,7 @@ export class EngineClient {
       response = await this.fetchImpl(url, { ...init, method, headers })
     } catch (err) {
       if (err instanceof EngineSdkError) throw err
-      throw new EngineSdkError(
-        `Network error calling ${url}: ${err instanceof Error ? err.message : String(err)}`,
-        -1,
-        'NETWORK_ERROR',
-      )
+      throw new EngineSdkError('Network request failed.', -1, 'NETWORK_ERROR')
     }
 
     const text = await response.text()
@@ -272,7 +337,7 @@ export class EngineClient {
 
     if (!response.ok) {
       const { message, code } = resolveErrorMessage(payload, response.status)
-      throw new EngineSdkError(message, response.status, code, payload)
+      throw new EngineSdkError(message, response.status, code, safeErrorDetails(payload))
     }
     return payload as T
   }

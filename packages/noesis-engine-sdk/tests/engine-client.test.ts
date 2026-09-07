@@ -24,6 +24,7 @@ import {
   createConsent,
   requireConsent,
 } from '../src/index'
+import capabilityListFixture from '../../../contracts/v1/fixtures/engine-capability-list.json'
 import type {
   BiofieldAnalyzeResponse,
   EngineOutput,
@@ -556,6 +557,34 @@ describe('biofield.calculate', () => {
 // ---------------------------------------------------------------------------
 
 describe('configurable base URLs', () => {
+  it('lists canonical capabilities through the protected Rust route with bearer auth', async () => {
+    const { fetchImpl, calls } = mockFetch(() => jsonResponse(capabilityListFixture))
+    const client = new EngineClient({ apiUrl: 'https://api.noesis.example', bearerToken: 'bearer-secret', fetchImpl })
+    const result = await client.listCapabilities()
+    expect(result.capabilities).toHaveLength(19)
+    expect(calls[0].url).toBe('https://api.noesis.example/api/v1/engines/capabilities')
+    const headers = calls[0].init?.headers as Record<string, string>
+    expect(headers.Authorization).toBe('Bearer bearer-secret')
+    expect(headers['X-API-Key']).toBeUndefined()
+  })
+
+  it('uses only X-API-Key when configured with an API key', async () => {
+    const { fetchImpl, calls } = mockFetch(() => jsonResponse(capabilityListFixture))
+    const client = new EngineClient({ apiUrl: 'https://api.noesis.example', apiKey: 'key-secret', fetchImpl })
+    await client.listCapabilities()
+    const headers = calls[0].init?.headers as Record<string, string>
+    expect(headers['X-API-Key']).toBe('key-secret')
+    expect(headers.Authorization).toBeUndefined()
+  })
+
+  it('rejects ambiguous auth and invalid focus IDs before fetch', async () => {
+    const { fetchImpl, calls } = mockFetch(() => jsonResponse({}))
+    expect(() => new EngineClient({ apiKey: 'key', bearerToken: 'token', fetchImpl })).toThrow('either apiKey or bearerToken')
+    const client = new EngineClient({ apiUrl: 'https://api.noesis.example', fetchImpl })
+    await expect(client.validate('unknown')).rejects.toMatchObject({ code: 'ENGINE_NOT_FOUND' })
+    await expect(client.validate('raaga')).rejects.toMatchObject({ code: 'OPERATION_UNSUPPORTED' })
+    expect(calls).toHaveLength(0)
+  })
   it('honors custom tsEnginesUrl + pythonBiofieldUrl', async () => {
     const { fetchImpl, calls } = mockFetch(() =>
       jsonResponse({ status: 'healthy', engines: [], uptime_ms: 1, version: 'x' }),
