@@ -4660,30 +4660,40 @@ pub async fn engine_capabilities(
         Err(_) => HashMap::new(),
     };
 
-    let capabilities: Vec<noesis_core::contract::EngineCapability> = state
-        .bridge()
-        .engines()
-        .iter()
-        .map(|engine| {
-            let engine_id = engine.engine_id().to_string();
-            let availability = match healthy_by_engine_id.get(&engine_id) {
+    // Keep this raw array as a compatibility adapter, but source identity,
+    // dependencies and operation metadata from the canonical 19-row resolver.
+    // Runtime readiness remains an operational axis and is projected onto the
+    // six TypeScript rows without changing the public envelope.
+    let canonical = match crate::canonical_capability_list(&state, &[]) {
+        Ok(value) => value,
+        Err((status, body)) => return Ok((status, body).into_response()),
+    };
+    let capabilities: Vec<noesis_core::contract::EngineCapability> = canonical
+        .capabilities
+        .into_iter()
+        .filter(|capability| {
+            capability.runtime_kind == noesis_core::contract::RuntimeKind::TypeScript
+        })
+        .map(|mut capability| {
+            let availability = match healthy_by_engine_id.get(&capability.engine_id) {
                 Some(true) => noesis_core::contract::CapabilityAvailability::Available,
                 _ => noesis_core::contract::CapabilityAvailability::Unavailable,
             };
-
-            noesis_core::contract::EngineCapability {
-                contract_version: noesis_core::contract::ContractVersion::V1,
-                engine_id,
-                display_name: engine.engine_name().to_string(),
-                availability,
-                runtime_kind: noesis_core::contract::RuntimeKind::TypeScript,
-                dependencies: Vec::new(),
-                required_phase: Some(engine.required_phase()),
-                implementation_version: None,
-                reason_code: None,
-                dependency_observations: None,
-                operations: None,
+            let reason_code = match availability {
+                noesis_core::contract::CapabilityAvailability::Available => {
+                    noesis_core::contract::CapabilityReasonCode::CapabilityAvailable
+                }
+                _ => noesis_core::contract::CapabilityReasonCode::CapabilityUnavailable,
+            };
+            capability.availability = availability;
+            capability.reason_code = Some(reason_code);
+            if let Some(observations) = capability.dependency_observations.as_mut() {
+                for observation in observations {
+                    observation.availability = availability;
+                    observation.reason_code = reason_code;
+                }
             }
+            capability
         })
         .collect();
 

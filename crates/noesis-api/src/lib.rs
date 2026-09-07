@@ -53,6 +53,7 @@ use noesis_core::{
     TransitsResultSchema, ValidationResult, VedicClockResultSchema, VimshottariResultSchema,
     WorkflowResult,
 };
+use noesis_core::contract::{EngineCapabilityList, DependencyObservation};
 use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::admin_repository::AdminRepository;
 use noesis_data::repositories::billing_repository::BillingRepository;
@@ -1018,6 +1019,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         )
         .route("/status", get(status_handler))
         .route("/charts/vedic", post(vedic_chart_handler))
+        .route(
+            "/engines/capabilities",
+            get(capability_list_handler),
+        )
         .route("/engines", get(list_engines_handler))
         .route("/engines/:engine_id/calculate", post(calculate_handler))
         .route(
@@ -3138,6 +3143,60 @@ async fn list_engines_handler(State(state): State<AppState>) -> Json<EngineListR
     Json(EngineListResponse {
         engines: state.orchestrator.list_engines(),
     })
+}
+
+/// Build the canonical v1 capability envelope from the orchestrator's
+/// registration view and bounded dependency observations. This helper is
+/// shared by the public capability route and admin compatibility adapters so
+/// identity and ordering cannot drift between surfaces.
+pub(crate) fn canonical_capability_list(
+    state: &AppState,
+    dependency_observations: &[(String, DependencyObservation)],
+) -> Result<EngineCapabilityList, (StatusCode, Json<ErrorResponse>)> {
+    let resolved = state
+        .orchestrator
+        .capability_snapshot(dependency_observations)
+        .map_err(|error| {
+            ErrorMapper::response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "CAPABILITY_RESOLUTION_FAILED",
+                "Capability contract could not be resolved",
+                Some(serde_json::json!({ "reason": error.to_string() })),
+            )
+        })?;
+
+    let response = EngineCapabilityList {
+        contract_version: noesis_core::contract::ContractVersion::V1,
+        capabilities: resolved
+            .into_iter()
+            .map(|entry| entry.capability)
+            .collect(),
+        count: 19,
+        public_mirror_count: 17,
+    };
+
+    response.validate().map_err(|error| {
+        ErrorMapper::response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "CAPABILITY_CONTRACT_INVALID",
+            "Capability contract failed validation",
+            Some(serde_json::json!({ "reason": error.to_string() })),
+        )
+    })?;
+
+    Ok(response)
+}
+
+/// GET /api/v1/engines/capabilities -- protected canonical capability list.
+///
+/// Authentication is enforced by the surrounding `/api/v1` middleware. The
+/// handler only resolves checked-in declarations plus bounded observations;
+/// it never performs engine calculations, provider generation, or database
+/// discovery.
+async fn capability_list_handler(
+    State(state): State<AppState>,
+) -> Result<Json<EngineCapabilityList>, (StatusCode, Json<ErrorResponse>)> {
+    Ok(Json(canonical_capability_list(&state, &[])?))
 }
 
 /// POST /api/v1/workflows/:workflow_id/execute -- execute a workflow

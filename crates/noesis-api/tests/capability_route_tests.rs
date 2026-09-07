@@ -35,6 +35,28 @@ const KNOWN_TS_ENGINES: [&str; 6] = [
     "raaga",
 ];
 
+const CANONICAL_ENGINE_IDS: [&str; 19] = [
+    "biofield",
+    "biofield-capture",
+    "biorhythm",
+    "enneagram",
+    "face-reading",
+    "financial-biosensor",
+    "gene-keys",
+    "human-design",
+    "i-ching",
+    "nadabrahman",
+    "numerology",
+    "panchanga",
+    "raaga",
+    "sacred-geometry",
+    "sigil-forge",
+    "tarot",
+    "transits",
+    "vedic-clock",
+    "vimshottari",
+];
+
 fn generate_admin_token() -> String {
     let jwt_secret =
         std::env::var("JWT_SECRET").unwrap_or_else(|_| common::TEST_JWT_SECRET.to_string());
@@ -71,6 +93,58 @@ fn test_capability_route_requires_auth() {
                 .await;
 
         assert_eq!(status, StatusCode::UNAUTHORIZED);
+    });
+}
+
+#[test]
+fn test_public_capability_route_requires_auth() {
+    test_runtime().block_on(async {
+        let (status, _body) = common::make_unauthenticated_request(
+            "GET",
+            "/api/v1/engines/capabilities",
+            None,
+        )
+        .await;
+
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
+    });
+}
+
+#[test]
+fn test_public_capability_route_returns_canonical_19_row_envelope() {
+    test_runtime().block_on(async {
+        let token = generate_user_token();
+        let (status, body) = common::make_authenticated_request(
+            "GET",
+            "/api/v1/engines/capabilities",
+            &token,
+            None,
+        )
+        .await;
+
+        assert_eq!(status, StatusCode::OK, "body={body:?}");
+        assert_eq!(body["contract_version"], "v1");
+        assert_eq!(body["count"], 19);
+        assert_eq!(body["public_mirror_count"], 17);
+
+        let capabilities = body["capabilities"]
+            .as_array()
+            .unwrap_or_else(|| panic!("capabilities should be an array: {body:?}"));
+        assert_eq!(capabilities.len(), CANONICAL_ENGINE_IDS.len());
+
+        let ids = capabilities
+            .iter()
+            .map(|capability| capability["engine_id"].as_str().unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(ids, CANONICAL_ENGINE_IDS);
+        for capability in capabilities {
+            assert_eq!(capability["contract_version"], "v1");
+            assert!(capability["reason_code"].is_string());
+            assert!(capability["dependency_observations"].is_array());
+            assert!(capability["operations"].is_object());
+            assert!(capability.get("admin_analytics").is_none());
+            assert!(capability.get("internal_url").is_none());
+        }
     });
 }
 
