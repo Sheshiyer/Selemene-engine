@@ -1,0 +1,18 @@
+{
+  "contract_version": "v1",
+  "workflow_id": "self-inquiry",
+  "requested_engine_ids": [
+    "biofield"
+  ],
+  "engine_outputs": {},
+  "engine_failures": [
+    {
+      "engine_id": "biofield",
+      "error_code": "DEPENDENCY_UNAVAILABLE",
+      "message": "Required dependency unavailable"
+    }
+  ],
+  "execution_status": "failed",
+  "synthesis_status": "failed",
+  "engine_results": {}
+}

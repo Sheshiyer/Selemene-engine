@@ -1,0 +1,18 @@
+{
+  "contract_version": "v1",
+  "workflow_id": "full-spectrum",
+  "requested_engine_ids": [
+    "biofield"
+  ],
+  "engine_outputs": {},
+  "engine_failures": [
+    {
+      "engine_id": "biofield",
+      "error_code": "OPERATION_UNSUPPORTED",
+      "message": "Workflow is unsupported"
+    }
+  ],
+  "execution_status": "failed",
+  "synthesis_status": "unsupported",
+  "engine_results": {}
+}

@@ -1442,3 +1442,91 @@ def test_markdown_comment_marker_inside_fence_is_inert_and_later_heading_resolve
         tmp_path,
         "test evidence",
     )
+
+
+def capability_list(authority: Path) -> tuple[Path, dict[str, object]]:
+    path = authority / "fixtures" / "engine-capability-list.json"
+    return path, read_json(path)
+
+
+def workflow_fixture(authority: Path, name: str) -> tuple[Path, dict[str, object]]:
+    path = authority / "fixtures" / name
+    return path, read_json(path)
+
+
+def test_registry_operation_metadata_is_strict(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    engine_row(registry, "tarot")["operations"]["validate"] = "maybe"
+    write_json(registry_path, registry)
+    result = run_validator(authority)
+    assert result.returncode != 0
+    assert "unsupported validate operation state" in result.stderr
+
+
+def test_registry_dependency_requirements_are_canonical(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    registry_path, registry = engine_registry(authority)
+    engine_row(registry, "biofield")["dependency_requirements"][0]["requirement"] = "required"
+    write_json(registry_path, registry)
+    result = run_validator(authority)
+    assert result.returncode != 0
+    assert "dependency requirements mismatch" in result.stderr
+
+
+def test_capability_list_rejects_missing_or_reordered_identity(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    path, fixture = capability_list(authority)
+    rows = fixture["capabilities"]
+    assert isinstance(rows, list)
+    rows.pop()
+    write_json(path, fixture)
+    result = run_validator(authority)
+    assert result.returncode != 0
+    assert (
+        "capability rows must match registry order" in result.stderr
+        or "19" in result.stderr
+        or "too short" in result.stderr
+    )
+
+
+def test_capability_list_rejects_operation_drift(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    path, fixture = capability_list(authority)
+    rows = fixture["capabilities"]
+    assert isinstance(rows, list) and isinstance(rows[0], dict)
+    rows[0]["operations"]["witness_eligible"] = False
+    write_json(path, fixture)
+    result = run_validator(authority)
+    assert result.returncode != 0
+    assert "operations diverge" in result.stderr
+
+
+def test_workflow_fixture_requires_conservation(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    path, fixture = workflow_fixture(authority, "workflow-outcome-partial.json")
+    fixture["engine_failures"] = []
+    write_json(path, fixture)
+    result = run_validator(authority)
+    assert result.returncode != 0
+    assert "every requested engine" in result.stderr or "partial outcome" in result.stderr
+
+
+def test_workflow_fixture_rejects_alias_drift(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    path, fixture = workflow_fixture(authority, "workflow-outcome-complete.json")
+    fixture["engine_results"] = {}
+    write_json(path, fixture)
+    result = run_validator(authority)
+    assert result.returncode != 0
+    assert "legacy engine_results alias" in result.stderr
+
+
+def test_workflow_fixture_rejects_powered_unsupported_synthesis(tmp_path: Path) -> None:
+    authority = copy_authority(tmp_path)
+    path, fixture = workflow_fixture(authority, "workflow-outcome-unsupported.json")
+    fixture["synthesis"] = {"text": "should not be powered"}
+    write_json(path, fixture)
+    result = run_validator(authority)
+    assert result.returncode != 0
+    assert "unsupported synthesis" in result.stderr

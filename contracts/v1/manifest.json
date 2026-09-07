@@ -8,7 +8,8 @@
     "schemas/consent.schema.json",
     "schemas/provenance.schema.json",
     "schemas/engine-capability.schema.json",
-    "schemas/engine-capability-list.schema.json"
+    "schemas/engine-capability-list.schema.json",
+    "schemas/workflow-outcome.schema.json"
   ],
   "registries": [
     "registries/engines.json"
@@ -37,6 +38,22 @@
     {
       "path": "fixtures/engine-capability-list.json",
       "schema": "schemas/engine-capability-list.schema.json"
+    },
+    {
+      "path": "fixtures/workflow-outcome-complete.json",
+      "schema": "schemas/workflow-outcome.schema.json"
+    },
+    {
+      "path": "fixtures/workflow-outcome-partial.json",
+      "schema": "schemas/workflow-outcome.schema.json"
+    },
+    {
+      "path": "fixtures/workflow-outcome-failed.json",
+      "schema": "schemas/workflow-outcome.schema.json"
+    },
+    {
+      "path": "fixtures/workflow-outcome-unsupported.json",
+      "schema": "schemas/workflow-outcome.schema.json"
     }
   ]
 }

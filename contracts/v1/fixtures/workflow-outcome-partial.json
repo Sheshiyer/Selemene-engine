@@ -1,0 +1,31 @@
+{
+  "contract_version": "v1",
+  "workflow_id": "decision-support",
+  "requested_engine_ids": [
+    "biofield",
+    "biorhythm"
+  ],
+  "engine_outputs": {
+    "biofield": {
+      "result": {
+        "value": "biofield"
+      }
+    }
+  },
+  "engine_failures": [
+    {
+      "engine_id": "biorhythm",
+      "error_code": "ENGINE_TIMEOUT",
+      "message": "Engine timed out"
+    }
+  ],
+  "execution_status": "partial",
+  "synthesis_status": "failed",
+  "engine_results": {
+    "biofield": {
+      "result": {
+        "value": "biofield"
+      }
+    }
+  }
+}

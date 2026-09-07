@@ -27,6 +27,8 @@ EXPECTED_SCHEMAS = {
     "schemas/consent.schema.json",
     "schemas/provenance.schema.json",
     "schemas/engine-capability.schema.json",
+    "schemas/engine-capability-list.schema.json",
+    "schemas/workflow-outcome.schema.json",
 }
 EXPECTED_FIXTURES = {
     "fixtures/engine-request.json": "schemas/engine-request.schema.json",
@@ -34,6 +36,11 @@ EXPECTED_FIXTURES = {
     "fixtures/engine-result.json": "schemas/engine-result.schema.json",
     "fixtures/error.json": "schemas/error.schema.json",
     "fixtures/engine-capability.json": "schemas/engine-capability.schema.json",
+    "fixtures/engine-capability-list.json": "schemas/engine-capability-list.schema.json",
+    "fixtures/workflow-outcome-complete.json": "schemas/workflow-outcome.schema.json",
+    "fixtures/workflow-outcome-partial.json": "schemas/workflow-outcome.schema.json",
+    "fixtures/workflow-outcome-failed.json": "schemas/workflow-outcome.schema.json",
+    "fixtures/workflow-outcome-unsupported.json": "schemas/workflow-outcome.schema.json",
 }
 EXPECTED_REGISTRIES = {"registries/engines.json"}
 EXPECTED_RUNTIME_CLASSES = {
@@ -57,6 +64,56 @@ EXPECTED_EVIDENCE_STATUSES = {
     "absent",
     "unknown",
     "not-applicable",
+}
+EXPECTED_CAPABILITY_STATES = {"declared", "available", "degraded", "unavailable"}
+EXPECTED_DEPENDENCY_KINDS = {"rust", "typescript", "python", "database", "network", "filesystem"}
+EXPECTED_REQUIREMENTS = {"required", "optional"}
+EXPECTED_OPERATION_SUPPORT = {"supported", "unsupported"}
+EXPECTED_REASON_CODES = {
+    "NOT_OBSERVED",
+    "REGISTERED",
+    "CAPABILITY_AVAILABLE",
+    "CAPABILITY_DEGRADED",
+    "CAPABILITY_UNAVAILABLE",
+    "REQUIRED_DEPENDENCY_UNAVAILABLE",
+    "OPTIONAL_DEPENDENCY_UNAVAILABLE",
+    "DEPENDENCY_UNAVAILABLE",
+    "DATABASE_UNCONFIGURED",
+    "MODULE_UNAVAILABLE",
+    "TIMEOUT",
+    "MALFORMED_OBSERVATION",
+    "OPERATION_UNSUPPORTED",
+}
+EXPECTED_WITNESS_IDS = {
+    "biofield", "biorhythm", "enneagram", "face-reading", "gene-keys", "human-design",
+    "i-ching", "nadabrahman", "numerology", "panchanga", "sacred-geometry", "sigil-forge",
+    "tarot", "transits", "vedic-clock", "vimshottari",
+}
+EXPECTED_DEPENDENCY_REQUIREMENTS = {
+    "biofield": [("python:biofield-cv", "python", "optional")],
+    "biofield-capture": [("database:postgres", "database", "required")],
+    "face-reading": [("python:mediapipe-face-mesh", "python", "optional")],
+    "enneagram": [("typescript:bridge", "typescript", "required")],
+    "i-ching": [("typescript:bridge", "typescript", "required")],
+    "raaga": [("typescript:bridge", "typescript", "required")],
+    "sacred-geometry": [("typescript:bridge", "typescript", "required")],
+    "sigil-forge": [("typescript:bridge", "typescript", "required")],
+    "tarot": [("typescript:bridge", "typescript", "required")],
+}
+EXPECTED_WORKFLOW_FIXTURES = {
+    "fixtures/workflow-outcome-complete.json",
+    "fixtures/workflow-outcome-partial.json",
+    "fixtures/workflow-outcome-failed.json",
+    "fixtures/workflow-outcome-unsupported.json",
+}
+EXPECTED_WORKFLOW_STATUSES = {"complete", "partial", "failed"}
+EXPECTED_SYNTHESIS_STATUSES = {"available", "failed", "unsupported"}
+EXPECTED_WORKFLOW_ERROR_CODES = {
+    "ENGINE_NOT_FOUND",
+    "DEPENDENCY_UNAVAILABLE",
+    "ENGINE_TIMEOUT",
+    "UPSTREAM_INVALID_RESPONSE",
+    "OPERATION_UNSUPPORTED",
 }
 EXPECTED_ISSUE_ROLES = {
     "authority_baseline",
@@ -702,6 +759,8 @@ def validate_engine_registry(path: Path, repo_root: Path) -> int:
         "public_mirror_exclusion",
         "issue_ids",
         "evidence",
+        "dependency_requirements",
+        "operations",
     }
     seen_ids: set[str] = set()
     seen_groups: set[str] = set()
@@ -743,6 +802,70 @@ def validate_engine_registry(path: Path, repo_root: Path) -> int:
         ):
             raise ContractValidationError(
                 f"{context}: database-conditional runtime must be {EXPECTED_DATABASE_CONDITIONAL_ID}"
+            )
+
+        requirements = row["dependency_requirements"]
+        if not isinstance(requirements, list) or len(requirements) > 16:
+            raise ContractValidationError(
+                f"{context}: dependency_requirements must be a bounded array"
+            )
+        parsed_requirements: list[tuple[str, str, str]] = []
+        for dep_index, dependency in enumerate(requirements):
+            dep_context = f"{context}.dependency_requirements[{dep_index}]"
+            if not isinstance(dependency, dict) or set(dependency) != {
+                "dependency_id", "dependency_kind", "requirement"
+            }:
+                raise ContractValidationError(
+                    f"{dep_context}: dependency requirement needs exactly dependency_id, dependency_kind and requirement"
+                )
+            dependency_id = dependency["dependency_id"]
+            dependency_kind = dependency["dependency_kind"]
+            requirement = dependency["requirement"]
+            if (
+                not isinstance(dependency_id, str)
+                or not re.fullmatch(r"^[a-z0-9]+(?::[a-z0-9-]+)*$", dependency_id)
+                or len(dependency_id) > 80
+            ):
+                raise ContractValidationError(
+                    f"{dep_context}: dependency_id must be a bounded lowercase identifier"
+                )
+            if dependency_kind not in EXPECTED_DEPENDENCY_KINDS:
+                raise ContractValidationError(
+                    f"{dep_context}: unsupported dependency_kind {dependency_kind!r}"
+                )
+            if requirement not in EXPECTED_REQUIREMENTS:
+                raise ContractValidationError(
+                    f"{dep_context}: unsupported requirement {requirement!r}"
+                )
+            parsed_requirements.append((dependency_id, dependency_kind, requirement))
+        if len(parsed_requirements) != len(set(parsed_requirements)):
+            raise ContractValidationError(f"{context}: duplicate dependency requirement")
+        expected_requirements = EXPECTED_DEPENDENCY_REQUIREMENTS.get(engine_id, [])
+        if parsed_requirements != expected_requirements:
+            raise ContractValidationError(
+                f"{context}: dependency requirements mismatch; expected={expected_requirements} actual={parsed_requirements}"
+            )
+
+        operations = row["operations"]
+        if not isinstance(operations, dict) or set(operations) != {
+            "calculate", "validate", "witness_eligible"
+        }:
+            raise ContractValidationError(
+                f"{context}: operations must contain calculate, validate and witness_eligible"
+            )
+        if operations["calculate"] not in EXPECTED_OPERATION_SUPPORT:
+            raise ContractValidationError(
+                f"{context}: unsupported calculate operation state {operations['calculate']!r}"
+            )
+        if operations["validate"] not in EXPECTED_OPERATION_SUPPORT:
+            raise ContractValidationError(
+                f"{context}: unsupported validate operation state {operations['validate']!r}"
+            )
+        if not isinstance(operations["witness_eligible"], bool):
+            raise ContractValidationError(f"{context}: witness_eligible must be boolean")
+        if operations["witness_eligible"] != (engine_id in EXPECTED_WITNESS_IDS):
+            raise ContractValidationError(
+                f"{context}: witness eligibility does not match the canonical subset"
             )
 
         owner = row["owner"]
@@ -848,6 +971,17 @@ def validate_engine_registry(path: Path, repo_root: Path) -> int:
         raise ContractValidationError(
             f"{path}: runtime class count mismatch; expected={EXPECTED_RUNTIME_CLASSES} actual={dict(class_counts)}"
         )
+    for index, row in enumerate(rows):
+        context = f"{path}: engines[{index}]"
+        engine_id = row["id"]
+        runtime_class = row["runtime_class"]
+        operations = row["operations"]
+        expected_calculate = "unsupported" if engine_id == "financial-biosensor" else "supported"
+        expected_validate = "unsupported" if engine_id == "financial-biosensor" or runtime_class in {"typescript", "composed"} else "supported"
+        if operations["calculate"] != expected_calculate or operations["validate"] != expected_validate:
+            raise ContractValidationError(
+                f"{context}: operation support does not match runtime class"
+            )
     if len(seen_groups) != counts["public_mirror_groups"]:
         raise ContractValidationError(
             f"{path}: public mirror group count mismatch; expected={counts['public_mirror_groups']} actual={len(seen_groups)}"
@@ -858,6 +992,107 @@ def validate_engine_registry(path: Path, repo_root: Path) -> int:
         )
 
     return len(rows)
+
+
+def validate_capability_list_fixture(
+    path: Path, fixture: Any, registry: dict[str, Any]
+) -> None:
+    if not isinstance(fixture, dict):
+        raise ContractValidationError(f"{path}: capability list must be an object")
+    rows = fixture.get("capabilities")
+    registry_rows = registry.get("engines")
+    if not isinstance(rows, list) or not isinstance(registry_rows, list):
+        raise ContractValidationError(f"{path}: capabilities and registry engines must be arrays")
+    if fixture.get("count") != 19 or fixture.get("public_mirror_count") != 17:
+        raise ContractValidationError(f"{path}: capability counts must be 19 runtime and 17 public mirrors")
+    expected_ids = [row.get("id") for row in registry_rows if isinstance(row, dict)]
+    actual_ids = [row.get("engine_id") for row in rows if isinstance(row, dict)]
+    if actual_ids != expected_ids:
+        raise ContractValidationError(f"{path}: capability rows must match registry order exactly")
+    if len(rows) != 19 or len(set(actual_ids)) != 19:
+        raise ContractValidationError(f"{path}: capability list must contain 19 unique rows")
+    registry_by_id = {row["id"]: row for row in registry_rows if isinstance(row, dict)}
+    for index, capability in enumerate(rows):
+        context = f"{path}: capabilities[{index}]"
+        if not isinstance(capability, dict):
+            raise ContractValidationError(f"{context}: capability row must be an object")
+        engine_id = capability.get("engine_id")
+        source = registry_by_id.get(engine_id)
+        if source is None:
+            raise ContractValidationError(f"{context}: unknown engine ID {engine_id!r}")
+        if capability.get("display_name") != source["display_name"]:
+            raise ContractValidationError(f"{context}: display name diverges from registry")
+        expected_dependencies = [item["dependency_id"] for item in source["dependency_requirements"]]
+        if capability.get("dependencies") != expected_dependencies:
+            raise ContractValidationError(f"{context}: dependencies diverge from registry requirements")
+        if capability.get("operations") != source["operations"]:
+            raise ContractValidationError(f"{context}: operations diverge from registry metadata")
+        if capability.get("availability") not in EXPECTED_CAPABILITY_STATES:
+            raise ContractValidationError(f"{context}: unsupported availability state")
+        reason = capability.get("reason_code")
+        if reason is not None and reason not in EXPECTED_REASON_CODES:
+            raise ContractValidationError(f"{context}: unsupported reason_code {reason!r}")
+        observations = capability.get("dependency_observations", [])
+        if not isinstance(observations, list) or len(observations) > 16:
+            raise ContractValidationError(f"{context}: dependency observations must be bounded")
+        observation_ids = [item.get("dependency_id") for item in observations if isinstance(item, dict)]
+        if len(observation_ids) != len(set(observation_ids)):
+            raise ContractValidationError(f"{context}: duplicate dependency observation")
+        if not set(observation_ids).issubset(set(expected_dependencies)):
+            raise ContractValidationError(f"{context}: observation references undeclared dependency")
+
+
+def validate_workflow_fixture(path: Path, fixture: Any, registry_ids: set[str]) -> None:
+    if not isinstance(fixture, dict):
+        raise ContractValidationError(f"{path}: workflow outcome must be an object")
+    requested = fixture.get("requested_engine_ids")
+    outputs = fixture.get("engine_outputs")
+    failures = fixture.get("engine_failures")
+    if not isinstance(requested, list) or not requested or len(requested) > 19:
+        raise ContractValidationError(f"{path}: requested_engine_ids must be a bounded nonempty array")
+    if len(requested) != len(set(requested)) or not set(requested).issubset(registry_ids):
+        raise ContractValidationError(f"{path}: requested engine IDs must be unique canonical IDs")
+    if not isinstance(outputs, dict) or not isinstance(failures, list):
+        raise ContractValidationError(f"{path}: engine_outputs and engine_failures have invalid shapes")
+    output_ids = set(outputs)
+    failure_ids: list[str] = []
+    for index, failure in enumerate(failures):
+        context = f"{path}: engine_failures[{index}]"
+        if not isinstance(failure, dict) or set(failure) != {"engine_id", "error_code", "message"}:
+            raise ContractValidationError(f"{context}: failure receipt has an invalid shape")
+        if failure["engine_id"] not in registry_ids or failure["engine_id"] not in requested:
+            raise ContractValidationError(f"{context}: failure references an unknown or unrequested ID")
+        if failure["error_code"] not in EXPECTED_WORKFLOW_ERROR_CODES:
+            raise ContractValidationError(f"{context}: unsupported failure code")
+        message = failure["message"]
+        if not isinstance(message, str) or not message.strip() or len(message) > 200 or re.search(r"https?://|\\b(?:token|secret|api[_-]?key)\\b", message, re.I):
+            raise ContractValidationError(f"{context}: failure message must be bounded and sanitized")
+        failure_ids.append(failure["engine_id"])
+    if len(failure_ids) != len(set(failure_ids)) or output_ids & set(failure_ids):
+        raise ContractValidationError(f"{path}: engine output/failure IDs must be disjoint")
+    if output_ids | set(failure_ids) != set(requested):
+        raise ContractValidationError(f"{path}: every requested engine must have exactly one outcome")
+    status = fixture.get("execution_status")
+    if status not in EXPECTED_WORKFLOW_STATUSES:
+        raise ContractValidationError(f"{path}: unsupported execution_status")
+    if status == "complete" and (failure_ids or output_ids != set(requested)):
+        raise ContractValidationError(f"{path}: complete outcome requires every engine to succeed")
+    if status == "partial" and (not failure_ids or not output_ids):
+        raise ContractValidationError(f"{path}: partial outcome requires successes and failures")
+    if status == "failed" and output_ids:
+        raise ContractValidationError(f"{path}: failed outcome cannot contain successful outputs")
+    alias = fixture.get("engine_results")
+    if alias is not None and alias != outputs:
+        raise ContractValidationError(f"{path}: legacy engine_results alias must equal engine_outputs")
+    synthesis_status = fixture.get("synthesis_status")
+    if synthesis_status not in EXPECTED_SYNTHESIS_STATUSES:
+        raise ContractValidationError(f"{path}: unsupported synthesis_status")
+    synthesis = fixture.get("synthesis")
+    if synthesis_status == "available":
+        if not isinstance(synthesis, dict) or not any(isinstance(value, str) and value.strip() for value in synthesis.values()):
+            raise ContractValidationError(f"{path}: available synthesis must contain nonempty text")
+    elif synthesis is not None and synthesis != {}:
+        raise ContractValidationError(f"{path}: failed or unsupported synthesis must not carry powered content")
 
 
 def validate_authority(root: Path, repo_root: Path) -> tuple[int, int, int]:
@@ -884,10 +1119,12 @@ def validate_authority(root: Path, repo_root: Path) -> tuple[int, int, int]:
         raise ContractValidationError(
             f"{manifest_path}: registry manifest drift; missing={missing}, unexpected={unexpected}"
         )
+    registry_documents = [load_json(authority_path(root, relative)) for relative in registry_entries]
     registry_row_count = sum(
         validate_engine_registry(authority_path(root, relative), repo_root)
         for relative in registry_entries
     )
+    canonical_registry = registry_documents[0]
 
     schema_entries = manifest.get("schemas")
     if not isinstance(schema_entries, list) or not all(
@@ -1018,6 +1255,15 @@ def validate_authority(root: Path, repo_root: Path) -> tuple[int, int, int]:
                 raise ContractValidationError(
                     f"{fixture_path}: sensitive diagnostic key(s): {', '.join(findings)}"
                 )
+
+        if schema_relative == "schemas/engine-capability-list.schema.json":
+            validate_capability_list_fixture(fixture_path, fixture, canonical_registry)
+        elif schema_relative == "schemas/workflow-outcome.schema.json":
+            registry_rows = canonical_registry.get("engines", [])
+            registry_ids = {
+                row["id"] for row in registry_rows if isinstance(row, dict) and isinstance(row.get("id"), str)
+            }
+            validate_workflow_fixture(fixture_path, fixture, registry_ids)
 
     return len(schemas), len(fixtures), registry_row_count
 

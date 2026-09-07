@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noesis.tryambakam.org/contracts/v1/workflow-outcome.schema.json",
+  "title": "Selemene Workflow Outcome v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "workflow_id",
+    "requested_engine_ids",
+    "engine_outputs",
+    "engine_failures",
+    "execution_status",
+    "synthesis_status"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "v1"
+    },
+    "workflow_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "requested_engine_ids": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 19,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "maxLength": 64
+      }
+    },
+    "engine_outputs": {
+      "type": "object",
+      "maxProperties": 19,
+      "additionalProperties": {
+        "$ref": "#/$defs/engineOutput"
+      }
+    },
+    "engine_failures": {
+      "type": "array",
+      "maxItems": 19,
+      "items": {
+        "$ref": "#/$defs/engineFailure"
+      }
+    },
+    "execution_status": {
+      "enum": [
+        "complete",
+        "partial",
+        "failed"
+      ]
+    },
+    "synthesis_status": {
+      "enum": [
+        "available",
+        "failed",
+        "unsupported"
+      ]
+    },
+    "synthesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      }
+    },
+    "engine_results": {
+      "type": "object",
+      "maxProperties": 19,
+      "additionalProperties": {
+        "$ref": "#/$defs/engineOutput"
+      }
+    }
+  },
+  "$defs": {
+    "engineOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result"
+      ],
+      "properties": {
+        "result": {
+          "type": "object"
+        },
+        "provenance": {
+          "type": "object"
+        }
+      }
+    },
+    "engineFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine_id",
+        "error_code",
+        "message"
+      ],
+      "properties": {
+        "engine_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 64
+        },
+        "error_code": {
+          "enum": [
+            "ENGINE_NOT_FOUND",
+            "DEPENDENCY_UNAVAILABLE",
+            "ENGINE_TIMEOUT",
+            "UPSTREAM_INVALID_RESPONSE",
+            "OPERATION_UNSUPPORTED"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^(?!.*https?://)(?!.*(?:token|secret|api[_-]?key)).*$"
+        }
+      }
+    }
+  }
+}

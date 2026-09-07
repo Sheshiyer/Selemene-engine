@@ -38,3 +38,9 @@ packages = ["mediapipe_service", "biofield_cv_service", "shared"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "jsonschema==4.26.0",
+    "referencing==0.36.2",
+]

@@ -1,0 +1,38 @@
+{
+  "contract_version": "v1",
+  "workflow_id": "daily-practice",
+  "requested_engine_ids": [
+    "biofield",
+    "biorhythm"
+  ],
+  "engine_outputs": {
+    "biofield": {
+      "result": {
+        "value": "biofield"
+      }
+    },
+    "biorhythm": {
+      "result": {
+        "value": "biorhythm"
+      }
+    }
+  },
+  "engine_failures": [],
+  "execution_status": "complete",
+  "synthesis_status": "available",
+  "synthesis": {
+    "text": "Deterministic synthesis receipt"
+  },
+  "engine_results": {
+    "biofield": {
+      "result": {
+        "value": "biofield"
+      }
+    },
+    "biorhythm": {
+      "result": {
+        "value": "biorhythm"
+      }
+    }
+  }
+}
