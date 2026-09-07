@@ -6,10 +6,37 @@ import { SigilForgeEngine } from '../engines/sigil-forge'
 import { TarotEngine } from '../engines/tarot'
 import type {
   CapabilityAvailability,
+  CapabilityOperations,
+  CapabilityReasonCode,
   ConsciousnessEngine,
   ContractEngineCapability,
+  DependencyObservation,
   EngineMetadata,
 } from '../types'
+
+export interface CapabilityObservation {
+  availability: CapabilityAvailability
+  reason_code: CapabilityReasonCode
+  dependency_observations: DependencyObservation[]
+  operations: CapabilityOperations
+}
+
+const TYPESCRIPT_ENGINE_ORDER = [
+  'enneagram',
+  'i-ching',
+  'raaga',
+  'sacred-geometry',
+  'sigil-forge',
+  'tarot',
+] as const
+
+const WITNESS_ELIGIBLE = new Set<string>([
+  'enneagram',
+  'i-ching',
+  'sacred-geometry',
+  'sigil-forge',
+  'tarot',
+])
 
 /**
  * Registry of all TypeScript consciousness engines
@@ -61,6 +88,42 @@ export class EngineRegistry {
         required_phase: meta.required_phase,
         implementation_version: meta.version,
       }
+    })
+  }
+
+  /** Project explicit, bounded self-check observations into canonical rows. */
+  listCapabilityObservations(
+    observations: Map<string, CapabilityObservation> = new Map(),
+  ): ContractEngineCapability[] {
+    return TYPESCRIPT_ENGINE_ORDER.flatMap((engineId) => {
+      const engine = this.engines.get(engineId)
+      if (!engine) return []
+      const meta = engine.metadata()
+      const observation = observations.get(engineId) ?? {
+        availability: 'declared' as const,
+        reason_code: 'NOT_OBSERVED' as const,
+        dependency_observations: [],
+        operations: {
+          calculate: 'supported' as const,
+          validate: 'unsupported' as const,
+          witness_eligible: WITNESS_ELIGIBLE.has(engineId),
+        },
+      }
+      return [
+        {
+          contract_version: 'v1' as const,
+          engine_id: meta.id,
+          display_name: meta.name,
+          availability: observation.availability,
+          runtime_kind: 'typescript' as const,
+          dependencies: ['typescript:bridge'],
+          required_phase: meta.required_phase,
+          implementation_version: meta.version,
+          reason_code: observation.reason_code,
+          dependency_observations: observation.dependency_observations,
+          operations: observation.operations,
+        },
+      ]
     })
   }
 

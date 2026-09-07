@@ -2,7 +2,6 @@ import { swagger } from '@elysiajs/swagger'
 import { Elysia, t } from 'elysia'
 import { resolveClipDir, resolveStoredClip } from '../engines/raaga/clip'
 import type {
-  CapabilityAvailability,
   ContractEngineCapability,
   EngineHealthStatus,
   EngineInput,
@@ -14,7 +13,7 @@ import type {
   ReadinessResponse,
 } from '../types'
 import { isEngineValidationError } from '../utils'
-import { type EngineRegistry, registry } from './registry'
+import { type CapabilityObservation, type EngineRegistry, registry } from './registry'
 
 const startTime = Date.now()
 
@@ -53,12 +52,102 @@ async function runSelfCheck(engineRegistry: EngineRegistry): Promise<EngineHealt
   )
 }
 
-function availabilityFromHealth(
-  engineHealth: EngineHealthStatus[],
-): Map<string, CapabilityAvailability> {
-  return new Map(
-    engineHealth.map((engine) => [engine.engine_id, engine.healthy ? 'available' : 'unavailable']),
+function capabilityObservationFromHealth(health: EngineHealthStatus): CapabilityObservation {
+  if (health.healthy) {
+    return {
+      availability: 'available',
+      reason_code: 'CAPABILITY_AVAILABLE',
+      dependency_observations: [],
+      operations: {
+        calculate: 'supported',
+        validate: 'unsupported',
+        witness_eligible: health.engine_id !== 'raaga',
+      },
+    }
+  }
+
+  const detail = health.detail.toLowerCase()
+  const optional = detail.includes('optional')
+  const timeout = detail.includes('timeout')
+  return {
+    availability: optional ? 'degraded' : 'unavailable',
+    reason_code: optional
+      ? 'OPTIONAL_DEPENDENCY_UNAVAILABLE'
+      : timeout
+        ? 'TIMEOUT'
+        : 'CAPABILITY_UNAVAILABLE',
+    dependency_observations: [],
+    operations: {
+      calculate: 'supported',
+      validate: 'unsupported',
+      witness_eligible: health.engine_id !== 'raaga',
+    },
+  }
+}
+
+function capabilityObservationFromFailure(detail: string, engineId: string): CapabilityObservation {
+  const normalized = detail.toLowerCase()
+  const reason_code = normalized.includes('malformed')
+    ? 'MALFORMED_OBSERVATION'
+    : normalized.includes('timeout')
+      ? 'TIMEOUT'
+      : normalized.includes('optional')
+        ? 'OPTIONAL_DEPENDENCY_UNAVAILABLE'
+        : 'MODULE_UNAVAILABLE'
+  return {
+    availability: reason_code === 'OPTIONAL_DEPENDENCY_UNAVAILABLE' ? 'degraded' : 'unavailable',
+    reason_code,
+    dependency_observations: [],
+    operations: {
+      calculate: 'supported',
+      validate: 'unsupported',
+      witness_eligible: engineId !== 'raaga',
+    },
+  }
+}
+
+export async function runCapabilityObservations(
+  engineRegistry: EngineRegistry,
+): Promise<Map<string, CapabilityObservation>> {
+  const observations = new Map<string, CapabilityObservation>()
+  await Promise.all(
+    engineRegistry.all().map(async (engine) => {
+      const engineId = engine.metadata().id
+      if (!engine.selfCheck) {
+        observations.set(engineId, {
+          availability: 'declared',
+          reason_code: 'NOT_OBSERVED',
+          dependency_observations: [],
+          operations: {
+            calculate: 'supported',
+            validate: 'unsupported',
+            witness_eligible: engineId !== 'raaga',
+          },
+        })
+        return
+      }
+
+      try {
+        const result = await Promise.race([
+          engine.selfCheck(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('self-check timeout')), 1000),
+          ),
+        ])
+        if (!result || typeof result.healthy !== 'boolean' || typeof result.detail !== 'string') {
+          throw new Error('malformed self-check observation')
+        }
+        observations.set(
+          engineId,
+          capabilityObservationFromHealth({ ...result, engine_id: engineId }),
+        )
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : 'self-check failed'
+        observations.set(engineId, capabilityObservationFromFailure(detail, engineId))
+      }
+    }),
   )
+  return observations
 }
 
 /**
@@ -132,9 +221,9 @@ export function createServer(engineRegistry: EngineRegistry = registry) {
         capabilities: ContractEngineCapability[]
         count: number
       }> => {
-        const engineHealth = await runSelfCheck(engineRegistry)
+        const observations = await runCapabilityObservations(engineRegistry)
         return {
-          capabilities: engineRegistry.listCapabilities(availabilityFromHealth(engineHealth)),
+          capabilities: engineRegistry.listCapabilityObservations(observations),
           count: engineRegistry.count(),
         }
       },
