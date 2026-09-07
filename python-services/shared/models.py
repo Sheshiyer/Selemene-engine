@@ -11,6 +11,41 @@ from shared.version import SERVICE_VERSION
 # ---------- Common ----------
 
 CapabilityStatus = Literal["available", "degraded", "unavailable"]
+CapabilityAvailability = Literal["declared", "available", "degraded", "unavailable"]
+CapabilityReasonCode = Literal[
+    "NOT_OBSERVED",
+    "REGISTERED",
+    "CAPABILITY_AVAILABLE",
+    "CAPABILITY_DEGRADED",
+    "CAPABILITY_UNAVAILABLE",
+    "REQUIRED_DEPENDENCY_UNAVAILABLE",
+    "OPTIONAL_DEPENDENCY_UNAVAILABLE",
+    "DEPENDENCY_UNAVAILABLE",
+    "DATABASE_UNCONFIGURED",
+    "MODULE_UNAVAILABLE",
+    "TIMEOUT",
+    "MALFORMED_OBSERVATION",
+    "OPERATION_UNSUPPORTED",
+]
+DependencyKind = Literal["rust", "typescript", "python", "database", "network", "filesystem"]
+DependencyRequirement = Literal["required", "optional"]
+
+
+class DependencyObservation(BaseModel):
+    dependency_id: str
+    dependency_kind: DependencyKind
+    requirement: DependencyRequirement
+    availability: CapabilityAvailability
+    reason_code: CapabilityReasonCode
+
+
+class CapabilityObservation(BaseModel):
+    """Bounded dependency evidence attached to an existing engine identity."""
+
+    engine_id: str
+    availability: CapabilityAvailability
+    reason_code: CapabilityReasonCode
+    dependency_observations: list[DependencyObservation] = Field(default_factory=list)
 
 
 class HealthResponse(BaseModel):
@@ -23,6 +58,7 @@ class HealthResponse(BaseModel):
             "self-check booleans (no provider/network/database calls)."
         ),
     )
+    capability_observations: list[CapabilityObservation] = Field(default_factory=list)
 
 
 # ---------- MediaPipe service models ----------

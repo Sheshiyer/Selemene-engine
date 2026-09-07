@@ -76,6 +76,38 @@ def test_biofield_capability_status_unavailable_without_numpy(
     assert data["capability_status"] == "unavailable"
 
 
+def test_biofield_emits_bounded_observation_on_existing_engine(
+    biofield_client: TestClient, monkeypatch
+) -> None:
+    monkeypatch.setattr(biofield_health, "_check_opencv", lambda: False)
+    monkeypatch.setattr(biofield_health, "_check_numpy", lambda: True)
+    monkeypatch.setattr(biofield_health, "_check_mediapipe", lambda: False)
+
+    observation = biofield_client.get("/health").json()["capability_observations"][0]
+
+    assert observation["engine_id"] == "biofield"
+    assert observation["availability"] == "unavailable"
+    assert observation["reason_code"] == "REQUIRED_DEPENDENCY_UNAVAILABLE"
+    assert {item["dependency_id"] for item in observation["dependency_observations"]} == {
+        "python:biofield-cv",
+        "python:mediapipe-face-mesh",
+    }
+    assert "/" not in str(observation)
+
+
+def test_biofield_observation_degrades_for_optional_mediapipe(
+    biofield_client: TestClient, monkeypatch
+) -> None:
+    monkeypatch.setattr(biofield_health, "_check_opencv", lambda: True)
+    monkeypatch.setattr(biofield_health, "_check_numpy", lambda: True)
+    monkeypatch.setattr(biofield_health, "_check_mediapipe", lambda: False)
+
+    observation = biofield_client.get("/health").json()["capability_observations"][0]
+
+    assert observation["availability"] == "degraded"
+    assert observation["reason_code"] == "OPTIONAL_DEPENDENCY_UNAVAILABLE"
+
+
 # ---------- mediapipe-face-mesh ----------
 
 def test_mediapipe_health_includes_capability_status(mediapipe_client: TestClient) -> None:
@@ -103,3 +135,34 @@ def test_mediapipe_capability_status_unavailable_without_mediapipe(
     data = mediapipe_client.get("/health").json()
 
     assert data["capability_status"] == "unavailable"
+
+
+def test_mediapipe_observation_attaches_to_face_reading(
+    mediapipe_client: TestClient, monkeypatch
+) -> None:
+    monkeypatch.setattr(mediapipe_health, "_check_mediapipe", lambda: False)
+
+    observation = mediapipe_client.get("/health").json()["capability_observations"][0]
+
+    assert observation["engine_id"] == "face-reading"
+    assert observation["dependency_observations"] == [
+        {
+            "dependency_id": "python:mediapipe-face-mesh",
+            "dependency_kind": "python",
+            "requirement": "required",
+            "availability": "unavailable",
+            "reason_code": "MODULE_UNAVAILABLE",
+        }
+    ]
+    assert "http" not in str(observation).lower()
+
+
+def test_import_exception_is_bounded(biofield_client: TestClient, monkeypatch) -> None:
+    monkeypatch.setattr(
+        biofield_health,
+        "_check_opencv",
+        lambda: (_ for _ in ()).throw(RuntimeError("/secret/token")),
+    )
+    data = biofield_client.get("/health").json()
+    assert data["capability_status"] == "unavailable"
+    assert "secret" not in str(data["capability_observations"]).lower()

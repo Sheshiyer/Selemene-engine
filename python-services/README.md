@@ -35,6 +35,18 @@ uvicorn biofield_cv_service.main:app --port 8002 --reload
 pytest
 ```
 
+## Capability observations
+
+The `/health` response includes `capability_observations` for the existing
+`biofield` and `face-reading` engine identities. These are bounded local
+dependency facts (`python:biofield-cv` and `python:mediapipe-face-mesh`), not
+new engine registrations or public ingress claims. Rust consumes the
+observations when resolving the canonical 19-row capability list. Missing
+required dependencies are `unavailable`; missing optional MediaPipe support
+is `degraded`. Raw exceptions, paths, URLs and credentials are never emitted.
+Deployment ingress, authentication and operational proof remain a Phase 7
+concern.
+
 ## OpenAPI Specs
 
 See `openapi/` for the contract definitions consumed by the Rust engine.
