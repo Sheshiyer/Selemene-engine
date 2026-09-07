@@ -4680,6 +4680,9 @@ pub async fn engine_capabilities(
                 dependencies: Vec::new(),
                 required_phase: Some(engine.required_phase()),
                 implementation_version: None,
+                reason_code: None,
+                dependency_observations: None,
+                operations: None,
             }
         })
         .collect();

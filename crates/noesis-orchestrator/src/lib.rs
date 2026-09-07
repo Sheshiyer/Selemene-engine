@@ -25,8 +25,15 @@
 //! automatically register all TS engines (tarot, i-ching, enneagram, sacred-geometry, sigil-forge).
 
 // Workflow module with full spectrum, caching, and synthesis
+pub mod capability;
 pub mod workflow;
 
+pub use capability::{
+    canonical_declarations, resolve_capabilities, CapabilityDeclaration, CapabilityResolutionError,
+    DependencyDeclaration, RegistrationObservation, ResolvedCapability,
+};
+
+use noesis_core::contract::DependencyObservation;
 pub use noesis_core::{
     ConsciousnessEngine, EngineError, EngineInput, EngineOutput, WorkflowDefinition, WorkflowResult,
 };
@@ -292,6 +299,41 @@ impl WorkflowOrchestrator {
     /// Register a consciousness engine with the internal registry.
     pub fn register_engine(&mut self, engine: Arc<dyn ConsciousnessEngine>) {
         self.registry.register(engine);
+    }
+
+    /// Resolve the canonical 19-row capability view from the currently
+    /// registered engines and injected dependency observations. The method is
+    /// intentionally observation-only: it never opens a database or performs
+    /// a health request.
+    pub fn capability_snapshot(
+        &self,
+        dependency_observations: &[(String, DependencyObservation)],
+    ) -> Result<Vec<ResolvedCapability>, CapabilityResolutionError> {
+        let declarations = canonical_declarations()?;
+        let registrations = declarations
+            .iter()
+            .map(|declaration| RegistrationObservation {
+                engine_id: declaration.engine_id.clone(),
+                registered: self.registry.get(&declaration.engine_id).is_some(),
+                reason_code: if self.registry.get(&declaration.engine_id).is_some() {
+                    noesis_core::contract::CapabilityReasonCode::Registered
+                } else {
+                    noesis_core::contract::CapabilityReasonCode::NotObserved
+                },
+            })
+            .collect::<Vec<_>>();
+        self.capability_snapshot_with_registrations(&registrations, dependency_observations)
+    }
+
+    /// Resolve with an explicit registration matrix for deterministic tests or
+    /// a caller that has already observed a conditional registration seam.
+    pub fn capability_snapshot_with_registrations(
+        &self,
+        registrations: &[RegistrationObservation],
+        dependency_observations: &[(String, DependencyObservation)],
+    ) -> Result<Vec<ResolvedCapability>, CapabilityResolutionError> {
+        let declarations = canonical_declarations()?;
+        resolve_capabilities(&declarations, registrations, dependency_observations)
     }
 
     /// Register the native Rust runtime engine set used by `noesis-api`.
@@ -973,6 +1015,25 @@ mod tests {
         orchestrator.register_native_runtime_engines();
 
         assert_eq!(orchestrator.list_engines(), canonical_runtime_ids("native"));
+    }
+
+    #[test]
+    fn capability_snapshot_keeps_unobserved_database_row_declared() {
+        let mut orchestrator = WorkflowOrchestrator::new();
+        orchestrator.register_native_runtime_engines();
+        let snapshot = orchestrator
+            .capability_snapshot(&[])
+            .expect("canonical registry must resolve");
+        assert_eq!(snapshot.len(), 19);
+        let capture = snapshot
+            .iter()
+            .find(|row| row.capability.engine_id == "biofield-capture")
+            .expect("conditional row must remain present");
+        assert!(!capture.registered);
+        assert_eq!(
+            capture.capability.availability,
+            noesis_core::contract::CapabilityAvailability::Declared
+        );
     }
 
     #[test]
