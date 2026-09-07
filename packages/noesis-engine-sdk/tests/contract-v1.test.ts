@@ -1,10 +1,17 @@
 import { describe, expect, test } from 'bun:test'
 import capabilityFixture from '../../../contracts/v1/fixtures/engine-capability.json'
+import capabilityListFixture from '../../../contracts/v1/fixtures/engine-capability-list.json'
 import errorFixture from '../../../contracts/v1/fixtures/error.json'
 import requestFixture from '../../../contracts/v1/fixtures/engine-request.json'
 import resultFixture from '../../../contracts/v1/fixtures/engine-result.json'
+import workflowPartialFixture from '../../../contracts/v1/fixtures/workflow-outcome-partial.json'
 import {
   CONTRACT_VERSION,
+  decodeEngineCapability,
+  decodeEngineCapabilityList,
+  decodeWorkflowOutcome,
+  isEngineCapabilityList,
+  isWorkflowOutcome,
   type CapabilityAvailability,
   type ConsciousnessPhase,
   type ContractEngineCapability,
@@ -62,5 +69,26 @@ describe('canonical v1 fixtures', () => {
     expect(error.contract_version).toBe(CONTRACT_VERSION)
     expect(capability.availability).toBe('available')
     expect(capability.dependencies).toEqual([])
+  })
+
+  test('shared decoder accepts canonical list and workflow fixtures', () => {
+    const list = decodeEngineCapabilityList(capabilityListFixture)
+    const workflow = decodeWorkflowOutcome(workflowPartialFixture)
+    expect(list.capabilities).toHaveLength(19)
+    expect(list.public_mirror_count).toBe(17)
+    expect(workflow.execution_status).toBe('partial')
+    expect(workflow.engine_failures[0]?.error_code).toBe('ENGINE_TIMEOUT')
+    expect(isEngineCapabilityList(capabilityListFixture)).toBe(true)
+    expect(isWorkflowOutcome(workflowPartialFixture)).toBe(true)
+  })
+
+  test('shared decoder fails closed on unknown fields and alias drift', () => {
+    const unknown = { ...capabilityFixture, unexpected: true }
+    expect(() => decodeEngineCapability(unknown)).toThrow(/unknown field/)
+
+    const drifted = JSON.parse(JSON.stringify(workflowPartialFixture)) as Record<string, unknown>
+    const alias = drifted.engine_results as Record<string, Record<string, Record<string, unknown>>>
+    alias.biofield.result.value = 'drifted'
+    expect(() => decodeWorkflowOutcome(drifted)).toThrow(/must equal engine_outputs/)
   })
 })

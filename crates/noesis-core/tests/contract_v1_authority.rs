@@ -1,6 +1,6 @@
 use noesis_core::contract::{
     CapabilityAvailability, ContractEngineRequest, ContractEngineResult, ContractError,
-    EngineCapability, RuntimeKind,
+    EngineCapability, EngineCapabilityList, RuntimeKind, WorkflowOutcome,
 };
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -231,4 +231,50 @@ fn canonical_result_accepts_singular_prompt_without_provenance() {
     assert_eq!(result.witness_prompt.as_deref(), Some("What is witnessed?"));
     assert!(result.witness_prompts.is_none());
     assert!(result.provenance.is_none());
+}
+
+#[test]
+fn canonical_capability_list_preserves_all_rows_and_metadata() {
+    let list: EngineCapabilityList = fixture(include_str!(
+        "../../../contracts/v1/fixtures/engine-capability-list.json"
+    ));
+    list.validate()
+        .expect("canonical capability list must validate");
+    assert_eq!(list.capabilities.len(), 19);
+    assert_eq!(list.public_mirror_count, 17);
+    assert!(list
+        .capabilities
+        .iter()
+        .all(|capability| capability.operations.is_some()));
+}
+
+#[test]
+fn canonical_workflow_outcomes_conserve_engine_truth() {
+    for source in [
+        include_str!("../../../contracts/v1/fixtures/workflow-outcome-complete.json"),
+        include_str!("../../../contracts/v1/fixtures/workflow-outcome-partial.json"),
+        include_str!("../../../contracts/v1/fixtures/workflow-outcome-failed.json"),
+        include_str!("../../../contracts/v1/fixtures/workflow-outcome-unsupported.json"),
+    ] {
+        let outcome: WorkflowOutcome = fixture(source);
+        outcome
+            .validate()
+            .expect("canonical workflow must validate");
+    }
+}
+
+#[test]
+fn strict_readers_reject_unknown_fields_and_alias_drift() {
+    let mut list: Value = fixture(include_str!(
+        "../../../contracts/v1/fixtures/engine-capability-list.json"
+    ));
+    list["unexpected"] = serde_json::json!(true);
+    assert!(serde_json::from_value::<EngineCapabilityList>(list).is_err());
+
+    let mut workflow: Value = fixture(include_str!(
+        "../../../contracts/v1/fixtures/workflow-outcome-complete.json"
+    ));
+    workflow["engine_results"]["biofield"]["result"]["value"] = serde_json::json!("drifted");
+    let outcome: WorkflowOutcome = serde_json::from_value(workflow).expect("shape remains valid");
+    assert!(outcome.validate().is_err());
 }

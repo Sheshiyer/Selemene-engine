@@ -1,8 +1,14 @@
 import { describe, expect, test } from 'bun:test'
+import capabilityListFixture from '../../contracts/v1/fixtures/engine-capability-list.json'
 import capabilityFixture from '../../contracts/v1/fixtures/engine-capability.json'
-import errorFixture from '../../contracts/v1/fixtures/error.json'
 import requestFixture from '../../contracts/v1/fixtures/engine-request.json'
 import resultFixture from '../../contracts/v1/fixtures/engine-result.json'
+import errorFixture from '../../contracts/v1/fixtures/error.json'
+import workflowPartialFixture from '../../contracts/v1/fixtures/workflow-outcome-partial.json'
+import {
+  decodeEngineCapabilityList,
+  decodeWorkflowOutcome,
+} from '../../packages/noesis-engine-sdk/src/contract-v1'
 import {
   CONTRACT_VERSION,
   type CapabilityAvailability,
@@ -59,5 +65,20 @@ describe('contract authority v1', () => {
     expect(error.status).toBe(422)
     expect(capability.runtime_kind).toBe('native')
     expect(capability.availability).toBe('available')
+  })
+
+  test('independent Bun project reuses the shared strict reader', () => {
+    const list = decodeEngineCapabilityList(capabilityListFixture)
+    const workflow = decodeWorkflowOutcome(workflowPartialFixture)
+    expect(list.capabilities).toHaveLength(19)
+    expect(list.public_mirror_count).toBe(17)
+    expect(workflow.engine_failures).toHaveLength(1)
+  })
+
+  test('shared reader rejects incompatible versions and unknown fields', () => {
+    const incompatible = { ...capabilityListFixture, contract_version: 'v2' }
+    expect(() => decodeEngineCapabilityList(incompatible)).toThrow(/must be v1/)
+    const unknown = { ...capabilityListFixture, unexpected: true }
+    expect(() => decodeEngineCapabilityList(unknown)).toThrow(/unknown field/)
   })
 })

@@ -191,6 +191,87 @@ export interface ContractEngineCapability {
   dependencies: string[]
   required_phase?: ConsciousnessPhase
   implementation_version?: string
+  reason_code?: CapabilityReasonCode
+  dependency_observations?: DependencyObservation[]
+  operations?: CapabilityOperations
+}
+
+export type CapabilityReasonCode =
+  | 'NOT_OBSERVED'
+  | 'REGISTERED'
+  | 'CAPABILITY_AVAILABLE'
+  | 'CAPABILITY_DEGRADED'
+  | 'CAPABILITY_UNAVAILABLE'
+  | 'REQUIRED_DEPENDENCY_UNAVAILABLE'
+  | 'OPTIONAL_DEPENDENCY_UNAVAILABLE'
+  | 'DEPENDENCY_UNAVAILABLE'
+  | 'DATABASE_UNCONFIGURED'
+  | 'MODULE_UNAVAILABLE'
+  | 'TIMEOUT'
+  | 'MALFORMED_OBSERVATION'
+  | 'OPERATION_UNSUPPORTED'
+
+export type DependencyKind =
+  | 'rust'
+  | 'typescript'
+  | 'python'
+  | 'database'
+  | 'network'
+  | 'filesystem'
+export type DependencyRequirement = 'required' | 'optional'
+export type OperationSupport = 'supported' | 'unsupported'
+
+export interface DependencyObservation {
+  dependency_id: string
+  dependency_kind: DependencyKind
+  requirement: DependencyRequirement
+  availability: CapabilityAvailability
+  reason_code: CapabilityReasonCode
+}
+
+export interface CapabilityOperations {
+  calculate: OperationSupport
+  validate: OperationSupport
+  witness_eligible: boolean
+}
+
+export interface ContractEngineCapabilityList {
+  contract_version: ContractVersion
+  capabilities: ContractEngineCapability[]
+  count: 19
+  public_mirror_count: 17
+}
+
+export type WorkflowExecutionStatus = 'complete' | 'partial' | 'failed'
+export type WorkflowSynthesisStatus = 'available' | 'failed' | 'unsupported'
+export type WorkflowErrorCode =
+  | 'ENGINE_NOT_FOUND'
+  | 'DEPENDENCY_UNAVAILABLE'
+  | 'ENGINE_TIMEOUT'
+  | 'UPSTREAM_INVALID_RESPONSE'
+  | 'OPERATION_UNSUPPORTED'
+
+export interface WorkflowEngineOutput {
+  result: Record<string, unknown>
+  provenance?: Record<string, unknown>
+}
+
+export interface WorkflowEngineFailure {
+  engine_id: string
+  error_code: WorkflowErrorCode
+  message: string
+}
+
+export interface WorkflowOutcome {
+  contract_version: ContractVersion
+  workflow_id: string
+  requested_engine_ids: string[]
+  engine_outputs: Record<string, WorkflowEngineOutput>
+  engine_failures: WorkflowEngineFailure[]
+  execution_status: WorkflowExecutionStatus
+  synthesis_status: WorkflowSynthesisStatus
+  synthesis?: { text: string }
+  engine_results?: Record<string, WorkflowEngineOutput>
 }
 
 /** Health check response */
