@@ -10,12 +10,19 @@ from __future__ import annotations
 import json
 import os
 import re
+from urllib.parse import quote
 from dataclasses import dataclass, field
 from typing import Any, Iterator
 
 import httpx
 
-from .tools import get_noesis_tools, ENGINES, WORKFLOWS, NOESIS_BASE_URL
+from .tools import (
+    get_noesis_tools,
+    ENGINES,
+    WORKFLOWS,
+    SUPPORTED_WORKFLOWS,
+    NOESIS_BASE_URL,
+)
 
 # --- Configuration -------------------------------------------------------
 
@@ -43,6 +50,9 @@ class HermesAgentConfig:
     noesis_api_key: str = field(
         default_factory=lambda: os.environ.get("NOESIS_API_KEY", "")
     )
+    noesis_bearer_token: str = field(
+        default_factory=lambda: os.environ.get("NOESIS_BEARER_TOKEN", "")
+    )
 
     # Agent behaviour
     max_iterations: int = 10
@@ -56,40 +66,68 @@ class HermesAgentConfig:
 class NoesisExecutor:
     """Execute Noesis tool calls against the live API."""
 
-    def __init__(self, config: HermesAgentConfig) -> None:
+    def __init__(self, config: HermesAgentConfig, client_factory: Any = None) -> None:
         self._base = config.noesis_base_url.rstrip("/")
         self._headers: dict[str, str] = {"Content-Type": "application/json"}
+        if config.noesis_api_key and config.noesis_bearer_token:
+            raise ValueError("Choose either noesis_api_key or noesis_bearer_token")
         if config.noesis_api_key:
             self._headers["X-API-Key"] = config.noesis_api_key
+        elif config.noesis_bearer_token:
+            self._headers["Authorization"] = f"Bearer {config.noesis_bearer_token}"
         self._timeout = config.timeout_secs
+        self._client_factory = client_factory or httpx.Client
 
     # --- Meta tools ---
 
     def noesis_list_engines(self, **_: Any) -> Any:
         return self._get("/api/v1/engines")
 
+    def noesis_list_capabilities(self, **_: Any) -> Any:
+        return self._get("/api/v1/engines/capabilities")
+
     def noesis_list_workflows(self, **_: Any) -> Any:
         return self._get("/api/v1/workflows")
 
     def noesis_engine_info(self, engine_id: str, **_: Any) -> Any:
-        return self._get(f"/api/v1/engines/{engine_id}/info")
+        engine_id = self._validate_engine_id(engine_id)
+        return self._get(f"/api/v1/engines/{quote(engine_id, safe='')}/info")
 
     def noesis_workflow_info(self, workflow_id: str, **_: Any) -> Any:
-        return self._get(f"/api/v1/workflows/{workflow_id}/info")
+        workflow_id = self._validate_workflow_id(workflow_id, allow_unsupported=True)
+        return self._get(f"/api/v1/workflows/{quote(workflow_id, safe='')}/info")
 
     # --- Dynamic dispatch for engine/workflow calls ---
 
     def _engine_calculate(self, engine_id: str, body: dict[str, Any]) -> Any:
-        return self._post(f"/api/v1/engines/{engine_id}/calculate", body)
+        engine_id = self._validate_engine_id(engine_id)
+        return self._post(f"/api/v1/engines/{quote(engine_id, safe='')}/calculate", body)
 
     def _workflow_execute(self, workflow_id: str, body: dict[str, Any]) -> Any:
-        return self._post(f"/api/v1/workflows/{workflow_id}/execute", body)
+        workflow_id = self._validate_workflow_id(workflow_id)
+        return self._post(f"/api/v1/workflows/{quote(workflow_id, safe='')}/execute", body)
+
+    @staticmethod
+    def _validate_engine_id(engine_id: str) -> str:
+        if not isinstance(engine_id, str) or engine_id not in ENGINES:
+            raise ValueError("Unknown or unavailable public engine")
+        return engine_id
+
+    @staticmethod
+    def _validate_workflow_id(workflow_id: str, allow_unsupported: bool = False) -> str:
+        if not isinstance(workflow_id, str) or workflow_id not in WORKFLOWS:
+            raise ValueError("Unknown workflow")
+        if workflow_id == "full-spectrum" and not allow_unsupported:
+            raise ValueError("Workflow is unsupported")
+        return workflow_id
 
     def dispatch(self, tool_name: str, arguments: dict[str, Any]) -> Any:
         """Route tool_name → correct Noesis API call."""
         # Meta tools
         if tool_name == "noesis_list_engines":
             return self.noesis_list_engines()
+        if tool_name == "noesis_list_capabilities":
+            return self.noesis_list_capabilities()
         if tool_name == "noesis_list_workflows":
             return self.noesis_list_workflows()
         if tool_name == "noesis_engine_info":
@@ -101,29 +139,60 @@ class NoesisExecutor:
         if tool_name.startswith("noesis_engine_"):
             engine_slug = tool_name[len("noesis_engine_"):].replace("_", "-")
             if engine_slug in ENGINES:
-                return self._engine_calculate(engine_slug, arguments)
+                supplied_id = arguments.get("engine_id")
+                if supplied_id is not None and supplied_id != engine_slug:
+                    raise ValueError("Engine argument does not match tool identity")
+                body = {key: value for key, value in arguments.items() if key != "engine_id"}
+                return self._engine_calculate(engine_slug, body)
 
         # Workflow tools: noesis_workflow_<workflow_id_underscored>
         if tool_name.startswith("noesis_workflow_"):
             workflow_slug = tool_name[len("noesis_workflow_"):].replace("_", "-")
-            if workflow_slug in WORKFLOWS:
-                return self._workflow_execute(workflow_slug, arguments)
+            if workflow_slug in SUPPORTED_WORKFLOWS:
+                body = {key: value for key, value in arguments.items() if key != "workflow_id"}
+                return self._workflow_execute(workflow_slug, body)
+            if workflow_slug == "full-spectrum":
+                raise ValueError("Workflow is unsupported")
 
         raise ValueError(f"Unknown Noesis tool: {tool_name}")
 
     # --- HTTP helpers ---
 
     def _get(self, path: str) -> Any:
-        with httpx.Client(timeout=self._timeout) as client:
-            r = client.get(f"{self._base}{path}", headers=self._headers)
-            r.raise_for_status()
-            return r.json()
+        try:
+            with self._client_factory(timeout=self._timeout) as client:
+                r = client.get(f"{self._base}{path}", headers=self._headers)
+                r.raise_for_status()
+                return self._decode_response(r)
+        except httpx.TimeoutException as exc:
+            raise RuntimeError("UPSTREAM_TIMEOUT") from exc
+        except httpx.RequestError as exc:
+            raise RuntimeError("UPSTREAM_UNAVAILABLE") from exc
+        except httpx.HTTPStatusError as exc:
+            raise RuntimeError("UPSTREAM_ERROR") from exc
 
     def _post(self, path: str, body: dict[str, Any]) -> Any:
-        with httpx.Client(timeout=self._timeout) as client:
-            r = client.post(f"{self._base}{path}", headers=self._headers, json=body)
-            r.raise_for_status()
-            return r.json()
+        try:
+            with self._client_factory(timeout=self._timeout) as client:
+                r = client.post(f"{self._base}{path}", headers=self._headers, json=body)
+                r.raise_for_status()
+                return self._decode_response(r)
+        except httpx.TimeoutException as exc:
+            raise RuntimeError("UPSTREAM_TIMEOUT") from exc
+        except httpx.RequestError as exc:
+            raise RuntimeError("UPSTREAM_UNAVAILABLE") from exc
+        except httpx.HTTPStatusError as exc:
+            raise RuntimeError("UPSTREAM_ERROR") from exc
+
+    @staticmethod
+    def _decode_response(response: httpx.Response) -> Any:
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise RuntimeError("UPSTREAM_INVALID_RESPONSE") from exc
+        if not isinstance(payload, (dict, list)):
+            raise RuntimeError("UPSTREAM_INVALID_RESPONSE")
+        return payload
 
 
 # --- XML tool-call parser (Hermes-2 legacy) ------------------------------
@@ -317,7 +386,14 @@ class HermesAgent:
         """Execute a single tool call and return the result (or error dict)."""
         try:
             return self.executor.dispatch(name, arguments)
-        except httpx.HTTPStatusError as e:
-            return {"error": f"HTTP {e.response.status_code}", "detail": e.response.text}
         except Exception as e:  # noqa: BLE001
-            return {"error": str(e)}
+            # Never return URL, response body, provider text or credentials.
+            reason = str(e)
+            if reason not in {
+                "UPSTREAM_TIMEOUT",
+                "UPSTREAM_UNAVAILABLE",
+                "UPSTREAM_ERROR",
+                "UPSTREAM_INVALID_RESPONSE",
+            }:
+                reason = "TOOL_REJECTED"
+            return {"error": reason}
