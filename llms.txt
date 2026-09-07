@@ -1,8 +1,8 @@
 # Noesis
 
-> version: 3.3.0 · Computational mirror for self-inquiry. 16 live consciousness engines with sub-ms calculations. REST API with witness prompts calibrated to consciousness level.
+> version: 3.3.0 · Computational mirror for self-inquiry. 19 runtime identities (17 public mirrors) with sub-ms calculations. REST API with witness prompts calibrated to consciousness level.
 
-Noesis is a high-performance Rust + TypeScript API (repository: Selemene-engine) serving 16 calculation engines (11 Rust + 5 TypeScript) rooted in Vedic, numerological, and consciousness traditions. Each response includes a witness prompt — a question calibrated to your awareness level. Deployed at `selemene.tryambakam.space`.
+Noesis is a high-performance Rust + TypeScript API (repository: Selemene-engine) serving 19 runtime identities (11 Rust + 5 TypeScript) rooted in Vedic, numerological, and consciousness traditions. Each response includes a witness prompt — a question calibrated to your awareness level. Deployed at `selemene.tryambakam.space`.
 
 ## API Documentation
 
@@ -95,7 +95,10 @@ Workflow responses now include these top-level fields:
 - [MCP Integration](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/api/MCP_INTEGRATION.md): Model Context Protocol tools
 - [OpenClaw Integration](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/api/OPENCLAW_INTEGRATION.md): OpenClaw agent tools
 - [Hermes Integration](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/api/HERMES_INTEGRATION.md): NousResearch Hermes function-calling bridge
-- [Noesis Web](https://noesis.tryambakam.space): Full 16-engine viewer (also at 3437.tryambakam.space)
+- [Noesis Web](https://noesis.tryambakam.space): 19-identity viewer (also at 3437.tryambakam.space)
 - [Admin Surface](https://144.tryambakam.space): Operator billing dashboard
 - [Deployment Guide](https://github.com/Sheshiyer/Selemene-engine/blob/main/docs/deployment/README.md): Self-hosting instructions
 - [Changelog](https://github.com/Sheshiyer/Selemene-engine/blob/main/CHANGELOG.md): Version history
+## Contract v1 capability boundary
+
+The canonical catalogue contains 19 runtime identities and exactly 17 public mirrors. Capability rows use `declared`, `available`, `degraded`, and `unavailable`; consumers must preserve all four states. Protected requests use exactly one credential header: `X-API-Key` for an API key or `Authorization: Bearer <token>` for a bearer token. Calculate uses `/api/v1/engines/{engine_id}/calculate`. Workflow outcomes are `complete`, `partial`, or `failed`; Full Spectrum is explicitly `unsupported` pending a lossless adapter test.

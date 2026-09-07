@@ -69,3 +69,6 @@ Uses shared `EngineInput`:
   }
 }
 ```
+## Contract v1 support
+
+`nadabrahman` is one of 19 runtime identities; the public projection contains 17 mirrors. Calculate is **supported** and validation is **supported** according to `contracts/v1/registries/engines.json`. Call the authenticated Rust route `/api/v1/engines/nadabrahman/calculate` with exactly one `X-API-Key` or `Authorization: Bearer` header. Preserve `declared`, `available`, `degraded`, and `unavailable` capability states. Full Spectrum workflow execution is explicitly `unsupported`.

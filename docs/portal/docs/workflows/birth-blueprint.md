@@ -65,3 +65,6 @@ sidebar_position: 2
 ## Consciousness phase gating
 
 This workflow requires **phase 2** or higher. If user phase is lower, API returns a phase access error.
+## Contract v1 support
+
+`birth-blueprint` is **supported** in the canonical workflow registry. Authenticated requests use exactly one `X-API-Key` or `Authorization: Bearer` header on the maintained `/api/v1/workflows/birth-blueprint/execute` route. Outcomes follow `contracts/v1/schemas/workflow-outcome.schema.json` and preserve `complete`, `partial`, and `failed` status with one output or bounded failure per requested engine. The runtime catalogue has 19 identities and 17 public mirrors; Full Spectrum remains explicitly `unsupported` pending a lossless adapter test.

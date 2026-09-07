@@ -154,4 +154,6 @@ This gives:
 - **2 · Practicing:** reflective prompts with behavioral commitments
 - **3 · Integrated:** synthesis prompts spanning multiple mirrors
 - **4 · Embodied:** action-integrated, relationally-aware prompts
+## Contract v1 support
 
+`biorhythm` is one of 19 runtime identities; the public projection contains 17 mirrors. Calculate is **supported** and validation is **supported** according to `contracts/v1/registries/engines.json`. Call the authenticated Rust route `/api/v1/engines/biorhythm/calculate` with exactly one `X-API-Key` or `Authorization: Bearer` header. Preserve `declared`, `available`, `degraded`, and `unavailable` capability states. Full Spectrum workflow execution is explicitly `unsupported`.

@@ -114,7 +114,7 @@ agent = Agent(role="Vedic Analyst", tools=tools)
 
 ## Engines
 
-The bridge covers all 16 Noesis consciousness engines:
+The bridge covers 19 runtime identities (17 public mirrors):
 
 | # | Engine | Source | Status | Description |
 |---|--------|--------|--------|-------------|
@@ -135,9 +135,9 @@ The bridge covers all 16 Noesis consciousness engines:
 | 15 | Sacred Geometry | TS | Live | Geometric pattern consciousness mapping |
 | 16 | Sigil Forge | TS | Live | Intention-encoded symbolic generation |
 
-*TypeScript engines run as a Railway sidecar on port 3001, bridged to Rust via `BridgeEngine`. All 16 engines are accessible through the main Rust API — the TS server is transparent to callers.*
+*TypeScript engines run as a Railway sidecar on port 3001, bridged to Rust via `BridgeEngine`. All 19 runtime identities are accessible through the main Rust API — the TS server is transparent to callers.*
 
-Plus 6 orchestrated workflows (birth-blueprint, daily-practice, decision-support, self-inquiry, creative-expression, full-spectrum).
+Plus 6 workflow identifiers; Full Spectrum is explicitly unsupported until a lossless adapter is proven.
 
 ## Config File
 
@@ -167,7 +167,7 @@ The wizard creates `.selemenerc.json` in your project root:
 - Check firewall/network: `curl http://localhost:8080/health/live`
 
 **"Partial connectivity"**
-- The TS engines server is optional. If only Rust is running, you'll get 11 engines instead of 16.
+- The TS engines server is optional. If only Rust is running, you'll get 11 engines instead of the full runtime catalogue.
 
 **"No .selemenerc.json found"**
 - Run `npx @selemene/bridge init` first to create the config.
@@ -178,3 +178,6 @@ The wizard creates `.selemenerc.json` in your project root:
 ## License
 
 MIT
+## Contract v1 capability boundary
+
+The CLI consumes 19 runtime identities and exposes the exact 17 public mirrors. It calls authenticated Rust routes with either `X-API-Key` or `Authorization: Bearer`, never both, and reports all four capability states. Full Spectrum remains explicitly `unsupported` pending a lossless adapter.

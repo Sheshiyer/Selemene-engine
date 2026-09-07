@@ -56,7 +56,7 @@ curl -s https://selemene.tryambakam.space/health/live | python3 -m json.tool
 {
     "status": "ok",
     "version": "3.3.0",
-    "engines_loaded": 16,
+    "engines_loaded": 19,
     "workflows_loaded": 6
 }
 ```
@@ -223,7 +223,7 @@ curl -s .../api/v1/workflows \
 | **decision-support** | tarot + i-ching + HD authority | Multi-perspective guidance |
 | **self-inquiry** | gene-keys + enneagram | Shadow work + patterns |
 | **creative-expression** | sigil-forge + sacred-geometry | Intent visualization |
-| **full-spectrum** | all 16 engines | Complete consciousness portrait |
+| **full-spectrum** | unsupported | No execution until a lossless adapter is proven |
 
 ```bash
 # Execute a workflow
@@ -392,3 +392,6 @@ open $NOESIS_URL/api/docs
 # Prometheus metrics
 curl -s $NOESIS_URL/metrics
 ```
+## Contract v1 capability boundary
+
+The protected catalogue contains 19 runtime identities and 17 public mirrors. Use exactly one `X-API-Key` or `Authorization: Bearer` header. Capability state is one of `declared`, `available`, `degraded`, or `unavailable`; workflow outcomes preserve `complete`, `partial`, and `failed`. Full Spectrum is `unsupported` pending a lossless adapter test.

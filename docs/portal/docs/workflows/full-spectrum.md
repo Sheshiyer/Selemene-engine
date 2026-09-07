@@ -11,11 +11,11 @@ sidebar_position: 7
 
 ## Engine composition
 
-- `all 16 engines`
+- `all 19 runtime identities`
 
 ## Endpoint
 
-`POST /api/v1/workflows/full-spectrum/execute`
+There is no executable route for this workflow while its lossless adapter is unproven.
 
 ## Request example
 
@@ -63,3 +63,6 @@ sidebar_position: 7
 ## Consciousness phase gating
 
 This workflow requires **phase 2** or higher. If user phase is lower, API returns a phase access error.
+## Contract v1 support
+
+`full-spectrum` is **unsupported** in the canonical workflow registry. Authenticated requests use exactly one `X-API-Key` or `Authorization: Bearer` header on the maintained `/api/v1/workflows/full-spectrum/execute` route. Outcomes follow `contracts/v1/schemas/workflow-outcome.schema.json` and preserve `complete`, `partial`, and `failed` status with one output or bounded failure per requested engine. The runtime catalogue has 19 identities and 17 public mirrors; Full Spectrum remains explicitly `unsupported` pending a lossless adapter test.

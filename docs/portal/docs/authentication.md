@@ -52,3 +52,6 @@ curl -X POST "https://selemene.tryambakam.space/api/v1/engines/numerology/calcul
     }
   }'
 ```
+## Contract v1 capability boundary
+
+The 19-row runtime catalogue (17 public mirrors) is available only through authenticated routes. Send exactly one `X-API-Key` or `Authorization: Bearer` header. Capability states remain `declared`, `available`, `degraded`, or `unavailable`; Full Spectrum is explicitly `unsupported`.

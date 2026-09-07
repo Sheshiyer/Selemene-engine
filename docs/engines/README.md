@@ -73,7 +73,7 @@ The biggest outcome of this audit: **almost every engine renderer reads keys the
 
 ## Engines
 
-**17 engines.** **11** have dedicated **Rust** `engine-*` crates; **6** (Enneagram, Tarot, I Ching, Sacred Geometry, Sigil Forge, Raaga) are **TypeScript** engines in the `ts-engines` Bun sidecar, proxied via `noesis-bridge`. The first 16 are in the Rust `EngineResultData` enum (`types.rs:369`); **Raaga is not** (TS-only, no stub).
+**19 runtime identities; 17 public mirrors.** **11** have dedicated **Rust** `engine-*` crates; **6** (Enneagram, Tarot, I Ching, Sacred Geometry, Sigil Forge, Raaga) are **TypeScript** engines in the `ts-engines` Bun sidecar, proxied via `noesis-bridge`. The first 16 are in the Rust `EngineResultData` enum (`types.rs:369`); **Raaga is not** (TS-only, no stub).
 
 | Engine | `engine_id`¹ | Engine impl | Renderer | Runtime source | Brand archetype (Wave-2 target) |
 |---|---|---|---|---|---|
@@ -112,3 +112,6 @@ Each `<engine>.md` follows this structure:
 7. **Open questions / assumptions** — flagged uncertainties (schema mismatches, normalization, unverified runtime shapes).
 
 Consciousness level (`0–5`) and `witness_prompt(s)` are envelope-level (above) — engines note only engine-specific deviations.
+## Contract v1 capability boundary
+
+The runtime catalogue is 19 identities with 17 public mirrors. Engine calculate requests use the authenticated Rust route `/api/v1/engines/{engine_id}/calculate` and exactly one `X-API-Key` or `Authorization: Bearer` header. Availability is `declared`, `available`, `degraded`, or `unavailable`; unsupported workflow claims, including Full Spectrum, are not executable.

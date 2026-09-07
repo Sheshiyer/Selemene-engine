@@ -3,7 +3,7 @@ info:
   title: Noesis API
   version: 3.0.0
   description: |
-    High-performance consciousness calculation platform with 16 engines and multi-engine workflows.
+    High-performance consciousness calculation platform with 19 runtime identities and 17 public mirrors and multi-engine workflows.
 
 servers:
   - url: http://localhost:8080
@@ -1200,3 +1200,6 @@ components:
         details:
           type: object
           nullable: true
+# Contract v1 notes: 19 runtime identities, 17 public mirrors, four availability states.
+# Authenticated requests use exactly one of X-API-Key or Authorization: Bearer.
+# Full Spectrum workflow is unsupported pending a lossless adapter test.

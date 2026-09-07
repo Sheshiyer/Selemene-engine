@@ -1,6 +1,6 @@
 # TUI Integration Guide — Noesis Terminal Interface
 
-**TUI**: The Noesis Terminal User Interface — a rich, interactive terminal viewer for all 16 consciousness engines.
+**TUI**: The Noesis Terminal User Interface — a rich, interactive terminal viewer for 19 runtime identities.
 
 **Production URLs**: `3437.tryambakam.space` | `noesis.tryambakam.space`  
 **Backend API**: `https://selemene.tryambakam.space`
@@ -40,7 +40,7 @@ GET https://selemene.tryambakam.space/health/live
 {
   "status": "ok",
   "version": "3.3.0",
-  "engines_loaded": 17,
+  "engines_loaded": 19,
   "workflows_loaded": 6
 }
 ```
@@ -63,10 +63,10 @@ X-Api-Key: nk_...
 }
 ```
 
-### Full-spectrum workflow (all 16 engines)
+### Full-spectrum workflow (unsupported)
 
 ```
-POST https://selemene.tryambakam.space/api/v1/workflows/full-spectrum/execute
+Full Spectrum has no executable route while its lossless adapter remains unproven.
 Content-Type: application/json
 X-Api-Key: nk_...
 ```
@@ -145,7 +145,7 @@ const client = new NoesisClient("https://selemene.tryambakam.space", {
   authToken: process.env.NOESIS_API_KEY,
 });
 
-// Full-spectrum (all 16 engines)
+// Full-spectrum (unsupported; no execution route)
 const result = await client.workflow("full-spectrum", {
   birth_data: { date: "1991-08-13", time: "13:19", timezone: "Asia/Kolkata" }
 });
@@ -162,3 +162,6 @@ console.log(result.reading_id, result.witness_layer?.question);
 - [Workflows Guide](./workflows.md)
 - [Engines Guide](./engines.md)
 - [TOI Integration](./TOI_INTEGRATION.md)
+## Contract v1 capability boundary
+
+The TUI projects 19 runtime identities and the validated 17 public mirrors. Each row preserves `declared`, `available`, `degraded`, or `unavailable`. Protected calls use exactly one `X-API-Key` or `Authorization: Bearer` header. Full Spectrum is visibly `unsupported` and must not be dispatched.
