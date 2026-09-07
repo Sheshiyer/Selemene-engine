@@ -1,6 +1,13 @@
 export * from "./billing.js";
 export * from "./premium-assets.js";
 
+import {
+  decodeEngineCapabilityList,
+  decodeWorkflowOutcome,
+  type ContractEngineCapabilityList,
+  type WorkflowOutcome,
+} from "@selemene/engine-sdk";
+
 export const CONTRACT_VERSION = "v1" as const;
 export type ContractVersion = typeof CONTRACT_VERSION;
 export type RuntimeKind = "native" | "typescript" | "python" | "database-conditional" | "composed";
@@ -360,7 +367,7 @@ export interface RateLimitInfo {
 export interface NoesisClientOptions {
   /** JWT bearer token (Authorization: Bearer <token>) */
   authToken?: string;
-  /** API key (X-API-Key: nk_...). Takes precedence over authToken when both are set. */
+  /** API key (X-API-Key: nk_...). Cannot be combined with authToken. */
   apiKey?: string;
   maxRetries?: number;
   backoffMs?: number;
@@ -398,6 +405,11 @@ export class NoesisClient {
       this.maxRetries = 0;
       this.backoffMs = 150;
     } else {
+      if (options.apiKey && options.authToken) {
+        throw new SelemeneError("Configure either apiKey or authToken, not both.", 0, {
+          error_code: "AUTH_CONFIGURATION_INVALID",
+        });
+      }
       this.authToken = options.authToken;
       this.apiKey = options.apiKey;
       this.maxRetries = options.maxRetries ?? 0;
@@ -415,7 +427,7 @@ export class NoesisClient {
     options?: RequestOptions,
   ): Promise<EngineOutput> {
     return this.request<EngineOutput>(
-      `/api/v1/engines/${engineId}/calculate`,
+      `/api/v1/engines/${encodeURIComponent(engineId)}/calculate`,
       {
         method: "POST",
         body: JSON.stringify(input),
@@ -429,7 +441,7 @@ export class NoesisClient {
     input: EngineInput,
     options?: RequestOptions,
   ): Promise<WorkflowResult> {
-    return this.request<WorkflowResult>(
+    const payload = await this.request<unknown>(
       `/api/v1/workflows/${workflowId}/execute`,
       {
         method: "POST",
@@ -437,6 +449,36 @@ export class NoesisClient {
       },
       options,
     );
+    // Canonical v1 responses are strict-decoded. The legacy object shape is
+    // retained only for older deployments that do not advertise contract v1.
+    if (payload && typeof payload === "object" && "contract_version" in payload) {
+      return decodeWorkflowOutcome(payload) as unknown as WorkflowResult;
+    }
+    return payload as WorkflowResult;
+  }
+
+  /** Fetch the protected canonical 19-row capability envelope. */
+  async listCapabilities(options?: RequestOptions): Promise<ContractEngineCapabilityList> {
+    const payload = await this.request<unknown>(
+      "/api/v1/engines/capabilities",
+      { method: "GET" },
+      options,
+    );
+    return decodeEngineCapabilityList(payload);
+  }
+
+  /** Execute a workflow and require the canonical v1 outcome envelope. */
+  async executeWorkflowOutcome(
+    workflowId: WorkflowId | string,
+    input: EngineInput,
+    options?: RequestOptions,
+  ): Promise<WorkflowOutcome> {
+    const payload = await this.request<unknown>(
+      `/api/v1/workflows/${encodeURIComponent(workflowId)}/execute`,
+      { method: "POST", body: JSON.stringify(input) },
+      options,
+    );
+    return decodeWorkflowOutcome(payload);
   }
 
   /** List all available engines. */
@@ -451,12 +493,12 @@ export class NoesisClient {
 
   /** Get engine metadata by ID. */
   async getEngineInfo(engineId: EngineId | string, options?: RequestOptions): Promise<EngineInfo> {
-    return this.request<EngineInfo>(`/api/v1/engines/${engineId}/info`, { method: "GET" }, options);
+    return this.request<EngineInfo>(`/api/v1/engines/${encodeURIComponent(engineId)}/info`, { method: "GET" }, options);
   }
 
   /** Get workflow metadata by ID. */
   async getWorkflowInfo(workflowId: WorkflowId | string, options?: RequestOptions): Promise<WorkflowInfo> {
-    return this.request<WorkflowInfo>(`/api/v1/workflows/${workflowId}`, { method: "GET" }, options);
+    return this.request<WorkflowInfo>(`/api/v1/workflows/${encodeURIComponent(workflowId)}`, { method: "GET" }, options);
   }
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -517,7 +559,7 @@ export class NoesisClient {
   async updateMe(request: UpdateUserRequest, options?: RequestOptions): Promise<UserProfileFull> {
     return this.request<UserProfileFull>(
       "/api/v1/users/me",
-      { method: "PUT", body: JSON.stringify(request) },
+      { method: "PATCH", body: JSON.stringify(request) },
       options,
     );
   }
@@ -575,7 +617,7 @@ export class NoesisClient {
 
   /** Get a single reading by ID. */
   async getReading(readingId: string, options?: RequestOptions): Promise<ReadingDetail> {
-    return this.request<ReadingDetail>(`/api/v1/readings/${readingId}`, { method: "GET" }, options);
+    return this.request<ReadingDetail>(`/api/v1/readings/${encodeURIComponent(readingId)}`, { method: "GET" }, options);
   }
 
   /** Get readings count per engine for the authenticated user. */
@@ -655,16 +697,29 @@ export class NoesisClient {
 
     let attempt = 0;
     while (true) {
-      const response = await fetch(`${this.baseUrl}${path}`, {
-        ...init,
-        headers,
-        signal: options?.signal,
-      });
+      let response: Response;
+      try {
+        response = await fetch(`${this.baseUrl}${path}`, {
+          ...init,
+          headers,
+          signal: options?.signal,
+        });
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") throw error;
+        throw new SelemeneError("Network request failed.", -1, { error_code: "NETWORK_ERROR" });
+      }
 
       this.captureRateLimit(response.headers);
 
       const text = await response.text();
-      const payload = text ? JSON.parse(text) : {};
+      let payload: unknown = {};
+      if (text) {
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          payload = { error_code: "UPSTREAM_INVALID_RESPONSE" };
+        }
+      }
 
       if (response.ok) {
         return payload as T;
@@ -677,9 +732,9 @@ export class NoesisClient {
 
       if (!shouldRetry) {
         throw new SelemeneError(
-          `Request failed: ${response.status}`,
+          safeErrorMessage(payload, response.status),
           response.status,
-          payload,
+          safeErrorDetails(payload),
         );
       }
 
@@ -704,6 +759,30 @@ function toNumber(value: string | null): number | undefined {
   if (!value) return undefined;
   const n = Number(value);
   return Number.isFinite(n) ? n : undefined;
+}
+
+function safeErrorMessage(payload: unknown, status: number): string {
+  if (payload && typeof payload === "object") {
+    const record = payload as Record<string, unknown>;
+    for (const key of ["message", "error", "error_message", "detail"]) {
+      const value = record[key];
+      if (typeof value === "string" && value.length > 0 && value.length <= 200 && !/token|secret|password|api[_-]?key|authorization|cookie/i.test(value)) {
+        return value;
+      }
+    }
+  }
+  return `Request failed: ${status}`;
+}
+
+function safeErrorDetails(payload: unknown): Record<string, unknown> {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return { error_code: "UPSTREAM_INVALID_RESPONSE" };
+  const record = payload as Record<string, unknown>;
+  const details: Record<string, unknown> = {};
+  for (const key of ["error_code", "trace_id", "status"]) {
+    const value = record[key];
+    if (typeof value === "string" || typeof value === "number") details[key] = value;
+  }
+  return details;
 }
 
 async function delay(ms: number, signal?: AbortSignal): Promise<void> {

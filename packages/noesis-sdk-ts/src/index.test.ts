@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import {
   CONTRACT_VERSION,
   ENGINE_IDS,
@@ -9,6 +10,11 @@ import {
   type ContractEngineCapability,
   type ContractEngineResult,
 } from "./index.js";
+import { decodeEngineCapabilityList, decodeWorkflowOutcome } from "@selemene/engine-sdk";
+
+const capabilityFixture = JSON.parse(
+  readFileSync(new URL("../../../contracts/v1/fixtures/engine-capability-list.json", import.meta.url), "utf8"),
+);
 
 const input: EngineInput = {
   birth_data: {
@@ -67,6 +73,63 @@ describe("contract authority v1", () => {
 });
 
 describe("NoesisClient", () => {
+  it("decodes the canonical capability envelope and sends bearer auth", async () => {
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      expect(new Headers(init?.headers).get("Authorization")).toBe("Bearer token");
+      expect(new Headers(init?.headers).get("X-API-Key")).toBeNull();
+      return new Response(JSON.stringify(capabilityFixture), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const client = new NoesisClient("https://example.com", { authToken: "token" });
+    const result = await client.listCapabilities();
+    expect(result.count).toBe(19);
+    expect(result.public_mirror_count).toBe(17);
+    expect(decodeEngineCapabilityList(result).capabilities).toHaveLength(19);
+  });
+
+  it("rejects ambiguous auth before making a request", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    expect(() => new NoesisClient("https://example.com", { authToken: "token", apiKey: "key" })).toThrow(
+      "either apiKey or authToken",
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("uses PATCH for profile updates", async () => {
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      expect(init?.method).toBe("PATCH");
+      return new Response(JSON.stringify({ id: "u1" }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await new NoesisClient("https://example.com", { authToken: "token" }).updateMe({ full_name: "A" });
+  });
+
+  it("bounds malformed and sensitive error bodies", async () => {
+    const fetchMock = vi.fn(async () => new Response("token=do-not-leak", { status: 502 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const client = new NoesisClient("https://example.com");
+    await expect(client.health()).rejects.toMatchObject({ status: 502, details: { error_code: "UPSTREAM_INVALID_RESPONSE" } });
+    await expect(client.health()).rejects.not.toHaveProperty("details.raw");
+  });
+
+  it("strictly decodes canonical workflow outcomes", () => {
+    const outcome = {
+      contract_version: "v1",
+      workflow_id: "full-spectrum",
+      requested_engine_ids: ["numerology"],
+      engine_outputs: {},
+      engine_failures: [{ engine_id: "numerology", error_code: "OPERATION_UNSUPPORTED", message: "unsupported" }],
+      execution_status: "failed",
+      synthesis_status: "unsupported",
+    };
+    expect(decodeWorkflowOutcome(outcome).synthesis_status).toBe("unsupported");
+    expect(() => decodeWorkflowOutcome({ ...outcome, extra: true })).toThrow();
+  });
+
   it("supports all 16 engine calculate calls", async () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({ engine_id: "ok", result: {} }), { status: 200 }),
