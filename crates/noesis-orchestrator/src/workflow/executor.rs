@@ -128,10 +128,22 @@ impl WorkflowExecutor {
             "Starting parallel workflow execution"
         );
 
-        // Execute all engines in parallel
-        let engine_results = self
-            .execute_engines_parallel(&workflow.engine_ids, input.clone(), user_phase)
+        // Execute all engines in parallel while retaining bounded failures for
+        // the canonical outcome adapter. Legacy callers still receive the
+        // successful `engine_results` map below.
+        let attempts = self
+            .execute_engine_attempts(&workflow.engine_ids, input.clone(), user_phase)
             .await;
+        let mut engine_results = HashMap::new();
+        let mut engine_failures = Vec::new();
+        for (engine_id, result) in attempts {
+            match result {
+                Ok(output) => {
+                    engine_results.insert(engine_id, output);
+                }
+                Err(error) => engine_failures.push(bounded_workflow_failure(engine_id, &error)),
+            }
+        }
 
         let execution_time_ms = start.elapsed().as_millis() as u64;
 
@@ -157,6 +169,19 @@ impl WorkflowExecutor {
             );
         }
 
+        let execution_status = if engine_failures.is_empty() {
+            WorkflowExecutionStatus::Complete
+        } else if engine_results.is_empty() {
+            WorkflowExecutionStatus::Failed
+        } else {
+            WorkflowExecutionStatus::Partial
+        };
+        let synthesis_status = if execution_status == WorkflowExecutionStatus::Failed {
+            WorkflowSynthesisStatus::Failed
+        } else {
+            WorkflowSynthesisStatus::Available
+        };
+
         Ok(WorkflowOutput {
             workflow_id: workflow.id.clone(),
             engine_results,
@@ -165,9 +190,9 @@ impl WorkflowExecutor {
             execution_time_ms,
             timestamp: Utc::now(),
             requested_engine_ids: workflow.engine_ids.clone(),
-            engine_failures: Vec::new(),
-            execution_status: WorkflowExecutionStatus::Complete,
-            synthesis_status: WorkflowSynthesisStatus::Available,
+            engine_failures,
+            execution_status,
+            synthesis_status,
         })
     }
 

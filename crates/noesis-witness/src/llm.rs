@@ -201,9 +201,8 @@ impl LlmClient {
 
         if !resp.status().is_success() {
             let status = resp.status();
-            let text = resp.text().await.unwrap_or_default();
-            warn!("[witness-llm] {provider:?} error {status}: {text}");
-            return Err(format!("LLM API error {status}: {text}"));
+            warn!("[witness-llm] {provider:?} error {status}");
+            return Err(format!("LLM API error {status}"));
         }
 
         let parsed: ChatResponse = resp

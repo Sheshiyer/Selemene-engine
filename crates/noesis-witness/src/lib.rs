@@ -9,7 +9,8 @@ pub mod llm;
 pub mod routing;
 
 pub use interpret::{
-    interpret_with_llm, LiveBiofieldScores, RelationshipMode, WitnessContext, WitnessDyadLlm,
+    interpret_with_llm, workflow_outcome_context, LiveBiofieldScores, RelationshipMode,
+    WitnessContext, WitnessDyadLlm, WorkflowOutcomeContext,
 };
 pub use routing::{partition_by_routing, routing_for_engine, RoutingMode};
 

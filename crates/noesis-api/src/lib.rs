@@ -39,7 +39,7 @@ use axum::{
 };
 use base64::Engine as _;
 use chrono::{
-    Datelike, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike,
+    Datelike, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Timelike, Utc,
 };
 use chrono_tz::Tz;
 use noesis_auth::{AuthService, AuthUser};
@@ -52,7 +52,7 @@ use noesis_core::{
     IChingResultSchema, NadabrahmanResultSchema, NumerologyResultSchema, PanchangaResultSchema,
     Precision, SacredGeometryResultSchema, SigilForgeResultSchema, TarotResultSchema,
     TransitsResultSchema, ValidationResult, VedicClockResultSchema, VimshottariResultSchema,
-    WorkflowResult,
+    CalculationMetadata, WorkflowResult,
 };
 use noesis_data::models::reading::NewReading;
 use noesis_data::repositories::admin_repository::AdminRepository;
@@ -1572,17 +1572,85 @@ struct ApiWitnessPrompt {
 
 #[derive(Serialize, ToSchema)]
 struct ApiWorkflowResultResponse {
-    #[serde(flatten)]
-    workflow: WorkflowResult,
+    workflow_id: String,
+    engine_outputs: HashMap<String, EngineOutput>,
     engine_results: HashMap<String, EngineOutput>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    synthesis: Option<Value>,
+    total_time_ms: f64,
+    timestamp: chrono::DateTime<Utc>,
+    contract_version: String,
+    requested_engine_ids: Vec<String>,
+    engine_failures: Vec<ApiWorkflowFailure>,
+    execution_status: String,
+    synthesis_status: String,
 }
 
-impl From<WorkflowResult> for ApiWorkflowResultResponse {
-    fn from(workflow: WorkflowResult) -> Self {
-        let engine_results = workflow.engine_outputs.clone();
+#[derive(Debug, Clone, Serialize, ToSchema)]
+struct ApiWorkflowFailure {
+    engine_id: String,
+    error_code: String,
+    message: String,
+}
+
+impl ApiWorkflowResultResponse {
+    fn from_outcome(outcome: noesis_core::contract::WorkflowOutcome, elapsed_ms: f64) -> Self {
+        let engine_outputs: HashMap<String, EngineOutput> = outcome
+            .engine_outputs
+            .iter()
+            .map(|(engine_id, output)| {
+                (
+                    engine_id.clone(),
+                    EngineOutput {
+                        engine_id: engine_id.clone(),
+                        result: Value::Object(output.result.clone().into_iter().collect()),
+                        witness_prompt: String::new(),
+                        consciousness_level: 0,
+                        metadata: CalculationMetadata {
+                            calculation_time_ms: 0.0,
+                            backend: "workflow".into(),
+                            precision_achieved: "canonical".into(),
+                            cached: false,
+                            timestamp: Utc::now(),
+                            engine_version: String::new(),
+                        },
+                    },
+                )
+            })
+            .collect();
+        let synthesis = outcome
+            .synthesis
+            .as_ref()
+            .map(|value| serde_json::json!({ "summary": value.text }));
         Self {
-            workflow,
-            engine_results,
+            workflow_id: outcome.workflow_id,
+            engine_outputs: engine_outputs.clone(),
+            engine_results: engine_outputs,
+            synthesis,
+            total_time_ms: elapsed_ms,
+            timestamp: Utc::now(),
+            contract_version: "v1".into(),
+            requested_engine_ids: outcome.requested_engine_ids,
+            engine_failures: outcome
+                .engine_failures
+                .into_iter()
+                .map(|failure| ApiWorkflowFailure {
+                    engine_id: failure.engine_id,
+                    error_code: serde_json::to_value(failure.error_code)
+                        .ok()
+                        .and_then(|value| value.as_str().map(str::to_string))
+                        .unwrap_or_else(|| "UPSTREAM_INVALID_RESPONSE".into()),
+                    message: failure.message,
+                })
+                .collect(),
+            execution_status: serde_json::to_value(outcome.execution_status)
+                .ok()
+                .and_then(|value| value.as_str().map(str::to_string))
+                .unwrap_or_else(|| "failed".into()),
+            synthesis_status: serde_json::to_value(outcome.synthesis_status)
+                .ok()
+                .and_then(|value| value.as_str().map(str::to_string))
+                .unwrap_or_else(|| "failed".into()),
         }
     }
 }
@@ -3271,7 +3339,7 @@ async fn execute_workflow_by_id(
     // Execute workflow with user's consciousness level
     let result = state
         .orchestrator
-        .execute_workflow(&workflow_id, runtime_input, user.consciousness_level)
+        .execute_workflow_outcome(&workflow_id, runtime_input, user.consciousness_level)
         .await;
 
     let duration_secs = start.elapsed().as_secs_f64();
@@ -3360,7 +3428,10 @@ async fn execute_workflow_by_id(
                 });
             }
 
-            Ok(Json(workflow_result.into()))
+            Ok(Json(ApiWorkflowResultResponse::from_outcome(
+                workflow_result,
+                duration_ms,
+            )))
         }
         Err(e) => {
             state.metrics.record_engine_calculation_with_status(

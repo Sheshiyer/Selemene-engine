@@ -127,10 +127,33 @@ workflow_routing_test!(
     workflow_routing_execute_routes_through_orchestrator_for_self_inquiry,
     "self-inquiry"
 );
-workflow_routing_test!(
-    workflow_routing_execute_routes_through_orchestrator_for_full_spectrum,
-    "full-spectrum"
-);
+#[tokio::test]
+async fn workflow_routing_rejects_full_spectrum_as_unsupported_without_engine_calls() {
+    let all_workflow_engines = canonical_workflow_engine_ids();
+    let all_engine_refs = all_workflow_engines
+        .iter()
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    let harness = RoutingHarness::with_probe_engines(&all_engine_refs).await;
+    let before: Vec<_> = all_workflow_engines
+        .iter()
+        .map(|engine_id| (engine_id.clone(), harness.log.count(engine_id)))
+        .collect();
+    let response = harness
+        .send_authenticated_json(
+            "POST",
+            "/api/v1/workflows/full-spectrum/execute",
+            Some(serde_json::to_value(common::create_test_birth_input()).unwrap()),
+        )
+        .await;
+    assert_eq!(response.0, axum::http::StatusCode::OK);
+    assert_eq!(response.1["execution_status"], "failed");
+    assert_eq!(response.1["synthesis_status"], "unsupported");
+    assert!(response.1["engine_outputs"].as_object().unwrap().is_empty());
+    for (engine_id, count) in before {
+        assert_eq!(harness.log.count(&engine_id), count);
+    }
+}
 
 #[tokio::test]
 async fn routing_enforcement_bridge_engine_routes_stay_on_orchestrator_path() {

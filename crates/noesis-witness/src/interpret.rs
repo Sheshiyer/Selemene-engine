@@ -6,6 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use noesis_core::contract::{WorkflowExecutionStatus, WorkflowOutcome, WorkflowSynthesisStatus};
 
 use crate::llm::LlmClient;
 use crate::routing::{routing_for_engine, RoutingMode};
@@ -68,6 +69,37 @@ pub struct WitnessDyadLlm {
     pub witness_question: String,
     /// Which engines contributed context to this reading.
     pub engines_used: Vec<String>,
+}
+
+/// Bounded projection of a canonical workflow outcome for Witness context.
+/// Availability and execution status stay explicit so semantic interpretation
+/// cannot be mistaken for capability health.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct WorkflowOutcomeContext {
+    pub workflow_id: String,
+    pub requested_engine_ids: Vec<String>,
+    pub successful_engine_ids: Vec<String>,
+    pub failed_engine_ids: Vec<String>,
+    pub execution_status: WorkflowExecutionStatus,
+    pub synthesis_status: WorkflowSynthesisStatus,
+}
+
+pub fn workflow_outcome_context(
+    outcome: &WorkflowOutcome,
+) -> Result<WorkflowOutcomeContext, String> {
+    outcome.validate().map_err(|error| error.to_string())?;
+    Ok(WorkflowOutcomeContext {
+        workflow_id: outcome.workflow_id.clone(),
+        requested_engine_ids: outcome.requested_engine_ids.clone(),
+        successful_engine_ids: outcome.engine_outputs.keys().cloned().collect(),
+        failed_engine_ids: outcome
+            .engine_failures
+            .iter()
+            .map(|failure| failure.engine_id.clone())
+            .collect(),
+        execution_status: outcome.execution_status.clone(),
+        synthesis_status: outcome.synthesis_status.clone(),
+    })
 }
 
 // ── System prompts ──────────────────────────────────────────────────────────
@@ -1134,5 +1166,40 @@ mod tests {
                 || engines.contains(&"vimshottari".to_string())
         );
         assert!(!question.is_empty());
+    }
+
+    #[test]
+    fn workflow_outcome_context_preserves_status_and_conservation() {
+        use noesis_core::contract::{
+            ContractVersion, WorkflowEngineFailure, WorkflowErrorCode, WorkflowOutcome,
+            WorkflowSynthesisStatus,
+        };
+        let outcome = WorkflowOutcome {
+            contract_version: ContractVersion::V1,
+            workflow_id: "decision-support".into(),
+            requested_engine_ids: vec!["numerology".into(), "tarot".into()],
+            engine_outputs: [(
+                "numerology".into(),
+                noesis_core::contract::WorkflowEngineOutput {
+                    result: Default::default(),
+                    provenance: None,
+                },
+            )]
+            .into_iter()
+            .collect(),
+            engine_failures: vec![WorkflowEngineFailure {
+                engine_id: "tarot".into(),
+                error_code: WorkflowErrorCode::DependencyUnavailable,
+                message: "Dependency unavailable".into(),
+            }],
+            execution_status: WorkflowExecutionStatus::Partial,
+            synthesis_status: WorkflowSynthesisStatus::Failed,
+            synthesis: None,
+            engine_results: None,
+        };
+        let context = workflow_outcome_context(&outcome).expect("valid outcome");
+        assert_eq!(context.successful_engine_ids, vec!["numerology"]);
+        assert_eq!(context.failed_engine_ids, vec!["tarot"]);
+        assert_eq!(context.execution_status, WorkflowExecutionStatus::Partial);
     }
 }
