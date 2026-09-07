@@ -1,8 +1,8 @@
-//! Engine Picker — Scrollable list of 16 engines with descriptions
+//! Engine Picker — Scrollable list of canonical runtime capabilities
 
 use crate::app::{Action, ActiveScreen};
 use crossterm::event::{KeyCode, KeyEvent};
-use noesis_sdk::{LocalProfile, NoesisClient};
+use noesis_sdk::{EngineCapabilityList, LocalProfile, NoesisClient};
 use ratatui::prelude::*;
 use ratatui::widgets::*;
 
@@ -128,6 +128,27 @@ const ENGINE_LIST: &[EngineEntry] = &[
         description: "Consciousness sigil generation",
         category: "Creation",
     },
+    EngineEntry {
+        id: "raaga",
+        name: "Raaga",
+        icon: "🎵",
+        description: "Melakarta and swara consciousness mapping",
+        category: "Sound",
+    },
+    EngineEntry {
+        id: "financial-biosensor",
+        name: "Financial Biosensor",
+        icon: "◈",
+        description: "Database-conditional financial sensing",
+        category: "Composed",
+    },
+    EngineEntry {
+        id: "biofield-capture",
+        name: "Biofield Capture",
+        icon: "◎",
+        description: "Database-conditional capture lifecycle",
+        category: "Capture",
+    },
 ];
 
 pub struct EnginePicker {
@@ -135,6 +156,7 @@ pub struct EnginePicker {
     pub loading: bool,
     pub filter: String,
     pub filtering: bool,
+    pub capabilities: Option<EngineCapabilityList>,
 }
 
 impl EnginePicker {
@@ -144,6 +166,26 @@ impl EnginePicker {
             loading: false,
             filter: String::new(),
             filtering: false,
+            capabilities: None,
+        }
+    }
+
+    pub fn set_capabilities(&mut self, capabilities: EngineCapabilityList) {
+        self.capabilities = Some(capabilities);
+    }
+
+    fn capability(&self, engine_id: &str) -> Option<&noesis_core::contract::EngineCapability> {
+        self.capabilities
+            .as_ref()
+            .and_then(|list| list.capabilities.iter().find(|row| row.engine_id == engine_id))
+    }
+
+    fn capability_state_label(state: &noesis_core::contract::CapabilityAvailability) -> &'static str {
+        match state {
+            noesis_core::contract::CapabilityAvailability::Declared => "declared",
+            noesis_core::contract::CapabilityAvailability::Available => "available",
+            noesis_core::contract::CapabilityAvailability::Degraded => "degraded",
+            noesis_core::contract::CapabilityAvailability::Unavailable => "unavailable",
         }
     }
 
@@ -235,6 +277,12 @@ impl EnginePicker {
                         format!("  {}", entry.description),
                         Style::default().fg(Color::DarkGray),
                     ),
+                    Span::styled(
+                        self.capability(entry.id)
+                            .map(|capability| format!("  [{}]", Self::capability_state_label(&capability.availability)))
+                            .unwrap_or_default(),
+                        Style::default().fg(Color::Yellow),
+                    ),
                 ]);
 
                 ListItem::new(content)
@@ -244,7 +292,7 @@ impl EnginePicker {
         let status = if self.loading {
             "⏳ Calculating..."
         } else {
-            &format!("{} engines", engines.len())
+            &format!("{} runtime identities", engines.len())
         };
 
         let list = List::new(items).block(
@@ -311,6 +359,13 @@ impl EnginePicker {
                     if let Some((_, entry)) = engines.get(self.selected) {
                         if let (Some(client), Some(profile)) = (client, profile) {
                             let engine_id = entry.id.to_string();
+                            if let Some(capability) = self.capability(&engine_id) {
+                                if capability.availability == noesis_core::contract::CapabilityAvailability::Unavailable
+                                    || capability.operations.as_ref().is_some_and(|operations| matches!(&operations.calculate, noesis_core::contract::OperationSupport::Unsupported))
+                                {
+                                    return Action::ShowError(format!("Engine {engine_id} is unavailable or unsupported."));
+                                }
+                            }
                             let input = profile.to_engine_input();
                             self.loading = true;
 
@@ -388,6 +443,13 @@ impl EnginePicker {
                     if let Some((_, entry)) = engines.get(self.selected) {
                         if let (Some(client), Some(profile)) = (client, profile) {
                             let engine_id = entry.id.to_string();
+                            if let Some(capability) = self.capability(&engine_id) {
+                                if capability.availability == noesis_core::contract::CapabilityAvailability::Unavailable
+                                    || capability.operations.as_ref().is_some_and(|operations| matches!(&operations.calculate, noesis_core::contract::OperationSupport::Unsupported))
+                                {
+                                    return Action::ShowError(format!("Engine {engine_id} is unavailable or unsupported."));
+                                }
+                            }
                             let input = profile.to_engine_input();
                             self.loading = true;
 
@@ -423,5 +485,25 @@ impl EnginePicker {
                 _ => Action::None,
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn canonical_picker_has_19_runtime_rows() {
+        assert_eq!(ENGINE_LIST.len(), 19);
+    }
+
+    #[test]
+    fn available_state_renders() {
+        assert_eq!(
+            EnginePicker::capability_state_label(
+                &noesis_core::contract::CapabilityAvailability::Available
+            ),
+            "available"
+        );
     }
 }

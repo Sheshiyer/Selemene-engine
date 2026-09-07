@@ -56,6 +56,7 @@ pub use noesis_core::{
     BirthData, CalculationMetadata, Coordinates, EngineInput, EngineOutput, Precision,
     WorkflowResult,
 };
+pub use noesis_core::contract::EngineCapabilityList;
 
 /// SDK error type
 #[derive(Debug, thiserror::Error)]

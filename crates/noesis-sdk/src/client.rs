@@ -1,10 +1,10 @@
 //! Noesis API Client — Typed HTTP client for Selemene Engine
 //!
-//! Provides a high-level async client for calling all 16 lens engines, the
+//! Provides a high-level async client for calling all 19 runtime identities, the
 //! composed surfaces built over them, and 6 workflows.
 
 use crate::{Config, Error, Result};
-use noesis_core::{EngineInput, EngineOutput, WorkflowResult};
+use noesis_core::{contract::EngineCapabilityList, EngineInput, EngineOutput, WorkflowResult};
 use reqwest::{Client, RequestBuilder};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -24,12 +24,14 @@ pub const ENGINES: &[&str] = &[
     "face-reading",
     "nadabrahman",
     "transits",
+    "raaga",
     // TypeScript engines
     "tarot",
     "i-ching",
     "enneagram",
     "sacred-geometry",
     "sigil-forge",
+    "biofield-capture",
     // Composed surfaces — built over the lens engines above rather than
     // reading a tradition of their own.
     "financial-biosensor",
@@ -53,6 +55,7 @@ pub struct NoesisClient {
     http: Client,
     base_url: String,
     api_key: Option<String>,
+    bearer_token: Option<String>,
     max_retries: u32,
     backoff_ms: u64,
 }
@@ -70,6 +73,7 @@ impl NoesisClient {
             http,
             base_url: config.api_url.clone(),
             api_key: config.api_key.clone(),
+            bearer_token: None,
             max_retries: config.max_retries,
             backoff_ms: config.backoff_ms,
         })
@@ -83,6 +87,14 @@ impl NoesisClient {
     /// Set the API key for authenticated requests.
     pub fn with_api_key(mut self, api_key: impl Into<String>) -> Self {
         self.api_key = Some(api_key.into());
+        self.bearer_token = None;
+        self
+    }
+
+    /// Set a bearer token; it replaces any configured API key.
+    pub fn with_bearer_token(mut self, token: impl Into<String>) -> Self {
+        self.bearer_token = Some(token.into());
+        self.api_key = None;
         self
     }
 
@@ -111,6 +123,17 @@ impl NoesisClient {
     pub async fn list_engines(&self) -> Result<Vec<EngineInfo>> {
         let url = format!("{}/api/v1/engines", self.base_url);
         self.send_with_retry(|| self.http.get(&url)).await
+    }
+
+    /// List the authenticated canonical 19-row capability envelope.
+    #[instrument(skip(self))]
+    pub async fn list_capabilities(&self) -> Result<EngineCapabilityList> {
+        let url = format!("{}/api/v1/engines/capabilities", self.base_url);
+        let list: EngineCapabilityList = self
+            .send_with_retry(|| self.authenticated(self.http.get(&url)))
+            .await?;
+        list.validate().map_err(|error| Error::Config(error.to_string()))?;
+        Ok(list)
     }
 
     /// List all available workflows.
@@ -168,6 +191,8 @@ impl NoesisClient {
     fn authenticated(&self, request: RequestBuilder) -> RequestBuilder {
         if let Some(ref key) = self.api_key {
             request.header("X-API-Key", key)
+        } else if let Some(ref token) = self.bearer_token {
+            request.header("Authorization", format!("Bearer {token}"))
         } else {
             request
         }
@@ -231,10 +256,7 @@ impl NoesisClient {
         if status.is_success() {
             response.json::<T>().await.map_err(Error::Http)
         } else {
-            let message = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "Unknown error".into());
+            let message = format!("Request failed: {}", status.as_u16());
             Err(Error::Api {
                 status: status.as_u16(),
                 message,
@@ -248,6 +270,7 @@ impl NoesisClient {
 pub struct NoesisClientBuilder {
     base_url: Option<String>,
     api_key: Option<String>,
+    bearer_token: Option<String>,
     timeout_ms: u64,
     max_retries: Option<u32>,
     backoff_ms: Option<u64>,
@@ -264,6 +287,14 @@ impl NoesisClientBuilder {
     /// Set the API key.
     pub fn api_key(mut self, key: impl Into<String>) -> Self {
         self.api_key = Some(key.into());
+        self.bearer_token = None;
+        self
+    }
+
+    /// Set a bearer token for authenticated requests.
+    pub fn bearer_token(mut self, token: impl Into<String>) -> Self {
+        self.bearer_token = Some(token.into());
+        self.api_key = None;
         self
     }
 
@@ -317,6 +348,7 @@ impl NoesisClientBuilder {
             http,
             base_url,
             api_key: self.api_key,
+            bearer_token: self.bearer_token,
             max_retries,
             backoff_ms,
         })
@@ -447,11 +479,13 @@ mod tests {
 
     #[test]
     fn test_engines_list() {
-        // 16 lens engines plus the composed decision-reflection surface.
-        assert_eq!(ENGINES.len(), 17);
+        // 19 canonical runtime identities, including 17 public mirrors.
+        assert_eq!(ENGINES.len(), 19);
         assert!(ENGINES.contains(&"panchanga"));
         assert!(ENGINES.contains(&"tarot"));
         assert!(ENGINES.contains(&"financial-biosensor"));
+        assert!(ENGINES.contains(&"raaga"));
+        assert!(ENGINES.contains(&"biofield-capture"));
     }
 
     #[test]
@@ -572,5 +606,23 @@ mod tests {
 
         // Expected minimum ~30ms + 60ms exponential backoff.
         assert!(elapsed_ms >= 85, "elapsed_ms={elapsed_ms}");
+    }
+
+    #[tokio::test]
+    async fn test_list_capabilities_uses_authenticated_canonical_route() {
+        let server = MockServer::start().await;
+        let fixture: serde_json::Value = serde_json::from_str(include_str!("../../../contracts/v1/fixtures/engine-capability-list.json")).unwrap();
+        Mock::given(method("GET"))
+            .and(path("/api/v1/engines/capabilities"))
+            .and(header("x-api-key", "test-key"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(fixture))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let client = NoesisClient::builder().base_url(server.uri()).api_key("test-key").build().unwrap();
+        let list = client.list_capabilities().await.unwrap();
+        assert_eq!(list.count, 19);
+        assert_eq!(list.public_mirror_count, 17);
+        assert_eq!(list.capabilities.len(), 19);
     }
 }

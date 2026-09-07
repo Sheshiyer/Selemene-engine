@@ -93,6 +93,17 @@ impl App {
 
         let client = NoesisClient::new(&config).ok();
         let mut profile = LocalProfile::load_or_default().ok().flatten();
+        let capabilities = if let Some(ref c) = client {
+            match c.list_capabilities().await {
+                Ok(list) => Some(list),
+                Err(e) => {
+                    debug!("Could not load canonical capabilities: {}", e);
+                    None
+                }
+            }
+        } else {
+            None
+        };
 
         // Sync consciousness level from server (takes max of local vs server)
         if let (Some(ref c), Some(ref mut p)) = (&client, &mut profile) {
@@ -128,7 +139,12 @@ impl App {
             active_screen,
         );
 
-        let is_connected = client.is_some();
+        // A configured client is not proof of reachability or authentication.
+        let is_connected = capabilities.is_some();
+        let mut engine_picker = EnginePicker::new();
+        if let Some(list) = capabilities {
+            engine_picker.set_capabilities(list);
+        }
 
         Self {
             active_screen,
@@ -145,7 +161,7 @@ impl App {
                 w
             },
             onboarding: OnboardingWizard::new(),
-            engine_picker: EnginePicker::new(),
+            engine_picker,
             workflow_picker: WorkflowPicker::new(),
             result_display: ResultDisplay::new(),
             history: HistoryBrowser::new(),
@@ -316,7 +332,7 @@ impl App {
                 match NoesisClient::new(&self.config) {
                     Ok(c) => {
                         self.client = Some(c);
-                        self.welcome.connected = self.config.api_key.is_some();
+                        self.welcome.connected = false;
                         info!("Client configuration reloaded");
                     }
                     Err(e) => {
@@ -358,7 +374,7 @@ impl App {
         match NoesisClient::new(&self.config) {
             Ok(c) => {
                 self.client = Some(c);
-                self.welcome.connected = true;
+                self.welcome.connected = false;
             }
             Err(e) => {
                 error!("Failed to create API client: {e}");

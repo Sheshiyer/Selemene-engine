@@ -1,4 +1,4 @@
-//! Workflow Picker — Scrollable list of 6 workflows
+//! Workflow Picker — Canonical workflow support projection
 
 use crate::app::{Action, ActiveScreen};
 use crossterm::event::{KeyCode, KeyEvent};
@@ -54,8 +54,8 @@ const WORKFLOW_LIST: &[WorkflowEntry] = &[
         id: "full-spectrum",
         name: "Full Spectrum",
         icon: "🔮",
-        description: "Complete integration of all consciousness engines",
-        engines: "all 16 engines",
+        description: "Unsupported pending a lossless adapter test",
+        engines: "unsupported",
     },
 ];
 
@@ -255,6 +255,9 @@ impl WorkflowPicker {
                     if let Some((_, entry)) = workflows.get(self.selected) {
                         if let (Some(client), Some(profile)) = (client, profile) {
                             let workflow_id = entry.id.to_string();
+                            if workflow_id == "full-spectrum" {
+                                return Action::ShowError("Full Spectrum is unsupported pending a lossless adapter test.".into());
+                            }
                             let input = profile.to_engine_input();
                             self.loading = true;
 
@@ -335,6 +338,9 @@ impl WorkflowPicker {
                     if let Some((_, entry)) = workflows.get(self.selected) {
                         if let (Some(client), Some(profile)) = (client, profile) {
                             let workflow_id = entry.id.to_string();
+                            if workflow_id == "full-spectrum" {
+                                return Action::ShowError("Full Spectrum is unsupported pending a lossless adapter test.".into());
+                            }
                             let input = profile.to_engine_input();
                             self.loading = true;
 
