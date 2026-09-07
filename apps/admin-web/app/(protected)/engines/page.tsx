@@ -6,35 +6,30 @@ import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primi
 import { StateBanner, StatePanel } from "@/components/admin-state";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
-import { ApiClientError, getAdminEngines } from "@/lib/api";
-import { statusPillClass } from "@/lib/status";
-import type { AdminSystemEngineItem } from "@/types/admin";
+import { ApiClientError, getAdminCapabilities } from "@/lib/api";
+import { capabilityStateLabel, type AdminCapability } from "@/lib/engine-capability";
 
 function categoryBadgeClass(category: string): string {
-  if (category === "rust-native") return "pill ok";
-  if (category === "ts-bridge") return "pill warning";
-  if (category === "python-sidecar") return "pill danger";
+  if (category === "native") return "pill ok";
+  if (category === "typescript") return "pill warning";
+  if (category === "python") return "pill danger";
   return "pill";
 }
 
 function statusIndicator(status: string): string {
-  if (status === "healthy") return "indicator-green";
+  if (status === "available") return "indicator-green";
   if (status === "degraded") return "indicator-yellow";
   return "indicator-gray";
-}
-
-function formatMs(value: number): string {
-  return `${value.toLocaleString()} ms`;
 }
 
 export default function EnginesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [engines, setEngines] = useState<AdminSystemEngineItem[]>([]);
+  const [engines, setEngines] = useState<AdminCapability[]>([]);
 
   const loadData = useCallback(async () => {
     const token = getAuthToken() ?? undefined;
-    return getAdminEngines(token);
+    return getAdminCapabilities(token);
   }, []);
 
   useEffect(() => {
@@ -45,7 +40,7 @@ export default function EnginesPage() {
       try {
         const result = await loadData();
         if (!cancelled) {
-          setEngines(result.items);
+          setEngines(result.capabilities);
           setError(null);
         }
       } catch (err) {
@@ -96,15 +91,15 @@ export default function EnginesPage() {
             >
               <SurfaceCard
                 eyebrow={engine.engine_id}
-                title={engine.engine_name}
-                summary={`Phase ${engine.required_phase}`}
+                title={engine.display_name}
+                summary={`Phase ${engine.required_phase ?? 0} · ${engine.public_mirror ? "public mirror" : "runtime identity"}`}
               >
                 <div className="grid metrics">
                   <MetricSurface
                     label="Category"
                     value={
-                      <span className={categoryBadgeClass(engine.category)}>
-                        {engine.category}
+                      <span className={categoryBadgeClass(engine.runtime_kind)}>
+                        {engine.runtime_kind}
                       </span>
                     }
                   />
@@ -112,19 +107,20 @@ export default function EnginesPage() {
                     label="Status"
                     value={
                       <span>
-                        <span className={statusIndicator(engine.status)} />{" "}
-                        {engine.status}
+                        <span className={statusIndicator(engine.availability)} />{" "}
+                        {capabilityStateLabel(engine)}
                       </span>
                     }
                   />
                   <MetricSurface
-                    label="Recent Runs"
-                    value={engine.recent_runs}
-                    detail={`${engine.failure_runs} failures`}
+                    label="Calculate"
+                    value={engine.operations?.calculate === "supported" ? "supported" : "unsupported"}
+                    detail={engine.reason_code ?? "no observation"}
                   />
                   <MetricSurface
-                    label="Avg Duration"
-                    value={formatMs(engine.avg_duration_ms)}
+                    label="Public Mirror"
+                    value={engine.public_mirror ? "yes" : "no"}
+                    detail="public mirror"
                   />
                 </div>
               </SurfaceCard>

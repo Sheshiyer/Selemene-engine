@@ -722,6 +722,9 @@ export interface AdminSystemEnginesResponse {
   total: number;
 }
 
+/** Canonical protected Rust capability envelope used by engine/bridge views. */
+export type AdminCapabilityListResponse = import("@selemene/engine-sdk").ContractEngineCapabilityList;
+
 // ─── Bridge Health ───────────────────────────────────────────────────────────
 
 export interface AdminBridgeEngineHealth {

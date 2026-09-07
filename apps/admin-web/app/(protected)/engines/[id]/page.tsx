@@ -7,18 +7,14 @@ import { ActionRail, MetricSurface, SurfaceCard } from "@/components/admin-primi
 import { StateBanner, StatePanel } from "@/components/admin-state";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
-import { ApiClientError, getAdminEngine } from "@/lib/api";
-import type { AdminSystemEngineItem } from "@/types/admin";
+import { ApiClientError, getAdminCapabilities } from "@/lib/api";
+import { capabilityStateLabel, type AdminCapability } from "@/lib/engine-capability";
 
 function categoryBadgeClass(category: string): string {
-  if (category === "rust-native") return "pill ok";
-  if (category === "ts-bridge") return "pill warning";
-  if (category === "python-sidecar") return "pill danger";
+  if (category === "native") return "pill ok";
+  if (category === "typescript") return "pill warning";
+  if (category === "python") return "pill danger";
   return "pill";
-}
-
-function formatMs(value: number): string {
-  return `${value.toLocaleString()} ms`;
 }
 
 export default function EngineDetailPage() {
@@ -27,12 +23,16 @@ export default function EngineDetailPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [engine, setEngine] = useState<AdminSystemEngineItem | null>(null);
+  const [engine, setEngine] = useState<AdminCapability | null>(null);
 
   const loadData = useCallback(async () => {
     const token = getAuthToken() ?? undefined;
     if (!id) throw new Error("Missing engine ID.");
-    return getAdminEngine(token, id);
+    return getAdminCapabilities(token).then((list) => {
+      const capability = list.capabilities.find((item) => item.engine_id === id);
+      if (!capability) throw new Error("Engine is not present in the canonical capability list.");
+      return capability;
+    });
   }, [id]);
 
   useEffect(() => {
@@ -89,51 +89,49 @@ export default function EngineDetailPage() {
         <>
           <div className="grid metrics">
             <MetricSurface label="Engine ID" value={engine.engine_id} />
-            <MetricSurface label="Name" value={engine.engine_name} />
+            <MetricSurface label="Name" value={engine.display_name} />
             <MetricSurface
               label="Category"
               value={
-                <span className={categoryBadgeClass(engine.category)}>
-                  {engine.category}
+                <span className={categoryBadgeClass(engine.runtime_kind)}>
+                  {engine.runtime_kind}
                 </span>
               }
             />
-            <MetricSurface label="Required Phase" value={engine.required_phase} />
-            <MetricSurface label="Status" value={engine.status} />
+            <MetricSurface label="Required Phase" value={engine.required_phase ?? 0} />
+            <MetricSurface label="Status" value={capabilityStateLabel(engine)} />
+            <MetricSurface label="Public Mirror" value={engine.public_mirror ? "yes" : "no"} />
           </div>
 
           <div className="grid metrics">
             <MetricSurface
-              label="Recent Runs"
-              value={engine.recent_runs}
-              detail={`${engine.failure_runs} failures`}
+              label="Calculate"
+              value={engine.operations?.calculate ?? "unknown"}
+              detail={engine.reason_code ?? "no observation"}
             />
             <MetricSurface
-              label="Avg Duration"
-              value={formatMs(engine.avg_duration_ms)}
+              label="Validate"
+              value={engine.operations?.validate ?? "unknown"}
+              detail={engine.runtime_kind}
             />
           </div>
 
           <SurfaceCard
             eyebrow="Operations"
             title="Performance Summary"
-            summary={`Engine ${engine.engine_name} (${engine.engine_id}) with status ${engine.status}. Category ${engine.category}, phase ${engine.required_phase}.`}
+            summary={`Engine ${engine.display_name} (${engine.engine_id}) with ${capabilityStateLabel(engine)} state. Runtime ${engine.runtime_kind}, phase ${engine.required_phase ?? 0}.`}
           >
             <div className="grid two-col">
               <div>
                 <div className="telemetry-caption">Success rate</div>
                 <div className="helper">
-                  {engine.recent_runs > 0
-                    ? `${(((engine.recent_runs - engine.failure_runs) / engine.recent_runs) * 100).toFixed(1)}%`
-                    : "N/A"}
+                  {engine.operations?.calculate === "supported" ? "supported" : "unsupported"}
                 </div>
               </div>
               <div>
                 <div className="telemetry-caption">Failure rate</div>
                 <div className="helper">
-                  {engine.recent_runs > 0
-                    ? `${((engine.failure_runs / engine.recent_runs) * 100).toFixed(1)}%`
-                    : "N/A"}
+                  {engine.dependency_observations?.length ?? 0} observations
                 </div>
               </div>
             </div>

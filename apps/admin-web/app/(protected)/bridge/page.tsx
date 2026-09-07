@@ -11,8 +11,10 @@ import {
   getAdminBridgeHealth,
   getAdminHermesBridgeStatus,
   getAdminSunoBridgeStatus,
-  getAdminLlmProxyStatus
+  getAdminLlmProxyStatus,
+  getAdminCapabilities
 } from "@/lib/api";
+import type { AdminCapabilityList } from "@/lib/engine-capability";
 import { statusPillClass } from "@/lib/status";
 import { buildQueryString, getNumberParam } from "@/lib/url-query";
 import type {
@@ -63,6 +65,7 @@ export default function BridgePage() {
   const [hermesStatus, setHermesStatus] = useState<AdminHermesBridgeStatus | null>(null);
   const [sunoStatus, setSunoStatus] = useState<AdminSunoBridgeStatus | null>(null);
   const [llmProxyStatus, setLlmProxyStatus] = useState<AdminLlmProxyStatus | null>(null);
+  const [capabilities, setCapabilities] = useState<AdminCapabilityList | null>(null);
 
   const updateQuery = useCallback(
     (updates: { refresh?: number }) => {
@@ -77,14 +80,15 @@ export default function BridgePage() {
   const loadBridge = useCallback(async () => {
     const token = getAuthToken() ?? undefined;
 
-    const [bridgeResponse, hermesResponse, sunoResponse, llmProxyResponse] = await Promise.all([
+    const [bridgeResponse, hermesResponse, sunoResponse, llmProxyResponse, capabilityResponse] = await Promise.all([
       getAdminBridgeHealth(token),
       getAdminHermesBridgeStatus(token),
       getAdminSunoBridgeStatus(token),
-      getAdminLlmProxyStatus(token)
+      getAdminLlmProxyStatus(token),
+      getAdminCapabilities(token)
     ]);
 
-    return { bridgeResponse, hermesResponse, sunoResponse, llmProxyResponse };
+    return { bridgeResponse, hermesResponse, sunoResponse, llmProxyResponse, capabilityResponse };
   }, []);
 
   const handleFetch = useCallback(
@@ -94,16 +98,18 @@ export default function BridgePage() {
         hermesResponse: AdminHermesBridgeStatus;
         sunoResponse: AdminSunoBridgeStatus;
         llmProxyResponse: AdminLlmProxyStatus;
+        capabilityResponse: AdminCapabilityList;
       }>
     ) => {
       setLoading(true);
       setError(null);
       promise
-        .then(({ bridgeResponse, hermesResponse, sunoResponse, llmProxyResponse }) => {
+        .then(({ bridgeResponse, hermesResponse, sunoResponse, llmProxyResponse, capabilityResponse }) => {
           setBridgeHealth(bridgeResponse);
           setHermesStatus(hermesResponse);
           setSunoStatus(sunoResponse);
           setLlmProxyStatus(llmProxyResponse);
+          setCapabilities(capabilityResponse);
           setLastUpdatedAt(new Date().toISOString());
         })
         .catch((err) => {
@@ -229,6 +235,37 @@ export default function BridgePage() {
             <div className="label">Healthy / Degraded</div>
             <div className="value">
               {bridgeHealth ? `${bridgeHealth.healthy_engines} / ${bridgeHealth.degraded_engines}` : "--"}
+            </div>
+          </article>
+        </div>
+      </SurfaceCard>
+
+      <SurfaceCard
+        eyebrow="Canonical contract"
+        title="Capability projection"
+        summary="Registry identity and runtime evidence remain separate from sidecar reachability."
+      >
+        <div className="grid metrics">
+          <article className="metric">
+            <div className="label">Runtime identities</div>
+            <div className="value">{capabilities?.count ?? "--"}</div>
+          </article>
+          <article className="metric">
+            <div className="label">Public mirrors</div>
+            <div className="value">{capabilities?.public_mirror_count ?? "--"}</div>
+          </article>
+          <article className="metric">
+            <div className="label">Available</div>
+            <div className="value">
+              {capabilities?.capabilities.filter((item) => item.availability === "available").length ?? "--"}
+            </div>
+          </article>
+          <article className="metric">
+            <div className="label">Declared / unavailable</div>
+            <div className="value">
+              {capabilities
+                ? capabilities.capabilities.filter((item) => item.availability !== "available").length
+                : "--"}
             </div>
           </article>
         </div>

@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "@/lib/config";
+import { decodeAdminCapabilityList, type AdminCapabilityList } from "@/lib/engine-capability";
 import type {
   AdminAnalyticsBreakdownResponse,
   AdminAnalyticsSummaryResponse,
@@ -195,7 +196,17 @@ async function request<T>(
 
   const contentType = response.headers.get("content-type");
   const hasJson = contentType?.includes("application/json");
-  const payload = hasJson ? ((await response.json()) as ApiErrorPayload) : undefined;
+  let payload: ApiErrorPayload | undefined;
+  if (hasJson) {
+    try {
+      payload = (await response.json()) as ApiErrorPayload;
+    } catch {
+      throw new ApiClientError("API returned an invalid response.", response.status, {
+        error: "API returned an invalid response.",
+        error_code: "UPSTREAM_INVALID_RESPONSE"
+      });
+    }
+  }
 
   if (!response.ok) {
     throw new ApiClientError(
@@ -793,6 +804,12 @@ export async function getAdminEngines(
   return request<AdminSystemEnginesResponse>("/api/v1/admin/system/engines", {
     token
   });
+}
+
+/** Fetch and strictly decode the canonical 19-row capability envelope. */
+export async function getAdminCapabilities(token: string | undefined): Promise<AdminCapabilityList> {
+  const payload = await request<unknown>("/api/v1/engines/capabilities", { token });
+  return decodeAdminCapabilityList(payload);
 }
 
 export async function getAdminEngine(
