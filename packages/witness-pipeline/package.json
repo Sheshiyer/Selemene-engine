@@ -19,6 +19,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@selemene/engine-sdk": "workspace:*",
     "js-yaml": "^4.1.0",
     "playwright": "1.61.1"
   },

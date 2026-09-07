@@ -43,5 +43,8 @@
     "@noesis/witness-pipeline": "workspace:*",
     "typescript": "^5.6.3",
     "vitest": "^3.2.6"
+  },
+  "dependencies": {
+    "@selemene/engine-sdk": "workspace:*"
   }
 }

@@ -17,7 +17,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@noesis/witness-pipeline": "workspace:*"
+    "@noesis/witness-pipeline": "workspace:*",
+    "@selemene/engine-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
