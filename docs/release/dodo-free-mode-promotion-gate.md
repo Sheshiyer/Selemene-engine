@@ -44,16 +44,18 @@ release commit and environment:
 ## Current branch disposition
 
 The current review branch is
-`codex/dodo-free-mode-20260908`, with code closure commit `cf2aa01a`,
+`codex/dodo-free-mode-20260908`, with release-preparation commit `00bb9e59`,
 follow-on evidence receipts, and this release-preparation pass in draft PR
 [#1489](https://github.com/Sheshiyer/Selemene-engine/pull/1489). The PR is
-mergeable but remains draft. The latest completed CI run on the prior remote
-head, [34242496013](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34242496013),
-passed every lane except Integration Tests and the aggregate CI Gate:
-billing E2E **4/4**, replay **5/5**, and hooks **3/3** passed, while
+mergeable but remains draft. The latest completed CI run on this head,
+[34244891890](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34244891890),
+passed Security Audit, Secret Scanning, Workspace Gate, TS Engines, Lint,
+Python Sidecars, Workflow Registry Parity, Test, and Build. Billing E2E
+**4/4**, replay **5/5**, and hooks **3/3** passed, while
 `test_capability_route_returns_contract_v1_shape_for_all_ts_engines` returned
-`500 INTERNAL_ERROR` instead of `200`. A fresh run is required on the pushed
-release-preparation head.
+`500 INTERNAL_ERROR` instead of `200`; the aggregate CI Gate therefore
+failed. A fresh green run is required after that unrelated route blocker is
+resolved.
 
 No production migration, Railway/Cloudflare/Vercel deployment, or production
 promotion was executed. Live health is not a source, schema, image, or

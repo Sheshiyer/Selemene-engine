@@ -56,11 +56,13 @@ has been published or installed from a candidate registry version.
 
 - Advisor verification is unavailable because the local OAuth session expired.
 - The latest completed PR CI run is
-  [34242496013](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34242496013)
-  on the prior remote head. All lanes passed except Integration Tests and the
-  aggregate CI Gate because the capability-route test returned `500
-  INTERNAL_ERROR` instead of `200`; billing E2E **4/4**, replay **5/5**, and
-  hooks **3/3** passed. A fresh run is required on the final pushed head.
+  [34244891890](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34244891890)
+  on release head `00bb9e59`. Security, workspace, TypeScript, Python,
+  workflow-parity, test, and build lanes passed. Integration Tests and the
+  aggregate CI Gate failed only because the capability-route test returned
+  `500 INTERNAL_ERROR` instead of `200`; billing E2E **4/4**, replay **5/5**,
+  and hooks **3/3** passed. A fresh green run is required after that blocker
+  is resolved.
 - Local Postgres lacks the configured `noesis_user` role; local DB-backed billing
   replay is not a production authorization receipt.
 - Railway, Cloudflare, Vercel, image provenance, and rollback attestations are
