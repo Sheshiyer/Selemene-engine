@@ -27,6 +27,13 @@ def add_ledgered_migration(migrations_root: Path, name: str, content: str) -> No
         history.write(f"{digest}  {name}\n")
 
 
+def next_migration_version(migrations_root: Path) -> int:
+    return max(
+        int(path.name[:3])
+        for path in migrations_root.glob("[0-9][0-9][0-9]_*.sql")
+    ) + 1
+
+
 def test_current_repository_migrations_validate() -> None:
     code, output = run_validator(Path("migrations"))
     assert code == 0, output
@@ -134,7 +141,12 @@ def test_rejects_untracked_next_migration(tmp_path: Path) -> None:
 def test_accepts_checksum_ledgered_next_migration(tmp_path: Path) -> None:
     fixture_root = copy_real_migrations_fixture(tmp_path)
     migrations_root = fixture_root / "migrations"
-    add_ledgered_migration(migrations_root, "038_first_extension.sql", "-- 038 first\n")
+    next_version = next_migration_version(migrations_root)
+    add_ledgered_migration(
+        migrations_root,
+        f"{next_version:03d}_first_extension.sql",
+        f"-- {next_version:03d} first\n",
+    )
 
     code, output = run_validator(migrations_root)
 
@@ -144,28 +156,41 @@ def test_accepts_checksum_ledgered_next_migration(tmp_path: Path) -> None:
 def test_rejects_new_duplicate_version(tmp_path: Path) -> None:
     fixture_root = copy_real_migrations_fixture(tmp_path)
     migrations_root = fixture_root / "migrations"
-    add_ledgered_migration(migrations_root, "038_first_extension.sql", "-- 038 first\n")
+    next_version = next_migration_version(migrations_root)
     add_ledgered_migration(
-        migrations_root, "038_duplicate_extension.sql", "-- 038 duplicate\n"
+        migrations_root,
+        f"{next_version:03d}_first_extension.sql",
+        f"-- {next_version:03d} first\n",
+    )
+    add_ledgered_migration(
+        migrations_root,
+        f"{next_version:03d}_duplicate_extension.sql",
+        f"-- {next_version:03d} duplicate\n",
     )
 
     code, output = run_validator(migrations_root)
 
     assert code != 0
-    assert "038" in output
+    assert f"{next_version:03d}" in output
     assert "duplicate" in output
 
 
 def test_rejects_new_gap_after_ledger(tmp_path: Path) -> None:
     fixture_root = copy_real_migrations_fixture(tmp_path)
     migrations_root = fixture_root / "migrations"
-    add_ledgered_migration(migrations_root, "039_skips_038.sql", "-- skipped 038\n")
+    next_version = next_migration_version(migrations_root)
+    skipped_version = next_version + 1
+    add_ledgered_migration(
+        migrations_root,
+        f"{skipped_version:03d}_skips_{next_version:03d}.sql",
+        f"-- skipped {next_version:03d}\n",
+    )
 
     code, output = run_validator(migrations_root)
 
     assert code != 0
-    assert "039_skips_038.sql" in output
-    assert "038" in output
+    assert f"{skipped_version:03d}_skips_{next_version:03d}.sql" in output
+    assert f"{next_version:03d}" in output
 
 
 def test_rejects_malformed_filename(tmp_path: Path) -> None:

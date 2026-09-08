@@ -267,6 +267,10 @@ def test_nonempty_unjournaled_schema_requires_explicit_validated_adoption(tmp_pa
     fixture_root = copy_real_migrations_fixture(tmp_path)
     migrations_root = fixture_root / "migrations"
     bin_root, log_file, journal_file = install_fake_psql(tmp_path)
+    latest_version = max(
+        int(path.name[:3])
+        for path in migrations_root.glob("[0-9][0-9][0-9]_*.sql")
+    )
 
     refused = run_runner(
         migrations_root, bin_root, log_file, journal_file, schema_nonempty=True
@@ -277,7 +281,7 @@ def test_nonempty_unjournaled_schema_requires_explicit_validated_adoption(tmp_pa
         log_file,
         journal_file,
         schema_nonempty=True,
-        adopt_through="037",
+        adopt_through=f"{latest_version:03d}",
     )
 
     assert refused.returncode != 0
@@ -328,10 +332,17 @@ def test_probe_accepts_postgresql_word_form_booleans(tmp_path: Path) -> None:
     assert operations(log_file, "APPLY:") == ["001_first.sql:transactional"]
 
 
-def test_validator_rejects_unledgered_038_before_any_psql_call(tmp_path: Path) -> None:
+def test_validator_rejects_unledgered_next_migration_before_any_psql_call(tmp_path: Path) -> None:
     fixture_root = copy_real_migrations_fixture(tmp_path)
     migrations_root = fixture_root / "migrations"
-    (migrations_root / "038_unledgered.sql").write_text("SELECT 38;\n", encoding="utf-8")
+    latest_version = max(
+        int(path.name[:3])
+        for path in migrations_root.glob("[0-9][0-9][0-9]_*.sql")
+    )
+    next_version = latest_version + 1
+    (migrations_root / f"{next_version:03d}_unledgered.sql").write_text(
+        f"SELECT {next_version};\n", encoding="utf-8"
+    )
     bin_root, log_file, journal_file = install_fake_psql(tmp_path)
 
     result = run_runner(

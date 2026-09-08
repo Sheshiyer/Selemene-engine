@@ -829,6 +829,7 @@ fn derive_roles(permissions: &[String]) -> Vec<String> {
         "admin:billing:read",
         "admin:billing:subscriptions:cancel",
         "admin:billing:reconcile:trigger",
+        "admin:billing:mode:update",
     ];
     if billing_signals.iter().any(|perm| has(perm)) {
         roles.insert("billing-admin".to_string());
@@ -892,6 +893,7 @@ fn permissions_for_roles(roles: &[String]) -> Vec<String> {
                 permissions.insert("admin:billing:read".to_string());
                 permissions.insert("admin:billing:subscriptions:cancel".to_string());
                 permissions.insert("admin:billing:reconcile:trigger".to_string());
+                permissions.insert("admin:billing:mode:update".to_string());
             }
             _ => {}
         }
@@ -922,6 +924,7 @@ fn normalize_effective_permissions(permissions: &[String]) -> Vec<String> {
         "admin:billing:read",
         "admin:billing:subscriptions:cancel",
         "admin:billing:reconcile:trigger",
+        "admin:billing:mode:update",
     ];
 
     for required in canonical_permissions {

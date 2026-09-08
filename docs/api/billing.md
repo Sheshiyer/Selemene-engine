@@ -1,8 +1,31 @@
 # Billing API Reference
 
-> Version: 3.3.0 · Payment processor: Dodo Payments
+> Version: 3.3.0 · Payment contract preserved; Dodo Payments is release-gated
 
-Noesis uses a credit-based billing model. Users purchase credits via Dodo Payments, credits are debited per engine call, and the subscription tier controls rate limits and feature access.
+Noesis uses a credit-based billing model. The public billing API and SDK remain
+compatible with Dodo Payments, but payment actions are now controlled by an
+explicit release mode. When Dodo access is unavailable, the supported product
+mode is free access; old subscription and promotion rows remain readable audit
+records and are not treated as live provider confirmation.
+
+## Runtime payment modes
+
+Set `BILLING_MODE` in the API release environment:
+
+| Mode | Behavior |
+|---|---|
+| `free` (default) | No Dodo calls or webhook mutations; balance returns the free tier default (50 credits). Checkout and portal retain their routes but return `503` with `error_code=BILLING_DISABLED`. |
+| `disabled` | No Dodo calls; checkout, portal, webhook forwarding, and balance return `503` with `error_code=BILLING_DISABLED`. |
+| `dodo` | Requires complete `DODO_PAYMENTS_API_KEY`, `DODO_PAYMENTS_WEBHOOK_KEY`, and `DODO_PAYMENTS_ENV` configuration. Only this explicit release mode can contact Dodo. |
+
+The admin billing control at `GET/PUT /api/v1/admin/billing/control` may
+persist `free` or `disabled` for authorized billing administrators. It cannot
+enable Dodo, and a release configured as `disabled` remains a hard ceiling.
+Use `admin:billing:mode:update` for the write permission.
+
+The prior Dodo-configured promotion duration cannot be revalidated or extended
+without provider access. This change does not fabricate paid entitlements; it
+preserves the historical rows and makes free access explicit.
 
 ## Authentication
 
@@ -145,6 +168,7 @@ Handled event types:
 | 402 | `SUBSCRIPTION_REQUIRED` | Feature requires paid tier |
 | 429 | `RATE_LIMIT_EXCEEDED` | Request rate above tier limit |
 | 503 | `BILLING_UNAVAILABLE` | Dodo API unreachable (retry) |
+| 503 | `BILLING_DISABLED` | Payment actions are unavailable because the effective release/admin mode is `free` or `disabled` |
 
 ---
 

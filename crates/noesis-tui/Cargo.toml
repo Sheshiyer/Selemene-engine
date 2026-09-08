@@ -11,8 +11,8 @@ path = "src/main.rs"
 
 [dependencies]
 # SDK for API access
-noesis-sdk = { path = "../noesis-sdk" }
-noesis-core = { path = "../noesis-core" }
+noesis-sdk = { version = "3.3.1", path = "../noesis-sdk" }
+noesis-core = { version = "3.3.1", path = "../noesis-core" }
 
 # TUI framework
 ratatui = "0.30"

@@ -11,11 +11,12 @@
 //! with permissions; the permission check is repeated per-endpoint so that
 //! granting `admin:billing:read` doesn't grant cancel/trigger.
 
+use crate::billing::{effective_billing_mode, release_billing_mode};
 use crate::handlers::admin::{
     effective_permissions, forbidden_response, has_permission, json_error_response,
     normalize_limit_offset, service_unavailable_response,
 };
-use crate::AppState;
+use crate::{AppState, BillingMode};
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
@@ -38,6 +39,7 @@ use uuid::Uuid;
 pub const PERM_BILLING_READ: &str = "admin:billing:read";
 pub const PERM_BILLING_SUBSCRIPTIONS_CANCEL: &str = "admin:billing:subscriptions:cancel";
 pub const PERM_BILLING_RECONCILE_TRIGGER: &str = "admin:billing:reconcile:trigger";
+pub const PERM_BILLING_MODE_UPDATE: &str = "admin:billing:mode:update";
 
 // ---------------------------------------------------------------------------
 // Response shapes
@@ -141,6 +143,38 @@ pub struct AdminPlanItem {
 #[derive(Serialize)]
 pub struct AdminPlansResponse {
     pub items: Vec<AdminPlanItem>,
+}
+
+#[derive(Serialize)]
+pub struct AdminBillingControlResponse {
+    pub release_mode: String,
+    pub override_mode: Option<String>,
+    pub effective_mode: String,
+    pub dodo_credentials_present: bool,
+    pub payments_enabled: bool,
+    pub free_access_enabled: bool,
+    pub admin_override_allowed: bool,
+    pub message: String,
+}
+
+fn dodo_credentials_present() -> bool {
+    let present = |name: &str| {
+        std::env::var(name)
+            .ok()
+            .map(|value| !value.trim().is_empty())
+            .unwrap_or(false)
+    };
+    present("DODO_PAYMENTS_API_KEY")
+        && present("DODO_PAYMENTS_WEBHOOK_KEY")
+        && matches!(
+            std::env::var("DODO_PAYMENTS_ENV").as_deref(),
+            Ok("test") | Ok("live")
+        )
+}
+
+#[derive(Deserialize)]
+pub struct UpdateBillingControlRequest {
+    pub mode: String,
 }
 
 // ---------------------------------------------------------------------------
@@ -282,6 +316,134 @@ async fn require_billing_perm(
         return Err(forbidden_response(required));
     }
     Ok(())
+}
+
+fn billing_control_response(
+    release_mode: BillingMode,
+    override_mode: Option<String>,
+    effective_mode: BillingMode,
+) -> AdminBillingControlResponse {
+    let message = match effective_mode {
+        BillingMode::Free => {
+            "Dodo Payments is unavailable; free access is active and payment actions are disabled"
+        }
+        BillingMode::Disabled => {
+            "Billing is disabled; payment actions and free billing balance are unavailable"
+        }
+        BillingMode::Dodo => {
+            "Dodo payment actions are release-enabled; provider credentials and external health remain required"
+        }
+    };
+
+    AdminBillingControlResponse {
+        release_mode: release_mode.as_str().to_string(),
+        override_mode,
+        effective_mode: effective_mode.as_str().to_string(),
+        dodo_credentials_present: dodo_credentials_present(),
+        payments_enabled: effective_mode == BillingMode::Dodo,
+        free_access_enabled: effective_mode == BillingMode::Free,
+        admin_override_allowed: release_mode != BillingMode::Disabled,
+        message: message.to_string(),
+    }
+}
+
+async fn read_billing_override(state: &AppState) -> Result<Option<String>, Response> {
+    let Some(repo) = state.billing_repository.as_ref() else {
+        return Ok(None);
+    };
+    repo.get_billing_mode_override().await.map_err(|e| {
+        json_error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Failed to read billing control: {e}"),
+            "BILLING_CONTROL_QUERY_FAILED",
+            None,
+        )
+    })
+}
+
+/// GET /api/v1/admin/billing/control
+pub async fn control(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+) -> Response {
+    if let Err(resp) = require_billing_perm(&state, &auth_user, PERM_BILLING_READ).await {
+        return resp;
+    }
+
+    let override_mode = match read_billing_override(&state).await {
+        Ok(mode) => mode,
+        Err(resp) => return resp,
+    };
+    let effective_mode = effective_billing_mode(&state).await;
+    (
+        StatusCode::OK,
+        Json(billing_control_response(
+            release_billing_mode(),
+            override_mode,
+            effective_mode,
+        )),
+    )
+        .into_response()
+}
+
+/// PUT /api/v1/admin/billing/control
+pub async fn update_control(
+    State(state): State<AppState>,
+    Extension(auth_user): Extension<AuthUser>,
+    Json(request): Json<UpdateBillingControlRequest>,
+) -> Response {
+    if let Err(resp) = require_billing_perm(&state, &auth_user, PERM_BILLING_MODE_UPDATE).await {
+        return resp;
+    }
+
+    let mode = request.mode.trim().to_ascii_lowercase();
+    if mode != "free" && mode != "disabled" {
+        return json_error_response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "Billing admin control accepts only free or disabled",
+            "INVALID_BILLING_MODE",
+            Some(serde_json::json!({ "allowed": ["free", "disabled"] })),
+        );
+    }
+
+    let Some(repo) = state.billing_repository.as_ref() else {
+        return service_unavailable_response();
+    };
+    let updated_by = match Uuid::parse_str(&auth_user.user_id) {
+        Ok(id) => id,
+        Err(_) => {
+            return json_error_response(
+                StatusCode::UNAUTHORIZED,
+                "Invalid user_id in token",
+                "INVALID_AUTH_USER",
+                None,
+            )
+        }
+    };
+
+    if let Err(e) = repo.set_billing_mode_override(&mode, updated_by).await {
+        return json_error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Failed to persist billing control: {e}"),
+            "BILLING_CONTROL_UPDATE_FAILED",
+            None,
+        );
+    }
+
+    let override_mode = match read_billing_override(&state).await {
+        Ok(mode) => mode,
+        Err(resp) => return resp,
+    };
+    let effective_mode = effective_billing_mode(&state).await;
+    (
+        StatusCode::OK,
+        Json(billing_control_response(
+            release_billing_mode(),
+            override_mode,
+            effective_mode,
+        )),
+    )
+        .into_response()
 }
 
 // ---------------------------------------------------------------------------

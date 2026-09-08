@@ -2568,6 +2568,7 @@ fn permissions_for_admin_role(role: &str) -> &'static [&'static str] {
             "admin:billing:read",
             "admin:billing:subscriptions:cancel",
             "admin:billing:reconcile:trigger",
+            "admin:billing:mode:update",
             "admin:analytics:read",
             "admin:users:list",
             "admin:users:read",

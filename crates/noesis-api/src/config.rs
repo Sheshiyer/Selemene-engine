@@ -10,6 +10,43 @@ pub const DEFAULT_PYTHON_BIOFIELD_URL: &str = "http://localhost:8002";
 pub const DEFAULT_PYTHON_BIOFIELD_TIMEOUT_MS: u64 = 10_000;
 pub const DEFAULT_BIOFIELD_ARTIFACTS_DIR: &str = ".runtime/biofield-artifacts";
 
+/// Release-level payment behavior. Dodo is opt-in; absent configuration is
+/// deliberately free so stale provider credentials cannot activate payments.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BillingMode {
+    Disabled,
+    Free,
+    Dodo,
+}
+
+impl BillingMode {
+    pub fn parse(value: &str) -> Result<Self, String> {
+        match value.trim().to_ascii_lowercase().as_str() {
+            "disabled" => Ok(Self::Disabled),
+            "free" => Ok(Self::Free),
+            "dodo" => Ok(Self::Dodo),
+            other => Err(format!(
+                "BILLING_MODE must be one of disabled, free, dodo; got '{other}'"
+            )),
+        }
+    }
+
+    pub fn from_env() -> Result<Self, String> {
+        match env::var("BILLING_MODE") {
+            Ok(value) => Self::parse(&value),
+            Err(_) => Ok(Self::Free),
+        }
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Disabled => "disabled",
+            Self::Free => "free",
+            Self::Dodo => "dodo",
+        }
+    }
+}
+
 /// API server configuration loaded from environment variables
 #[derive(Debug, Clone)]
 pub struct ApiConfig {
@@ -200,6 +237,17 @@ impl ApiConfig {
             .or_else(|_| env::var("DODO_WEBHOOK_KEY"))
             .ok();
         let dodo_payments_env = env::var("DODO_PAYMENTS_ENV").ok();
+        let billing_mode = BillingMode::from_env().map_err(EngineError::ConfigError)?;
+        if billing_mode == BillingMode::Dodo
+            && (dodo_payments_api_key.is_none()
+                || dodo_payments_webhook_key.is_none()
+                || dodo_payments_env.is_none())
+        {
+            return Err(EngineError::ConfigError(
+                "BILLING_MODE=dodo requires DODO_PAYMENTS_API_KEY, DODO_PAYMENTS_WEBHOOK_KEY, and DODO_PAYMENTS_ENV"
+                    .to_string(),
+            ));
+        }
 
         let cf_access_issuer = env::var("CF_ACCESS_ISSUER").ok();
         let cf_access_audience = env::var("CF_ACCESS_AUDIENCE").ok();
@@ -346,6 +394,19 @@ impl ApiConfig {
             );
         }
 
+        let billing_mode = BillingMode::from_env()?;
+        if billing_mode == BillingMode::Dodo {
+            if self.dodo_payments_api_key.is_none()
+                || self.dodo_payments_webhook_key.is_none()
+                || self.dodo_payments_env.is_none()
+            {
+                return Err(
+                    "BILLING_MODE=dodo requires DODO_PAYMENTS_API_KEY, DODO_PAYMENTS_WEBHOOK_KEY, and DODO_PAYMENTS_ENV"
+                        .to_string(),
+                );
+            }
+        }
+
         if !self.python_biofield_url.starts_with("http://")
             && !self.python_biofield_url.starts_with("https://")
         {
@@ -365,6 +426,12 @@ impl ApiConfig {
     /// Get the server bind address as a string
     pub fn bind_address(&self) -> String {
         format!("{}:{}", self.host, self.port)
+    }
+
+    /// Resolve the already-validated release mode for callers that construct
+    /// `ApiConfig` directly in tests instead of using `from_env`.
+    pub fn billing_mode(&self) -> BillingMode {
+        BillingMode::from_env().unwrap_or(BillingMode::Free)
     }
 }
 
@@ -609,6 +676,62 @@ mod tests {
             Some("dodo_webhook_secret")
         );
         assert_eq!(config.dodo_payments_env.as_deref(), Some("test"));
+    }
+
+    #[test]
+    fn test_billing_mode_defaults_to_free() {
+        let _lock = env_lock().lock().unwrap();
+        let _guard = EnvGuard::set(&[
+            ("RUST_ENV", "development"),
+            ("JWT_SECRET", "test-secret-at-least-32-chars-long"),
+        ]);
+        std::env::remove_var("BILLING_MODE");
+
+        let config = ApiConfig::from_env().expect("config should load");
+        assert_eq!(config.billing_mode(), BillingMode::Free);
+    }
+
+    #[test]
+    fn test_billing_mode_rejects_unknown_value() {
+        let _lock = env_lock().lock().unwrap();
+        let _guard = EnvGuard::set(&[
+            ("RUST_ENV", "development"),
+            ("JWT_SECRET", "test-secret-at-least-32-chars-long"),
+            ("BILLING_MODE", "sideways"),
+        ]);
+
+        assert!(ApiConfig::from_env().is_err());
+    }
+
+    #[test]
+    fn test_billing_mode_dodo_requires_complete_credentials() {
+        let _lock = env_lock().lock().unwrap();
+        let _guard = EnvGuard::set(&[
+            ("RUST_ENV", "development"),
+            ("JWT_SECRET", "test-secret-at-least-32-chars-long"),
+            ("BILLING_MODE", "dodo"),
+        ]);
+        std::env::remove_var("DODO_PAYMENTS_API_KEY");
+        std::env::remove_var("DODO_PAYMENTS_WEBHOOK_KEY");
+        std::env::remove_var("DODO_PAYMENTS_ENV");
+
+        assert!(ApiConfig::from_env().is_err());
+    }
+
+    #[test]
+    fn test_billing_mode_dodo_accepts_complete_credentials() {
+        let _lock = env_lock().lock().unwrap();
+        let _guard = EnvGuard::set(&[
+            ("RUST_ENV", "development"),
+            ("JWT_SECRET", "test-secret-at-least-32-chars-long"),
+            ("BILLING_MODE", "dodo"),
+            ("DODO_PAYMENTS_API_KEY", "dodo_test_key"),
+            ("DODO_PAYMENTS_WEBHOOK_KEY", "dodo_webhook_secret"),
+            ("DODO_PAYMENTS_ENV", "test"),
+        ]);
+
+        let config = ApiConfig::from_env().expect("complete Dodo config should load");
+        assert_eq!(config.billing_mode(), BillingMode::Dodo);
     }
 
     #[test]

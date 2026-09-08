@@ -25,7 +25,7 @@ pub use billing::{
 pub use biofield_client::{BiofieldAnalyzeRequest, BiofieldClient};
 
 // Re-export configuration and logging for main.rs
-pub use config::ApiConfig;
+pub use config::{ApiConfig, BillingMode};
 pub use error_mapper::{ErrorMapper, ErrorResponse};
 pub use logging::{init_tracing, init_tracing_json};
 
@@ -981,6 +981,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route(
             "/admin/billing/plans",
             get(handlers::admin_billing::list_plans),
+        )
+        .route(
+            "/admin/billing/control",
+            get(handlers::admin_billing::control).put(handlers::admin_billing::update_control),
         )
         .route(
             "/admin/witness-dyad/executions",
@@ -4084,25 +4088,30 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
         .as_ref()
         .map(|p| Arc::new(BillingRepository::new(p.clone())));
 
-    // Install the Dodo Payments outbound emitter when credentials + DB are
-    // both available. Without this the global BILLING_EMITTER stays as the
-    // no-op default and every engine call's emit is a black hole.
-    if let (Some(api_key), Some(env_mode), Some(repo)) = (
-        config.dodo_payments_api_key.as_ref(),
-        config.dodo_payments_env.as_ref(),
-        billing_repository.as_ref(),
-    ) {
-        let api_base = if env_mode == "live" {
-            "https://live.dodopayments.com"
-        } else {
-            "https://test.dodopayments.com"
-        };
-        let emitter = DodoWebhookEmitter::new(api_key, api_base).with_repository(repo.clone());
-        billing::set_billing_emitter(Arc::new(emitter));
-        tracing::info!(env_mode = %env_mode, "Dodo billing emitter installed");
+    // Reset first so test/app-state construction cannot leak an emitter from a
+    // previous Dodo-enabled instance into free or disabled mode.
+    billing::reset_billing_emitter();
+    // Install the Dodo Payments outbound emitter only when Dodo is explicitly
+    // selected and credentials + DB are both available.
+    if config.billing_mode() == BillingMode::Dodo {
+        if let (Some(api_key), Some(env_mode), Some(repo)) = (
+            config.dodo_payments_api_key.as_ref(),
+            config.dodo_payments_env.as_ref(),
+            billing_repository.as_ref(),
+        ) {
+            let api_base = if env_mode == "live" {
+                "https://live.dodopayments.com"
+            } else {
+                "https://test.dodopayments.com"
+            };
+            let emitter = DodoWebhookEmitter::new(api_key, api_base).with_repository(repo.clone());
+            billing::set_billing_emitter(Arc::new(emitter));
+            tracing::info!(env_mode = %env_mode, "Dodo billing emitter installed");
+        }
     } else {
         tracing::info!(
-            "Dodo billing emitter not installed — DODO_PAYMENTS_API_KEY/_ENV/db missing; usage events will be no-op"
+            mode = config.billing_mode().as_str(),
+            "Dodo billing emitter not installed; payment usage events are no-op"
         );
     }
     let biofield_repository = pool
@@ -4225,25 +4234,28 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         .as_ref()
         .map(|p| Arc::new(BillingRepository::new(p.clone())));
 
-    // Install the Dodo Payments outbound emitter when credentials + DB are
-    // both available. Without this the global BILLING_EMITTER stays as the
-    // no-op default and every engine call's emit is a black hole.
-    if let (Some(api_key), Some(env_mode), Some(repo)) = (
-        config.dodo_payments_api_key.as_ref(),
-        config.dodo_payments_env.as_ref(),
-        billing_repository.as_ref(),
-    ) {
-        let api_base = if env_mode == "live" {
-            "https://live.dodopayments.com"
-        } else {
-            "https://test.dodopayments.com"
-        };
-        let emitter = DodoWebhookEmitter::new(api_key, api_base).with_repository(repo.clone());
-        billing::set_billing_emitter(Arc::new(emitter));
-        tracing::info!(env_mode = %env_mode, "Dodo billing emitter installed");
+    billing::reset_billing_emitter();
+    // Dodo is opt-in even when credentials happen to be present in the
+    // environment. This keeps lazy test/app state truthful in free mode.
+    if config.billing_mode() == BillingMode::Dodo {
+        if let (Some(api_key), Some(env_mode), Some(repo)) = (
+            config.dodo_payments_api_key.as_ref(),
+            config.dodo_payments_env.as_ref(),
+            billing_repository.as_ref(),
+        ) {
+            let api_base = if env_mode == "live" {
+                "https://live.dodopayments.com"
+            } else {
+                "https://test.dodopayments.com"
+            };
+            let emitter = DodoWebhookEmitter::new(api_key, api_base).with_repository(repo.clone());
+            billing::set_billing_emitter(Arc::new(emitter));
+            tracing::info!(env_mode = %env_mode, "Dodo billing emitter installed");
+        }
     } else {
         tracing::info!(
-            "Dodo billing emitter not installed — DODO_PAYMENTS_API_KEY/_ENV/db missing; usage events will be no-op"
+            mode = config.billing_mode().as_str(),
+            "Dodo billing emitter not installed; payment usage events are no-op"
         );
     }
     let biofield_repository = pool
