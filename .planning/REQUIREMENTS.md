@@ -21,8 +21,8 @@ Stable project acceptance IDs live in `ISA.md`. These GSD requirement IDs map ex
 
 ## Phase 3: Capability and contract closure
 
-- [ ] **CON-01**: Report native/TS/Python/conditional capabilities from actual runtime state.
-- [ ] **CON-02**: Prove schemas, errors, auth, routing and catalogue parity across repository boundaries.
+- [x] **CON-01**: Report native/TS/Python/conditional capabilities from actual runtime state.
+- [x] **CON-02**: Prove schemas, errors, auth, routing and catalogue parity across repository boundaries.
 
 ## Phase 4: Engine and media truth
 

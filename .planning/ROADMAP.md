@@ -6,7 +6,7 @@ Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase nu
 
 - [x] **Phase 1: Authority and infrastructure recovery** — original Wave 0; #896. (completed 2026-09-05)
 - [x] **Phase 2: Reproducible gates and dependency repair** — original Wave 1; #901. (completed 2026-09-06)
-- [ ] **Phase 3: Capability and contract closure** — original Wave 2; #894.
+- [x] **Phase 3: Capability and contract closure** — original Wave 2; #894. (completed 2026-09-08)
 - [ ] **Phase 4: Engine and media truth** — original Wave 3; #897.
 - [ ] **Phase 5: State auth and durability** — original Wave 4; #913.
 - [ ] **Phase 6: Distribution compatibility** — original Wave 5; #908.
@@ -61,7 +61,7 @@ Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase nu
 1. Report native/TS/Python/conditional capabilities from actual runtime state.
 2. Prove schemas, errors, auth, routing and catalogue parity across repository boundaries.
 
-**Plans:** Pending phase discussion and research
+**Plans:** 27/27 plans complete
 
 ### Phase 4: Engine and media truth
 
@@ -126,7 +126,7 @@ Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase nu
 |---|---|---|---|
 | 1. Authority and infrastructure recovery | 2/2 | Complete    | 2026-09-05 |
 | 2. Reproducible gates and dependency repair | 7/7 | Complete | 2026-09-06 |
-| 3. Capability and contract closure | 0/TBD | Pending | - |
+| 3. Capability and contract closure | 27/27 | Complete | 2026-09-08 |
 | 4. Engine and media truth | 0/TBD | Pending | - |
 | 5. State auth and durability | 0/TBD | Pending | - |
 | 6. Distribution compatibility | 0/TBD | Pending | - |
