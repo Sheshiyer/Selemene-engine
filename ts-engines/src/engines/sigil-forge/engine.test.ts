@@ -17,7 +17,6 @@ const savedProviderEnv = new Map<string, string | undefined>()
 beforeAll(() => {
   for (const key of PROVIDER_ENV_KEYS) {
     savedProviderEnv.set(key, process.env[key])
-    // biome-ignore lint/performance/noDelete: the tests must make provider credentials genuinely absent
     delete process.env[key]
   }
 })
@@ -25,7 +24,6 @@ beforeAll(() => {
 afterAll(() => {
   for (const key of PROVIDER_ENV_KEYS) {
     const value = savedProviderEnv.get(key)
-    // biome-ignore lint/performance/noDelete: assigning undefined would create a literal "undefined" credential
     if (value === undefined) delete process.env[key]
     else process.env[key] = value
   }

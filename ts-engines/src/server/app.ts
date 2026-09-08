@@ -57,10 +57,7 @@ function availabilityFromHealth(
   engineHealth: EngineHealthStatus[],
 ): Map<string, CapabilityAvailability> {
   return new Map(
-    engineHealth.map((engine) => [
-      engine.engine_id,
-      engine.healthy ? 'available' : 'unavailable',
-    ]),
+    engineHealth.map((engine) => [engine.engine_id, engine.healthy ? 'available' : 'unavailable']),
   )
 }
 
@@ -129,16 +126,19 @@ export function createServer(engineRegistry: EngineRegistry = registry) {
     }))
 
     // List live contract-v1 capability records
-    .get('/engines/capabilities', async (): Promise<{
-      capabilities: ContractEngineCapability[]
-      count: number
-    }> => {
-      const engineHealth = await runSelfCheck(engineRegistry)
-      return {
-        capabilities: engineRegistry.listCapabilities(availabilityFromHealth(engineHealth)),
-        count: engineRegistry.count(),
-      }
-    })
+    .get(
+      '/engines/capabilities',
+      async (): Promise<{
+        capabilities: ContractEngineCapability[]
+        count: number
+      }> => {
+        const engineHealth = await runSelfCheck(engineRegistry)
+        return {
+          capabilities: engineRegistry.listCapabilities(availabilityFromHealth(engineHealth)),
+          count: engineRegistry.count(),
+        }
+      },
+    )
 
     // Get engine info by ID
     .get(

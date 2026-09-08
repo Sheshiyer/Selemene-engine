@@ -395,16 +395,15 @@ impl ApiConfig {
         }
 
         let billing_mode = BillingMode::from_env()?;
-        if billing_mode == BillingMode::Dodo {
-            if self.dodo_payments_api_key.is_none()
+        if billing_mode == BillingMode::Dodo
+            && (self.dodo_payments_api_key.is_none()
                 || self.dodo_payments_webhook_key.is_none()
-                || self.dodo_payments_env.is_none()
-            {
-                return Err(
-                    "BILLING_MODE=dodo requires DODO_PAYMENTS_API_KEY, DODO_PAYMENTS_WEBHOOK_KEY, and DODO_PAYMENTS_ENV"
-                        .to_string(),
-                );
-            }
+                || self.dodo_payments_env.is_none())
+        {
+            return Err(
+                "BILLING_MODE=dodo requires DODO_PAYMENTS_API_KEY, DODO_PAYMENTS_WEBHOOK_KEY, and DODO_PAYMENTS_ENV"
+                    .to_string(),
+            );
         }
 
         if !self.python_biofield_url.starts_with("http://")
