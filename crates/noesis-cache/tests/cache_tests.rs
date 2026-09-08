@@ -14,13 +14,12 @@ use std::time::{Duration, Instant};
 
 /// Create a CacheManager for testing with small L1, L3 enabled via temp dir.
 fn test_cache_manager(l3_dir: &str) -> CacheManager {
-    // Set L3 cache dir env var before constructing
-    std::env::set_var("L3_CACHE_DIR", l3_dir);
-    CacheManager::new(
+    CacheManager::new_with_l3_dir(
         String::new(), // No Redis URL (L2 stubbed)
         1,             // L1: 1 MB
         Duration::from_secs(3600),
         true, // L3 enabled
+        l3_dir,
     )
 }
 

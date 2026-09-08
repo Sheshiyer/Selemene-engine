@@ -118,6 +118,25 @@ impl CacheManager {
         }
     }
 
+    /// Construct a cache manager with an explicit isolated L3 directory.
+    ///
+    /// This is useful for disposable environments and tests because it avoids
+    /// process-global `L3_CACHE_DIR` mutation when multiple managers coexist.
+    pub fn new_with_l3_dir(
+        redis_url: String,
+        l1_size_mb: usize,
+        l2_ttl: Duration,
+        l3_enabled: bool,
+        l3_dir: impl Into<String>,
+    ) -> Self {
+        Self {
+            l1_cache: Arc::new(L1Cache::new(l1_size_mb)),
+            l2_cache: Arc::new(L2Cache::new(redis_url, l2_ttl)),
+            l3_cache: Arc::new(L3Cache::new_with_dir(l3_enabled, l3_dir)),
+            stats: Arc::new(RwLock::new(CacheStats::default())),
+        }
+    }
+
     /// Retrieve a cached value, checking L1 -> L2 -> L3 in order.
     pub async fn get(&self, key: &CacheKey) -> Result<Option<Value>, EngineError> {
         {

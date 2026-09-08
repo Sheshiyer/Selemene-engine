@@ -55,6 +55,16 @@ impl L3Cache {
         let cache_dir =
             std::env::var("L3_CACHE_DIR").unwrap_or_else(|_| "./data/precomputed".to_string());
 
+        Self::new_with_dir(enabled, cache_dir)
+    }
+
+    /// Construct an L3 cache with an explicit directory.
+    ///
+    /// This keeps callers that need isolated cache roots from mutating the
+    /// process-global `L3_CACHE_DIR` environment variable.
+    pub fn new_with_dir(enabled: bool, cache_dir: impl Into<String>) -> Self {
+        let cache_dir = cache_dir.into();
+
         Self {
             enabled,
             cache_dir,
