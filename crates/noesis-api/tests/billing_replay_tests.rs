@@ -48,6 +48,10 @@ fn fresh_timestamp() -> String {
 
 async fn build_state_and_router() -> (axum::Router, PgPool) {
     std::env::set_var("DODO_INTERNAL_FORWARD_SECRET", FORWARD_SECRET);
+    // These tests intentionally exercise the preserved provider webhook
+    // endpoint. Production defaults to free mode, so opt this fixture into
+    // Dodo explicitly without requiring live provider credentials.
+    std::env::set_var("BILLING_MODE", "dodo");
 
     let url = database_url();
     let pool = PgPoolOptions::new()
