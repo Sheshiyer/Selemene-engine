@@ -136,9 +136,11 @@ async fn create_test_api_key(auth: &Arc<AuthService>, user_id: &str, rate_limit:
 #[serial_test::serial]
 async fn test_billing_usage_event_emitted_on_calculation() {
     let emitter = RecordingEmitter::default();
-    set_billing_emitter(Arc::new(emitter.clone()));
-
     let router = common::get_router().await;
+    // App construction resets the process-global emitter so a free-mode
+    // router cannot inherit a provider emitter. Inject the recorder only
+    // after construction; this test covers the hook, not provider selection.
+    set_billing_emitter(Arc::new(emitter.clone()));
     let token = common::generate_test_token(5);
     let input = common::create_test_birth_input();
 
