@@ -1,0 +1,20 @@
+{
+  "input": {
+    "consciousness_level": 0,
+    "parameters": {
+      "spread": "single_card"
+    },
+    "seed": 42
+  },
+  "expected": {
+    "engine_id": "tarot",
+    "seed": 42,
+    "spread": "single_card",
+    "card_id": "major-2",
+    "card_name": "The High Priestess",
+    "runtime_kind": "typescript",
+    "implementation_version": "1.0.0",
+    "fallback_used": false,
+    "confidence": 1
+  }
+}

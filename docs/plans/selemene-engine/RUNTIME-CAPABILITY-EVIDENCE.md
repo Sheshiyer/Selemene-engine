@@ -125,3 +125,21 @@ Date: 2026-08-31. Same branch as Slice 2. Scope: **partial** slice toward GitHub
 - Per-engine semantic completion repair remains a separate slice, now begun (partially) for tarot slot `07` only — see Slice 3.
 - GitHub Actions immutable SHA pinning (`ISC-217`) remains open.
 - No push, publication, deployment, or remote mutation to GitHub issues beyond what was explicitly authorized occurred in Slices 2–3; no deploy occurred.
+
+## Slice 4: Tarot semantic replay fixture (2026-09-08, Phase 4 pilot continuation)
+
+Date: 2026-09-08. Branch: `codex/selemene-contract-convergence` at the Phase 3 closure head plus this local slice. Scope: extend the selected Tarot pilot with one Selemene-owned deterministic semantic fixture; this is not a claim that Tarot implements provider-generated, fallback, or sidecar-unavailable modes.
+
+### TDD receipts
+
+**RED**: `bun test tests/tarot_truth_fixture.test.ts` failed with `ENOENT` because the fixture did not yet exist.
+
+**GREEN**
+- `bun test tests/tarot_truth_fixture.test.ts tests/tarot_provenance.test.ts`: 2 passed, 0 failed, 13 expectations.
+- `bun run typecheck`: passed.
+
+The fixture fixes input `spread=single_card`, `seed=42`, and the deterministic semantic result `major-2 / The High Priestess`. The test also proves same-input replay equality and the existing local provenance fields (`typescript`, version `1.0.0`, `fallback_used=false`, confidence `1`).
+
+### Scope boundary
+
+Tarot currently has no provider-generated or runtime fallback path, and its wisdom data is bundled rather than an optional sidecar. Those states remain explicitly open for engines that expose them; this slice does not fabricate them or relabel deterministic local output as generated.
