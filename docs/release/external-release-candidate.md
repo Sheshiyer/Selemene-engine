@@ -56,8 +56,8 @@ has been published or installed from a candidate registry version.
 
 - Advisor verification is unavailable because the local OAuth session expired.
 - The latest completed PR CI run is
-  [34244891890](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34244891890)
-  on release head `00bb9e59`. Security, workspace, TypeScript, Python,
+  [34246656166](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34246656166)
+  on release head `941ae5f0`. Security, workspace, TypeScript, Python,
   workflow-parity, test, and build lanes passed. Integration Tests and the
   aggregate CI Gate failed only because the capability-route test returned
   `500 INTERNAL_ERROR` instead of `200`; billing E2E **4/4**, replay **5/5**,

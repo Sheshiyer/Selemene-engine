@@ -48,7 +48,7 @@ The current review branch is
 follow-on evidence receipts, and this release-preparation pass in draft PR
 [#1489](https://github.com/Sheshiyer/Selemene-engine/pull/1489). The PR is
 mergeable but remains draft. The latest completed CI run on this head,
-[34244891890](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34244891890),
+[34246656166](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34246656166),
 passed Security Audit, Secret Scanning, Workspace Gate, TS Engines, Lint,
 Python Sidecars, Workflow Registry Parity, Test, and Build. Billing E2E
 **4/4**, replay **5/5**, and hooks **3/3** passed, while

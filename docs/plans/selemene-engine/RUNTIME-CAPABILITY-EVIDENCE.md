@@ -241,7 +241,7 @@ Local receipts on the isolated release worktree:
 These are local preparation receipts. They do not replace the required fresh
 remote CI, package registry, Railway, Cloudflare, Vercel, image provenance, or
 rollback attestations. Remote CI run
-`34244891890` passed all lanes except Integration Tests and the aggregate CI
+`34246656166` passed all lanes except Integration Tests and the aggregate CI
 Gate because the unrelated capability-route test returned `500
 INTERNAL_ERROR` instead of `200`; therefore no green release gate exists yet.
 No tag, GitHub release, registry publication, deployment, production
