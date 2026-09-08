@@ -1,6 +1,6 @@
 # Selemene continuation roadmap
 
-Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase numbers below are a GSD execution adapter. Master GitHub issue #893 remains open. None of the 570 W3E issues is declared complete by import.
+Original wave scope remains in `docs/plans/selemene-engine/ROADMAP.md`; phase numbers below are a GSD execution adapter. Master GitHub issue #893 remains open. The Phase 1 receipt recorded 570 open W3E issues on 2026-09-05; a fresh 2026-09-08 readback finds 578 open `plan-sync` issues, and none is declared complete by this continuation import.
 
 ## Phases
 
