@@ -43,7 +43,15 @@ release commit and environment:
 
 ## Current branch disposition
 
-This branch has not pushed a remote branch, created a new review, executed a
-production migration, deployed to Railway/Cloudflare/Vercel, or promoted
-production. Those actions require the remote release operator and remain
-explicit holds rather than inferred from local tests.
+The current review branch is
+`codex/dodo-free-mode-20260908` at commit `cf2aa01a`, with draft PR [#1489](https://github.com/Sheshiyer/Selemene-engine/pull/1489).
+The PR is mergeable but remains draft. Fresh CI run
+[34238967242](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34238967242)
+passed every completed lane except the pre-existing capability-route
+integration test, which returned `500 INTERNAL_ERROR` instead of `200`; the
+CI Gate therefore remains red.
+
+No production migration, Railway/Cloudflare/Vercel deployment, or production
+promotion was executed. Live health is not a source, schema, image, or
+effective billing-mode attestation. Those external receipts remain explicit
+holds rather than inferred from local tests or a healthy endpoint.

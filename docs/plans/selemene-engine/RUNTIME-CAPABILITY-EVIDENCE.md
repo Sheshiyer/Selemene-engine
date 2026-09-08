@@ -165,3 +165,50 @@ fixture file did not exist (`ENOENT`). The invalid-spread assertion passed.
 - Per-engine semantic completion repair remains a separate slice, now begun (partially) for tarot slot `07` only — see Slice 3.
 - GitHub Actions immutable SHA pinning (`ISC-217`) remains open.
 - No push, publication, deployment, or remote mutation to GitHub issues beyond what was explicitly authorized occurred in Slices 2–3; no deploy occurred.
+
+## Continuation receipts: state, distribution, and operations (2026-09-08)
+
+This continuation executes the recovered Phase 5–7 plans only where the
+repository or a disposable local check can provide evidence. Production state,
+provider credentials, package publication, and deployment mutation remain out
+of scope.
+
+### Phase 5: disposable state and billing
+
+- `python3 -m pytest tests/scripts/test_validate_migrations.py -q`: **12
+  passed**.
+- `cargo test -p noesis-cache --test cache_tests --locked`: **23 passed**.
+- `cargo test -p noesis-api --test billing_hooks_tests --locked`: **3 passed**.
+- DB-backed billing replay and end-to-end suites were held locally because the
+  configured Postgres instance rejected the connection: role `noesis_user`
+  does not exist. This is a local database-role gap, not evidence of a
+  production role or authorization.
+- Remote CI run `34238967242` reached the disposable migration and test
+  containers. Its only failing test was the unrelated capability-route shape
+  test; billing behavior was not promoted or inferred from that failure.
+
+### Phase 6: Rust distribution compatibility
+
+- `cargo package -p noesis-sdk --allow-dirty --locked` and
+  `cargo package -p noesis-tui --allow-dirty --locked` both remain held because
+  crates.io exposes `noesis-core` `3.0.0`, while these packages require
+  `noesis-core ^3.3.1`.
+- No package was published, installed from a registry, or treated as a valid
+  public release artifact.
+
+### Phase 7: deployment and promotion
+
+- Read-only live probes returned `/health/live` `200` (`3.3.1`, 19 engines,
+  six workflows) and `/health/ready` `200` with Postgres, Redis, orchestrator,
+  bridge, and six bridge engines healthy.
+- `railway whoami` is the Mage Narayan account and `railway status` reports no
+  linked project. The current session cannot attest Railway source revision,
+  schema revision, effective `BILLING_MODE`, image digest, or post-deploy
+  release identity.
+- `wrangler whoami --json` is Cloudflare account
+  `9d7cec1b5a32b2df8c6cdc1321ccd00`; the intended scoped account remains
+  `9d9d23b27f32e70ae3afb6a1aa2c0f10`, so account-level source binding refresh
+  remains held.
+- Production promotion remains disabled pending green CI, package receipts,
+  source/schema/image attestations, rollback evidence, Vercel protection, and
+  durable one-use payment receipts.
