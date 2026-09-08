@@ -6,6 +6,40 @@ use std::sync::{Arc, LazyLock, RwLock};
 use std::time::Duration;
 use uuid::Uuid;
 
+use crate::{AppState, BillingMode};
+
+/// Resolve the runtime payment mode. The release mode is the safety ceiling:
+/// a persisted admin override can select free or disabled, but cannot enable
+/// Dodo when the release did not explicitly opt into Dodo.
+pub fn release_billing_mode() -> BillingMode {
+    BillingMode::from_env().unwrap_or(BillingMode::Free)
+}
+
+pub fn resolve_billing_mode(release_mode: BillingMode, override_mode: Option<&str>) -> BillingMode {
+    if release_mode == BillingMode::Disabled {
+        return BillingMode::Disabled;
+    }
+
+    match override_mode {
+        Some("disabled") => BillingMode::Disabled,
+        Some("free") => BillingMode::Free,
+        _ => release_mode,
+    }
+}
+
+pub async fn effective_billing_mode(state: &AppState) -> BillingMode {
+    let release_mode = release_billing_mode();
+    let Some(repo) = state.billing_repository.as_ref() else {
+        return release_mode;
+    };
+
+    match repo.get_billing_mode_override().await {
+        Ok(Some(mode)) => resolve_billing_mode(release_mode, Some(&mode)),
+        Err(_) if release_mode == BillingMode::Dodo => BillingMode::Disabled,
+        _ => release_mode,
+    }
+}
+
 /// Inbound event types we subscribe to from Dodo. Must stay in lockstep with
 /// the TypeScript `DodoInboundEventType` in `@selemene/sdk` and §API in
 /// `.context/billing/contracts.md`.
@@ -497,5 +531,33 @@ mod tests {
         assert_eq!(ok, serde_json::json!({"status": "ok"}));
         let dedup = serde_json::to_value(BillingForwardResponse::Dedup).unwrap();
         assert_eq!(dedup, serde_json::json!({"status": "dedup"}));
+    }
+
+    #[test]
+    fn release_disabled_is_a_hard_ceiling() {
+        assert_eq!(
+            resolve_billing_mode(BillingMode::Disabled, Some("free")),
+            BillingMode::Disabled
+        );
+        assert_eq!(
+            resolve_billing_mode(BillingMode::Disabled, Some("disabled")),
+            BillingMode::Disabled
+        );
+    }
+
+    #[test]
+    fn admin_override_can_only_lower_release_capability() {
+        assert_eq!(
+            resolve_billing_mode(BillingMode::Dodo, Some("free")),
+            BillingMode::Free
+        );
+        assert_eq!(
+            resolve_billing_mode(BillingMode::Dodo, Some("disabled")),
+            BillingMode::Disabled
+        );
+        assert_eq!(
+            resolve_billing_mode(BillingMode::Dodo, None),
+            BillingMode::Dodo
+        );
     }
 }

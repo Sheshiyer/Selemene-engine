@@ -1,4 +1,4 @@
-//! Engine Picker — Scrollable list of 16 engines with descriptions
+//! Engine Picker — Scrollable list of 17 public engines with descriptions
 
 use crate::app::{Action, ActiveScreen};
 use crossterm::event::{KeyCode, KeyEvent};

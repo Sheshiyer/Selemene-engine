@@ -110,6 +110,19 @@ export class TarotEngine implements ConsciousnessEngine {
       witness_prompts: witnessPrompts,
       calculated_at: reading.timestamp,
       processing_time_ms: Math.round(endTime - startTime),
+      // GH #1461 (partial slice, Task 4): tarot's card interpretations come
+      // entirely from the local deterministic wisdom data (./wisdom.ts) via
+      // performReading/generateQuestionBasedPrompts -- there is no fallback
+      // or generated-text path in this engine today, so fallback_used is
+      // always false and confidence is always 1 for now. This does not
+      // cover the other five evidence axes in issue #1461.
+      provenance: {
+        runtime_kind: 'typescript',
+        implementation_version: this.metadata().version,
+        cached: false,
+        fallback_used: false,
+        confidence: 1,
+      },
     }
   }
 }

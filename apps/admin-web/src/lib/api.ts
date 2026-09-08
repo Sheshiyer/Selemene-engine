@@ -9,6 +9,7 @@ import type {
   AdminAuditEventDetailResponse,
   AdminAuditEventsResponse,
   AdminBillingCancelSubscriptionResponse,
+  AdminBillingControlResponse,
   AdminBillingOverviewResponse,
   AdminBillingPlansResponse,
   AdminBillingReconcileDriftResponse,
@@ -545,6 +546,23 @@ export async function getAdminBillingOverview(
   token: string | undefined
 ): Promise<AdminBillingOverviewResponse> {
   return request<AdminBillingOverviewResponse>("/api/v1/admin/billing/overview", { token });
+}
+
+export async function getAdminBillingControl(
+  token: string | undefined
+): Promise<AdminBillingControlResponse> {
+  return request<AdminBillingControlResponse>("/api/v1/admin/billing/control", { token });
+}
+
+export async function updateAdminBillingControl(
+  token: string | undefined,
+  mode: "free" | "disabled"
+): Promise<AdminBillingControlResponse> {
+  return request<AdminBillingControlResponse>("/api/v1/admin/billing/control", {
+    token,
+    method: "PUT",
+    body: { mode }
+  });
 }
 
 export async function getAdminBillingSubscriptions(

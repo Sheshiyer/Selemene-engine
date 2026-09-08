@@ -341,6 +341,9 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 
 ## Decisions
 
+- 2026-09-08: Continuation planning is governed by the recovered Phase 1–7 roadmap; Phase 4 starts with the Tarot pilot, while state, distribution, deployment, and promotion remain downstream gates.
+- 2026-09-08: Tarot semantic truth is constrained to a deterministic local fixture because the current engine has no generated, provider, sidecar, or fallback path; unavailable behavior must not be inferred from `fallback_used: false`.
+- 2026-09-08: Advisor verification was attempted before implementation but blocked by an expired OAuth session; the implementation proceeds only with repository-local TDD evidence and keeps external claims unclaimed.
 - 2026-07-19 02:15: refined: The live integration plan names Phase 6 Wave 2 as performance, empty states, and error handling; Wave 1 is complete and remains immutable.
 - 2026-07-19 02:15: Root-cause-at-ingestion: payload provenance and failure detail disappear inside `payloadLoader`, while Three.js enters the shell through the synchronous `App.tsx` import; both seams must be fixed before display polish.
 - 2026-07-19 02:15: The accessible fallback is an equivalent text-and-section navigator, not an error page; reduced motion and unavailable WebGL must never hide witness content.
@@ -421,6 +424,7 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 
 ## Verification
 
+- Phase 4 Tarot pilot: RED `bun test tests/tarot_truth_fixture.test.ts` recorded the missing fixture; GREEN `bun test tests/tarot_truth_fixture.test.ts tests/tarot_provenance.test.ts` returned 3 passed and `bun run typecheck` passed. External generated/fallback/unavailable behavior remains unverified by design.
 - ISC-132..137: Production Vite build emitted `index-CYgISPpb.js` at 249,275 raw/79,819 gzip bytes and `DepthGallery-5EhUnFqv.js` at 515,503 raw/129,200 gzip bytes; `npm run check:renderer-budget` proved Three.js is absent from entry and present in the single async depth chunk.
 - ISC-138..147: Focused loader tests prove hash/cache/remote provenance, malformed-hash fallback, 404 not-found, typed failure, safe rejected-IPC conversion, legacy nullable compatibility, and the deferred-promise gate rejects stale completions.
 - ISC-148..155: Gateway renderer tests cover all configured/authenticated combinations; browser Account QA displayed only `Local-only`, fixed guidance, and no URL, token, header, exception, console error, or failed request.
@@ -466,3 +470,41 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - ISC-106..119: Browser Gate 4 passed Unicode Threshold → Raaga → Sigil → combined Noesis → clear. It visibly proved two observations, retained inquiry, exact engine labels, a concrete current-practice route, and the explicit empty state without functional console, page, request, or HTTP errors.
 - ISC-120..122: The final Sankalpa gate passed with 85/85 tests, both TypeScript projects, production build, whitespace checks, and sensitive fixture-value bundle scans. The only build warning is the known Three.js chunk-size optimization queued for Wave 2.
 - Final review: Independent code audit returned GO with no P0/P1 findings after Unicode, strict context allowlists, single-envelope cache atomicity, malformed-state resilience, and timezone-collision remediation.
+## External release preparation continuation — 2026-09-08
+
+### Decisions
+
+- The primary checkout's untracked archive remains user-owned and untouched;
+  all release-preparation edits belong to the isolated
+  `codex/dodo-free-mode-20260908` worktree.
+- Release preparation is not release execution. Tag creation, GitHub release
+  publication, registry publication, deployment, production promotion, and
+  merge remain separately gated.
+- The legacy tag-triggered release workflow is manual-only, reuses the
+  canonical CI workflow, creates a draft release, requires the
+  `release-approval` environment for artifact mutation, and no longer writes
+  `main`'s `CHANGELOG.md` from automation.
+- The public contract is 17 engines and 6 workflows; runtime capability
+  discovery may include additional internal or sidecar records. Marketing
+  copy must not use the removed `100% astronomical accuracy` claim.
+- Dodo route and SDK shapes remain preserved, but paid behavior is not
+  functional without provider access. `free` is the safe default and
+  `disabled` is the hard ceiling; historical provider rows are audit data.
+- Tarot evidence is limited to its deterministic local fixture. Generated,
+  fallback, and unavailable Tarot behavior remain explicit non-claims.
+- No parallel write worker was dispatched: the requested README, package,
+  release, and workflow edits share one exact gate narrative and one branch,
+  so splitting them would add merge risk without independent ownership.
+
+### Verification receipts
+
+- Advisor verification was attempted and returned an expired OAuth session;
+  no advisor approval is claimed.
+- Current remote PR CI run was observed still in progress before these edits;
+  its completion must be read back on the final pushed head.
+- Rust TUI now has explicit repository/homepage/readme/keywords/categories
+  metadata and a source-first package README.
+- Public SDK, bridge, and engine-SDK package metadata/readmes now identify the
+  repository and current billing/distribution boundary.
+- Root README and release templates now point to the external-release
+  candidate checklist and distinguish public contract from runtime records.

@@ -3,7 +3,7 @@ info:
   title: Noesis API
   version: 3.0.0
   description: |
-    High-performance consciousness calculation platform with 16 engines and multi-engine workflows.
+    High-performance consciousness calculation platform with 17 public engines and multi-engine workflows.
 
 servers:
   - url: http://localhost:8080

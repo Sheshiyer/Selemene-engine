@@ -9,7 +9,7 @@
 use axum::{
     extract::{Json, State},
     http::{HeaderMap, StatusCode},
-    response::IntoResponse,
+    response::{IntoResponse, Response},
     Extension,
 };
 use chrono::{DateTime, Utc};
@@ -20,8 +20,10 @@ use serde_json::Value;
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::billing::{BillingForwardRequest, BillingForwardResponse, DodoInboundEventType};
-use crate::AppState;
+use crate::billing::{
+    effective_billing_mode, BillingForwardRequest, BillingForwardResponse, DodoInboundEventType,
+};
+use crate::{AppState, BillingMode};
 
 const SHARED_SECRET_HEADER: &str = "x-forward-secret";
 
@@ -31,11 +33,56 @@ const SHARED_SECRET_HEADER: &str = "x-forward-secret";
 /// to /internal/billing/events with a leaked forward secret hits this gate.
 const WEBHOOK_MAX_AGE_SECS: i64 = 300;
 
+fn billing_disabled_response(mode: BillingMode) -> Response {
+    let (message, free_access_enabled) = match mode {
+        BillingMode::Free => (
+            "Dodo Payments is unavailable; free access mode is active",
+            true,
+        ),
+        BillingMode::Disabled => ("Billing is disabled by release configuration", false),
+        BillingMode::Dodo => unreachable!("Dodo mode is not a disabled response"),
+    };
+
+    (
+        StatusCode::SERVICE_UNAVAILABLE,
+        Json(serde_json::json!({
+            "error": message,
+            "error_code": "BILLING_DISABLED",
+            "details": {
+                "billing_mode": mode.as_str(),
+                "payments_enabled": false,
+                "free_access_enabled": free_access_enabled,
+            }
+        })),
+    )
+        .into_response()
+}
+
+fn free_balance_response() -> Response {
+    (
+        StatusCode::OK,
+        Json(BalanceResponse {
+            credits_remaining: tier_default_credits("free"),
+            overage_charged: "0".to_string(),
+            period_end: None,
+            tier: "free".to_string(),
+            cancel_at_period_end: false,
+            source: BalanceSource::TierDefault,
+        }),
+    )
+        .into_response()
+}
+
 pub async fn events_forward(
     State(state): State<AppState>,
     headers: HeaderMap,
     Json(envelope): Json<BillingForwardRequest>,
 ) -> impl IntoResponse {
+    let mode = effective_billing_mode(&state).await;
+    if mode != BillingMode::Dodo {
+        return billing_disabled_response(mode);
+    }
+
     // -- 1. Auth (shared secret) --
     if !shared_secret_ok(&headers) {
         noesis_metrics::record_dodo_webhook("unknown", "unauthorized");
@@ -522,6 +569,11 @@ pub async fn create_checkout_session(
     Extension(auth_user): Extension<AuthUser>,
     Json(body): Json<CreateCheckoutRequest>,
 ) -> impl IntoResponse {
+    let mode = effective_billing_mode(&state).await;
+    if mode != BillingMode::Dodo {
+        return billing_disabled_response(mode);
+    }
+
     let Some(repo) = state.billing_repository.clone() else {
         return (StatusCode::SERVICE_UNAVAILABLE, "billing not configured").into_response();
     };
@@ -680,6 +732,11 @@ pub async fn create_portal_session(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> impl IntoResponse {
+    let mode = effective_billing_mode(&state).await;
+    if mode != BillingMode::Dodo {
+        return billing_disabled_response(mode);
+    }
+
     let Some(repo) = state.billing_repository.clone() else {
         return (StatusCode::SERVICE_UNAVAILABLE, "billing not configured").into_response();
     };
@@ -818,6 +875,14 @@ pub async fn get_balance(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> impl IntoResponse {
+    let mode = effective_billing_mode(&state).await;
+    if mode == BillingMode::Free {
+        return free_balance_response();
+    }
+    if mode == BillingMode::Disabled {
+        return billing_disabled_response(mode);
+    }
+
     let Some(repo) = state.billing_repository.clone() else {
         return (StatusCode::SERVICE_UNAVAILABLE, "billing not configured").into_response();
     };
@@ -1092,5 +1157,32 @@ mod tests {
         let p = sample_active_payload();
         let dt = extract_datetime(&p, &["data", "current_period_end"]).unwrap();
         assert_eq!(dt.to_rfc3339(), "2026-06-01T00:00:00+00:00");
+    }
+
+    #[tokio::test]
+    async fn disabled_response_is_stable_and_truthful() {
+        let response = billing_disabled_response(BillingMode::Free);
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("response body should be readable");
+        let payload: Value = serde_json::from_slice(&body).expect("response should be JSON");
+        assert_eq!(payload["error_code"], "BILLING_DISABLED");
+        assert_eq!(payload["details"]["billing_mode"], "free");
+        assert_eq!(payload["details"]["payments_enabled"], false);
+        assert_eq!(payload["details"]["free_access_enabled"], true);
+    }
+
+    #[tokio::test]
+    async fn free_balance_response_is_database_independent() {
+        let response = free_balance_response();
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("response body should be readable");
+        let payload: Value = serde_json::from_slice(&body).expect("response should be JSON");
+        assert_eq!(payload["credits_remaining"], 50);
+        assert_eq!(payload["tier"], "free");
+        assert_eq!(payload["source"], "tier_default");
     }
 }

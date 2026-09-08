@@ -5,8 +5,13 @@ import { MetricSurface, SurfaceCard } from "@/components/admin-primitives";
 import { StateBanner } from "@/components/admin-state";
 import { PageShell } from "@/components/page-shell";
 import { getAuthToken } from "@/lib/auth";
-import { ApiClientError, getAdminBillingOverview } from "@/lib/api";
-import type { AdminBillingOverviewResponse } from "@/types/admin";
+import {
+  ApiClientError,
+  getAdminBillingControl,
+  getAdminBillingOverview,
+  updateAdminBillingControl
+} from "@/lib/api";
+import type { AdminBillingControlResponse, AdminBillingOverviewResponse } from "@/types/admin";
 
 function formatUsd(value: number): string {
   if (!Number.isFinite(value) || value <= 0) return "—";
@@ -15,17 +20,22 @@ function formatUsd(value: number): string {
 
 export default function AdminBillingOverviewPage() {
   const [data, setData] = useState<AdminBillingOverviewResponse | null>(null);
+  const [control, setControl] = useState<AdminBillingControlResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [controlError, setControlError] = useState<string | null>(null);
+  const [updatingControl, setUpdatingControl] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = getAuthToken() ?? undefined;
 let cancelled = false;
-    getAdminBillingOverview(token)
-      .then((resp) => {
+    Promise.all([getAdminBillingOverview(token), getAdminBillingControl(token)])
+      .then(([overview, billingControl]) => {
         if (!cancelled) {
-          setData(resp);
+          setData(overview);
+          setControl(billingControl);
           setError(null);
+          setControlError(null);
         }
       })
       .catch((err) => {
@@ -46,6 +56,25 @@ let cancelled = false;
     };
   }, []);
 
+  async function setBillingMode(mode: "free" | "disabled") {
+    setUpdatingControl(true);
+    setControlError(null);
+    try {
+      const next = await updateAdminBillingControl(getAuthToken() ?? undefined, mode);
+      setControl(next);
+    } catch (err) {
+      setControlError(
+        err instanceof ApiClientError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Failed to update billing control"
+      );
+    } finally {
+      setUpdatingControl(false);
+    }
+  }
+
   const counts = data?.status_counts ?? [];
   const get = (status: string) =>
     counts.find((c) => c.status === status)?.count ?? 0;
@@ -62,6 +91,60 @@ let cancelled = false;
           description={error}
         />
       ) : null}
+
+      <SurfaceCard
+        eyebrow="Payment control"
+        title="Release and admin billing mode"
+        summary="Free access is safe when Dodo is unavailable. Enabling Dodo remains a release-level decision and is never available from this toggle."
+      >
+        {control ? (
+          <div style={{ display: "grid", gap: "0.75rem" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                gap: "0.75rem"
+              }}
+            >
+              <MetricSurface label="Effective mode" value={control.effective_mode} />
+              <MetricSurface label="Release mode" value={control.release_mode} />
+              <MetricSurface
+                label="Admin override"
+                value={control.override_mode ?? "none"}
+              />
+              <MetricSurface
+                label="Dodo config"
+                value={control.dodo_credentials_present ? "present" : "not configured"}
+                detail="credentials only; external access still unverified"
+              />
+            </div>
+            <p className="helper">{control.message}</p>
+            {controlError ? (
+              <StateBanner variant="error" title="Billing control update failed" description={controlError} />
+            ) : null}
+            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={() => void setBillingMode("free")}
+                disabled={updatingControl || control.release_mode === "disabled"}
+              >
+                Enable free access
+              </button>
+              <button
+                type="button"
+                onClick={() => void setBillingMode("disabled")}
+                disabled={updatingControl}
+              >
+                Disable billing
+              </button>
+            </div>
+          </div>
+        ) : loading ? (
+          <p className="helper">Loading payment control…</p>
+        ) : (
+          <p className="helper">Payment control status is unavailable.</p>
+        )}
+      </SurfaceCard>
 
       <SurfaceCard
         eyebrow="Subscription state"

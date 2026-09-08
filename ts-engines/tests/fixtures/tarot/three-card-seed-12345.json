@@ -1,0 +1,111 @@
+{
+  "input": {
+    "consciousness_level": 0,
+    "parameters": {
+      "spread": "three_card"
+    },
+    "question": "fixture truth",
+    "seed": 12345
+  },
+  "expected": {
+    "engine_id": "tarot",
+    "result": {
+      "spread": {
+        "type": "three_card",
+        "name": "Three Card Spread",
+        "description": "Past, Present, and Future - a classic spread for understanding the flow of time"
+      },
+      "question": "fixture truth",
+      "positions": [
+        {
+          "position": 0,
+          "name": "Past",
+          "meaning": "What has led to this moment; influences from the past",
+          "card": {
+            "id": "pentacles-13",
+            "name": "Queen of Pentacles",
+            "arcana": "minor",
+            "suit": "pentacles",
+            "number": 13,
+            "element": "earth",
+            "isReversed": false,
+            "interpretation": {
+              "meaning": "Nurturing, practical, providing financially, working parent",
+              "keywords": ["nurturing", "practical", "abundance", "security"]
+            }
+          }
+        },
+        {
+          "position": 1,
+          "name": "Present",
+          "meaning": "The current situation; where you stand now",
+          "card": {
+            "id": "pentacles-4",
+            "name": "Four of Pentacles",
+            "arcana": "minor",
+            "suit": "pentacles",
+            "number": 4,
+            "element": "earth",
+            "isReversed": false,
+            "interpretation": {
+              "meaning": "Saving money, security, conservatism, scarcity, control",
+              "keywords": ["security", "conservation", "control", "stability"]
+            }
+          }
+        },
+        {
+          "position": 2,
+          "name": "Future",
+          "meaning": "What may unfold; potential outcomes and energies ahead",
+          "card": {
+            "id": "cups-10",
+            "name": "Ten of Cups",
+            "arcana": "minor",
+            "suit": "cups",
+            "number": 10,
+            "element": "water",
+            "isReversed": false,
+            "interpretation": {
+              "meaning": "Divine love, blissful relationships, harmony, alignment",
+              "keywords": ["happiness", "fulfillment", "family", "harmony"]
+            }
+          }
+        }
+      ],
+      "seed": 12345
+    },
+    "witness_prompts": [
+      {
+        "prompt": "How do these cards speak to your question: \"fixture truth\"?",
+        "context": "Question reflection",
+        "themes": ["inquiry", "meaning", "resonance"]
+      },
+      {
+        "prompt": "As you consider Queen of Pentacles in the position of Past, what stands out?",
+        "context": "Queen of Pentacles in Past position",
+        "themes": ["nurturing", "practical", "abundance", "security"]
+      },
+      {
+        "prompt": "Notice the interplay between Ten of Cups and Four of Pentacles—what patterns arise?",
+        "context": "Connection between Future and Present",
+        "themes": [
+          "happiness",
+          "fulfillment",
+          "family",
+          "harmony",
+          "security",
+          "conservation",
+          "control",
+          "stability"
+        ]
+      }
+    ],
+    "provenance": {
+      "runtime_kind": "typescript",
+      "implementation_version": "1.0.0",
+      "cached": false,
+      "fallback_used": false,
+      "confidence": 1
+    }
+  }
+}

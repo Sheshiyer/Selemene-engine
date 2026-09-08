@@ -1,4 +1,9 @@
-import type { ConsciousnessEngine, EngineMetadata } from '../types'
+import type {
+  CapabilityAvailability,
+  ConsciousnessEngine,
+  ContractEngineCapability,
+  EngineMetadata,
+} from '../types'
 
 /**
  * Registry of all TypeScript consciousness engines
@@ -32,6 +37,25 @@ export class EngineRegistry {
   /** Get all engine metadata */
   listMetadata(): EngineMetadata[] {
     return Array.from(this.engines.values()).map((e) => e.metadata())
+  }
+
+  /** Get all engine capabilities in the canonical v1 shape */
+  listCapabilities(
+    availabilityByEngineId: Map<string, CapabilityAvailability> = new Map(),
+  ): ContractEngineCapability[] {
+    return Array.from(this.engines.values()).map((engine) => {
+      const meta = engine.metadata()
+      return {
+        contract_version: 'v1',
+        engine_id: meta.id,
+        display_name: meta.name,
+        availability: availabilityByEngineId.get(meta.id) ?? 'declared',
+        runtime_kind: 'typescript',
+        dependencies: [],
+        required_phase: meta.required_phase,
+        implementation_version: meta.version,
+      }
+    })
   }
 
   /** Get all engine instances */

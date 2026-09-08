@@ -141,6 +141,30 @@ describe('TS sidecar health routes', () => {
     ).toBe(false)
   })
 
+  it('GET /engines/capabilities marks unhealthy engines unavailable', async () => {
+    flakyEngine.setHealthy(false)
+
+    const { status, data } = await apiCall('/engines/capabilities')
+
+    expect(status).toBe(200)
+    const capabilities = (data as any).capabilities
+    expect(capabilities).toHaveLength(2)
+    expect(
+      capabilities.find((capability: any) => capability.engine_id === 'healthy-engine'),
+    ).toMatchObject({
+      contract_version: 'v1',
+      availability: 'available',
+      runtime_kind: 'typescript',
+    })
+    expect(
+      capabilities.find((capability: any) => capability.engine_id === 'flaky-engine'),
+    ).toMatchObject({
+      contract_version: 'v1',
+      availability: 'unavailable',
+      runtime_kind: 'typescript',
+    })
+  })
+
   it('GET /health/ready recovers to 200 after the unhealthy engine recovers', async () => {
     flakyEngine.setHealthy(false)
     let response = await apiCall('/health/ready')

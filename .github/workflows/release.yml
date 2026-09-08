@@ -1,49 +1,45 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to validate/build (for example v3.3.2)"
+        required: true
+        type: string
+      publish_artifacts:
+        description: "Build a draft GitHub release and push image/binaries after approval"
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: write
   packages: write
 
 jobs:
-  # Gate: unit + doc tests must pass before release artifacts are built.
+  # Reuse the canonical CI graph. This workflow is manual so a tag cannot
+  # publish artifacts merely because it was pushed.
   pre-release-tests:
-    name: Pre-release test gate
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-
-      - name: Run unit tests
-        run: cargo test --lib --bins -- --test-threads=4
+    name: Canonical CI gate
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
 
   create-release:
     needs: pre-release-tests
+    if: inputs.publish_artifacts == true
     runs-on: ubuntu-latest
+    environment: release-approval
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Extract version from tag
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
       - name: Check if release notes exist
         id: check_notes
         run: |
-          if [ -f "RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md" ]; then
+          if [ -f "RELEASE_NOTES_${{ inputs.tag }}.md" ]; then
             echo "EXISTS=true" >> $GITHUB_OUTPUT
           else
             echo "EXISTS=false" >> $GITHUB_OUTPUT
@@ -52,17 +48,19 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.version.outputs.VERSION }}
-          name: Release ${{ steps.version.outputs.VERSION }}
-          body_path: ${{ steps.check_notes.outputs.EXISTS == 'true' && format('RELEASE_NOTES_{0}.md', steps.version.outputs.VERSION) || 'CHANGELOG.md' }}
-          draft: false
+          tag_name: ${{ inputs.tag }}
+          name: Release ${{ inputs.tag }}
+          body_path: ${{ steps.check_notes.outputs.EXISTS == 'true' && format('RELEASE_NOTES_{0}.md', inputs.tag) || 'CHANGELOG.md' }}
+          draft: true
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-docker:
     needs: create-release
+    if: inputs.publish_artifacts == true
     runs-on: ubuntu-latest
+    environment: release-approval
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -83,10 +81,10 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
+            type=semver,pattern={{version}},value=${{ inputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag }}
+            type=semver,pattern={{major}},value=${{ inputs.tag }}
+            type=raw,value=${{ inputs.tag }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -101,6 +99,7 @@ jobs:
 
   build-binaries:
     needs: create-release
+    if: inputs.publish_artifacts == true
     strategy:
       matrix:
         include:
@@ -115,6 +114,7 @@ jobs:
             artifact_name: noesis-server-macos-arm64
 
     runs-on: ${{ matrix.os }}
+    environment: release-approval
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -156,34 +156,7 @@ jobs:
       - name: Upload binary to release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ inputs.tag }}
           files: ${{ matrix.artifact_name }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  update-changelog:
-    needs: [create-release, build-docker, build-binaries]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Extract version
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Update CHANGELOG
-        run: |
-          if [ -f "RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md" ]; then
-            cat RELEASE_NOTES_${{ steps.version.outputs.VERSION }}.md >> CHANGELOG.md.new
-            echo "" >> CHANGELOG.md.new
-            cat CHANGELOG.md >> CHANGELOG.md.new
-            mv CHANGELOG.md.new CHANGELOG.md
-          fi
-
-      - name: Commit changelog
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "docs: Update CHANGELOG for ${{ steps.version.outputs.VERSION }}"
-          file_pattern: CHANGELOG.md

@@ -1,6 +1,6 @@
 # @noesis/sdk
 
-TypeScript SDK for the Noesis Consciousness Engine — 17 engines covering Vedic astrology, Human Design, Gene Keys, numerology, biorhythm, Tarot, I-Ching, Raaga, and more.
+TypeScript SDK for the Noesis Consciousness Engine — 17 public engines covering Vedic astrology, Human Design, Gene Keys, numerology, biorhythm, Tarot, I-Ching, Raaga, and more. Runtime capability discovery may expose additional internal or sidecar records; the public SDK contract is the 17-engine surface.
 
 **API**: `https://selemene.tryambakam.space` | **Web viewer**: `https://noesis.tryambakam.space`
 
@@ -22,7 +22,7 @@ const client = new NoesisClient("https://selemene.tryambakam.space", {
 });
 
 const health = await client.health();
-console.log(health.version); // "3.3.0"
+console.log(health.version); // "3.3.1"
 ```
 
 ## Quickstart (Browser)
@@ -48,7 +48,7 @@ const result = await client.calculate("numerology", {
 console.log(result.engine_id);
 ```
 
-## Engine coverage (17)
+## Engine coverage (17 public engines)
 
 `biofield`, `biorhythm`, `enneagram`, `face-reading`, `gene-keys`, `human-design`, `i-ching`, `nadabrahman`, `numerology`, `panchanga`, `raaga`, `sacred-geometry`, `sigil-forge`, `tarot`, `transits`, `vedic-clock`, `vimshottari`
 
@@ -78,7 +78,7 @@ setTimeout(() => controller.abort(), 1000);
 await client.health({ signal: controller.signal });
 ```
 
-## v3.3.0 reading-object contract
+## v3.3.1 reading-object contract
 
 Workflow responses now include reading persistence fields:
 
@@ -104,14 +104,22 @@ console.log(result.witness_layer?.question); // "What are you not saying?"
 | `getMyUsage(options?)` | `/api/v1/usage/me` — credit usage |
 | `getBillingBalance(options?)` | `/api/v1/billing/balance` |
 | `getBillingSubscription(options?)` | `/api/v1/billing/subscription` |
-| `createCheckout(request, options?)` | `/api/v1/billing/checkout` — Dodo checkout URL |
-| `getBillingPortal(options?)` | `/api/v1/billing/portal` — Dodo portal URL |
+| `createCheckout(request, options?)` | `/api/v1/billing/checkout` — legacy-compatible route; may return `503 BILLING_DISABLED` |
+| `getBillingPortal(options?)` | `/api/v1/billing/portal` — legacy-compatible route; may return `503 BILLING_DISABLED` |
 | `listReadings(opts?, options?)` | `/api/v1/readings` — reading history |
 | `getReading(readingId, options?)` | `/api/v1/readings/{id}` |
 | `interpretWitness(input, options?)` | `/api/v1/witness/interpret` — rich Aletheios + Pichet dyad (Selemene canonical) |
 | `validateEngine(engineId, options?)` | Returns `{ valid: boolean }` |
 | `rateLimitInfo` | Last parsed `X-RateLimit-*` headers |
 | `generatePremiumAsset(...)` (additive) | Premium multi-pass asset generation (additive surface; Selemene canonical) |
+
+## Billing availability
+
+The billing route shapes remain available for compatibility. When the API is
+running in `free` (the safe default) or `disabled` mode, Dodo Payments is not
+called: checkout, portal, and webhook actions return `503 BILLING_DISABLED`,
+while `free` returns the documented free-tier balance. Paid Dodo behavior is
+release-gated and must not be inferred from historical subscription rows.
 
 **Witness and premium assets:** Selemene is the canonical service for rich Aletheios/Pichet dyad interpretation and premium integrated reading / asset generation. `interpretWitness` surfaces the rich voices + synthesis. Engine-level `witness_prompt` remains the lightweight rule-based mirror entry point. Additive premium asset surfaces (e.g. `generatePremiumAsset`) provide multi-pass source-pack artifacts.
 

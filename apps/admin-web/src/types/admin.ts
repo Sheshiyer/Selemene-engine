@@ -349,6 +349,17 @@ export interface AdminBillingOverviewResponse {
   mrr_usd_estimate: number;
 }
 
+export interface AdminBillingControlResponse {
+  release_mode: "disabled" | "free" | "dodo";
+  override_mode: "free" | "disabled" | null;
+  effective_mode: "disabled" | "free" | "dodo";
+  dodo_credentials_present: boolean;
+  payments_enabled: boolean;
+  free_access_enabled: boolean;
+  admin_override_allowed: boolean;
+  message: string;
+}
+
 export interface AdminBillingSubscriptionItem {
   id: string;
   user_id: string;

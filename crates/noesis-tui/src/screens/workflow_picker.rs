@@ -55,7 +55,7 @@ const WORKFLOW_LIST: &[WorkflowEntry] = &[
         name: "Full Spectrum",
         icon: "🔮",
         description: "Complete integration of all consciousness engines",
-        engines: "all 16 engines",
+        engines: "all 17 public engines",
     },
 ];
 

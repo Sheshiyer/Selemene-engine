@@ -67,7 +67,7 @@ describe("contract authority v1", () => {
 });
 
 describe("NoesisClient", () => {
-  it("supports all 16 engine calculate calls", async () => {
+  it("supports all 17 public engine calculate calls", async () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({ engine_id: "ok", result: {} }), { status: 200 }),
     );

@@ -1,3 +1,32 @@
+# Unreleased — external release candidate
+
+> Prepared for review; not tagged or published.
+
+## Billing / Dodo Payments
+
+- Preserved billing route and SDK endpoint shapes while making Dodo access an
+  explicit release mode.
+- Defaulted missing `BILLING_MODE` to `free`; added a hard `disabled` mode.
+- Kept admin control limited to `free` and `disabled`; admin cannot enable
+  paid Dodo behavior.
+- Documented that historical Dodo subscription and promotion rows are audit
+  records, not verified current entitlements.
+
+## Tarot truth
+
+- Added a deterministic three-card Tarot fixture and replay assertion.
+- Preserved the explicit non-claim: this implementation does not expose
+  generated, fallback, or unavailable Tarot paths.
+
+## Distribution and operations
+
+- Added Rust TUI package metadata and a source-first package README.
+- Updated public SDK, bridge, and engine-SDK package metadata and docs.
+- Added external release gates for CI, registry receipts, Railway, Cloudflare,
+  Vercel, image provenance, rollback, and payment evidence.
+- No tag, release, package publication, deployment, promotion, or merge is
+  implied by this candidate.
+
 # Release v0.1.1 — witness-pipeline (Patch)
 
 > **Tryambakam Noesis · Selemene Engine**

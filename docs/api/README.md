@@ -9,7 +9,7 @@ Not prediction. Reflection. Inquiry. Witness.
 
 ## Quick Links
 
-- **Live OpenAPI Spec** (v3.3.0): [https://selemene.tryambakam.space/api/openapi.json](https://selemene.tryambakam.space/api/openapi.json)
+- **Live OpenAPI Spec** (v3.3.1): [https://selemene.tryambakam.space/api/openapi.json](https://selemene.tryambakam.space/api/openapi.json)
 - **Swagger UI**: [https://selemene.tryambakam.space/api/docs](https://selemene.tryambakam.space/api/docs)
 - **OpenAPI YAML** (local ref): [openapi.yaml](./openapi.yaml)
 - **Engines**: [engines.md](./engines.md)
@@ -110,7 +110,7 @@ Notes:
 - `POST /api/v1/workflows/{workflow_id}/execute`
 - `GET /api/v1/workflows/{workflow_id}/info`
 
-Workflow output contract (v3.3.0):
+Workflow output contract (v3.3.1):
 - `workflow_id` and `total_time_ms` are always present on success.
 - `engine_outputs` contains successful engine results only.
 - `reading_id`, `reading_url`, `created_at`, `subject`, `evidence` are top-level reading-object fields.

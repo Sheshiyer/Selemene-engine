@@ -137,6 +137,8 @@ export interface ContractProvenance {
   fallback_used: boolean
   backend_id?: string
   provider_id?: string
+  /** Confidence in the result, 0-1. Populated per-engine; omitted where not yet computed. */
+  confidence?: number
 }
 
 export interface ContractEngineRequest {

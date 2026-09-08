@@ -4,6 +4,18 @@
 
 All endpoints under `/api/v1/admin/billing/` and `/api/v1/admin/usage/` require the `billing-admin` role. Use `GET /api/v1/admin/session` to verify your effective permissions.
 
+### Billing mode control
+
+`GET /api/v1/admin/billing/control` reports the release mode, durable admin
+override, effective mode, and whether payments or free access are active.
+
+`PUT /api/v1/admin/billing/control` accepts `{ "mode": "free" }` or
+`{ "mode": "disabled" }` and requires `admin:billing:mode:update`. The write is
+stored in `billing_mode_control` and survives restarts. It cannot enable Dodo;
+that requires an explicit `BILLING_MODE=dodo` release with complete provider
+credentials. A release configured as `BILLING_MODE=disabled` remains a hard
+ceiling.
+
 To grant `billing-admin`:
 ```sql
 -- Run in PostgreSQL against Railway Postgres

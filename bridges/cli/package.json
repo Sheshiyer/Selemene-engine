@@ -22,6 +22,19 @@
     "bridge"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sheshiyer/Selemene-engine.git",
+    "directory": "bridges/cli"
+  },
+  "homepage": "https://selemene.tryambakam.space",
+  "bugs": {
+    "url": "https://github.com/Sheshiyer/Selemene-engine/issues"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "engines": {
     "node": ">=18.0.0"
   },

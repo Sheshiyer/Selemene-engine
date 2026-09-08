@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 95,
-  "route_count": 100,
+  "path_count": 97,
+  "route_count": 103,
   "routes": [
     {
       "path": "/auth/register",
@@ -491,6 +491,17 @@
       ]
     },
     {
+      "path": "/admin/engines/capabilities",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::engine_capabilities"
+        }
+      ]
+    },
+    {
       "path": "/admin/bridge/sidecar",
       "auth_requirement": "bearer_or_api_key",
       "uses_orchestrator": false,
@@ -740,6 +751,21 @@
         {
           "method": "GET",
           "handler": "handlers::admin_billing::list_plans"
+        }
+      ]
+    },
+    {
+      "path": "/admin/billing/control",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin_billing::control"
+        },
+        {
+          "method": "PUT",
+          "handler": "handlers::admin_billing::update_control"
         }
       ]
     },

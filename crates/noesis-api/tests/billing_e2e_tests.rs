@@ -46,6 +46,10 @@ fn database_url() -> String {
 async fn build_state_and_router() -> (AppState, axum::Router, PgPool) {
     // Reset the forward secret to a known value so the auth check passes.
     std::env::set_var("DODO_INTERNAL_FORWARD_SECRET", FORWARD_SECRET);
+    // These tests intentionally exercise the provider webhook mutation path.
+    // Production defaults to free mode; test fixtures must opt into Dodo
+    // explicitly so a missing release variable cannot mask that contract.
+    std::env::set_var("BILLING_MODE", "dodo");
 
     let url = database_url();
     let pool = PgPoolOptions::new()

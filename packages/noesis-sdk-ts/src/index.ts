@@ -138,7 +138,7 @@ export interface ContractEngineCapability {
   implementation_version?: string;
 }
 
-/** v3.3.0 reading-object contract fields */
+/** v3.3.1 reading-object contract fields */
 export interface WitnessLayer {
   title?: string;
   summary?: string;
@@ -160,7 +160,7 @@ export interface WorkflowResult {
   synthesis?: string;
   timestamp?: string;
   total_time_ms?: number;
-  /** v3.3.0: Reading persistence fields (requires witness-agents deploy — issue #711) */
+  /** v3.3.1: Reading persistence fields (requires witness-agents deploy — issue #711) */
   reading_id?: string;
   reading_url?: string | null;
   created_at?: string;

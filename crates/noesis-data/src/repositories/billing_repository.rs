@@ -58,6 +58,40 @@ impl BillingRepository {
         Self { pool }
     }
 
+    /// Read the durable operator override. Only `free` and `disabled` are
+    /// accepted by migration 038; absence means the release mode wins.
+    pub async fn get_billing_mode_override(&self) -> Result<Option<String>, Error> {
+        let row: Option<(String,)> =
+            sqlx::query_as(r#"SELECT mode FROM billing_mode_control WHERE id = 1 LIMIT 1"#)
+                .fetch_optional(&self.pool)
+                .await?;
+        Ok(row.map(|(mode,)| mode))
+    }
+
+    /// Persist the admin-selected free/disabled override and its actor.
+    pub async fn set_billing_mode_override(
+        &self,
+        mode: &str,
+        updated_by: Uuid,
+    ) -> Result<String, Error> {
+        let row: (String,) = sqlx::query_as(
+            r#"
+            INSERT INTO billing_mode_control (id, mode, updated_by)
+            VALUES (1, $1, $2)
+            ON CONFLICT (id) DO UPDATE
+              SET mode = EXCLUDED.mode,
+                  updated_by = EXCLUDED.updated_by,
+                  updated_at = NOW()
+            RETURNING mode
+            "#,
+        )
+        .bind(mode)
+        .bind(updated_by)
+        .fetch_one(&self.pool)
+        .await?;
+        Ok(row.0)
+    }
+
     /// Cheap pre-flight check: has this webhook_id already been fully
     /// processed? Used as the FIRST gate before dispatch so duplicate
     /// deliveries from Dodo's retry chain short-circuit cleanly.

@@ -30,11 +30,26 @@
 ## 🔧 Infrastructure
 <!-- DevOps, CI/CD, deployment improvements -->
 
+## 🧭 External Release Gates
+
+- [ ] Canonical CI Gate is green on the exact release commit.
+- [ ] Rust SDK/TUI package dry-runs and registry receipts are attached.
+- [ ] Railway source, schema, effective billing mode, health, and image digest are attested.
+- [ ] Cloudflare account/source bindings are verified with the scoped account.
+- [ ] Vercel protection and same-origin admin proxy checks are verified.
+- [ ] Rollback target, schema rollback path, and operator are recorded.
+- [ ] Dodo remains disabled/free unless current credentials and durable one-use receipts are proven.
+- [ ] Tag, publication, deployment, promotion, and merge are separately approved.
+
 ## ⚠️ Breaking Changes
 <!-- List any breaking changes and migration instructions -->
 
 ## 📦 Dependencies
 <!-- Notable dependency updates -->
+
+Package publication must follow dependency order: `noesis-core`, then
+`noesis-sdk`, then `noesis-tui`. A local `cargo package` result is not a
+registry receipt.
 
 ## 🧪 Testing
 <!-- Test coverage improvements -->
