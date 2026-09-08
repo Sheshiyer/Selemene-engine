@@ -223,7 +223,7 @@ curl -s .../api/v1/workflows \
 | **decision-support** | tarot + i-ching + HD authority | Multi-perspective guidance |
 | **self-inquiry** | gene-keys + enneagram | Shadow work + patterns |
 | **creative-expression** | sigil-forge + sacred-geometry | Intent visualization |
-| **full-spectrum** | all 16 engines | Complete consciousness portrait |
+| **full-spectrum** | all 17 public engines | Complete consciousness portrait |
 
 ```bash
 # Execute a workflow
@@ -305,7 +305,7 @@ For a richer terminal experience, use the included explorer:
 
 This gives you a menu-driven interface to explore engines, run calculations, and see formatted responses — all from the terminal.
 
-## Reading-Object Contract (v3.3.0)
+## Reading-Object Contract (v3.3.1)
 
 Workflow execution responses now include a reading-object at the top level alongside `engine_outputs`.
 

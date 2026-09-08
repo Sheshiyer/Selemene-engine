@@ -109,7 +109,7 @@ const witness = await client.interpretWitness({
 
 ---
 
-## v3.3.0 Reading Object Contract
+## v3.3.1 Reading Object Contract
 
 All workflow responses return a persisted reading:
 

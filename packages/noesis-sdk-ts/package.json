@@ -36,6 +36,9 @@
     "url": "https://github.com/Sheshiyer/Selemene-engine.git"
   },
   "homepage": "https://noesis.tryambakam.space",
+  "bugs": {
+    "url": "https://github.com/Sheshiyer/Selemene-engine/issues"
+  },
   "engines": {
     "node": ">=18"
   },

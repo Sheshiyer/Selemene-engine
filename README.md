@@ -12,7 +12,7 @@
 <p align="center">
   <strong>Live:</strong> <a href="https://selemene.tryambakam.space/health/live">selemene.tryambakam.space</a>
   &nbsp;·&nbsp;
-  <strong>17 engines</strong>
+  <strong>17 public engines</strong>
   &nbsp;·&nbsp;
   <strong>6 workflows</strong>
   &nbsp;·&nbsp;
@@ -45,15 +45,15 @@
 </p>
 
 <!-- readme-gen:start:hero -->
-<!-- Deployment trigger: 2026-07-10 -->
+<!-- Documentation snapshot: 2026-09-08; not a deployment receipt -->
 
 > **Reflection-first astronomical and consciousness calculation engine.**
 >
 > **Every system you've tried positioned you as user, not author.**
 >
-> Selemene Engine offers something different: 17 symbolic mirrors that reflect patterns in your birth data, timing, and energetic signature. Not to give answers, but to train self-consciousness.
+> Selemene Engine offers something different: 17 public symbolic mirrors that reflect patterns in your birth data, timing, and energetic signature. Not to give answers, but to train self-consciousness.
 >
-> Built in Rust. Sub-millisecond calculations. 100% astronomical accuracy.
+> Built in Rust, with Swiss Ephemeris-backed astronomical calculations and validated fixtures. Outputs remain reflective, not predictive.
 >
 > Two surfaces for different callers:
 > - **Deterministic (Rust)** — direct engine + workflow calls via `@selemene/bridge` or `/api/v1/workflows/{id}/execute`.
@@ -72,12 +72,12 @@ Apps that gamify meditation. Courses that promise transformation. Retreats that 
 
 Each delivered value while creating dependency.
 
-Selemene offers something different: **17 symbolic mirrors** that reflect patterns in your birth data, timing, and energetic signature. Not to give answers, but to train the capacity to witness yourself.
+Selemene offers something different: **17 public symbolic mirrors** that reflect patterns in your birth data, timing, and energetic signature. Not to give answers, but to train the capacity to witness yourself.
 
 ### Built Different
 - **Sub-millisecond calculations** — Technical rigor in service of inquiry
 - **Swiss Ephemeris-backed Vedic core** — Panchanga, Vimshottari, and Transits validated against trusted chart references
-- **17 engines, one coherence** — Vedic, Western, and biofield traditions integrated
+- **17 public engines, one coherence** — Vedic, Western, and biofield traditions integrated
 - **Two surfaces** — Deterministic Rust + agent-friendly narrative witness pipeline (language, relationship, Folio, NotebookLM)
 - **Anti-dependency design** — Succeeds when you outgrow it
 
@@ -329,7 +329,7 @@ let output = client.calculate("numerology", profile.to_engine_input()).await?;
 println!("{}", MarkdownRenderer::new().render_engine_output(&output));
 ```
 
-**Features:** HTTP client for all 17 engines & 6 workflows, local profile management (`~/.noesis/profile.json`), macOS Keychain API key storage, Markdown/JSON report rendering, TOML + env config.
+**Features:** HTTP client for all 17 public engines & 6 workflows, local profile management (`~/.noesis/profile.json`), macOS Keychain API key storage, Markdown/JSON report rendering, TOML + env config.
 
 ### Terminal TUI (`noesis-tui`)
 
@@ -339,7 +339,7 @@ Full interactive terminal interface built with Ratatui. Run engines, browse work
 cargo run --bin noesis-tui
 ```
 
-**Screens:** Welcome (with connection status) · Onboarding wizard (8-step profile setup) · Engine picker (17 engines, `/` to filter) · Workflow picker (6 workflows) · Result display (styled Markdown, scroll, export) · History browser (past readings) · Profile editor (birth data + API key)
+**Screens:** Welcome (with connection status) · Onboarding wizard (8-step profile setup) · Engine picker (17 public engines, `/` to filter) · Workflow picker (6 workflows) · Result display (styled Markdown, scroll, export) · History browser (past readings) · Profile editor (birth data + API key)
 
 **Keybinds:** `j/k` navigate · `Enter` select · `/` filter · `e` export MD · `J` export JSON · `r` re-run · `?` help overlay · `Ctrl+Q` quit
 
@@ -528,6 +528,29 @@ See:
 - [`docs/api/engines.md`](./docs/api/engines.md)
 - [`docs/api/workflows.md`](./docs/api/workflows.md)
 
+## ✦ Release and billing status
+
+The public API contract is preserved while release gates are being completed.
+
+- **Billing:** `BILLING_MODE=free` is the safe default when Dodo Payments is
+  unavailable. `disabled` is a hard ceiling. Checkout, portal, and webhook
+  routes remain registered for compatibility but return `503
+  BILLING_DISABLED`; free mode returns the documented free-tier balance.
+- **Tarot:** the current truth fixture proves a deterministic local replay and
+  explicitly does not claim generated, fallback, or unavailable provider
+  behavior that the implementation does not expose.
+- **Distribution:** Rust SDK/TUI package publication is held until the
+  dependency chain has matching crates.io receipts. Build/test success is not
+  a registry publication receipt.
+- **Operations:** tag creation, package publication, deployment, production
+  promotion, and merge require the receipts listed in
+  [`docs/release/dodo-free-mode-promotion-gate.md`](./docs/release/dodo-free-mode-promotion-gate.md).
+
+The release candidate checklist and proposed notes live in
+[`docs/release/external-release-candidate.md`](./docs/release/external-release-candidate.md)
+and [`CHANGELOG.md`](./CHANGELOG.md). No published release or provider
+entitlement is implied by this repository state.
+
 <br>
 
 ## ✦ Agent Skills
@@ -545,15 +568,18 @@ Activated in `~/.agents/skill-clusters`.
 
 ## ✦ Project Health
 
-| Category | Status | Score |
-|:---------|:------:|------:|
-| Tests (witness-pipeline) | ████████████████████ | 94/94 |
-| CI/CD | ████████████████████ | 9 workflows |
-| Type Safety | ████████████████████ | TS + Rust |
-| Documentation | ████████████████░░░░ | API + AGENT_FLOW |
-| License | ████████████████████ | MIT |
+Health is evidence-scoped rather than a single score:
 
-> **Overall:** Healthy, actively evolved for agentic + narrative use cases.
+| Surface | Current statement |
+|:--------|:------------------|
+| Local repository gate | Must pass on the exact release candidate commit |
+| Billing | Free/disabled modes are implemented; paid Dodo mode is release-gated |
+| Distribution | Rust SDK/TUI registry receipts remain pending |
+| Deployment | Source, schema, image, rollback, and protection attestations remain pending |
+| License | MIT |
+
+See the release candidate checklist for the receipt required to move any
+surface from prepared to externally released.
 
 <br>
 

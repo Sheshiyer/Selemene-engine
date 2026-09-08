@@ -114,7 +114,7 @@ agent = Agent(role="Vedic Analyst", tools=tools)
 
 ## Engines
 
-The bridge covers all 16 Noesis consciousness engines:
+The bridge covers all 17 public Noesis consciousness engines:
 
 | # | Engine | Source | Status | Description |
 |---|--------|--------|--------|-------------|
@@ -134,8 +134,9 @@ The bridge covers all 16 Noesis consciousness engines:
 | 14 | Enneagram | TS | Live | 9-type personality + wing analysis |
 | 15 | Sacred Geometry | TS | Live | Geometric pattern consciousness mapping |
 | 16 | Sigil Forge | TS | Live | Intention-encoded symbolic generation |
+| 17 | Raaga | TS | Live | Raga and resonance reflection |
 
-*TypeScript engines run as a Railway sidecar on port 3001, bridged to Rust via `BridgeEngine`. All 16 engines are accessible through the main Rust API — the TS server is transparent to callers.*
+*TypeScript engines run as a Railway sidecar on port 3001, bridged to Rust via `BridgeEngine`. All 17 public engines are exposed through the main Rust API — the TS server is transparent to callers. Capability discovery may also report internal runtime records that are not public SDK engines.*
 
 Plus 6 orchestrated workflows (birth-blueprint, daily-practice, decision-support, self-inquiry, creative-expression, full-spectrum).
 

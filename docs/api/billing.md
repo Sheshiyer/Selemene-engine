@@ -1,12 +1,17 @@
 # Billing API Reference
 
-> Version: 3.3.0 · Payment contract preserved; Dodo Payments is release-gated
+> Version: 3.3.1 · Payment contract preserved; Dodo Payments is release-gated
 
 Noesis uses a credit-based billing model. The public billing API and SDK remain
 compatible with Dodo Payments, but payment actions are now controlled by an
 explicit release mode. When Dodo access is unavailable, the supported product
 mode is free access; old subscription and promotion rows remain readable audit
 records and are not treated as live provider confirmation.
+
+The API shape is preserved, but paid checkout is not functional while Dodo
+credentials and provider access are unavailable. Operators must communicate
+the active `BILLING_MODE`; clients must handle `503 BILLING_DISABLED` rather
+than treating the route's continued existence as evidence that payments work.
 
 ## Runtime payment modes
 

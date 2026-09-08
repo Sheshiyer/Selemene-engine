@@ -3,7 +3,12 @@ name = "noesis-tui"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 description = "Terminal User Interface for Selemene Engine — Ratatui-based interactive client"
+readme = "README.md"
+keywords = ["selemene", "noesis", "tui", "ratatui", "consciousness"]
+categories = ["command-line-utilities", "api-bindings"]
 
 [[bin]]
 name = "noesis-tui"

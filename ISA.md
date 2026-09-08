@@ -470,3 +470,41 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - ISC-106..119: Browser Gate 4 passed Unicode Threshold → Raaga → Sigil → combined Noesis → clear. It visibly proved two observations, retained inquiry, exact engine labels, a concrete current-practice route, and the explicit empty state without functional console, page, request, or HTTP errors.
 - ISC-120..122: The final Sankalpa gate passed with 85/85 tests, both TypeScript projects, production build, whitespace checks, and sensitive fixture-value bundle scans. The only build warning is the known Three.js chunk-size optimization queued for Wave 2.
 - Final review: Independent code audit returned GO with no P0/P1 findings after Unicode, strict context allowlists, single-envelope cache atomicity, malformed-state resilience, and timezone-collision remediation.
+## External release preparation continuation — 2026-09-08
+
+### Decisions
+
+- The primary checkout's untracked archive remains user-owned and untouched;
+  all release-preparation edits belong to the isolated
+  `codex/dodo-free-mode-20260908` worktree.
+- Release preparation is not release execution. Tag creation, GitHub release
+  publication, registry publication, deployment, production promotion, and
+  merge remain separately gated.
+- The legacy tag-triggered release workflow is manual-only, reuses the
+  canonical CI workflow, creates a draft release, requires the
+  `release-approval` environment for artifact mutation, and no longer writes
+  `main`'s `CHANGELOG.md` from automation.
+- The public contract is 17 engines and 6 workflows; runtime capability
+  discovery may include additional internal or sidecar records. Marketing
+  copy must not use the removed `100% astronomical accuracy` claim.
+- Dodo route and SDK shapes remain preserved, but paid behavior is not
+  functional without provider access. `free` is the safe default and
+  `disabled` is the hard ceiling; historical provider rows are audit data.
+- Tarot evidence is limited to its deterministic local fixture. Generated,
+  fallback, and unavailable Tarot behavior remain explicit non-claims.
+- No parallel write worker was dispatched: the requested README, package,
+  release, and workflow edits share one exact gate narrative and one branch,
+  so splitting them would add merge risk without independent ownership.
+
+### Verification receipts
+
+- Advisor verification was attempted and returned an expired OAuth session;
+  no advisor approval is claimed.
+- Current remote PR CI run was observed still in progress before these edits;
+  its completion must be read back on the final pushed head.
+- Rust TUI now has explicit repository/homepage/readme/keywords/categories
+  metadata and a source-first package README.
+- Public SDK, bridge, and engine-SDK package metadata/readmes now identify the
+  repository and current billing/distribution boundary.
+- Root README and release templates now point to the external-release
+  candidate checklist and distinguish public contract from runtime records.

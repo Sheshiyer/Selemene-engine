@@ -214,3 +214,31 @@ of scope.
 - Production promotion remains disabled pending green CI, package receipts,
   source/schema/image attestations, rollback evidence, Vercel protection, and
   durable one-use payment receipts.
+
+## Release-preparation receipts (2026-09-08)
+
+The external release-preparation pass is intentionally separate from release
+execution. It updated the public README, current API/package documentation,
+Rust TUI package metadata, package provenance metadata, release checklist,
+changelog, and the legacy release workflow. The workflow is now manual-only,
+reuses the canonical CI workflow, requires the `release-approval` environment
+for artifact mutation, creates a draft GitHub release, and no longer writes
+`main`'s changelog from automation.
+
+Local receipts on the isolated release worktree:
+
+- `cargo check -p noesis-tui --locked`: passed.
+- `cargo test -p noesis-sdk --lib --locked`: **36 passed, 1 ignored**.
+- `@noesis/sdk`: **11/11 tests**, typecheck passed.
+- `@selemene/engine-sdk`: **35/35 tests**, typecheck and build passed.
+- `@selemene/bridge`: Bun build and typecheck passed after frozen local
+  dependency installation.
+- `pnpm run gate`: script, contract, verification, and TypeScript lanes passed;
+  the TypeScript engine suite returned **95 passed, 0 failed, 296 expectations**.
+- `git diff --check`, package JSON parsing, Cargo metadata checks, and release
+  workflow YAML parsing passed.
+
+These are local preparation receipts. They do not replace the required fresh
+remote CI, package registry, Railway, Cloudflare, Vercel, image provenance, or
+rollback attestations. No tag, GitHub release, registry publication,
+deployment, production promotion, or merge was executed.

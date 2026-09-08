@@ -1,6 +1,6 @@
 # TUI Integration Guide — Noesis Terminal Interface
 
-**TUI**: The Noesis Terminal User Interface — a rich, interactive terminal viewer for all 16 consciousness engines.
+**TUI**: The Noesis Terminal User Interface — a rich, interactive terminal viewer for all 17 public consciousness engines.
 
 **Production URLs**: `3437.tryambakam.space` | `noesis.tryambakam.space`  
 **Backend API**: `https://selemene.tryambakam.space`
@@ -63,7 +63,7 @@ X-Api-Key: nk_...
 }
 ```
 
-### Full-spectrum workflow (all 16 engines)
+### Full-spectrum workflow (all 17 public engines)
 
 ```
 POST https://selemene.tryambakam.space/api/v1/workflows/full-spectrum/execute
@@ -98,7 +98,7 @@ Response includes `reading_id`, `reading_url`, `witness_layer`, and per-engine `
 
 ---
 
-## v3.3.0 Reading Object Contract
+## v3.3.1 Reading Object Contract
 
 All workflow responses include:
 
@@ -145,7 +145,7 @@ const client = new NoesisClient("https://selemene.tryambakam.space", {
   authToken: process.env.NOESIS_API_KEY,
 });
 
-// Full-spectrum (all 16 engines)
+// Full-spectrum (all 17 public engines)
 const result = await client.workflow("full-spectrum", {
   birth_data: { date: "1991-08-13", time: "13:19", timezone: "Asia/Kolkata" }
 });
