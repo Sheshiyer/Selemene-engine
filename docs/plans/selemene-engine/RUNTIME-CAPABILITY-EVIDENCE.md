@@ -183,9 +183,11 @@ of scope.
   configured Postgres instance rejected the connection: role `noesis_user`
   does not exist. This is a local database-role gap, not evidence of a
   production role or authorization.
-- Remote CI run `34238967242` reached the disposable migration and test
-  containers. Its only failing test was the unrelated capability-route shape
-  test; billing behavior was not promoted or inferred from that failure.
+- Fresh remote CI run `34240894385` reached the disposable migration and test
+  containers and passed billing E2E **4/4**, replay **5/5**, and hook
+  **3/3**. Its only failing test was the unrelated capability-route shape
+  test, which returned `500 INTERNAL_ERROR` instead of `200`; this does not
+  attest production billing mode or production database authorization.
 
 ### Phase 6: Rust distribution compatibility
 

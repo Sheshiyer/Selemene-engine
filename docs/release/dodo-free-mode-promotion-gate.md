@@ -44,7 +44,8 @@ release commit and environment:
 ## Current branch disposition
 
 The current review branch is
-`codex/dodo-free-mode-20260908` at commit `cf2aa01a`, with draft PR [#1489](https://github.com/Sheshiyer/Selemene-engine/pull/1489).
+`codex/dodo-free-mode-20260908`, with code closure commit `cf2aa01a` and
+follow-on evidence receipts in draft PR [#1489](https://github.com/Sheshiyer/Selemene-engine/pull/1489).
 The PR is mergeable but remains draft. Fresh CI run
 [34238967242](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34238967242)
 passed every completed lane except the pre-existing capability-route
