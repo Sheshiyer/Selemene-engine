@@ -246,3 +246,31 @@ Gate because the unrelated capability-route test returned `500
 INTERNAL_ERROR` instead of `200`; therefore no green release gate exists yet.
 No tag, GitHub release, registry publication, deployment, production
 promotion, or merge was executed.
+
+## Post-promotion receipts (2026-09-08)
+
+The external release was subsequently merged and promoted through the
+connected GitHub workflow. These receipts supersede the execution-status
+statement above without rewriting the historical preparation record:
+
+- PR [#1489](https://github.com/Sheshiyer/Selemene-engine/pull/1489) merged
+  main source `561c3e476e134eeac424c77b092b95b9749e0215`.
+- Workflow [34258440332](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34258440332)
+  passed canonical CI, source validation, both image builds, Railway deploy,
+  API smoke, and admin-web smoke.
+- Railway deployment `ee9cb602-d3d3-4db3-a8d6-d06fc75090a8` succeeded with
+  provider image digest
+  `sha256:ba3baabf749bce30c9543f2049410b2da8df6d574067f6dba7ef3c0d4680ec82`.
+  The workflow's GHCR provenance receipt is separately recorded as
+  `sha256:7edf1be9bc49433876e1addcd9763ae2019c84105bca62d1ae19fa5ef5e3f066`;
+  exact equivalence is not claimed because Railway built independently.
+- `BILLING_MODE=free` is explicitly set in Railway production. Dodo variables
+  remain audit-only; payment promotion is not enabled.
+- Live `/health/live` and `/health/ready` returned `200`; Postgres, Redis,
+  orchestrator, bridge, and six bridge engines were ready. API smoke was 7/7
+  and admin-web smoke passed.
+- The GitHub release record is
+  [release-3.3.1-free-mode-20260908](https://github.com/Sheshiyer/Selemene-engine/releases/tag/release-3.3.1-free-mode-20260908).
+- Rust SDK/TUI registry receipts, Cloudflare scoped-account refresh, Vercel
+  production protection, exact schema/image linkage, and exercised rollback
+  remain open holds.

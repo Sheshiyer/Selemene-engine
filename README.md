@@ -62,6 +62,22 @@
 > Part of [Tryambakam Noesis](https://tryambakam.space) — a living inquiry field where success means you outgrow the system.
 <!-- readme-gen:end:hero -->
 
+## Production release and billing
+
+The current production release is the [Dodo-free mode release](https://github.com/Sheshiyer/Selemene-engine/releases/tag/release-3.3.1-free-mode-20260908),
+deployed from main commit `561c3e47`. Dodo Payments is unavailable and is not
+used for entitlement decisions. The billing routes and SDK shapes remain
+available for compatibility, while `BILLING_MODE=free` provides deterministic
+free access; checkout, portal, and webhook routes return the stable
+`503 BILLING_DISABLED` response. Operators can select `free` or `disabled`
+through the admin control, but cannot enable Dodo without a future provider
+release gate.
+
+Tarot currently exposes deterministic local truth only. Generated, fallback,
+and unavailable Tarot states are not implemented or claimed. Rust SDK/TUI and
+other registry publication remain held until their package dependency-chain
+receipts are available.
+
 <br>
 
 ## Every System You've Tried...
