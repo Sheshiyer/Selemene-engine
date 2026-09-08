@@ -1,6 +1,8 @@
-# Unreleased — external release candidate
+# 3.3.1 — Dodo-free billing production release (2026-09-08)
 
-> Prepared for review; not tagged or published.
+> [Production release record](https://github.com/Sheshiyer/Selemene-engine/releases/tag/release-3.3.1-free-mode-20260908)
+> deployed from main commit `561c3e47` through workflow
+> [34258440332](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34258440332).
 
 ## Billing / Dodo Payments
 
@@ -24,8 +26,9 @@
 - Updated public SDK, bridge, and engine-SDK package metadata and docs.
 - Added external release gates for CI, registry receipts, Railway, Cloudflare,
   Vercel, image provenance, rollback, and payment evidence.
-- No tag, release, package publication, deployment, promotion, or merge is
-  implied by this candidate.
+- Production is promoted in free mode with API/admin smoke passing. Rust SDK,
+  TUI, and other registry publication remain held pending dependency-chain
+  receipts; Dodo payment promotion is disabled.
 
 # Release v0.1.1 — witness-pipeline (Patch)
 

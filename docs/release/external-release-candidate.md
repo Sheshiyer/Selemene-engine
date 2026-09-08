@@ -1,14 +1,13 @@
 # External release candidate checklist
 
-Status: prepared, not released  
-Candidate line: post-`3.3.1` patch candidate  
-Branch: `codex/dodo-free-mode-20260908`  
+Status: production promoted; package publication remains held
+Release record: [3.3.1 — Dodo-free mode production release](https://github.com/Sheshiyer/Selemene-engine/releases/tag/release-3.3.1-free-mode-20260908)
+Main merge: `561c3e476e134eeac424c77b092b95b9749e0215`
 Review: [PR #1489](https://github.com/Sheshiyer/Selemene-engine/pull/1489)
 
 This document is the external-release handoff for the Dodo-free billing and
-Tarot truth work. It records what can be published and what remains blocked.
-It does not authorize tag creation, package publication, deployment,
-production promotion, or merge.
+Tarot truth work. Production promotion is complete through the connected
+workflow; it records what shipped and what remains intentionally blocked.
 
 ## Public contract
 
@@ -38,35 +37,38 @@ The current local evidence still holds Rust SDK/TUI publication because the
 registry does not expose the required `noesis-core` dependency line. No package
 has been published or installed from a candidate registry version.
 
-## Required external receipts
+## External receipts
 
-- [ ] Exact PR head has a fresh green canonical CI Gate.
+- [x] Exact merged source has a fresh green canonical CI Gate: [run 34258440332](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34258440332).
 - [ ] Package dry-runs pass from a clean candidate commit.
 - [ ] Registry pages show the dependency chain in publish order.
-- [ ] Railway attests source SHA, schema revision, effective `BILLING_MODE`,
-      image digest, and post-deploy health.
+- [x] Workflow checked out and validated source SHA `561c3e47`; Railway
+      production deployment `ee9cb602-d3d3-4db3-a8d6-d06fc75090a8` succeeded,
+      `BILLING_MODE=free` is explicitly set, and live health/readiness pass.
+- [ ] Railway schema revision and deployed-image-to-GHCR digest equivalence
+      still need a provider-level receipt. The Railway-built digest and GHCR
+      provenance digest are recorded separately.
 - [ ] Cloudflare source/account bindings are read back using the explicitly
       scoped account session.
 - [ ] Vercel production protection and same-origin admin proxy checks pass.
 - [ ] Rollback target and schema rollback path are recorded and exercised.
-- [ ] Only after the above: tag, draft release, package publication, deploy,
-      promotion, and merge are separately approved.
+- [x] Production deploy and release record are published; package publication
+      remains held until the package and provider receipts above exist.
 
 ## Current holds
 
 - Advisor verification is unavailable because the local OAuth session expired.
-- The latest completed PR CI run is
-  [34246656166](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34246656166)
-  on release head `941ae5f0`. Security, workspace, TypeScript, Python,
-  workflow-parity, test, and build lanes passed. Integration Tests and the
-  aggregate CI Gate failed only because the capability-route test returned
-  `500 INTERNAL_ERROR` instead of `200`; billing E2E **4/4**, replay **5/5**,
-  and hooks **3/3** passed. A fresh green run is required after that blocker
-  is resolved.
+- The production workflow [34258440332](https://github.com/Sheshiyer/Selemene-engine/actions/runs/34258440332)
+  passed Security Audit, Secret Scanning, Workspace Gate, TS Engines, Lint,
+  Python Sidecars, Workflow Registry Parity, Test, Integration Tests, Build,
+  source validation, both image builds, Railway deploy, API smoke, and admin
+  smoke. Kubernetes and release-artifact publication were intentionally
+  skipped.
 - Local Postgres lacks the configured `noesis_user` role; local DB-backed billing
   replay is not a production authorization receipt.
-- Railway, Cloudflare, Vercel, image provenance, and rollback attestations are
-  not claimed by this candidate.
+- Cloudflare scoped-account verification, Vercel production protection, exact
+  Railway schema/image equivalence, package publication, and rollback exercise
+  remain explicit holds.
 
 ## Rollback posture
 
