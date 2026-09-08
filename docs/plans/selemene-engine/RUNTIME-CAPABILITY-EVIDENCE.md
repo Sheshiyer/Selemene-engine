@@ -120,6 +120,46 @@ Date: 2026-08-31. Same branch as Slice 2. Scope: **partial** slice toward GitHub
 
 ## Remaining boundaries
 
+## Phase 4: Tarot semantic truth pilot (2026-09-08)
+
+This is the first Phase 4 fixture slice for ENG-01/ENG-02 and Tarot W3E slot
+07. It proves the current Tarot implementation's deterministic local path; it
+does not claim provider-generated, fallback, or unavailable Tarot behavior.
+
+### Fixture behavior
+
+- `ts-engines/tests/fixtures/tarot/three-card-seed-12345.json` fixes the input,
+  question, seed, card identities, orientations, interpretations, witness
+  prompts, and provenance projection.
+- `TarotEngine.calculate()` replays the same three cards and witness prompts
+  for the same seed and preserves `fallback_used: false` and `confidence: 1`.
+- Unsupported spreads reject with `INVALID_SPREAD_TYPE`; they do not silently
+  default to a different spread.
+- Timestamps and processing duration are intentionally excluded from the
+  fixture projection because they are runtime metadata, not semantic output.
+
+### TDD receipts
+
+**RED**: `bun test tests/tarot_truth_fixture.test.ts` failed because the
+fixture file did not exist (`ENOENT`). The invalid-spread assertion passed.
+
+**GREEN**
+
+- `bun test tests/tarot_truth_fixture.test.ts tests/tarot_provenance.test.ts`:
+  3 passed, 0 failed, 10 expectations.
+- `bun run typecheck`: passed.
+- The replay test executes Tarot twice and compares both results with the
+  fixture and with each other.
+
+### Explicit non-claims
+
+- Tarot is currently local deterministic wisdom data only; no provider,
+  generated-text, sidecar, or remote fallback path exists in this slice.
+- `fallback_used: false` is truthful for the current implementation but is not
+  evidence that a future fallback path works.
+- Generated/fallback/unavailable state fixtures remain open for engines that
+  actually expose those modes, and Tarot's remaining W3E slots remain open.
+
 - ~~Native Rust/API runtime capability adoption remains a separate slice.~~ **Closed by Slice 2** above (2026-08-31) for the bridge-proxied capability-discovery surface specifically; native (non-bridge-proxied) Rust engines, if any are added later, are still a separate concern.
 - ~~Python/database-conditional capability reporting remains a separate slice.~~ **Partially closed by Slice 2**: Python sidecar local self-check capability status is done. `database-conditional` `RuntimeKind` reporting (for any future DB-backed engine) remains open — nothing in this repo currently needs it.
 - Per-engine semantic completion repair remains a separate slice, now begun (partially) for tarot slot `07` only — see Slice 3.

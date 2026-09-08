@@ -341,6 +341,9 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 
 ## Decisions
 
+- 2026-09-08: Continuation planning is governed by the recovered Phase 1–7 roadmap; Phase 4 starts with the Tarot pilot, while state, distribution, deployment, and promotion remain downstream gates.
+- 2026-09-08: Tarot semantic truth is constrained to a deterministic local fixture because the current engine has no generated, provider, sidecar, or fallback path; unavailable behavior must not be inferred from `fallback_used: false`.
+- 2026-09-08: Advisor verification was attempted before implementation but blocked by an expired OAuth session; the implementation proceeds only with repository-local TDD evidence and keeps external claims unclaimed.
 - 2026-07-19 02:15: refined: The live integration plan names Phase 6 Wave 2 as performance, empty states, and error handling; Wave 1 is complete and remains immutable.
 - 2026-07-19 02:15: Root-cause-at-ingestion: payload provenance and failure detail disappear inside `payloadLoader`, while Three.js enters the shell through the synchronous `App.tsx` import; both seams must be fixed before display polish.
 - 2026-07-19 02:15: The accessible fallback is an equivalent text-and-section navigator, not an error page; reduced motion and unavailable WebGL must never hide witness content.
@@ -421,6 +424,7 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 
 ## Verification
 
+- Phase 4 Tarot pilot: RED `bun test tests/tarot_truth_fixture.test.ts` recorded the missing fixture; GREEN `bun test tests/tarot_truth_fixture.test.ts tests/tarot_provenance.test.ts` returned 3 passed and `bun run typecheck` passed. External generated/fallback/unavailable behavior remains unverified by design.
 - ISC-132..137: Production Vite build emitted `index-CYgISPpb.js` at 249,275 raw/79,819 gzip bytes and `DepthGallery-5EhUnFqv.js` at 515,503 raw/129,200 gzip bytes; `npm run check:renderer-budget` proved Three.js is absent from entry and present in the single async depth chunk.
 - ISC-138..147: Focused loader tests prove hash/cache/remote provenance, malformed-hash fallback, 404 not-found, typed failure, safe rejected-IPC conversion, legacy nullable compatibility, and the deferred-promise gate rejects stale completions.
 - ISC-148..155: Gateway renderer tests cover all configured/authenticated combinations; browser Account QA displayed only `Local-only`, fixed guidance, and no URL, token, header, exception, console error, or failed request.
