@@ -223,3 +223,9 @@ Cross-repo verification of the capability-parity consumer rollout. Each repo was
 - Two pre-existing, out-of-scope failures were observed and recorded verbatim, not fixed: noesis-raycast full lint (13 ESLint errors + Prettier findings, pre-existing per brief), and sankalpa's `build/icon.svg` test (pre-existing per brief, asset deleted in `ca3a0f2`).
 - All other gates (contracts, cargo build, ts-engines, urania-137 tests/typecheck, antahkarana containment/truth/secrets/typecheck, sankalpa typecheck, noesismirror-web tests) passed cleanly.
 - Live capabilities route returns `404` (not yet deployed) as of this receipt.
+
+### Final-review fix wave (2026-09-27)
+
+- Selemene-engine `e76452b2`: `take_contract_provenance` strips the reserved `__contract_provenance` key before readings are persisted (calculate and workflow paths) and from workflow responses; `capabilities.rs` caches the readiness-derived availability map for `CAPABILITY_READINESS_TTL` (10s), caching both Ok and Err. Receipts: `cargo test -p noesis-api --lib` 103 passed; `capability_route_tests` 5 passed; `integration_tests test_calculate_` 17 passed; workspace build, `cargo fmt --check`, `pnpm run gate:contracts` clean.
+- antahkarana `cee7b52`: dead Rust `availability_to_roster_status` removed (it contradicted the TypeScript unknown→`declared`→`idle` mapping); `src/features/roster/model.test.ts` added (8 passing) covering parser, unknown availability, missing `engine_id`, null/404 bodies, and the 404→health-derived fallback. `test:containment` 41 passed; `check:truth` 95 checks; `check:secrets` PASS; `tsc --noEmit` clean.
+- Scoped re-review: all three final-review findings ADDRESSED, no new Critical/Important breakage.
