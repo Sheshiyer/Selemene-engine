@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, it, test } from 'bun:test'
 import capabilityFixture from '../../../contracts/v1/fixtures/engine-capability.json'
 import errorFixture from '../../../contracts/v1/fixtures/error.json'
 import requestFixture from '../../../contracts/v1/fixtures/engine-request.json'
@@ -62,5 +62,20 @@ describe('canonical v1 fixtures', () => {
     expect(error.contract_version).toBe(CONTRACT_VERSION)
     expect(capability.availability).toBe('available')
     expect(capability.dependencies).toEqual([])
+  })
+})
+
+import type { ContractProvenance } from '../src/contract-v1'
+
+describe('ContractProvenance confidence', () => {
+  it('accepts an optional 0-1 confidence', () => {
+    const p: ContractProvenance = {
+      runtime_kind: 'typescript',
+      implementation_version: '1.0.0',
+      cached: false,
+      fallback_used: false,
+      confidence: 1,
+    }
+    expect(p.confidence).toBe(1)
   })
 })

@@ -133,7 +133,7 @@ pub enum RuntimeKind {
     Composed,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Provenance {
@@ -145,6 +145,9 @@ pub struct Provenance {
     pub backend_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub provider_id: Option<String>,
+    /// Confidence in the result, 0-1. Populated per-engine; omitted where not yet computed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
