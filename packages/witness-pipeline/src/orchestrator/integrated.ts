@@ -9,6 +9,8 @@ import type { ExtractedPattern } from '../patterns/types.js';
 import type { PatternVectorRetriever, RetrievedPattern } from '../patterns/retrieval.js';
 import { renderRetrievedPatternsForPrompt } from '../patterns/retrieval.js';
 import { renderFolioRelationshipHeader } from './folio-header.js';
+import { buildEngineFactsBlock } from './engine-facts.js';
+import type { JevPassGate, JevPassReceipt, JevRetryRecord } from '../jev/pass-gate.js';
 
 export interface OrchestratorInput {
   subjectNames: string[];
@@ -50,6 +52,8 @@ export interface PassResult {
   title: string;
   output: string;
   rubric: SectionRubric;
+  /** Present when a Jev pass gate was configured (shadow or active). */
+  jev?: JevPassReceipt;
 }
 
 export interface OrchestratorOutput {
@@ -61,6 +65,8 @@ export interface OrchestratorOutput {
   assembled: string;
   patterns: ExtractedPattern[];
   retrieved_patterns?: RetrievedPattern[];
+  /** One receipt per pass when a Jev gate ran; absent otherwise. */
+  jev_receipts?: JevPassReceipt[];
 }
 
 export interface LlmCall {
@@ -71,6 +77,10 @@ export interface OrchestratorOptions {
   mode: ParsedModeDoc;
   llm: LlmCall;
   retriever?: PatternVectorRetriever;
+  /** Optional typed-judgment gate (TypeSafe Jev). Shadow mode records only. */
+  jevGate?: JevPassGate;
+  /** Retry a pass when Jev confidently fails guardrail or framing. Default 0 (record only). */
+  jevRetry?: { maxRetries: number };
 }
 
 function resolveRegister(level: number): RegisterBand {
@@ -95,11 +105,15 @@ export class IntegratedReadingOrchestrator {
   private mode: ParsedModeDoc;
   private llm: LlmCall;
   private retriever?: PatternVectorRetriever;
+  private jevGate?: JevPassGate;
+  private jevMaxRetries: number;
 
   constructor(opts: OrchestratorOptions) {
     this.mode = opts.mode;
     this.llm = opts.llm;
     this.retriever = opts.retriever;
+    this.jevGate = opts.jevGate;
+    this.jevMaxRetries = opts.jevRetry?.maxRetries ?? 0;
   }
 
   async run(input: OrchestratorInput): Promise<OrchestratorOutput> {
@@ -128,30 +142,80 @@ export class IntegratedReadingOrchestrator {
       }
     }
     const retrievedBlock = renderRetrievedPatternsForPrompt(retrieved);
+    const engineFacts = buildEngineFactsBlock({
+      subjectNames: input.subjectNames,
+      subjectRoles: input.subjectRoles,
+      engineResultsBySubject: input.engineResultsBySubject,
+    });
+    const allEngineResults = input.engineResultsBySubject.flat();
 
     for (const pass of this.mode.frontmatter.pass_plan) {
       const prior = assembled.slice(-4000);
       const templateContent = getPassTemplate(this.mode, pass.id, register);
-      const basePrompt = this.renderPassTemplate(templateContent, pass, input, prior, register);
+      const hasFactsPlaceholder = /\{\{engine_facts\}\}/.test(templateContent);
+      const rendered = this.renderPassTemplate(templateContent, pass, input, prior, register, engineFacts);
+      // Ground every pass in deterministic engine facts: substitute the placeholder when the
+      // template declares one, otherwise append the block so no pass runs on names alone.
+      const basePrompt = hasFactsPlaceholder
+        ? rendered
+        : `${rendered}\n\n## Engine facts (deterministic, per subject)\n${engineFacts}`;
       const prompt = retrievedBlock ? `${basePrompt}\n\n${retrievedBlock}` : basePrompt;
       const system = this.buildSystemPrompt(pass, input, register);
       const { max } = resolveTargetWords(this.mode, register, pass.id);
-      const started = Date.now();
-      const output = await this.llm(system, prompt, { max_tokens: Math.round(max * 2) });
-      const latencyMs = Date.now() - started;
       const model = pass.model ?? 'tier-default';
-      const rubric = auditSectionOutput({
-        sectionId: pass.id,
-        title: pass.title,
-        targetWords: pass.target_words,
-        output,
-        modelRequested: model,
-        modelUsed: model,
-        latencyMs,
-        engineResults: input.engineResultsBySubject[0] ?? [],
-        relationshipType: input.relationshipContext?.type,
+      const judgeInput = (output: string, rubric: SectionRubric) => ({
+        passId: pass.id, passTitle: pass.title, output, register,
+        relationshipType: input.relationshipContext?.type, subjectNames: input.subjectNames, engineFacts, rubric,
       });
-      passOutputs.push({ id: pass.id, title: pass.title, output, rubric });
+      const produce = async (userPrompt: string) => {
+        const started = Date.now();
+        const output = await this.llm(system, userPrompt, { max_tokens: Math.round(max * 2) });
+        const rubric = auditSectionOutput({
+          sectionId: pass.id, title: pass.title, targetWords: pass.target_words, output,
+          modelRequested: model, modelUsed: model, latencyMs: Date.now() - started,
+          engineResults: allEngineResults, relationshipType: input.relationshipContext?.type,
+        });
+        const jev = this.jevGate && this.jevGate.mode !== 'off' ? await this.jevGate.judge(judgeInput(output, rubric)) : undefined;
+        return { output, rubric, jev };
+      };
+
+      let best = await produce(prompt);
+      const history: JevRetryRecord[] = [];
+      const originalGuardrail = best.jev?.answers?.guardrail_clean;
+      const needsRetry = (r?: JevPassReceipt) =>
+        !!r && r.status === 'judged' && (r.verdicts?.guardrail === 'fail' || r.verdicts?.framing === 'fail');
+      for (let attempt = 1; attempt <= this.jevMaxRetries && needsRetry(best.jev); attempt++) {
+        const flagged = await this.jevGate!.flagSentences(best.output);
+        const revisionPrompt = `${prompt}
+
+## Revision required (attempt ${attempt})
+A typed judge rated the previous draft as predictive or off-frame (guardrail_clean=${best.jev!.answers!.guardrail_clean.toFixed(2)}, framing_ok=${best.jev!.answers!.relationship_framing_ok.toFixed(2)}).
+Rewrite the whole section as descriptive pattern witness for the declared relationship type. No forecasts, guarantees, "will", "likely", "ensures", "success", or promised outcomes. Keep every engine fact and the section length.
+${flagged.length ? `Sentences to remove or reframe:\n${flagged.map((f) => `- "${f.sentence}"`).join('\n')}` : 'Reframe every sentence that states what the partnership will do or produce.'}
+
+Previous draft:
+${best.output}`;
+        const candidate = await produce(revisionPrompt);
+        const improved = candidate.jev?.status === 'judged' && best.jev?.status === 'judged'
+          && (candidate.jev.answers!.guardrail_clean > best.jev.answers!.guardrail_clean)
+          && candidate.jev.answers!.relationship_framing_ok >= best.jev.answers!.relationship_framing_ok - 0.05;
+        // Store a snapshot of the candidate receipt: if it is accepted it becomes the pass receipt,
+        // and the history must not point back at that same object (JSON cycle).
+        history.push({ attempt, flagged_sentences: flagged, receipt: { ...candidate.jev! }, accepted: !!improved });
+        if (improved) best = candidate;
+      }
+
+      const passResult: PassResult = { id: pass.id, title: pass.title, output: best.output, rubric: best.rubric };
+      if (best.jev) {
+        passResult.jev = best.jev;
+        if (history.length) {
+          passResult.jev.retries = history;
+          passResult.jev.chosen = history.some((h) => h.accepted) ? 'revision' : 'original';
+          passResult.jev.original_guardrail_clean = originalGuardrail;
+        }
+      }
+      const output = best.output;
+      passOutputs.push(passResult);
       assembled += `\n\n## ${pass.title}\n\n${output}`;
     }
 
@@ -178,6 +242,7 @@ export class IntegratedReadingOrchestrator {
     };
     if (relationship_header) (out as any).relationship_header = relationship_header;
     if (retrieved.length) out.retrieved_patterns = retrieved;
+    if (this.jevGate && this.jevGate.mode !== 'off') out.jev_receipts = passOutputs.map((p) => p.jev!).filter(Boolean);
     return out;
   }
 
@@ -187,6 +252,7 @@ export class IntegratedReadingOrchestrator {
     input: OrchestratorInput,
     priorPass: string,
     register: RegisterBand,
+    engineFacts = '',
   ): string {
     const overlaySummary = this.buildOverlaySummary();
     const bridgeMandates = this.mode.frontmatter.bridge_mandates.map((m) => `- ${m}`).join('\n');
@@ -215,7 +281,8 @@ export class IntegratedReadingOrchestrator {
       .replace(/\{\{register\}\}/g, register)
       .replace(/\{\{pass_id\}\}/g, pass.id)
       .replace(/\{\{target_words\}\}/g, String(pass.target_words))
-      .replace(/\{\{language\}\}/g, input.language ?? 'en');
+      .replace(/\{\{language\}\}/g, input.language ?? 'en')
+      .replace(/\{\{engine_facts\}\}/g, engineFacts);
   }
 
   private buildSystemPrompt(
