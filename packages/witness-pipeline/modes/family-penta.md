@@ -75,3 +75,7 @@ Synthesize penta observations into one integrative view. One open witness questi
 ### 2026-07-10 — Seeded from relationship mapping contract
 **Question:** Can a 5-person family penta be modeled with explicit roles and pentagon topology?
 **Adopted:** Yes — roles + pentagon + family type.
+
+### 2026-09-27 — Jev shadow matrix: field-overview stayed predictive after retry
+**Question:** What did the live Jev shadow gate flag in this mode?
+**Adopted:** Describe each declared role from its own engine facts before naming any cross-member pattern. No "will", no outcomes for any member, no roles assigned beyond those declared.

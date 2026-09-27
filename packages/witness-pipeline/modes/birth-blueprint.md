@@ -72,3 +72,7 @@ When register l1_l3 keep language simple and descriptive. l4_l5 may add one laye
 
 **Question:** How do we keep a birth-blueprint from ballooning into a full integrated reading?
 **Adopted:** Strict pass budget (max 2 passes), hard cap on engine set, and the "one living invitation" rule in the final pass.
+
+### 2026-09-27 — Jev shadow matrix: natal and invitation passes read as forward-looking
+**Question:** What did the live Jev shadow gate flag in this mode?
+**Adopted:** The invitation is one open question or practice, not a forecast. Keep "will", "likely", "supports future" out of the natal pass.

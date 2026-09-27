@@ -80,6 +80,26 @@ Readings:
 
 Artifacts: `matrix-summary.{json,md}`, per-run `reading.md`, `result.json`, `jev-receipts.json` under the session scratchpad `run/matrix-live/`.
 
+
+## Mode-aware guardrail, voice rules, lessons wiring, partner-synastry migration (2026-09-27, follow-up)
+
+- `jev_guardrail: descriptive | forecast-allowed` is an optional mode-doc key (validated by the parser). `integrated-kundali-l0.md` declares `forecast-allowed`; every other mode stays `descriptive`. The gate's guardrail question and the per-sentence flagging clause both follow the policy: under `forecast-allowed`, dated periods described as tendencies or invitations are not flagged, while guarantees, certainties, diagnoses and promises still are.
+- `VOICE_RULES` (per policy) are appended to every system prompt. The "avoid" list is the set of phrases Jev flagged in the matrix: "will", "likely", "success emerges", "ensures", "creates potential for", "positions for", "supports future", "over the coming years"; for timed readings also "will bring", "optimal conditions for", "major expansion".
+- Each mode doc gained a dated lesson naming the phrases Jev flagged in that mode. Finding while wiring it: `{{lessons_summary}}` is declared by one template in ten, so lessons were reaching no prompt. The orchestrator now appends the lessons summary when a template lacks the placeholder, the same rule already used for engine facts.
+- `partner-synastry.md` migrated from the legacy `mode_id` frontmatter to the mode-doc schema: four passes (opening, structural-compatibility, energetic-dance, synthesis), two `partner` roles, four-engine overlay weights, level-2 gate carried as a bridge mandate, framing decided by the caller's `relationship_context`. Every mode doc now parses; a test pins that.
+- Tests: 133 total in witness-pipeline, 130 passing; the 3 failures are the pre-existing vault-path ones.
+
+
+Live comparison after these changes (same subjects, same provider, Jev shadow):
+
+| Run | Guardrail before (first draft) | Guardrail after (first draft) | Retries needed | Framing / grounding |
+|---|---|---|---|---|
+| business-partners L2 | 0.66 / 0.38 / 0.61 / 0.54 | 0.91 / 0.87 / 0.81 / 0.85 | 1 → 0 | 4/4, 4/4 |
+| integrated-kundali L0 (12 passes) | 0.07–0.51, 11 fail | 0.72–0.90, 0 fail, 3 pass | 0 → 0 | 12/12, 12/12 |
+| partner-synastry L2 (migrated, contract test) | did not parse | 0.93 / 0.85 / 0.85 / 0.77 | 0 | 4/4, 4/4 |
+
+Readings: three of four business-partners passes now clear 0.85 on the first draft, so the retry loop did not fire; the voice rules and the lessons block did the work. The L0 kundali under `forecast-allowed` moved from eleven confident failures to none, with the Master Timeline and final synthesis the two lowest at 0.72, which is where the dated forecasts are densest. The migrated partner-synastry doc produced a four-pass dyad reading with the Folio header and grounding on both subjects. Register confidence also rose sharply once the drafts stopped hedging (business-partners 0.80–0.99). Word counts remain under target; that is the next template concern.
+
 ## What is deliberately not done
 
 - Active mode was not switched on. Two confident guardrail failures in shadow are the calibration signal the factor brief asks for; a labeled set comes first.

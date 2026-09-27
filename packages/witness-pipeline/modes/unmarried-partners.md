@@ -63,3 +63,7 @@ Synthesize partnership observations. One open question. No prescriptions.
 ### 2026-07-10 — Seeded from relationship mapping contract
 **Question:** Can unmarried-partner dyads be framed with explicit non-assumptive roles?
 **Adopted:** Yes — explicit 'partner' roles + unmarried-partners type.
+
+### 2026-09-27 — Jev shadow matrix: partnership-field drifted to prediction
+**Question:** What did the live Jev shadow gate flag in this mode?
+**Adopted:** No statements about where the partnership is heading. Describe the two fields and their overlap as present.

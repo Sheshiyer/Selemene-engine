@@ -82,6 +82,9 @@ function assertModeConfig(fm: unknown, path: string): asserts fm is ModeConfig {
   if ('report_level' in obj && !VALID_REPORT_LEVELS.includes(obj.report_level as ReportLevel)) {
     throw new Error(`Mode doc ${path}: invalid report_level '${obj.report_level}'`);
   }
+  if ('jev_guardrail' in obj && !['descriptive', 'forecast-allowed'].includes(String(obj.jev_guardrail))) {
+    throw new Error(`Mode doc ${path}: invalid jev_guardrail '${obj.jev_guardrail}' (descriptive | forecast-allowed)`);
+  }
 }
 
 interface SplitResult {

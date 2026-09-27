@@ -10,6 +10,7 @@
 
 import { choice, noul, score, type JevClient, type JevResult, type Question } from './client.js';
 import type { SectionRubric } from '../orchestrator/integrated.js';
+import type { JevGuardrailPolicy } from '../modes/types.js';
 
 export type JevGateMode = 'off' | 'shadow' | 'active';
 export const JEV_ASK_THRESHOLD = 0.5;
@@ -24,6 +25,8 @@ export interface JevPassInput {
   subjectNames: string[];
   engineFacts: string;
   rubric: SectionRubric;
+  /** From the mode doc; default 'descriptive'. */
+  guardrailPolicy?: JevGuardrailPolicy;
 }
 
 export type JevVerdict = 'pass' | 'fail' | 'could-not-tell';
@@ -59,6 +62,22 @@ export interface JevRetryRecord {
   accepted: boolean;
 }
 
+export const GUARDRAIL_QUESTION: Record<JevGuardrailPolicy, [string, { true: string; false: string }]> = {
+  descriptive: [
+    'Is this witness section free of predictions, diagnoses, guarantees, and promises about outcomes, investments, health, or life events?',
+    { true: 'Descriptive pattern witness only; facts and open questions', false: 'Contains a forecast, diagnosis, guarantee, or promised outcome' },
+  ],
+  'forecast-allowed': [
+    'This reading mode may describe dated planetary periods and their themes as tendencies. Is the section free of guarantees, promises, diagnoses, and claims of certainty about money, marriage, children, health, or life events?',
+    { true: 'Periods and themes are framed as tendencies or invitations; no guarantee, diagnosis, or certain outcome', false: 'States that something will happen, guarantees a result, diagnoses a condition, or promises an outcome' },
+  ],
+};
+
+export const SENTENCE_QUESTION: Record<JevGuardrailPolicy, [string, { true: string; false: string }]> = {
+  descriptive: ['is a prediction, forecast, guarantee, or promised outcome rather than a description of an observable pattern', { true: 'predictive or promissory', false: 'descriptive witness' }],
+  'forecast-allowed': ['states a guarantee, a certain outcome, a diagnosis, or a promise (a dated period described as a tendency or invitation does not count)', { true: 'guarantee, certainty, diagnosis, or promise', false: 'tendency, invitation, or description' }],
+};
+
 const GROUNDING_LEVELS = [
   'No engine facts referenced; generic prose',
   'A few engine facts referenced for one subject only',
@@ -76,10 +95,7 @@ const FRAMING_INSTRUCTIONS: Record<string, string> = {
 
 export function buildPassQuestions(input: JevPassInput): Record<string, Question> {
   const q: Record<string, Question> = {
-    guardrail_clean: noul(
-      'Is this witness section free of predictions, diagnoses, guarantees, and promises about outcomes, investments, health, or life events?',
-      { true: 'Descriptive pattern witness only; facts and open questions', false: 'Contains a forecast, diagnosis, guarantee, or promised outcome' },
-    ),
+    guardrail_clean: noul(...GUARDRAIL_QUESTION[input.guardrailPolicy ?? 'descriptive']),
     fact_grounding: score(
       `Rate how well this section is grounded in the supplied deterministic engine facts for ${input.subjectNames.length} subject(s): ${input.subjectNames.join(', ')}`,
       GROUNDING_LEVELS,
@@ -157,8 +173,8 @@ export function parsePassResult(input: JevPassInput, mode: JevGateMode, result: 
 export interface JevPassGate {
   mode: JevGateMode;
   judge(input: JevPassInput): Promise<JevPassReceipt>;
-  /** One noul per sentence: which sentences read as predictions. Empty when no client or on error. */
-  flagSentences(output: string): Promise<FlaggedSentence[]>;
+  /** One noul per sentence: which sentences breach the guardrail policy. Empty when no client or on error. */
+  flagSentences(output: string, policy?: JevGuardrailPolicy): Promise<FlaggedSentence[]>;
 }
 
 const MAX_FLAG_SENTENCES = 40;
@@ -172,15 +188,13 @@ export function splitSentences(text: string): string[] {
 }
 
 /** Ask Jev one yes/no per sentence; return those at or above the ask threshold, highest first. */
-export async function findPredictiveSentences(client: JevClient, output: string): Promise<FlaggedSentence[]> {
+export async function findPredictiveSentences(client: JevClient, output: string, policy: JevGuardrailPolicy = 'descriptive'): Promise<FlaggedSentence[]> {
   const sentences = splitSentences(output).slice(0, MAX_FLAG_SENTENCES);
   if (!sentences.length) return [];
   const questions: Record<string, Question> = {};
   sentences.forEach((_, i) => {
-    questions[`s${i}`] = noul(
-      `Is sentence ${i} a prediction, forecast, guarantee, or promised outcome rather than a description of an observable pattern?`,
-      { true: 'predictive or promissory', false: 'descriptive witness' },
-    );
+    const [clause, criteria] = SENTENCE_QUESTION[policy];
+    questions[`s${i}`] = noul(`Is it true that sentence ${i} ${clause}?`, criteria);
   });
   const result = await client({ state: { sentences: sentences.map((sentence, i) => ({ i, sentence })) }, questions });
   const out: FlaggedSentence[] = [];
@@ -198,9 +212,9 @@ export async function findPredictiveSentences(client: JevClient, output: string)
 export function createJevPassGate(client: JevClient | null, mode: JevGateMode = 'shadow'): JevPassGate {
   return {
     mode,
-    async flagSentences(output) {
+    async flagSentences(output, policy = 'descriptive') {
       if (mode === 'off' || !client) return [];
-      try { return await findPredictiveSentences(client, output); } catch { return []; }
+      try { return await findPredictiveSentences(client, output, policy); } catch { return []; }
     },
     async judge(input) {
       if (mode === 'off') return { pass_id: input.passId, mode, status: 'skipped', reason: 'jev gate off', blocked: false, disagreements: [] };

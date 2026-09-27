@@ -97,7 +97,7 @@ describe('operator fixture: orchestrator with engine facts and Jev shadow gate',
 });
 
 describe('operator fixture: mode matrix runner (stub narrative, Jev off)', () => {
-  it('runs solo and dyad modes from a manifest and reports the legacy partner-synastry doc as a parse error', () => {
+  it('runs solo and dyad modes from a manifest, including the migrated partner-synastry doc', () => {
     const dir = mkdtempSync(join(tmpdir(), 'wp-matrix-'));
     const enginesDir = join(dir, 'engines'); const out = join(dir, 'out');
     require('node:fs').mkdirSync(enginesDir);
@@ -107,15 +107,15 @@ describe('operator fixture: mode matrix runner (stub narrative, Jev off)', () =>
       runs: [
         { id: 'bb', mode_file: 'birth-blueprint.md', consciousness_level: 1, jev: 'off', subjects: [{ slug: 'operator', role: 'subject', name: NAME }], relationship_context: null },
         { id: 'l4', mode_file: 'integrated-reading-l4.md', consciousness_level: 4, jev: 'off', subjects: [{ slug: 'operator', role: 'subject', name: NAME }], relationship_context: null },
-        { id: 'ps', mode_file: 'partner-synastry.md', consciousness_level: 2, jev: 'off', subjects: [{ slug: 'operator', role: 'partner', name: NAME }, { slug: 'operator', role: 'partner', name: 'B' }], relationship_context: null },
+        { id: 'ps', mode_file: 'partner-synastry.md', consciousness_level: 2, jev: 'off', subjects: [{ slug: 'operator', role: 'partner', name: NAME }, { slug: 'operator', role: 'partner', name: 'B' }], relationship_context: { type: 'custom', mapping_goal: 'contract test', sensitivity_level: 'high' } },
       ],
     };
     const manifestPath = join(dir, 'manifest.json'); writeFileSync(manifestPath, JSON.stringify(manifest));
     execFileSync('npx', ['tsx', 'scripts/mode-matrix-runner.ts', manifestPath, out, '--stub'], { cwd: resolve(__dirname, '..'), stdio: 'pipe', timeout: 120_000 });
     const rows = JSON.parse(readFileSync(join(out, 'matrix-summary.json'), 'utf8'));
-    expect(rows.map((r: any) => [r.id, r.status])).toEqual([['bb', 'ok'], ['l4', 'ok'], ['ps', 'error']]);
+    expect(rows.map((r: any) => [r.id, r.status])).toEqual([['bb', 'ok'], ['l4', 'ok'], ['ps', 'ok']]);
     expect(rows[0].passes).toBe(2); expect(rows[0].register).toBe('l1_l3'); expect(rows[1].register).toBe('l4_l5');
-    expect(rows[2].error).toMatch(/missing required frontmatter key/);
+    expect(rows[2].passes).toBe(4); expect(rows[2].header).toBe('yes');
     expect(existsSync(join(out, 'bb', 'reading.md'))).toBe(true);
     expect(readFileSync(join(out, 'matrix-summary.md'), 'utf8')).toContain('| bb |');
     rmSync(dir, { recursive: true, force: true });

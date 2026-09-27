@@ -189,3 +189,50 @@ describe('jev sentence flagging and retry loop', () => {
     expect(outBad.passes[0].jev?.retries?.[0].flagged_sentences).toEqual([]);
   });
 });
+
+describe('guardrail policy', () => {
+  it('asks the forecast-allowed question and sentence clause when the policy says so', async () => {
+    const { GUARDRAIL_QUESTION, SENTENCE_QUESTION, findPredictiveSentences } = await import('./pass-gate.js');
+    const q = buildPassQuestions(input({ guardrailPolicy: 'forecast-allowed' }));
+    expect((q.guardrail_clean as any).instructions).toBe(GUARDRAIL_QUESTION['forecast-allowed'][0]);
+    expect((buildPassQuestions(input()).guardrail_clean as any).instructions).toBe(GUARDRAIL_QUESTION.descriptive[0]);
+    const client = vi.fn(async (req: any) => ({ model: 'j', answers: Object.fromEntries(Object.keys(req.questions).map((k) => [k, { type: 'noul', noul: 0.1 }])) }));
+    await findPredictiveSentences(client as any, 'The Jupiter period tends to emphasise study and teaching over these years.', 'forecast-allowed');
+    expect((client.mock.calls[0] as any)[0].questions.s0.instructions).toContain(SENTENCE_QUESTION['forecast-allowed'][0]);
+  });
+
+  it('orchestrator reads the policy from the mode doc and puts the matching voice rules in the system prompt', async () => {
+    const { VOICE_RULES } = await import('../orchestrator/integrated.js');
+    const l0 = parseModeDoc(resolve(__dirname, '../../modes/integrated-kundali-l0.md'));
+    expect(l0.frontmatter.jev_guardrail).toBe('forecast-allowed');
+    const systems: string[] = [];
+    const client = vi.fn(async (req: any) => { expect(req.questions.guardrail_clean.instructions).toContain('dated planetary periods'); return result(); });
+    const orch = new IntegratedReadingOrchestrator({ mode: l0, llm: vi.fn(async (sys: string) => { systems.push(sys); return 'x'; }), jevGate: createJevPassGate(client as any, 'shadow') });
+    await orch.run({ subjectNames: ['A'], engineResultsBySubject: [[]], consciousnessLevel: 5 });
+    expect(systems[0]).toContain(VOICE_RULES['forecast-allowed']);
+    const bp = parseModeDoc(resolve(__dirname, '../../modes/business-partners.md'));
+    expect(bp.frontmatter.jev_guardrail).toBeUndefined();
+    const sys2: string[] = []; const users: string[] = [];
+    await new IntegratedReadingOrchestrator({ mode: bp, llm: vi.fn(async (sys: string, user: string) => { sys2.push(sys); users.push(user); return 'x'; }) }).run({ subjectNames: ['A', 'B'], engineResultsBySubject: [[], []], consciousnessLevel: 2 });
+    expect(sys2[0]).toContain(VOICE_RULES.descriptive);
+    // lessons reach the user prompt even though this template declares no {{lessons_summary}}
+    expect(users[0]).toContain('Prior Autoresearch Findings');
+    expect(users[0]).toContain('Jev shadow matrix');
+  });
+
+  it('every mode doc parses, and the migrated partner-synastry doc has four passes and a dyad shape', async () => {
+    const { readdirSync } = await import('node:fs');
+    const dir = resolve(__dirname, '../../modes');
+    for (const f of readdirSync(dir).filter((x) => x.endsWith('.md'))) expect(() => parseModeDoc(resolve(dir, f))).not.toThrow();
+    const ps = parseModeDoc(resolve(dir, 'partner-synastry.md'));
+    expect(ps.frontmatter.pass_plan.map((p) => p.id)).toEqual(['opening', 'structural-compatibility', 'energetic-dance', 'synthesis']);
+    expect(ps.frontmatter.subject_count).toEqual({ min: 2, max: 2 });
+    expect(ps.lessons.length).toBe(1);
+  });
+
+  it('parser rejects an unknown jev_guardrail value', async () => {
+    const { parseModeDocument } = await import('../modes/parser.js');
+    const raw = require('node:fs').readFileSync(resolve(__dirname, '../../modes/business-partners.md'), 'utf8').replace('mode: business-partners', 'mode: business-partners\njev_guardrail: anything-goes');
+    expect(() => parseModeDocument(raw, "inline")).toThrow(/invalid jev_guardrail/);
+  });
+});

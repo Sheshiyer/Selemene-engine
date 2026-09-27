@@ -83,6 +83,19 @@ export interface OrchestratorOptions {
   jevRetry?: { maxRetries: number };
 }
 
+/**
+ * Witness voice rules appended to every system prompt. Phrases listed under "avoid" were the
+ * sentences Jev flagged as predictive across the 2026-09-27 all-modes matrix.
+ */
+export const VOICE_RULES: Record<'descriptive' | 'forecast-allowed', string> = {
+  descriptive: `Witness voice: describe what is present in the charts and how the patterns sit together. State facts and open questions.
+Avoid forecasting verbs and promissory phrasing: "will", "likely", "success emerges", "ensures", "creates potential for", "positions for", "supports future", "suggests that ... will", "over the coming years".
+Prefer: "is present", "shows", "sits alongside", "the pattern appears as", "one open question is".`,
+  'forecast-allowed': `Witness voice for a timed reading: dated planetary periods may be described with their themes as tendencies and invitations.
+Never guarantee, promise, diagnose, or state certainty about money, marriage, children, health, or life events. Avoid "will bring", "ensures", "optimal conditions for", "major expansion", "guaranteed".
+Prefer: "this period tends to emphasise", "an invitation toward", "the chart holds", "one way this may express".`,
+};
+
 function resolveRegister(level: number): RegisterBand {
   return level <= 3 ? 'l1_l3' : 'l4_l5';
 }
@@ -148,6 +161,7 @@ export class IntegratedReadingOrchestrator {
       engineResultsBySubject: input.engineResultsBySubject,
     });
     const allEngineResults = input.engineResultsBySubject.flat();
+    const lessonsBlock = summarizeLessons(this.mode.lessons, 5);
 
     for (const pass of this.mode.frontmatter.pass_plan) {
       const prior = assembled.slice(-4000);
@@ -156,16 +170,20 @@ export class IntegratedReadingOrchestrator {
       const rendered = this.renderPassTemplate(templateContent, pass, input, prior, register, engineFacts);
       // Ground every pass in deterministic engine facts: substitute the placeholder when the
       // template declares one, otherwise append the block so no pass runs on names alone.
-      const basePrompt = hasFactsPlaceholder
+      let basePrompt = hasFactsPlaceholder
         ? rendered
         : `${rendered}\n\n## Engine facts (deterministic, per subject)\n${engineFacts}`;
+      // Lessons are only reachable through {{lessons_summary}}; most mode docs never declare it,
+      // so append the summary when absent so adopted findings actually steer the draft.
+      if (!/\{\{lessons_summary\}\}/.test(templateContent) && lessonsBlock) basePrompt = `${basePrompt}\n\n${lessonsBlock}`;
       const prompt = retrievedBlock ? `${basePrompt}\n\n${retrievedBlock}` : basePrompt;
       const system = this.buildSystemPrompt(pass, input, register);
       const { max } = resolveTargetWords(this.mode, register, pass.id);
       const model = pass.model ?? 'tier-default';
+      const guardrailPolicy = this.mode.frontmatter.jev_guardrail ?? 'descriptive';
       const judgeInput = (output: string, rubric: SectionRubric) => ({
         passId: pass.id, passTitle: pass.title, output, register,
-        relationshipType: input.relationshipContext?.type, subjectNames: input.subjectNames, engineFacts, rubric,
+        relationshipType: input.relationshipContext?.type, subjectNames: input.subjectNames, engineFacts, rubric, guardrailPolicy,
       });
       const produce = async (userPrompt: string) => {
         const started = Date.now();
@@ -185,12 +203,14 @@ export class IntegratedReadingOrchestrator {
       const needsRetry = (r?: JevPassReceipt) =>
         !!r && r.status === 'judged' && (r.verdicts?.guardrail === 'fail' || r.verdicts?.framing === 'fail');
       for (let attempt = 1; attempt <= this.jevMaxRetries && needsRetry(best.jev); attempt++) {
-        const flagged = await this.jevGate!.flagSentences(best.output);
+        const flagged = await this.jevGate!.flagSentences(best.output, guardrailPolicy);
         const revisionPrompt = `${prompt}
 
 ## Revision required (attempt ${attempt})
 A typed judge rated the previous draft as predictive or off-frame (guardrail_clean=${best.jev!.answers!.guardrail_clean.toFixed(2)}, framing_ok=${best.jev!.answers!.relationship_framing_ok.toFixed(2)}).
-Rewrite the whole section as descriptive pattern witness for the declared relationship type. No forecasts, guarantees, "will", "likely", "ensures", "success", or promised outcomes. Keep every engine fact and the section length.
+${guardrailPolicy === 'forecast-allowed'
+  ? 'Rewrite the whole section so every dated period is a tendency or invitation, never a guarantee, certainty, diagnosis, or promise. Keep every engine fact and the section length.'
+  : 'Rewrite the whole section as descriptive pattern witness for the declared relationship type. No forecasts, guarantees, "will", "likely", "ensures", "success", or promised outcomes. Keep every engine fact and the section length.'}
 ${flagged.length ? `Sentences to remove or reframe:\n${flagged.map((f) => `- "${f.sentence}"`).join('\n')}` : 'Reframe every sentence that states what the partnership will do or produce.'}
 
 Previous draft:
@@ -298,12 +318,14 @@ ${best.output}`;
       ? `Relationship: type=${input.relationshipContext.type}; goal="${input.relationshipContext.mapping_goal}"; sensitivity=${input.relationshipContext.sensitivity_level}`
       : '';
     const langLine = input.language ? `Language: ${input.language}.` : '';
+    const voice = VOICE_RULES[this.mode.frontmatter.jev_guardrail ?? 'descriptive'];
     return `You are writing pass "${pass.title}" (id: ${pass.id}) for the ${this.mode.frontmatter.mode} reading mode.
 Register band: ${register}.
 Target length: ~${pass.target_words} words (acceptable range ${min}-${max}).
 ${rolesLine}
 ${relLine}
 ${langLine}
+${voice}
 ${this.mode.sections['overlay-rules'] ?? ''}`;
   }
 

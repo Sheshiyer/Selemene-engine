@@ -63,3 +63,7 @@ Synthesize partnership observations. One open question. No prescriptions.
 ### 2026-07-10 — Seeded from relationship mapping contract
 **Question:** Can business dyads be framed without romantic or financial prediction language?
 **Adopted:** Yes — explicit roles + guardrails.
+
+### 2026-09-27 — Jev shadow matrix: partnership-field and synthesis read as forecasts
+**Question:** What did the live Jev shadow gate flag in this mode?
+**Adopted:** Drop "success likely emerges", "ensure diverse approaches", "creates potential for breakthrough", "potentially allowing X to support Y". Describe the shared 43-23 channel and the differing types as present patterns.

@@ -63,3 +63,7 @@ Synthesize partnership observations. One open question. No prescriptions.
 ### 2026-07-10 — Seeded from relationship mapping contract
 **Question:** Can married-partner dyads be framed with explicit non-assumptive roles?
 **Adopted:** Yes — explicit 'partner' roles + married-partners type.
+
+### 2026-09-27 — Jev shadow matrix: synthesis pass confidently predictive before retry
+**Question:** What did the live Jev shadow gate flag in this mode?
+**Adopted:** Synthesis names present patterns and one open question. No "will", "ensures", or outcome language.

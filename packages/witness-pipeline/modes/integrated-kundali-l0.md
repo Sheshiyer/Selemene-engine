@@ -1,6 +1,7 @@
 ---
 mode: integrated-kundali-l0
 report_level: L0
+jev_guardrail: forecast-allowed
 subject_count:
   min: 1
   max: 1
@@ -348,3 +349,7 @@ For l1_l3, use clear pattern language and soften shadow/siddhi terminology. For 
 **Winner:** Premium kundali report with Witness safeguards
 **Adopted:** Preserve the 11-part exemplar structure and section-by-section generation while enforcing safeguards for health, marriage, children, and money.
 **Reference:** Review of Kundali_Integrated_Chitra, Harshita, and Varsha DOCX exemplars.
+
+### 2026-09-27 — Jev shadow matrix: timed sections are forecasts by design; policy set to forecast-allowed
+**Question:** What did the live Jev shadow gate flag in this mode?
+**Adopted:** Dated dasha periods are tendencies and invitations, never guarantees. "creates immediate preparation for major wealth expansion" and "optimal health development timing" are the phrasing to avoid.
