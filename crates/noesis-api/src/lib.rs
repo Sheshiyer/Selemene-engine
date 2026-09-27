@@ -1526,6 +1526,32 @@ fn validate_contract_consent(
 
 impl From<EngineOutput> for ApiEngineOutputResponse {
     fn from(output: EngineOutput) -> Self {
+        let mut output = output;
+        // Bridge engines stash the sidecar's contract-v1 provenance at
+        // `result["provenance"]`; lift it into the envelope. Native engines
+        // (or sidecars that omit it) get one derived from `CalculationMetadata`.
+        let lifted: Option<noesis_core::contract::Provenance> = output
+            .result
+            .as_object_mut()
+            .and_then(|o| o.remove("provenance"))
+            .and_then(|v| serde_json::from_value(v).ok());
+        let provenance = Some(lifted.unwrap_or_else(|| noesis_core::contract::Provenance {
+            runtime_kind: match output.metadata.backend.as_str() {
+                "typescript" => noesis_core::contract::RuntimeKind::TypeScript,
+                "python" => noesis_core::contract::RuntimeKind::Python,
+                _ => noesis_core::contract::RuntimeKind::Native,
+            },
+            implementation_version: if output.metadata.engine_version.is_empty() {
+                env!("CARGO_PKG_VERSION").to_string()
+            } else {
+                output.metadata.engine_version.clone()
+            },
+            cached: output.metadata.cached,
+            fallback_used: false,
+            backend_id: None,
+            provider_id: None,
+            confidence: None,
+        }));
         let generated_image = output.result.get("generated_image").cloned();
         let generated_audio = output.result.get("generated_audio").cloned();
         let witness_prompts = vec![ApiWitnessPrompt {
@@ -1543,7 +1569,7 @@ impl From<EngineOutput> for ApiEngineOutputResponse {
             witness_prompts,
             calculated_at,
             processing_time_ms,
-            provenance: None,
+            provenance,
             generated_image,
             generated_audio,
         }

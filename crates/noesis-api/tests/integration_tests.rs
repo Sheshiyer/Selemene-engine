@@ -1730,3 +1730,32 @@ async fn test_gene_keys_consciousness_level_affects_witness_prompt() {
         "Level 3 and 6 prompts should differ"
     );
 }
+
+#[tokio::test]
+async fn test_calculate_native_engine_reports_derived_provenance() {
+    let router = get_test_router().await;
+    let token = generate_test_token(1);
+    let body = json!({
+        "contract_version": "v1",
+        "consciousness_level": 1,
+        "parameters": {},
+        "birth_data": {"date": "1990-01-01", "time": "12:00", "latitude": 12.97, "longitude": 77.59, "timezone": "Asia/Kolkata"}
+    });
+    let (status, resp) = make_authenticated_request(
+        router,
+        "POST",
+        "/api/v1/engines/panchanga/calculate",
+        &token,
+        Some(body),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "body={resp:?}");
+    let prov = &resp["provenance"];
+    assert_eq!(prov["runtime_kind"], "native", "body={resp:?}");
+    assert_eq!(prov["fallback_used"], false);
+    assert!(prov["implementation_version"].is_string());
+    assert!(
+        resp["result"].get("provenance").is_none(),
+        "provenance must be lifted out of result"
+    );
+}

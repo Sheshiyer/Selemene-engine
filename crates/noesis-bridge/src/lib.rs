@@ -524,6 +524,9 @@ impl ConsciousnessEngine for BridgeEngine {
             if let Some(generated_audio) = ts_response.generated_audio {
                 object.insert("generated_audio".to_string(), generated_audio);
             }
+            if let Some(provenance) = ts_response.provenance {
+                object.insert("provenance".to_string(), provenance);
+            }
         }
 
         Ok(EngineOutput {
@@ -804,6 +807,27 @@ mod tests {
     use chrono::Utc;
     use serde_json::json;
     use std::collections::HashMap;
+
+    #[test]
+    fn ts_response_preserves_provenance_block() {
+        let response: crate::ts_client::TsEngineResponse = serde_json::from_value(json!({
+            "engine_id": "tarot",
+            "result": {"cards": []},
+            "witness_prompts": [],
+            "calculated_at": "2026-09-27T00:00:00.000Z",
+            "processing_time_ms": 1.5,
+            "provenance": {
+                "runtime_kind": "typescript",
+                "implementation_version": "1.0.0",
+                "cached": false,
+                "fallback_used": false,
+                "confidence": 1
+            }
+        }))
+        .expect("response with provenance must deserialise");
+        let prov = response.provenance.expect("provenance retained");
+        assert_eq!(prov["confidence"], 1);
+    }
 
     fn test_input() -> EngineInput {
         EngineInput {

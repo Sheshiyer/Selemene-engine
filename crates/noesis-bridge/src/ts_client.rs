@@ -54,6 +54,9 @@ pub struct TsEngineResponse {
     /// FROZEN top-level generated audio.
     #[serde(default)]
     pub generated_audio: Option<Value>,
+    /// contracts/v1 provenance block emitted by the sidecar (optional; older sidecars omit it).
+    #[serde(default)]
+    pub provenance: Option<Value>,
 }
 
 /// A prompt for self-reflection/witnessing
