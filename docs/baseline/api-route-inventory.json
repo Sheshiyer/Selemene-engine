@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 95,
-  "route_count": 100,
+  "path_count": 97,
+  "route_count": 102,
   "routes": [
     {
       "path": "/auth/register",
@@ -491,6 +491,17 @@
       ]
     },
     {
+      "path": "/admin/engines/capabilities",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::engine_capabilities"
+        }
+      ]
+    },
+    {
       "path": "/admin/bridge/sidecar",
       "auth_requirement": "bearer_or_api_key",
       "uses_orchestrator": false,
@@ -876,6 +887,17 @@
         {
           "method": "GET",
           "handler": "list_engines_handler"
+        }
+      ]
+    },
+    {
+      "path": "/engines/capabilities",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "engine_capabilities_handler"
         }
       ]
     },

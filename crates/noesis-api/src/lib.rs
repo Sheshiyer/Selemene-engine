@@ -8,6 +8,7 @@
 
 mod billing;
 mod biofield_client;
+mod capabilities;
 pub mod cf_access;
 mod config;
 pub mod error;
@@ -90,6 +91,7 @@ use workflow_parity::log_workflow_registry_parity;
         status_handler,
         vedic_chart_handler,
         list_engines_handler,
+        engine_capabilities_handler,
         calculate_handler,
         face_reading_upload_handler,
         validate_handler,
@@ -185,6 +187,7 @@ use workflow_parity::log_workflow_registry_parity;
             WorkflowSummary,
             EngineInfoResponse,
             EngineListResponse,
+            EngineCapabilitiesResponse,
             WorkflowListResponse,
             WorkflowInfoResponse,
             VedicChartBundleResponseSchema,
@@ -1019,6 +1022,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/status", get(status_handler))
         .route("/charts/vedic", post(vedic_chart_handler))
         .route("/engines", get(list_engines_handler))
+        .route("/engines/capabilities", get(engine_capabilities_handler))
         .route("/engines/:engine_id/calculate", post(calculate_handler))
         .route(
             "/engines/face-reading/upload",
@@ -3175,6 +3179,36 @@ async fn engine_info_handler(
 async fn list_engines_handler(State(state): State<AppState>) -> Json<EngineListResponse> {
     Json(EngineListResponse {
         engines: state.orchestrator.list_engines(),
+    })
+}
+
+#[derive(Serialize, ToSchema)]
+struct EngineCapabilitiesResponse {
+    capabilities: Vec<noesis_core::contract::EngineCapability>,
+    count: usize,
+}
+
+/// GET /api/v1/engines/capabilities -- contract-v1 capability discovery (API-key surface)
+#[utoipa::path(
+    get,
+    path = "/api/v1/engines/capabilities",
+    tag = "engines",
+    responses(
+        (status = 200, description = "Contract-v1 capability rows for native and bridge engines", body = EngineCapabilitiesResponse),
+    ),
+    security(
+        ("bearer_auth" = []),
+        ("api_key" = [])
+    )
+)]
+async fn engine_capabilities_handler(
+    State(state): State<AppState>,
+) -> Json<EngineCapabilitiesResponse> {
+    let capabilities = capabilities::collect_capabilities(&state).await;
+    let count = capabilities.len();
+    Json(EngineCapabilitiesResponse {
+        capabilities,
+        count,
     })
 }
 

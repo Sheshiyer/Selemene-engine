@@ -88,8 +88,12 @@ async fn test_capability_route_returns_contract_v1_shape_for_all_ts_engines() {
         .as_array()
         .unwrap_or_else(|| panic!("response body should be a JSON array, got body={body:?}"));
 
+    let ts_capabilities: Vec<&serde_json::Value> = capabilities
+        .iter()
+        .filter(|capability| capability["runtime_kind"] == "typescript")
+        .collect();
     assert_eq!(
-        capabilities.len(),
+        ts_capabilities.len(),
         KNOWN_TS_ENGINES.len(),
         "expected {} TS engine capability rows, got body={body:?}",
         KNOWN_TS_ENGINES.len()
@@ -101,8 +105,8 @@ async fn test_capability_route_returns_contract_v1_shape_for_all_ts_engines() {
             capability["contract_version"], "v1",
             "capability={capability:?}"
         );
-        assert_eq!(
-            capability["runtime_kind"], "typescript",
+        assert!(
+            ["native", "typescript"].contains(&capability["runtime_kind"].as_str().unwrap_or("")),
             "capability={capability:?}"
         );
         assert!(
@@ -137,4 +141,43 @@ async fn test_capability_route_returns_contract_v1_shape_for_all_ts_engines() {
             "expected engine_id {expected} in {seen_ids:?}"
         );
     }
+}
+
+#[tokio::test]
+async fn test_public_capabilities_route_is_reachable_with_user_token() {
+    let token = generate_user_token();
+    let (status, body) =
+        common::make_authenticated_request("GET", "/api/v1/engines/capabilities", &token, None)
+            .await;
+    assert_eq!(status, StatusCode::OK, "body={body:?}");
+    let caps = body["capabilities"].as_array().expect("capabilities array");
+    assert_eq!(body["count"].as_u64().unwrap() as usize, caps.len());
+    assert!(
+        !caps.is_empty(),
+        "must never be empty even if bridge readiness fails"
+    );
+    let native = caps
+        .iter()
+        .find(|c| c["engine_id"] == "panchanga")
+        .expect("native engine listed");
+    assert_eq!(native["runtime_kind"], "native");
+    assert_eq!(native["availability"], "available");
+    for id in KNOWN_TS_ENGINES {
+        let row = caps
+            .iter()
+            .find(|c| c["engine_id"] == id)
+            .unwrap_or_else(|| panic!("{id} missing"));
+        assert_eq!(row["runtime_kind"], "typescript");
+        assert!(matches!(
+            row["availability"].as_str(),
+            Some("available" | "unavailable")
+        ));
+    }
+}
+
+#[tokio::test]
+async fn test_public_capabilities_route_requires_auth() {
+    let (status, _) =
+        common::make_unauthenticated_request("GET", "/api/v1/engines/capabilities", None).await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
 }

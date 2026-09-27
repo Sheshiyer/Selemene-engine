@@ -15,6 +15,7 @@ use utoipa::ToSchema;
 pub const CONTRACT_VERSION: &str = "v1";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub enum ContractVersion {
     #[serde(rename = "v1")]
     V1,
@@ -185,6 +186,7 @@ pub struct ContractError {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum CapabilityAvailability {
     Declared,
@@ -194,6 +196,7 @@ pub enum CapabilityAvailability {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct EngineCapability {
     pub contract_version: ContractVersion,
