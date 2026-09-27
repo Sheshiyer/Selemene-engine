@@ -14,6 +14,7 @@
     "implementation_version": "3.3.1",
     "cached": false,
     "fallback_used": false,
-    "backend_id": "rust"
+    "backend_id": "rust",
+    "confidence": 1
   }
 }

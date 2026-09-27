@@ -97,3 +97,14 @@ fn canonical_result_accepts_singular_prompt_without_provenance() {
     assert!(result.witness_prompts.is_none());
     assert!(result.provenance.is_none());
 }
+
+#[test]
+fn canonical_result_provenance_round_trips_confidence() {
+    let source = include_str!("../../../contracts/v1/fixtures/engine-result.json");
+    let result: noesis_core::contract::ContractEngineResult =
+        serde_json::from_str(source).expect("fixture must deserialise");
+    let provenance = result.provenance.expect("fixture carries provenance");
+    assert_eq!(provenance.confidence, Some(1.0));
+    let json = serde_json::to_value(&provenance).unwrap();
+    assert_eq!(json["confidence"], 1.0);
+}
