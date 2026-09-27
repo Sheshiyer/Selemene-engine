@@ -162,3 +162,64 @@ Date: 2026-09-27. Branch: `codex/selemene-capability-consumer-surface`, HEAD `23
 - GitHub Actions immutable SHA pinning (`ISC-217`) remains open.
 - Consumer wiring for the capability surface (Phase B: sankalpa and other repos actually consuming the new SDK methods) remains open — see Slice 4.
 - No push, publication, deployment, or remote mutation to GitHub issues beyond what was explicitly authorized occurred in Slices 2–4; no deploy occurred.
+
+## Consumer rollout receipts (2026-09-27)
+
+Cross-repo verification of the capability-parity consumer rollout. Each repo was already checked out on its own branch; nothing was checked out or modified by this receipt except this doc. All gate commands were run once, in place, on the branch/SHA listed, and results below are copied verbatim from the actual runs.
+
+### Selemene-engine — `codex/selemene-capability-consumer-surface` @ `53c6e331`
+
+- HEAD confirmed: `53c6e331` (matches).
+- `pnpm run gate:contracts` — exit 0. Rust `integration_tests`: 17 passed, 0 failed. `noesis-engine-sdk` bun test: 39 pass, 0 fail (119 expect() calls); typecheck clean. `witness-pipeline` build clean. `noesis-sdk-ts` vitest: 2 files, 12 passed; typecheck clean.
+- `cargo build --workspace --locked` — exit 0. `Finished \`dev\` profile [unoptimized + debuginfo] target(s) in 30.36s`.
+- `(cd ts-engines && bun run typecheck && bun test)` — typecheck exit 0 (`bunx tsc --noEmit`, clean). `bun test`: 93 pass, 0 fail (292 expect() calls) across 7 files.
+- Result: **all gates green**.
+
+### urania-137 — `codex/urania-capability-parity` @ `437b55e`
+
+- HEAD confirmed: `437b55e` (matches).
+- No `npm run typecheck` script exists; ran the brief's substitute.
+- `npm test` (vitest) — exit 0. `Test Files 118 passed (118)`, `Tests 984 passed (984)`.
+- `npx tsc --noEmit -p tsconfig.json` — exit 0, no output.
+- `npm run typecheck:functions` (`tsc -p tsconfig.functions.json --noEmit`) — exit 0, no output.
+- Result: **all gates green**.
+
+### noesis-raycast — `codex/raycast-capability-parity` @ `604c212`
+
+- HEAD confirmed: `604c212` (matches).
+- `npm test` (`bun test --tsconfig-override tsconfig.test.json`) — exit 0. `83 pass, 0 fail` (9 expect() calls) across 13 files. (Bun printed one internal directory-mismatch warning for `tsconfig.test.json`, explicitly marked by bun as harmless — "You don't need to do anything, but this indicates a bug" — did not affect the pass count.)
+- `npm run lint` (`ray lint`) — exit 2. ESLint: `✖ 13 problems (13 errors, 0 warnings)`, all `@typescript-eslint/no-unused-vars` across `src/components/daily-ritual-command.tsx` (3), `src/components/execution-forms.tsx` (4), `src/dashboard.tsx` (2), `src/developer-tools.tsx` (2), `src/lib/design-tokens.ts` (1), `src/menubar.tsx` (1). Prettier then reported code-style issues in 6 files (`access-gate.tsx`, `daily-ritual-command.tsx`, `execution-forms.tsx`, `onboarding-form.tsx`, `design-tokens.ts`, `menubar.tsx`). Per the task brief, full `npm run lint` has pre-existing failures on base `d7a671d`; this 13-error/0-warning ESLint count plus the 6-file Prettier list is recorded here as **pre-existing**, not introduced by the capability-parity branch — not fixed as part of this receipt task per the brief's scope (record verbatim, do not fix).
+- Result: tests green; lint pre-existingly red (13 errors, recorded above).
+
+### antahkarana — `codex/antahkarana-capability-parity` @ `032f12d`
+
+- HEAD confirmed: `032f12d` (matches).
+- `bun run test:containment` — exit 0. Rust unit tests: `test result: ok. 42 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out`. `main.rs` unittests: 0 passed. Doc-tests: 0 passed.
+- `bun run check:truth` — exit 0. `TRUTH TABLE: PASS — 95 checks, every revived surface's declared source resolves, no mocks, honest states present.`
+- `bun run check:secrets` (`./scripts/check-secrets.sh`) — exit 0. `SECRETS GATE: PASS — no nk_-prefixed literals in repo`.
+- `bunx tsc --noEmit` — exit 0, no output.
+- Result: **all gates green**.
+
+### sankalpa — `codex/sankalpa-capability-parity` @ `c05e24e`
+
+- HEAD confirmed: `c05e24e` (matches).
+- `npm test` (vitest) — exit 1. `Test Files 1 failed | 11 passed (12)`, `Tests 1 failed | 101 passed (102)`. The one failure is `tests/desktop-foundation.test.ts > desktop foundation assets > has explicit logo and icon assets for runtime and packaging`: `expect(existsSync(path.join(root, "build/icon.svg"))).toBe(true)` — `AssertionError: expected false to be true`. This matches the brief's flagged pre-existing failure (`build/icon.svg` deleted in `ca3a0f2`) and is recorded here as **pre-existing**, not introduced by the capability-parity branch.
+- `npm run typecheck` (`tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.electron.json`) — exit 0, no output.
+- Result: typecheck green; one pre-existing test failure (icon asset, recorded above).
+
+### noesismirror-web — `codex/noesismirror-capability-parity` @ `244346d`
+
+- HEAD confirmed: `244346d` (matches).
+- `npm test` (vitest) — exit 0. `Test Files 1 passed (1)`, `Tests 2 passed (2)`.
+- Result: **all gates green**.
+
+### Live readback
+
+- `curl -s -o /dev/null -w '%{http_code}\n' https://selemene.tryambakam.space/api/v1/engines/capabilities` (no API key sent) → `404`. Per the brief, `404` means Phase A is not yet deployed and all consumers are currently running their fallback paths; this is expected at this point in the rollout, not a failure.
+
+### Summary
+
+- 6/6 repos verified at the branch/SHA specified in the task brief; all SHAs matched.
+- Two pre-existing, out-of-scope failures were observed and recorded verbatim, not fixed: noesis-raycast full lint (13 ESLint errors + Prettier findings, pre-existing per brief), and sankalpa's `build/icon.svg` test (pre-existing per brief, asset deleted in `ca3a0f2`).
+- All other gates (contracts, cargo build, ts-engines, urania-137 tests/typecheck, antahkarana containment/truth/secrets/typecheck, sankalpa typecheck, noesismirror-web tests) passed cleanly.
+- Live capabilities route returns `404` (not yet deployed) as of this receipt.
