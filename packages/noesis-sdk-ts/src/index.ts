@@ -189,6 +189,14 @@ export interface EngineInfo {
   version?: string;
 }
 
+/** contract-v1 runtime capability discovery row (alias of ContractEngineCapability). */
+export type EngineCapability = ContractEngineCapability;
+
+export interface EngineCapabilitiesResponse {
+  capabilities: EngineCapability[];
+  count: number;
+}
+
 export interface WorkflowInfo {
   id: string;
   name: string;
@@ -444,6 +452,11 @@ export class NoesisClient {
   /** List all available engines. */
   async listEngines(options?: RequestOptions): Promise<EngineInfo[]> {
     return this.request<EngineInfo[]>("/api/v1/engines", { method: "GET" }, options);
+  }
+
+  /** GET /api/v1/engines/capabilities -- contract-v1 runtime capability discovery */
+  async listCapabilities(options?: RequestOptions): Promise<EngineCapabilitiesResponse> {
+    return this.request<EngineCapabilitiesResponse>("/api/v1/engines/capabilities", { method: "GET" }, options);
   }
 
   /** List all available workflows. */

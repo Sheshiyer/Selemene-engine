@@ -173,6 +173,8 @@ export interface PythonSidecarHealthResponse {
   version: string
   opencv_available?: boolean
   numpy_available?: boolean
+  mediapipe_available?: boolean
+  capability_status?: 'available' | 'degraded' | 'unavailable'
 }
 
 // ---------------------------------------------------------------------------

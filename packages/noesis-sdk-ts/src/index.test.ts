@@ -99,6 +99,21 @@ describe("NoesisClient", () => {
     expect(fetchMock).toHaveBeenCalledTimes(6);
   });
 
+  it("lists contract-v1 capabilities", async () => {
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) =>
+      new Response(JSON.stringify({ capabilities: [{
+        contract_version: "v1", engine_id: "tarot", display_name: "Tarot",
+        availability: "available", runtime_kind: "typescript", dependencies: [],
+      }], count: 1 }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const client = new NoesisClient("https://example.com", { authToken: "token" });
+    const res = await client.listCapabilities();
+    expect(res.count).toBe(1);
+    expect(res.capabilities[0].engine_id).toBe("tarot");
+    expect(fetchMock.mock.calls[0][0]).toBe("https://example.com/api/v1/engines/capabilities");
+  });
+
   it("retries on 5xx and then succeeds", async () => {
     const fetchMock = vi
       .fn()
