@@ -1,0 +1,21 @@
+{
+  "provider": "Meshy",
+  "model": "meshy-7",
+  "task_id": "01a092aa-36a6-70da-be1c-400a2eec5ad9",
+  "status": "SUCCEEDED",
+  "consumed_credits": 20,
+  "prompt": "Leonardo da Vinci Vitruvian Man anatomical proportion study as a clean single adult human mannequin in exact T pose. Both arms extended perfectly straight horizontally at shoulder height, elbows straight, fingers straight, palms facing forward. Legs straight and slightly apart, feet forward. Full body, symmetric, front facing, upright +Y. Natural ideal adult male proportions, broad shoulders narrow waist, smooth hairless head, subtle face, no hair, no beard. Simplified smooth non-explicit mannequin anatomy with no genitals, no clothing. Clean untextured clay sculpture. No circle, square, pedestal, props or extra limbs in this mesh. Entire continuous watertight body head to toes, exactly two straight horizontal arms and two straight legs.",
+  "parameters": {
+    "mode": "preview",
+    "ai_model": "meshy-7",
+    "pose_mode": "t-pose",
+    "should_remesh": true,
+    "target_polycount": 20000,
+    "topology": "triangle",
+    "target_formats": [
+      "glb"
+    ]
+  },
+  "asset": "vitruvian.glb",
+  "sha256": "997182a820e80fee449fcee5d5b12db3a03d1a68a59eae754d915a12eafec029"
+}

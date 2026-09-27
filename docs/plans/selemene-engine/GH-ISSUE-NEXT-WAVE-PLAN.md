@@ -381,7 +381,7 @@ Expected: all commands pass before any push.
 - Consumes: `contracts/v1` engine capability schema, issues `#894`, `#896`, W3E slots `04` and `11`.
 - Produces: one capability discovery story across TypeScript, Rust/API, and Python sidecars.
 
-- [ ] **Step 1: Keep the TypeScript endpoint green**
+- [x] **Step 1: Keep the TypeScript endpoint green** — confirmed 2026-08-31, still green after sync + Task 3/4 changes (93/93 tests pass, typecheck clean).
 
 Run:
 
@@ -393,7 +393,7 @@ bun test tests/baseline_registry.test.ts tests/health.test.ts
 
 Expected: targeted tests pass and `/engines/capabilities` reports `{ capabilities, count }`.
 
-- [ ] **Step 2: Add Rust/API contract parity**
+- [x] **Step 2: Add Rust/API contract parity** — DONE 2026-08-31. `GET /api/v1/admin/engines/capabilities` added to `noesis-api`, reusing the pre-existing `EngineCapability`/`CapabilityAvailability`/`RuntimeKind` types. See `RUNTIME-CAPABILITY-EVIDENCE.md` Slice 2.
 
 Implement a Rust/API adapter that serializes capability rows against `contracts/v1` without calling providers, databases, or remote services.
 
@@ -405,7 +405,7 @@ pnpm run gate:contracts
 
 Expected: schema and API parity tests fail before implementation and pass after implementation.
 
-- [ ] **Step 3: Add Python sidecar capability states**
+- [x] **Step 3: Add Python sidecar capability states** — DONE 2026-08-31. `capability_status` (available/degraded/unavailable) added to both sidecars' `/health`, derived only from existing local self-checks. See `RUNTIME-CAPABILITY-EVIDENCE.md` Slice 2.
 
 Expose sidecar capability status as explicit `available`, `unavailable`, or `degraded` from local self-checks only.
 
@@ -418,7 +418,7 @@ python3 -m pytest tests/scripts -q
 
 Expected: no provider credentials are required and missing sidecars produce explicit unavailable/degraded records.
 
-- [ ] **Step 4: Update issue receipts**
+- [ ] **Step 4: Update issue receipts** — still open: draft comments for `#894`/`#896`/W3E slot `04`/`11` reporting this slice exist as the evidence above, but have not been posted; needs explicit authorization before `gh issue comment`.
 
 Prepare issue-comment text for `#894`, `#896`, and the relevant W3E slot `04`/`11` rows after PR creation. Do not post it until the user authorizes GitHub mutation.
 
@@ -434,7 +434,7 @@ Prepare issue-comment text for `#894`, `#896`, and the relevant W3E slot `04`/`1
 - Consumes: issue `#897`, W3E engine slots selected for the focus engine.
 - Produces: one engine with auditable deterministic/generated/fallback/provenance boundaries.
 
-- [ ] **Step 1: Select one focus engine**
+- [x] **Step 1: Select one focus engine** — DONE 2026-08-31, user-confirmed: tarot (only Task-4 candidate with all 9 named W3E slots open; already green on capability discovery), targeting slot `07` / issue #1461.
 
 Start with one of:
 - `biofield`
@@ -447,17 +447,17 @@ Start with one of:
 
 Selection rule: choose the engine whose capability discovery and existing tests are already green.
 
-- [ ] **Step 2: Write the missing-state test**
+- [x] **Step 2: Write the missing-state test** — DONE 2026-08-31, `ts-engines/tests/tarot_provenance.test.ts`, RED confirmed before implementation. See `RUNTIME-CAPABILITY-EVIDENCE.md` Slice 3.
 
 Add a test proving missing provider, sidecar, input, or fixture state is visible as degraded/unavailable instead of silent success.
 
 Expected before implementation: the test fails because the current engine hides or omits the state.
 
-- [ ] **Step 3: Implement minimal truth surface**
+- [x] **Step 3: Implement minimal truth surface** — DONE 2026-08-31, `provenance` (fallback_used, confidence) populated on tarot's `EngineOutput`. Partial slice only — see "What #1461 still needs" in `RUNTIME-CAPABILITY-EVIDENCE.md` Slice 3 for what remains open on issue #1461.
 
 Add only the fields required for the selected W3E slot: provenance, fallback status, omitted-source status, generated interpretation boundary, or fixture replay data.
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify** — DONE 2026-08-31. Narrow test passed, then `bun test tests/integration.test.ts tests/baseline_registry.test.ts && bun run typecheck` passed, then full suite independently re-run: 93/93 pass (was 92/92), no other engine's output changed.
 
 Run the narrow engine test first, then the relevant aggregate gate:
 

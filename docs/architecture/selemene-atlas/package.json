@@ -1,0 +1,19 @@
+{
+  "name": "selemene-living-atlas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5187 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 5187 --strictPort",
+    "check:data": "node scripts/check-data.mjs",
+    "check:engines": "node scripts/check-engines.mjs"
+  },
+  "dependencies": {
+    "three": "0.160.0"
+  },
+  "devDependencies": {
+    "vite": "6.4.3"
+  }
+}

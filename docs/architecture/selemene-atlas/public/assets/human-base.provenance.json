@@ -1,0 +1,22 @@
+{
+  "provider": "Meshy",
+  "model": "meshy-7",
+  "task_id": "01a092a3-a383-778c-a5cf-a6b176fa8a51",
+  "status": "SUCCEEDED",
+  "consumed_credits": 20,
+  "prompt": "Full body anatomically proportioned adult human neutral mannequin for a museum anatomical systems atlas. Standing upright in relaxed A pose, arms angled only 20 degrees from torso, palms facing forward, feet slightly apart. Androgynous smooth hairless head, subtle nose and ears, natural athletic proportions, realistic shoulders, rib cage, abdomen, hips, articulated hands with five fingers, knees, calves and feet. Clean continuous untextured matte clay surface, no clothing seams, no hair, no ornaments, no base or pedestal, no organs exposed, no explicit sexual anatomy. Symmetric front-facing +Z, head up +Y. Elegant neutral medical teaching sculpture. Entire figure from head to toes.",
+  "parameters": {
+    "mode": "preview",
+    "ai_model": "meshy-7",
+    "pose_mode": "a-pose",
+    "should_remesh": true,
+    "target_polycount": 20000,
+    "topology": "triangle",
+    "target_formats": [
+      "glb"
+    ]
+  },
+  "asset": "human-base.glb",
+  "sha256": "92616cac42e9b5541b4dca3fa60763eedb70dc6f40f0630a33272a62749e7ee3",
+  "license_note": "Generated with the user-provided Meshy account; conceptual anatomical mannequin, no measured or patient data."
+}

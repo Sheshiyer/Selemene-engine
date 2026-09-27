@@ -1,0 +1,278 @@
+{
+  "checked_at": "2026-09-12T02:29:17.844031+00:00",
+  "source_revision": "9a05f5cc90777f083d7065e491484ef727aeada1",
+  "browser": "Codex in-app browser, local preview on port 5187",
+  "engine_checks": [
+    {
+      "engine": "panchanga",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "ephemeris",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "vedic-clock",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "local-clock",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "vimshottari",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "moon",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "transits",
+      "parts": 6,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "natal-plane",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "biorhythm",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "age-anchor",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "human-design",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "birth-time",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "gene-keys",
+      "parts": 6,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "gate-source",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "numerology",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "alphabets",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "biofield",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "natal-sky",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "face-reading",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "media-consent",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "nadabrahman",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "prahar",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "tarot",
+      "parts": 6,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "deck",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "i-ching",
+      "parts": 6,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "library",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "enneagram",
+      "parts": 6,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "questions",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "sacred-geometry",
+      "parts": 6,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "catalog",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "sigil-forge",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "intention",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "raaga",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "melakarta",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "financial-biosensor",
+      "parts": 7,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "hrv",
+      "pinned_source_visible": true,
+      "description_visible": true
+    },
+    {
+      "engine": "biofield-capture",
+      "parts": 6,
+      "scene_ready": true,
+      "expansion_percent": 100,
+      "next_component_isolated": "reading-id",
+      "pinned_source_visible": true,
+      "description_visible": true
+    }
+  ],
+  "component_total": 126,
+  "additional_probes": {
+    "desktop": {
+      "css_viewport": [
+        1920,
+        1080
+      ],
+      "document": [
+        1920,
+        1080
+      ],
+      "horizontal_overflow": false
+    },
+    "mobile": {
+      "css_viewport": [
+        390,
+        844
+      ],
+      "document_width": 390,
+      "stage_dimensions": [
+        390,
+        390.48
+      ],
+      "controls_bottom": 843.636,
+      "inspector_scrolls": true
+    },
+    "pointer_pick": {
+      "engine": "panchanga",
+      "selected_part": "nakshatra",
+      "isolated": true,
+      "source_line": 292
+    },
+    "slider": {
+      "assembled_endpoint": 0,
+      "expanded_endpoint": 100,
+      "dragged_intermediate": 37
+    },
+    "deep_link_reload": {
+      "engine": "biofield",
+      "expansion": 0.42,
+      "part": "natal-sky",
+      "isolated": true,
+      "underlying_time": 15,
+      "underlying_kosha": "pranamaya",
+      "underlying_view": "connections"
+    },
+    "close": {
+      "focused_element_id": "open-engine",
+      "room_canvas_count": 0,
+      "body_canvas_count": 1,
+      "body_playing": false,
+      "underlying_time": 15
+    },
+    "reduced_motion": {
+      "play_disabled": true,
+      "manual_expansion_works": true,
+      "two_consecutive_frames_byte_identical": true,
+      "frame_bytes": 117651,
+      "emulation_cleared": true
+    },
+    "final_visual_refinements": {
+      "sacred_geometry_assembled_nested_form": true,
+      "witness_lens_isolated_enlarged": true,
+      "base_fits_frame": true
+    },
+    "copy": {
+      "ui_reports_success": true,
+      "os_clipboard_independently_verified": false
+    },
+    "compact_controls": {
+      "recenter_aria_label": "Recenter engine",
+      "copy_aria_label": "Copy engine view",
+      "verified_after_fix": true
+    }
+  },
+  "build": {
+    "command": "npm run build",
+    "exit_code": 0,
+    "three": "0.160.0",
+    "vite": "6.4.3",
+    "advisory": "The main Three.js bundle exceeds 500 kB uncompressed."
+  },
+  "source_checks": {
+    "commands": [
+      "npm run check:data",
+      "npm run check:engines"
+    ],
+    "passed": true,
+    "engines": 19,
+    "koshas": 5,
+    "body_components": 42,
+    "body_relationships": 50,
+    "engine_parts": 126,
+    "internal_relationships": 134,
+    "reconciliations": 41,
+    "pinned_paths": 91,
+    "artwork_hashes": 19,
+    "part_url_round_trips": 126
+  },
+  "capture_note": "Screenshots were inspected inline in the CUA tool. This receipt records observed results; it is not a replayable browser test script."
+}

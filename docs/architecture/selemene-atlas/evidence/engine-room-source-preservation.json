@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-09-12T02:24:38.830032+00:00",
+  "files": [
+    {
+      "path": "ISA.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/architecture/DEPENDENCY-GRAPH.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/architecture/REFRESH-NEEDED.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/architecture/SERVICES.md",
+      "unchanged": true
+    },
+    {
+      "path": "workers/llm-proxy/src/index.test.ts",
+      "unchanged": true
+    },
+    {
+      "path": "workers/llm-proxy/src/index.ts",
+      "unchanged": true
+    }
+  ],
+  "all_unchanged": true
+}

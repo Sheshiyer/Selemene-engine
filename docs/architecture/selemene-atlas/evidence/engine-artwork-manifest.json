@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "artworks": [
+    {
+      "id": "panchanga",
+      "path": "/assets/engines/panchanga.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-01-panchanga-poster-v2.png",
+      "sha256": "f600b0f3282149af59a693ad76c1a277fe54b311d816b548dfdb68e980e1a8d5",
+      "bytes": 1593564,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "vimshottari",
+      "path": "/assets/engines/vimshottari.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-02-vimshottari-dasha-poster-v2.png",
+      "sha256": "36cf574a230179492f78784ff26cdbebd9604e615ae95ad183afde8f0a64426e",
+      "bytes": 1805788,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "transits",
+      "path": "/assets/engines/transits.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-03-transits-poster-v2.png",
+      "sha256": "16cdbe78da83b29dddff79607c574c9e16ecf23602317862deffb790d96e9a8b",
+      "bytes": 1714684,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "human-design",
+      "path": "/assets/engines/human-design.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-04-human-design-poster-v2.png",
+      "sha256": "34d2eafac146bf7435ad61e64fc8010991716b58ef6e58ff834740d001fa1f83",
+      "bytes": 1837760,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "gene-keys",
+      "path": "/assets/engines/gene-keys.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-05-gene-keys-poster-v2.png",
+      "sha256": "1b6d784f606da803b2657e4a92c6999dba7369e1b2fa91e5104d4f4b2944d249",
+      "bytes": 1696617,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "biofield",
+      "path": "/assets/engines/biofield.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-06-biofield-poster-v2.png",
+      "sha256": "16d21a059b6656f07145eaadbcf1607b9b494d9331c0269b9e20c48d371dc86c",
+      "bytes": 1788176,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "biorhythm",
+      "path": "/assets/engines/biorhythm.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-07-biorhythm-poster-v2.png",
+      "sha256": "d6c5037237637dc34967454b1fec6b44eef37b998990ac7cff4379e75388c127",
+      "bytes": 1667205,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "vedic-clock",
+      "path": "/assets/engines/vedic-clock.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-08-vedic-clock-poster-v2.png",
+      "sha256": "8e1ba17d58cb11e8f9ad59994825429d113412251620a90184880cfe971aa641",
+      "bytes": 1928534,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "nadabrahman",
+      "path": "/assets/engines/nadabrahman.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-09-nadabrahman-poster-v2.png",
+      "sha256": "05ba46216442b96e3f49357e12c9cc0c1a8dba39fd171611a5d82a0ca4161ac8",
+      "bytes": 1981184,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "face-reading",
+      "path": "/assets/engines/face-reading.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-10-face-reading-poster-v2.png",
+      "sha256": "af2d891a6bd8b48d079205a41cf1b03c1a235b17e7adf1e72490fc4f0fe1d474",
+      "bytes": 1726409,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "tarot",
+      "path": "/assets/engines/tarot.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-11-tarot-poster-v2.png",
+      "sha256": "93eb3a900612421cca231cc9852bfdebd2bbee5b771351297bd68919ee610330",
+      "bytes": 2287196,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "i-ching",
+      "path": "/assets/engines/i-ching.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-12-i-ching-poster-v2.png",
+      "sha256": "55d95576008b057f2a22da98377bd1789c42b4ab2ea853cbcd548b650d197ca1",
+      "bytes": 1613442,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "enneagram",
+      "path": "/assets/engines/enneagram.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-13-enneagram-poster-v2.png",
+      "sha256": "61d15feaf64772cebc57fe56a6dd369a6cbdc5c56c2a262de83470b7d26afaa3",
+      "bytes": 1628744,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "numerology",
+      "path": "/assets/engines/numerology.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-14-numerology-poster-v2.png",
+      "sha256": "86e96c0e65f7a4587cac83f7def85f122205e981ce14003c05bbbe69dfeebd63",
+      "bytes": 1558557,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "sacred-geometry",
+      "path": "/assets/engines/sacred-geometry.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-15-sacred-geometry-poster-v2.png",
+      "sha256": "cf7f493075f4a44f4b0cf272b3dd5e752b4b9b0b40480244be4593542c174c88",
+      "bytes": 1995838,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "sigil-forge",
+      "path": "/assets/engines/sigil-forge.png",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-16-sigil-forge-poster-v2.png",
+      "sha256": "f51d71dab235ba02283d79725cf78af8f7ca7b9ba7627083dbe7a2bfa2d65650",
+      "bytes": 1791880,
+      "origin": "existing user-selected poster",
+      "treatment": "byte-identical copy"
+    },
+    {
+      "id": "biofield-capture",
+      "path": "/assets/engines/biofield-capture.png",
+      "source": "/Users/sheshnarayaniyer/.codex/generated_images/01a0929d-5c58-7a32-9319-fdf6ecafeba3/exec-d0612340-3b8f-44f4-aae8-2b46d9fb1ae6.png",
+      "sha256": "2a9e15646a7b7c53c88d5923e4d83c92dcfcf83bb9755b11d08d36030dc43446",
+      "bytes": 2242476,
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "origin": "built-in imagegen; generated extension of user-selected poster collection",
+      "brand_lock": "brandkit/brand-lock.json",
+      "prompt": "brandkit/generation-prompts.json",
+      "treatment": "byte-identical generated output",
+      "approval": "New artwork; no separate user approval recorded"
+    },
+    {
+      "id": "financial-biosensor",
+      "path": "/assets/engines/financial-biosensor.png",
+      "source": "/Users/sheshnarayaniyer/.codex/generated_images/01a0929d-5c58-7a32-9319-fdf6ecafeba3/exec-db1e71dd-51d2-44ed-a4d8-ac9ca6225514.png",
+      "sha256": "b7f43f918679c9616043d73aba857b8dd7b0d93966a9c5c0700f3a68fac35b5c",
+      "bytes": 2113791,
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "origin": "built-in imagegen; generated extension of user-selected poster collection",
+      "brand_lock": "brandkit/brand-lock.json",
+      "prompt": "brandkit/generation-prompts.json",
+      "treatment": "byte-identical generated output",
+      "approval": "New artwork; no separate user approval recorded"
+    },
+    {
+      "id": "raaga",
+      "path": "/assets/engines/raaga.png",
+      "source": "/Users/sheshnarayaniyer/.codex/generated_images/01a0929d-5c58-7a32-9319-fdf6ecafeba3/exec-c5ade5f8-4954-4e1b-8a53-582a75f72db6.png",
+      "sha256": "ecf35a1cce1727fde3ca51969e484ae1be5b5d9e131b56772c4ecc6c6060a049",
+      "bytes": 2139139,
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "origin": "built-in imagegen; generated extension of user-selected poster collection",
+      "brand_lock": "brandkit/brand-lock.json",
+      "prompt": "brandkit/generation-prompts.json",
+      "treatment": "byte-identical generated output",
+      "approval": "New artwork; no separate user approval recorded"
+    }
+  ]
+}

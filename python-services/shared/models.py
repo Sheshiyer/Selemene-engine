@@ -2,16 +2,27 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 from shared.version import SERVICE_VERSION
 
 
 # ---------- Common ----------
 
+CapabilityStatus = Literal["available", "degraded", "unavailable"]
+
+
 class HealthResponse(BaseModel):
     status: str = "healthy"
     service: str
     version: str = SERVICE_VERSION
+    capability_status: CapabilityStatus = Field(
+        description=(
+            "Explicit sidecar capability state, computed only from local "
+            "self-check booleans (no provider/network/database calls)."
+        ),
+    )
 
 
 # ---------- MediaPipe service models ----------

@@ -339,6 +339,24 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 | AccessibleDepthFallback | Preserve witness navigation under reduced motion, WebGL failure, keyboard use, dialog focus, and unmount races | ISC-156..161 | LazyDepthBoundary | true |
 | P6Wave2Gate | Verify performance, recovery, runtime status, accessibility, trust boundaries, and responsive browser journeys | ISC-162..163 | ReadingRecoveryState, GatewayStatusSurface, AccessibleDepthFallback | false |
 
+## Architecture
+
+<!-- arch-assets:start -->
+
+_Auto-maintained by `ArchitectureAssetsSync.hook.ts` on release events._  
+_Last refreshed: 2026-09-08T18:24:20.320Z_
+
+| Asset | Status | How it's generated |
+|---|---|---|
+| [`docs/architecture/SERVICES.md`](docs/architecture/SERVICES.md) | ✓ current | auto (file scan) |
+| [`docs/architecture/DEPENDENCY-GRAPH.md`](docs/architecture/DEPENDENCY-GRAPH.md) | ✓ current | auto (file scan) |
+| [`docs/architecture/architecture.html`](docs/architecture/architecture.html) | ✗ not yet generated | manual (LLM skill) |
+| [`docs/architecture/notebooklm-prompt.md`](docs/architecture/notebooklm-prompt.md) | ✗ not yet generated | manual (LLM skill) |
+
+**To refresh LLM-generated assets:** invoke `/refresh-architecture` in any Claude Code session.
+
+<!-- arch-assets:end -->
+
 ## Decisions
 
 - 2026-07-19 02:15: refined: The live integration plan names Phase 6 Wave 2 as performance, empty states, and error handling; Wave 1 is complete and remains immutable.

@@ -32,16 +32,31 @@ def _check_mediapipe() -> bool:
         return False
 
 
+def _capability_status(opencv_available: bool, numpy_available: bool, mediapipe_available: bool) -> str:
+    """biofield-cv is "available" only if both opencv and numpy are available
+    (its two hard dependencies); "degraded" if opencv+numpy are up but
+    mediapipe is missing; "unavailable" if opencv or numpy is missing."""
+    if not (opencv_available and numpy_available):
+        return "unavailable"
+    if not mediapipe_available:
+        return "degraded"
+    return "available"
+
+
 @router.get("/health", response_model=dict)
 def health() -> dict:
+    opencv_available = _check_opencv()
+    numpy_available = _check_numpy()
+    mediapipe_available = _check_mediapipe()
     resp = HealthResponse(
         status="healthy",
         service="biofield-cv",
         version=SERVICE_VERSION,
+        capability_status=_capability_status(opencv_available, numpy_available, mediapipe_available),
     )
     return {
         **resp.model_dump(),
-        "opencv_available": _check_opencv(),
-        "numpy_available": _check_numpy(),
-        "mediapipe_available": _check_mediapipe(),
+        "opencv_available": opencv_available,
+        "numpy_available": numpy_available,
+        "mediapipe_available": mediapipe_available,
     }

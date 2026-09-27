@@ -1,0 +1,18 @@
+[
+  {
+    "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/synchronocities-blog/public/fonts/Panchang-Variable.woff2",
+    "asset": "public/assets/fonts/Panchang-Variable.woff2",
+    "sha256": "85ac3844e93cc8b52b64d5ad2a74ea142b6091a2154c878a0800761f0fa6fc3e"
+  },
+  {
+    "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/synchronocities-blog/public/fonts/Satoshi-Variable.woff2",
+    "asset": "public/assets/fonts/Satoshi-Variable.woff2",
+    "sha256": "e739aff9b4d02c264341d6d4872edcda28e79373aeda936f659566a1cd3eb47f"
+  },
+  {
+    "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/Brand Visual Identity/logo/SVG/Asset 7.svg",
+    "asset": "public/assets/tryambakam-sigil.svg",
+    "sha256": "d91649d203a81d258fb6f256b0719e800c20cf8ab188c34b23ea23223512f9fe",
+    "presentation": "Original geometry; CSS mask may apply canonical Sacred Gold."
+  }
+]
