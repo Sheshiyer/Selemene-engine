@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#070B1D" />
+  <meta name="description" content="Selemene Engine as a Vitruvian body and five Pancha Kosha layers. An interactive, source-grounded architecture atlas." />
+  <title>Selemene — The Fivefold Atlas</title>
+  <link rel="canonical" href="https://atlas.tryambakam.space/" />
+  <meta property="og:title" content="Selemene — The Fivefold Atlas" />
+  <meta property="og:description" content="Explore Selemene's engines, infrastructure and connected systems through a Vitruvian body and five Pancha Kosha layers." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://atlas.tryambakam.space/" />
+  <link rel="icon" type="image/svg+xml" href="/assets/tryambakam-sigil.svg" />
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+<main class="atlas-shell" data-stage="selemene-atlas">
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Selemene atlas home">
+      <span class="sigil brand-sigil" aria-hidden="true"></span>
+      <span><strong>SELEMENE</strong><small>THE FIVEFOLD ATLAS</small></span>
+    </a>
+    <div class="header-meta"><span class="snapshot-dot"></span><span>SOURCE SNAPSHOT <b>12 SEP 2026</b></span><button id="methods-open" class="text-button">Data &amp; methods <span aria-hidden="true">↗</span></button></div>
+  </header>
+  <section class="hero" aria-label="Atlas introduction">
+    <div class="hero-copy"><p class="eyebrow">TRYAMBAKAM NOESIS / SYSTEM ANATOMY 001</p><h1>As above. <em>As within.</em></h1><p class="hero-tagline">One engine. Five sheaths. A constellation of connected intelligence.</p></div>
+    <div class="hero-stats" aria-label="Architecture counts"><div><strong id="engine-count">19</strong><span>ENGINE IDENTITIES</span></div><div><strong>05</strong><span>KOSHA LENSES</span></div><div><strong id="component-count">42</strong><span>SYSTEM COMPONENTS</span></div></div>
+  </section>
+  <nav class="kosha-strip" aria-label="Pancha Kosha layers"><button class="kosha-choice all-koshas" data-kosha="all" aria-pressed="true"><span class="kosha-index">◎</span><span><strong>All sheaths</strong><small>THE WHOLE SYSTEM</small></span></button><div id="kosha-options"></div></nav>
+  <section class="story-ribbon" aria-label="Cinematic sequence"><span class="story-line"><i></i>Every layer reveals a relationship.</span><div class="story-chapters"><button data-chapter="0"><small>01</small> Embody</button><button data-chapter="6"><small>02</small> Connect</button><button data-chapter="15"><small>03</small> Unfold</button><button data-chapter="24"><small>04</small> Return</button></div><button id="play-blast" class="cta"><span aria-hidden="true">▷</span> Play the blast shot <small>24 SEC</small></button></section>
+  <section class="workspace-shell">
+    <section class="work-stage" aria-label="Interactive 3D atlas">
+      <div class="view-bar"><div class="view-tabs" role="group" aria-label="View modes"><button data-view="connections" aria-pressed="true"><small>01</small> Connections</button><button data-view="anatomy" aria-pressed="false"><small>02</small> Anatomy</button><button data-view="exploded" aria-pressed="false"><small>03</small> Exploded</button><button data-view="biofield" aria-pressed="false"><small>04</small> Biofield</button></div><div class="stage-actions"><button id="explore-engines" class="text-button engine-entry">Explore engines <span aria-hidden="true">↗</span></button><button id="recenter" class="text-button" aria-label="Recenter camera">⌖ <span>Recenter</span></button></div></div>
+      <div id="scene-root" data-stage="scene" aria-label="Vitruvian body and source-backed system connections">
+        <div class="stage-note"><span class="eyebrow">FIG. 01 / HOMO COSMICUS</span><span id="stage-state">Vitruvian anatomy · five sheaths</span></div>
+        <div class="stage-bottom-note"><span class="stage-scale">↔ DRAG TO ORBIT &nbsp; · &nbsp; SCROLL TO ZOOM</span><span id="model-status">Loading anatomical mesh</span></div>
+        <div id="scene-tooltip" role="status" hidden></div>
+      </div>
+      <div class="stage-caption"><span><i class="legend-node"></i> One node = one component</span><span><i class="legend-path"></i> Path = source relationship</span><span class="caption-right">Schematic motion · conceptual anatomy</span></div>
+    </section>
+    <aside class="inspector" aria-label="System insight" data-node="selemene">
+      <div class="inspector-top"><span class="eyebrow">SYSTEM INSIGHT</span><span class="inspector-index">01 / 42</span></div>
+      <label for="node-select" class="sr-only">Inspect a component</label><select id="node-select" aria-label="Inspect a component"></select>
+      <div class="node-title"><span id="node-kind" class="eyebrow">INTEGRATION</span><h2 id="node-name">Selemene Engine</h2><p id="node-anatomy">Heart / integration</p></div>
+      <p id="node-description" class="node-description"></p>
+      <button id="open-engine" class="engine-door" hidden><img id="engine-artwork" alt="" loading="lazy" decoding="async" /><span><small>THE INNER INSTRUMENT</small><strong id="open-engine-name"></strong><em>Explode · isolate · explore ↗</em></span></button>
+      <section class="kosha-context"><span class="eyebrow">KOSHA CORRESPONDENCE</span><h3 id="node-kosha">Across the five sheaths</h3><p id="node-rationale">The integration core connects the engine categories.</p><span class="proposal-label">PROPOSED VISUAL MAPPING</span></section>
+      <dl class="node-facts"><div><dt>RUNTIME</dt><dd id="node-runtime"></dd></div><div><dt>EVIDENCE</dt><dd id="node-evidence"></dd></div></dl>
+      <section class="related"><div class="section-line"><span class="eyebrow">DIRECT RELATIONSHIPS</span><span id="connection-count"></span></div><div id="connected-list"></div></section>
+      <a id="node-source" class="source-link" target="_blank" rel="noopener">View source <span>↗</span></a>
+      <div class="inspector-actions"><button id="save-frame">↓ Save frame</button><button id="briefing-export">↗ Create briefing</button></div>
+    </aside>
+  </section>
+  <section class="timeline-console" aria-label="Blast shot controls">
+    <div class="playback-group"><button id="play-toggle" class="play-toggle" aria-label="Play cinematic shot" aria-pressed="false">▷</button><div><span class="eyebrow">CINEMATIC SEQUENCE</span><p id="chapter-title">01 — Embody</p></div></div>
+    <div class="scrubber"><div class="scrubber-scale"><span>EMBODY</span><span>CONNECT</span><span>UNFOLD</span><span>RETURN</span></div><label for="timeline-range" class="sr-only">Shot position in seconds</label><input id="timeline-range" type="range" min="0" max="24" step="0.05" value="0" aria-label="Shot position in seconds" /><div class="scrubber-ticks"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div>
+    <div class="time-display"><output id="time-value" for="timeline-range">00.00</output><span>/ 24 SEC</span></div><label class="speed-label"><span class="eyebrow">SPEED</span><select id="play-speed" aria-label="Playback speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label><button id="share-view" class="text-button">Copy view ↗</button>
+  </section>
+  <footer class="atlas-footer"><span><span class="footer-sigil">◈</span> REFLECTION · INQUIRY · WITNESS</span><span id="mapping-note">Pancha Kosha assignments are interpretive · source topology is verifiable</span><span>THREE.JS / SOURCE ATLAS</span></footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <dialog id="methods-dialog" aria-labelledby="methods-title"><form method="dialog"><span class="eyebrow">HOW TO READ THE ATLAS</span><button aria-label="Close methods">×</button></form><article><h2 id="methods-title">An architecture.<br><em>A correspondence.</em></h2><p>Selemene is shown as a Vitruvian body within a circle, square, and five conceptual sheaths. The body and field are an artistic map of software relationships.</p><dl class="methods-key"><div><dt>NODE</dt><dd>One engine, software service, infrastructure component or consumer. Size distinguishes component roles.</dd></div><div><dt>PATH</dt><dd>A relationship described by a repository source. Each component and relationship retains its source path.</dd></div><div><dt>ENGINE PART</dt><dd>In an engine view, one sculptural part represents one named software responsibility. Separation reveals the assembly; it does not represent physical hardware. The inspector identifies implemented, simplified, delegated and placeholder paths.</dd></div><div><dt>PARTICLE</dt><dd>A schematic directional cue along a relationship. Density and speed do not represent traffic or physiology.</dd></div><div><dt>SHEATH</dt><dd>A proposed category correspondence with one of the five Pancha Koshas. Ring spacing is a composition device, not a physical measurement.</dd></div></dl><p>The five sheaths are traditionally described as physical, vital, mental, intellectual and blissful. <a href="https://www.swami-krishnananda.org/panch/panch_03.html" target="_blank" rel="noopener">Read the traditional reference ↗</a></p><p>No existing engine-to-kosha assignment was found in the repository. This atlas proposes the grouping, with a rationale for each engine. Anandamaya associates sound and form with contemplation; no engine measures bliss.</p><p id="methods-counts"></p><p>Configured components do not imply live availability. Pattern Memory remains labeled as a declared scaffold. No live API, health, camera or sensor requests are made. The three Biofield boundaries remain distinct.</p><p class="methods-provenance">The anatomical mesh was generated with Meshy 7 and styled locally. Da Vinci’s circle, square and secondary pose are composed in Three.js.</p><code id="source-revision"></code></article></dialog>
+  <dialog id="export-dialog" aria-labelledby="export-title"><form method="dialog"><span class="eyebrow">YOUR ATLAS EXPORT</span><button aria-label="Close export">×</button></form><article><h2 id="export-title">Your system briefing.</h2><p id="export-description"></p><textarea id="briefing-preview" aria-label="Briefing text" readonly hidden></textarea><img id="frame-preview" alt="Captured Selemene Vitruvian atlas scene" hidden /><div class="export-actions"><button id="export-copy" class="cta">Copy briefing</button><button id="export-download" class="cta">Download</button></div><p class="export-help">Downloads depend on your browser. The preview remains available here.</p></article></dialog>
+</main>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

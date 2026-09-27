@@ -1,0 +1,79 @@
+{
+  "account_id": "9d9d23b27f32e70ae3afb6a1aa2c0f10",
+  "zone_id": "3c1066df55d4e99464c8bcf1f850894b",
+  "project": "selemene-atlas",
+  "pages_hostname": "selemene-atlas.pages.dev",
+  "production_branch": "main",
+  "deployment": {
+    "id": "f6ed2a82-0942-49f5-abda-e95b1da7b8d3",
+    "url": "https://f6ed2a82.selemene-atlas.pages.dev",
+    "environment": "production",
+    "created_on": "2026-09-12T02:28:05.59Z",
+    "latest_stage": {
+      "name": "deploy",
+      "started_on": null,
+      "ended_on": "2026-09-12T02:28:06.95266Z",
+      "status": "success"
+    },
+    "deployment_trigger": {
+      "type": "ad_hoc",
+      "metadata": {
+        "branch": "main",
+        "commit_hash": "9a05f5cc90777f083d7065e491484ef727aeada1",
+        "commit_message": "Name compact engine view controls for assistive technology",
+        "commit_dirty": true
+      }
+    }
+  },
+  "domains": [
+    {
+      "id": "823869b9-1253-446a-9eed-c9b67e6650f6",
+      "name": "atlas.tryambakam.space",
+      "status": "active",
+      "validation_data": {
+        "status": "active",
+        "method": "http"
+      },
+      "verification_data": {
+        "status": "active"
+      }
+    }
+  ],
+  "dns": [
+    {
+      "id": "bd4d71f94bdc52266cbb91d3a2039429",
+      "name": "atlas.tryambakam.space",
+      "type": "CNAME",
+      "content": "selemene-atlas.pages.dev",
+      "proxied": true,
+      "ttl": 1
+    }
+  ],
+  "preservation": {
+    "baseline_records": 38,
+    "existing_records_unchanged": true,
+    "added_records": 1,
+    "only_atlas_added": true
+  },
+  "verified_at": "2026-09-12T02:36:24.122329+00:00",
+  "assets_receipt": "publication-engine-room-assets.json",
+  "browser": {
+    "url": "https://atlas.tryambakam.space/?node=biofield&view=connections&kosha=pranamaya&time=15.00&speed=1&engine=biofield&explode=1.00",
+    "scene_ready": true,
+    "full_expansion": 100,
+    "isolated_part": "natal-sky",
+    "pinned_source_line": 223,
+    "full_assembly_return": true,
+    "body_state_preserved": {
+      "view": "connections",
+      "kosha": "pranamaya",
+      "time": 15
+    },
+    "compact_controls_named": true,
+    "warning_and_error_log_entries": 0,
+    "document_external_script_count": 0,
+    "original_biofield_poster_loaded_width": 1760,
+    "temporary_viewport_reset": true
+  },
+  "publication_kind": "Direct upload from the current local artifact; no Git commit, push or merge performed."
+}

@@ -1,0 +1,18 @@
+{
+  "source_summary": "Panchang and Satoshi declared by supplied Aleph brand-config.yaml; existing local WOFF2 font assets reused for the interface. Poster illustrations carry no newly generated copy.",
+  "typography": {
+    "display": {
+      "family": "Panchang",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/architecture/selemene-atlas/public/assets/fonts/Panchang-Variable.woff2",
+      "style": "normal",
+      "weight": 500
+    },
+    "body": {
+      "family": "Satoshi",
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/architecture/selemene-atlas/public/assets/fonts/Satoshi-Variable.woff2",
+      "style": "normal",
+      "weight": 400
+    },
+    "font_links": []
+  }
+}

@@ -1,0 +1,2581 @@
+{
+  "revision": "9a05f5cc90777f083d7065e491484ef727aeada1",
+  "scope": "Read-only source/doc reconciliation; no engine calculations, tests, provider calls or runtime health checks were executed. The report itself is the only written file.",
+  "markMeaning": "One visual part represents a source module, calculation stage, data table, record or dependency. Geometry is an editorial explanation, not physical hardware or measured anatomy.",
+  "statusSemantics": {
+    "implemented": "The named source path performs the described operation; no claim of current deployment or empirical validity.",
+    "simplified": "The path exists but uses declared heuristics, approximate or partial logic; limitations remain visible.",
+    "delegated": "The operation requires an external provider, sidecar or database and may be disabled/unavailable.",
+    "placeholder": "The current path substitutes simulated or non-equivalent behavior for the described future capability."
+  },
+  "engines": [
+    {
+      "id": "panchanga",
+      "label": "Panchanga",
+      "summary": "Five calendar limbs derived from the Sun, Moon and weekday.",
+      "statusNote": "Native computation exists; it uses an approximate fixed ayanamsa and a mean-longitude fallback. No sunrise-based location calculation is in this engine entry point.",
+      "profile": "calendar-rings",
+      "docs": [
+        "docs/engines/panchanga.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "General docs describe date, latitude/longitude and timezone as the Panchanga calculation inputs.",
+          "truth": "calculate() consumes date/time/timezone; latitude and longitude do not feed compute_panchanga. Timezone names are a limited static offset table, not full historical DST resolution.",
+          "source": "crates/engine-panchanga/src/lib.rs"
+        },
+        {
+          "claim": "Astronomical precision may appear uniform across Vedic engines.",
+          "truth": "Panchanga uses fixed 23.72 degrees and a mean-position fallback; Transits calculates Lahiri ayanamsa per datetime. Their precision paths are different.",
+          "source": "crates/engine-panchanga/src/lib.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "ephemeris",
+          "label": "Sun & Moon",
+          "role": "Astronomical reference",
+          "description": "Parses the selected date and time, obtains local Swiss Ephemeris tropical Sun/Moon longitudes, and falls back to mean-longitude formulas when that lookup fails.",
+          "source": "crates/engine-panchanga/src/lib.rs",
+          "symbol": "compute_panchanga",
+          "line": 337,
+          "status": "implemented",
+          "shape": "core"
+        },
+        {
+          "id": "sidereal",
+          "label": "Sidereal offset",
+          "role": "Coordinate conversion",
+          "description": "Subtracts a fixed 23.72-degree Lahiri approximation from tropical longitude. This is an explicit approximation rather than an epoch-varying ayanamsa.",
+          "source": "crates/engine-panchanga/src/lib.rs",
+          "symbol": "to_sidereal_longitude",
+          "line": 141,
+          "status": "simplified",
+          "shape": "ring"
+        },
+        {
+          "id": "tithi",
+          "label": "Tithi",
+          "role": "Lunar-day division",
+          "description": "Divides the angular separation of Moon and Sun into 30 twelve-degree lunar days, then resolves the Sanskrit name.",
+          "source": "crates/engine-panchanga/src/lib.rs",
+          "symbol": "calculate_tithi",
+          "line": 283,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "nakshatra",
+          "label": "Nakshatra",
+          "role": "Lunar-mansion division",
+          "description": "Divides sidereal lunar longitude into 27 equal mansion segments and resolves the name from the local table.",
+          "source": "crates/engine-panchanga/src/lib.rs",
+          "symbol": "calculate_nakshatra",
+          "line": 292,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "yoga",
+          "label": "Yoga",
+          "role": "Combined longitude",
+          "description": "Adds sidereal Sun and Moon longitudes and divides their wrapped sum into 27 yoga segments.",
+          "source": "crates/engine-panchanga/src/lib.rs",
+          "symbol": "calculate_yoga",
+          "line": 297,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "karana",
+          "label": "Karana",
+          "role": "Half-tithi sequence",
+          "description": "Maps the half-tithi slot across the 60-slot month into seven repeating and four fixed karana identities.",
+          "source": "crates/engine-panchanga/src/lib.rs",
+          "symbol": "karana_identity",
+          "line": 307,
+          "status": "implemented",
+          "shape": "plate"
+        },
+        {
+          "id": "vara",
+          "label": "Vara",
+          "role": "Weekday wheel",
+          "description": "Resolves weekday from Julian day into one of seven named varas. The displayed set belongs to one computed PanchangaResult.",
+          "source": "crates/engine-panchanga/src/lib.rs",
+          "symbol": "calculate_vara",
+          "line": 327,
+          "status": "implemented",
+          "shape": "ring"
+        }
+      ],
+      "connections": [
+        {
+          "from": "ephemeris",
+          "to": "sidereal",
+          "label": "Tropical longitudes"
+        },
+        {
+          "from": "sidereal",
+          "to": "tithi",
+          "label": "Sun–Moon difference"
+        },
+        {
+          "from": "sidereal",
+          "to": "nakshatra",
+          "label": "Moon longitude"
+        },
+        {
+          "from": "sidereal",
+          "to": "yoga",
+          "label": "Sun + Moon"
+        },
+        {
+          "from": "tithi",
+          "to": "karana",
+          "label": "Half-tithi slot"
+        },
+        {
+          "from": "ephemeris",
+          "to": "vara",
+          "label": "Julian day"
+        }
+      ]
+    },
+    {
+      "id": "vedic-clock",
+      "label": "Vedic Clock",
+      "summary": "A local-hour lens joining the TCM organ clock, dosha cycles and optional calendar qualities.",
+      "statusNote": "The active entry point is a TCM-organ/dosha clock. Hora, Choghadiya and Vedic API helper modules exist but are not called by this calculate() path.",
+      "profile": "temporal-dials",
+      "docs": [
+        "docs/engines/vedic-clock.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "The OpenAPI stub describes a muhurta/guna clock.",
+          "truth": "build_result emits current_organ, current_dosha, recommendation, synthesis, timezone and upcoming_transitions. The engine is not the muhurta/guna schema.",
+          "source": "crates/engine-vedic-clock/src/engine.rs"
+        },
+        {
+          "claim": "All integration modules in the crate look like active engine stages.",
+          "truth": "engine.rs imports the organ/dosha and local recommendation modules; it does not invoke hora_integration, choghadiya_integration or panchang_integration.",
+          "source": "crates/engine-vedic-clock/src/engine.rs"
+        },
+        {
+          "claim": "Timezone metadata describes support for IANA timezones generally.",
+          "truth": "timezone_minutes_from_string recognizes Asia/Kolkata, Asia/Calcutta, UTC, GMT and explicit signed offsets. Other IANA names fall back to UTC in this entry point.",
+          "source": "crates/engine-vedic-clock/src/engine.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "local-clock",
+          "label": "Local clock",
+          "role": "Time basis",
+          "description": "Resolves offset minutes in priority order: options.timezone_offset, birth_data.timezone, then UTC. It records the selected source in the result.",
+          "source": "crates/engine-vedic-clock/src/engine.rs",
+          "symbol": "resolve_timezone",
+          "line": 65,
+          "status": "implemented",
+          "shape": "core"
+        },
+        {
+          "id": "organ-wheel",
+          "label": "Organ windows",
+          "role": "Twelve-part time table",
+          "description": "Looks up one of twelve two-hour organ windows, carrying its associated element, emotion and activity text. These are traditional correspondences, not organ measurements.",
+          "source": "crates/engine-vedic-clock/src/wisdom.rs",
+          "symbol": "get_organ_for_hour",
+          "line": 205,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "dosha-wheel",
+          "label": "Dosha periods",
+          "role": "Daily qualities",
+          "description": "Maps local hour to the six daily dosha periods and their curated qualities. The same local hour drives both the organ and dosha layers.",
+          "source": "crates/engine-vedic-clock/src/dosha.rs",
+          "symbol": "get_dosha_for_hour",
+          "line": 95,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "calendar-overlay",
+          "label": "Calendar qualities",
+          "role": "Optional overlay",
+          "description": "When supplied, tithi and nakshatra indices select qualities that enrich temporal recommendations. This module consumes indices; it does not calculate their astronomy.",
+          "source": "crates/engine-vedic-clock/src/panchanga_qualities.rs",
+          "symbol": "get_combined_quality",
+          "line": 296,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "activity-windows",
+          "label": "Activity windows",
+          "role": "Recommendation rules",
+          "description": "Combines organ/dosha affinities into ranked time windows for an optional requested activity, and checks whether that activity is favorable now.",
+          "source": "crates/engine-vedic-clock/src/recommendations.rs",
+          "symbol": "get_optimal_timing",
+          "line": 21,
+          "status": "simplified",
+          "shape": "plate"
+        },
+        {
+          "id": "transitions",
+          "label": "Upcoming transitions",
+          "role": "Boundary schedule",
+          "description": "Scans future hours for organ or dosha changes and reports the next transitions. This is a clock schedule, not a physiological forecast.",
+          "source": "crates/engine-vedic-clock/src/engine.rs",
+          "symbol": "get_upcoming_transitions",
+          "line": 192,
+          "status": "implemented",
+          "shape": "helix"
+        },
+        {
+          "id": "synthesis",
+          "label": "Temporal synthesis",
+          "role": "Interpretive reading",
+          "description": "Builds the combined organ/dosha recommendation with optional calendar context; witness prompts adapt the language to the requested consciousness level.",
+          "source": "crates/engine-vedic-clock/src/integration.rs",
+          "symbol": "get_temporal_recommendation",
+          "line": 19,
+          "status": "simplified",
+          "shape": "crystal"
+        }
+      ],
+      "connections": [
+        {
+          "from": "local-clock",
+          "to": "organ-wheel",
+          "label": "Resolved local hour"
+        },
+        {
+          "from": "local-clock",
+          "to": "dosha-wheel",
+          "label": "Resolved local hour"
+        },
+        {
+          "from": "local-clock",
+          "to": "transitions",
+          "label": "Future hour scan"
+        },
+        {
+          "from": "organ-wheel",
+          "to": "activity-windows",
+          "label": "Organ affinity"
+        },
+        {
+          "from": "dosha-wheel",
+          "to": "activity-windows",
+          "label": "Dosha affinity"
+        },
+        {
+          "from": "organ-wheel",
+          "to": "synthesis",
+          "label": "Organ context"
+        },
+        {
+          "from": "dosha-wheel",
+          "to": "synthesis",
+          "label": "Dosha context"
+        },
+        {
+          "from": "calendar-overlay",
+          "to": "synthesis",
+          "label": "Optional supplied indices"
+        }
+      ]
+    },
+    {
+      "id": "vimshottari",
+      "label": "Vimshottari",
+      "summary": "A nested planetary-period clock seeded by sidereal natal Moon position.",
+      "statusNote": "The native path computes nested periods. Its constructor stores an HD engine but calculate() calls the shared ephemeris directly; timezone support and ayanamsa are simplified.",
+      "profile": "period-lattice",
+      "docs": [
+        "docs/engines/vimshottari.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "The atlas names Human Design as a Vimshottari dependency.",
+          "truth": "with_hd_engine stores a field marked allow(dead_code); calculate() creates EphemerisCalculator itself. This is constructor wiring, not a nested Human Design calculation.",
+          "source": "crates/engine-vimshottari/src/engine.rs"
+        },
+        {
+          "claim": "The full three-level timeline is implied to be returned in every response.",
+          "truth": "serialize_timeline emits top-level mahadashas and antardasha_count; detailed three-level data is exposed only for current_period.",
+          "source": "crates/engine-vimshottari/src/engine.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "moon",
+          "label": "Natal Moon",
+          "role": "Period seed",
+          "description": "Resolves birth time and asks the shared ephemeris for Moon longitude, then applies a fixed 23.72-degree sidereal offset. Alternatively accepts a supplied moon_longitude.",
+          "source": "crates/engine-vimshottari/src/engine.rs",
+          "symbol": "calculate",
+          "line": 240,
+          "status": "simplified",
+          "shape": "core"
+        },
+        {
+          "id": "nakshatra",
+          "label": "Birth mansion",
+          "role": "Ruling-lord lookup",
+          "description": "Selects the birth nakshatra from lunar longitude and retrieves its ruling planet from the 27-mansion table.",
+          "source": "crates/engine-vimshottari/src/calculator.rs",
+          "symbol": "get_nakshatra_from_longitude",
+          "line": 341,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "balance",
+          "label": "Dasha balance",
+          "role": "First-period remainder",
+          "description": "Measures progress through the birth mansion to calculate the remaining fraction of the first major period.",
+          "source": "crates/engine-vimshottari/src/calculator.rs",
+          "symbol": "calculate_dasha_balance",
+          "line": 360,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "major-periods",
+          "label": "Nine major periods",
+          "role": "Mahadasha sequence",
+          "description": "Builds nine ordered planetary periods using their declared lengths and the remaining balance of the initial period.",
+          "source": "crates/engine-vimshottari/src/calculator.rs",
+          "symbol": "calculate_mahadashas",
+          "line": 395,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "subperiods",
+          "label": "Nested periods",
+          "role": "Antardasha / Pratyantardasha",
+          "description": "Expands each major period into nine subperiods and each of those into nine further periods, giving 81 antardashas and 729 pratyantardashas.",
+          "source": "crates/engine-vimshottari/src/calculator.rs",
+          "symbol": "calculate_complete_timeline",
+          "line": 566,
+          "status": "implemented",
+          "shape": "helix"
+        },
+        {
+          "id": "cursor",
+          "label": "Present & thresholds",
+          "role": "Current-period lookup",
+          "description": "Locates the three periods containing current_time and selects the next five transitions. Complete inner timelines exist in memory; the serializer summarizes major periods.",
+          "source": "crates/engine-vimshottari/src/calculator.rs",
+          "symbol": "find_current_period",
+          "line": 608,
+          "status": "implemented",
+          "shape": "lens"
+        },
+        {
+          "id": "qualities",
+          "label": "Planetary qualities",
+          "role": "Interpretive enrichment",
+          "description": "Combines the active lords’ curated themes, life areas, opportunities and challenges, then uses the active periods and transitions for witness questions.",
+          "source": "crates/engine-vimshottari/src/calculator.rs",
+          "symbol": "enrich_period_with_qualities",
+          "line": 778,
+          "status": "simplified",
+          "shape": "crystal"
+        }
+      ],
+      "connections": [
+        {
+          "from": "moon",
+          "to": "nakshatra",
+          "label": "Sidereal longitude"
+        },
+        {
+          "from": "nakshatra",
+          "to": "balance",
+          "label": "Mansion + ruling lord"
+        },
+        {
+          "from": "balance",
+          "to": "major-periods",
+          "label": "Remaining first period"
+        },
+        {
+          "from": "major-periods",
+          "to": "subperiods",
+          "label": "Major period boundaries"
+        },
+        {
+          "from": "subperiods",
+          "to": "cursor",
+          "label": "Complete nested timeline"
+        },
+        {
+          "from": "cursor",
+          "to": "qualities",
+          "label": "Active three lords"
+        }
+      ]
+    },
+    {
+      "id": "transits",
+      "label": "Transits",
+      "summary": "Two planetary reference planes compared through aspects, retrogrades and Saturn-cycle rules.",
+      "statusNote": "Astronomical positions are computed through Swiss Ephemeris. Aspect meanings and period quality are interpretive rules, not event predictions.",
+      "profile": "orbital-comparator",
+      "docs": [
+        "docs/engines/transits.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "TransitsResultSchema advertises dominant_transit, intensity and next_peak_date.",
+          "truth": "The runtime serializer emits position arrays, aspects, sade_sati, period_quality and retrograde_planets; the stub fields are not produced.",
+          "source": "crates/engine-transits/src/engine.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "natal-plane",
+          "label": "Natal sky",
+          "role": "Reference plane",
+          "description": "Parses the birth datetime with chrono_tz and computes twelve natal sidereal positions, including Rahu and Ketu.",
+          "source": "crates/engine-transits/src/engine.rs",
+          "symbol": "analyze",
+          "line": 71,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "transit-plane",
+          "label": "Current sky",
+          "role": "Moving plane",
+          "description": "Calculates the same twelve bodies at current_time, using date-specific Lahiri ayanamsa and signed longitudinal speed.",
+          "source": "crates/engine-transits/src/ephemeris.rs",
+          "symbol": "calculate_all_positions",
+          "line": 93,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "aspects",
+          "label": "Angular aspects",
+          "role": "Comparison lattice",
+          "description": "Compares transit positions with natal positions, tests allowed aspect angles/orbs, determines applying/separating state, then filters significant aspects.",
+          "source": "crates/engine-transits/src/aspects.rs",
+          "symbol": "calculate_aspects",
+          "line": 11,
+          "status": "implemented",
+          "shape": "helix"
+        },
+        {
+          "id": "saturn-cycle",
+          "label": "Sade Sati",
+          "role": "Saturn–Moon relationship",
+          "description": "Checks the transit Saturn sign against the natal Moon sign and labels rising, peak or setting when adjacent/sign conditions match.",
+          "source": "crates/engine-transits/src/sade_sati.rs",
+          "symbol": "detect_sade_sati",
+          "line": 9,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "retrogrades",
+          "label": "Retrograde motion",
+          "role": "Velocity flags",
+          "description": "A negative longitude speed marks retrograde motion; the engine collects these flags into a list for interpretation.",
+          "source": "crates/engine-transits/src/ephemeris.rs",
+          "symbol": "calculate_position",
+          "line": 68,
+          "status": "implemented",
+          "shape": "wave"
+        },
+        {
+          "id": "period-quality",
+          "label": "Period quality",
+          "role": "Interpretive synthesis",
+          "description": "Combines aspect nature, Sade Sati and retrograde flags into a qualitative period label and level-adapted witness questions.",
+          "source": "crates/engine-transits/src/engine.rs",
+          "symbol": "assess_period_quality",
+          "line": 328,
+          "status": "simplified",
+          "shape": "crystal"
+        }
+      ],
+      "connections": [
+        {
+          "from": "natal-plane",
+          "to": "aspects",
+          "label": "Natal positions"
+        },
+        {
+          "from": "transit-plane",
+          "to": "aspects",
+          "label": "Transit positions"
+        },
+        {
+          "from": "natal-plane",
+          "to": "saturn-cycle",
+          "label": "Natal Moon sign"
+        },
+        {
+          "from": "transit-plane",
+          "to": "saturn-cycle",
+          "label": "Transit Saturn sign"
+        },
+        {
+          "from": "transit-plane",
+          "to": "retrogrades",
+          "label": "Longitude speeds"
+        },
+        {
+          "from": "aspects",
+          "to": "period-quality",
+          "label": "Aspect nature"
+        },
+        {
+          "from": "saturn-cycle",
+          "to": "period-quality",
+          "label": "Cycle phase"
+        },
+        {
+          "from": "retrogrades",
+          "to": "period-quality",
+          "label": "Retrograde list"
+        }
+      ]
+    },
+    {
+      "id": "biorhythm",
+      "label": "Biorhythm",
+      "summary": "Six date-seeded sine cycles, combined scores and an optional future sampling window.",
+      "statusNote": "This is a deterministic date-based model. None of the cycle names represent sensor measurements or established physiological predictions.",
+      "profile": "wave-bank",
+      "docs": [
+        "docs/engines/biorhythm.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "docs/ENGINES.md lists three biological cycles.",
+          "truth": "The runtime computes six named cycles plus three composites. The code consumes dates, not measured biology.",
+          "source": "crates/engine-biorhythm/src/calculator.rs"
+        },
+        {
+          "claim": "The OpenAPI example uses flat signed scores.",
+          "truth": "The runtime nests CycleResult objects with value in −1..1 and percentage in 0..100, plus phase and crossing metadata.",
+          "source": "crates/engine-biorhythm/src/calculator.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "age-anchor",
+          "label": "Days since birth",
+          "role": "Time anchor",
+          "description": "Parses birth and target dates, rejects a target before birth and uses the integer days-alive difference for every oscillator.",
+          "source": "crates/engine-biorhythm/src/lib.rs",
+          "symbol": "calculate",
+          "line": 162,
+          "status": "implemented",
+          "shape": "core"
+        },
+        {
+          "id": "physical",
+          "label": "Physical cycle",
+          "role": "23-day oscillator",
+          "description": "Samples sin(2π × days_alive / 23), exposes both its signed value and its 0–100 mapped percentage.",
+          "source": "crates/engine-biorhythm/src/calculator.rs",
+          "symbol": "PHYSICAL_PERIOD",
+          "line": 14,
+          "status": "implemented",
+          "shape": "wave"
+        },
+        {
+          "id": "emotional",
+          "label": "Emotional cycle",
+          "role": "28-day oscillator",
+          "description": "Samples the same date formula with a 28-day period and attaches phase, next peak and next critical crossing.",
+          "source": "crates/engine-biorhythm/src/calculator.rs",
+          "symbol": "EMOTIONAL_PERIOD",
+          "line": 15,
+          "status": "implemented",
+          "shape": "wave"
+        },
+        {
+          "id": "intellectual",
+          "label": "Intellectual cycle",
+          "role": "33-day oscillator",
+          "description": "Samples the date formula with a 33-day period. It is a named model coordinate rather than measured cognitive performance.",
+          "source": "crates/engine-biorhythm/src/calculator.rs",
+          "symbol": "INTELLECTUAL_PERIOD",
+          "line": 16,
+          "status": "implemented",
+          "shape": "wave"
+        },
+        {
+          "id": "extended",
+          "label": "Extended cycles",
+          "role": "38 / 43 / 53 days",
+          "description": "Computes intuitive, aesthetic and spiritual cycles using the same oscillator implementation and periods 38, 43 and 53 days.",
+          "source": "crates/engine-biorhythm/src/calculator.rs",
+          "symbol": "compute_cycle",
+          "line": 164,
+          "status": "implemented",
+          "shape": "helix"
+        },
+        {
+          "id": "composites",
+          "label": "Composite rhythms",
+          "role": "Pairwise averages",
+          "description": "Averages primary cycle percentages into mastery, passion and wisdom; overall_energy averages all six cycles.",
+          "source": "crates/engine-biorhythm/src/lib.rs",
+          "symbol": "calculate",
+          "line": 162,
+          "status": "simplified",
+          "shape": "disc"
+        },
+        {
+          "id": "forecast",
+          "label": "Crossings & forecast",
+          "role": "Forward sampling",
+          "description": "Finds upcoming zero-crossing days in the primary cycles and optionally samples all six cycles through a forecast window.",
+          "source": "crates/engine-biorhythm/src/calculator.rs",
+          "symbol": "build_forecast",
+          "line": 208,
+          "status": "implemented",
+          "shape": "plate"
+        }
+      ],
+      "connections": [
+        {
+          "from": "age-anchor",
+          "to": "physical",
+          "label": "Days alive"
+        },
+        {
+          "from": "age-anchor",
+          "to": "emotional",
+          "label": "Days alive"
+        },
+        {
+          "from": "age-anchor",
+          "to": "intellectual",
+          "label": "Days alive"
+        },
+        {
+          "from": "age-anchor",
+          "to": "extended",
+          "label": "Days alive"
+        },
+        {
+          "from": "physical",
+          "to": "composites",
+          "label": "Primary percentage"
+        },
+        {
+          "from": "emotional",
+          "to": "composites",
+          "label": "Primary percentage"
+        },
+        {
+          "from": "intellectual",
+          "to": "composites",
+          "label": "Primary percentage"
+        },
+        {
+          "from": "extended",
+          "to": "composites",
+          "label": "Overall average only"
+        },
+        {
+          "from": "age-anchor",
+          "to": "forecast",
+          "label": "Future day offsets"
+        }
+      ]
+    },
+    {
+      "id": "human-design",
+      "label": "Human Design",
+      "summary": "A BodyGraph assembled from two sets of thirteen planetary activations.",
+      "statusNote": "The chart generation and graph analysis are implemented. Its meaning is a traditional interpretive system; source execution does not establish physiological validity.",
+      "profile": "bodygraph-assembly",
+      "docs": [
+        "docs/engines/human-design.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "chart.rs comments say centers, channels and derived properties are placeholders for a later agent.",
+          "truth": "generate_hd_chart immediately calls analyze_hd_chart, which computes those fields. The introductory comment is stale.",
+          "source": "crates/engine-human-design/src/chart.rs"
+        },
+        {
+          "claim": "Some docs and renderers call the type field type or type_name.",
+          "truth": "The actual serializer emits hd_type and eight named top-level keys. It does not serialize a separate strategy field.",
+          "source": "crates/engine-human-design/src/engine.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "birth-time",
+          "label": "Birth-time resolver",
+          "role": "UTC reference",
+          "description": "Parses the birth date, required birth time and IANA timezone, rejects ambiguous local time, and produces a UTC datetime.",
+          "source": "crates/engine-human-design/src/engine.rs",
+          "symbol": "extract_birth_params",
+          "line": 32,
+          "status": "implemented",
+          "shape": "core"
+        },
+        {
+          "id": "design-arc",
+          "label": "Design solar arc",
+          "role": "Second reference moment",
+          "description": "Searches backward for the moment when the Sun is 88 degrees before its birth longitude, providing the design-time reference.",
+          "source": "crates/engine-human-design/src/design_time.rs",
+          "symbol": "calculate_design_time",
+          "line": 103,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "activations",
+          "label": "Twin activations",
+          "role": "13 + 13 positions",
+          "description": "Calculates thirteen personality and thirteen design planetary activations using the shared ephemeris, including Sun–Earth and lunar-node oppositions.",
+          "source": "crates/engine-human-design/src/activations.rs",
+          "symbol": "calculate_all_activations",
+          "line": 225,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "gate-wheel",
+          "label": "Gate & line wheel",
+          "role": "Longitude mapping",
+          "description": "Maps each longitude through the explicit Human Design gate sequence into one of 64 gates and one of six lines.",
+          "source": "crates/engine-human-design/src/gate_sequence.rs",
+          "symbol": "longitude_to_gate_and_line",
+          "line": 98,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "bodygraph",
+          "label": "Centers & channels",
+          "role": "Graph assembly",
+          "description": "Uses activated gate pairs to identify channels and define the nine centers; the graph is computed from both activation sets.",
+          "source": "crates/engine-human-design/src/analysis.rs",
+          "symbol": "analyze_hd_chart",
+          "line": 537,
+          "status": "implemented",
+          "shape": "helix"
+        },
+        {
+          "id": "typology",
+          "label": "Type & authority",
+          "role": "Graph interpretation",
+          "description": "Derives type, authority, profile and connected-component definition from the completed graph and Sun activation lines.",
+          "source": "crates/engine-human-design/src/analysis.rs",
+          "symbol": "determine_type",
+          "line": 328,
+          "status": "implemented",
+          "shape": "crystal"
+        },
+        {
+          "id": "witness",
+          "label": "Witness lens",
+          "role": "Reflective language",
+          "description": "Chooses level-adapted questions from the chart’s type, profile and authority. The response is rule-based local language.",
+          "source": "crates/engine-human-design/src/witness.rs",
+          "symbol": "generate_witness_prompt",
+          "line": 20,
+          "status": "implemented",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "birth-time",
+          "to": "design-arc",
+          "label": "Birth UTC moment"
+        },
+        {
+          "from": "birth-time",
+          "to": "activations",
+          "label": "Personality moment"
+        },
+        {
+          "from": "design-arc",
+          "to": "activations",
+          "label": "Design moment"
+        },
+        {
+          "from": "activations",
+          "to": "gate-wheel",
+          "label": "Planet longitudes"
+        },
+        {
+          "from": "gate-wheel",
+          "to": "bodygraph",
+          "label": "Gate activations"
+        },
+        {
+          "from": "bodygraph",
+          "to": "typology",
+          "label": "Defined graph"
+        },
+        {
+          "from": "typology",
+          "to": "witness",
+          "label": "Derived chart"
+        }
+      ]
+    },
+    {
+      "id": "gene-keys",
+      "label": "Gene Keys",
+      "summary": "Four Human Design gates expanded into an Activation Sequence and contemplative vocabulary.",
+      "statusNote": "This entry point is partial: four core activations only, each line fixed to 3. Venus and Pearl sequences are not calculated here. Frequency labels follow a supplied level, not a measured state.",
+      "profile": "fourfold-key",
+      "docs": [
+        "docs/engines/gene-keys.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "General engine docs advertise Activation, Venus, Pearl and Life’s Work as four sequences.",
+          "truth": "Only ActivationSequence and four core activations are created by this entry point.",
+          "source": "crates/engine-gene-keys/src/engine.rs"
+        },
+        {
+          "claim": "active_keys.line looks like an astronomical calculation.",
+          "truth": "create_chart_from_gates fixes every line to 3 on both input branches. This limitation is explicitly documented in the source.",
+          "source": "crates/engine-gene-keys/src/engine.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "gate-source",
+          "label": "Gate source",
+          "role": "Human Design adapter",
+          "description": "Accepts four explicit hd_gates, or invokes the injected Human Design engine when birth_data is present and extracts its Sun/Earth gates.",
+          "source": "crates/engine-gene-keys/src/engine.rs",
+          "symbol": "calculate",
+          "line": 307,
+          "status": "implemented",
+          "shape": "core"
+        },
+        {
+          "id": "core-activations",
+          "label": "Four activations",
+          "role": "Core gate carriers",
+          "description": "Builds the four Personality/Design Sun/Earth activations. Every line is assigned3 because the current gate-only adapter discards the actual line.",
+          "source": "crates/engine-gene-keys/src/engine.rs",
+          "symbol": "create_chart_from_gates",
+          "line": 138,
+          "status": "placeholder",
+          "shape": "plate"
+        },
+        {
+          "id": "archetypes",
+          "label": "64-key library",
+          "role": "Curated spectrum",
+          "description": "Looks up each gate’s local Gene Key record, including name, Shadow, Gift, Siddhi and programming-partner material.",
+          "source": "crates/engine-gene-keys/src/wisdom.rs",
+          "symbol": "get_gene_key",
+          "line": 19,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "sequence",
+          "label": "Activation Sequence",
+          "role": "Four named pairings",
+          "description": "Organizes the four gates into the runtime’s Life’s Work, Evolution, Radiance and Purpose pairs. No Venus/Pearl sequence is emitted.",
+          "source": "crates/engine-gene-keys/src/engine.rs",
+          "symbol": "create_chart_from_gates",
+          "line": 138,
+          "status": "simplified",
+          "shape": "disc"
+        },
+        {
+          "id": "frequencies",
+          "label": "Frequency lens",
+          "role": "Level-based interpretation",
+          "description": "Uses the supplied consciousness_level to suggest a Shadow/Gift/Siddhi orientation and associated inquiry. It does not assess a measured consciousness frequency.",
+          "source": "crates/engine-gene-keys/src/frequency.rs",
+          "symbol": "assess_frequencies",
+          "line": 82,
+          "status": "simplified",
+          "shape": "wave"
+        },
+        {
+          "id": "witness",
+          "label": "Witness questions",
+          "role": "Contemplative language",
+          "description": "Generates a local reflective question from the chart and requested level, alongside the enriched active_keys response.",
+          "source": "crates/engine-gene-keys/src/witness.rs",
+          "symbol": "generate_witness_prompt",
+          "line": 19,
+          "status": "implemented",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "gate-source",
+          "to": "core-activations",
+          "label": "Four gate numbers"
+        },
+        {
+          "from": "archetypes",
+          "to": "core-activations",
+          "label": "Key vocabulary"
+        },
+        {
+          "from": "core-activations",
+          "to": "sequence",
+          "label": "Four activation sources"
+        },
+        {
+          "from": "core-activations",
+          "to": "frequencies",
+          "label": "Chart + supplied level"
+        },
+        {
+          "from": "core-activations",
+          "to": "witness",
+          "label": "Chart + supplied level"
+        }
+      ]
+    },
+    {
+      "id": "numerology",
+      "label": "Numerology",
+      "summary": "Name and date arithmetic exposed as traceable reduction chains.",
+      "statusNote": "Both letter maps and the six returned number types are implemented. Names are processed as ASCII letters; this is symbolic arithmetic rather than personality measurement.",
+      "profile": "reduction-stack",
+      "docs": [
+        "docs/engines/numerology.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "Generic public descriptions list only the headline numerology numbers.",
+          "truth": "NumerologyResult also exposes chaldean_name and per-number reduction chains; these are useful inspectable components that flat summary schemas omit.",
+          "source": "crates/engine-numerology/src/types.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "alphabets",
+          "label": "Letter maps",
+          "role": "Two alphabets",
+          "description": "Stores separate Pythagorean 1–9 and Chaldean 1–8 letter-to-number tables. Unsupported characters do not contribute to the sum.",
+          "source": "crates/engine-numerology/src/lib.rs",
+          "symbol": "pythagorean_value",
+          "line": 20,
+          "status": "implemented",
+          "shape": "plate"
+        },
+        {
+          "id": "reduction",
+          "label": "Reduction core",
+          "role": "Digit-sum machine",
+          "description": "Repeatedly sums digits while preserving master numbers 11, 22, 33, returning both the final value and the complete reduction chain.",
+          "source": "crates/engine-numerology/src/lib.rs",
+          "symbol": "reduce_to_core",
+          "line": 109,
+          "status": "implemented",
+          "shape": "core"
+        },
+        {
+          "id": "date-numbers",
+          "label": "Birth-date numbers",
+          "role": "Life Path / Birthday",
+          "description": "Reduces year, month and day for Life Path and the day alone for Birthday. Both preserve the reducer’s master-number rule.",
+          "source": "crates/engine-numerology/src/lib.rs",
+          "symbol": "calculate_life_path",
+          "line": 167,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "expression",
+          "label": "Expression",
+          "role": "Whole-name sum",
+          "description": "Maps all name letters through the Pythagorean table, sums them and reduces the result.",
+          "source": "crates/engine-numerology/src/lib.rs",
+          "symbol": "calculate_expression",
+          "line": 195,
+          "status": "implemented",
+          "shape": "plate"
+        },
+        {
+          "id": "vowels",
+          "label": "Soul Urge",
+          "role": "Vowel channel",
+          "description": "Filters the name to A/E/I/O/U before Pythagorean mapping and reduction; Y is not counted as a vowel in this implementation.",
+          "source": "crates/engine-numerology/src/lib.rs",
+          "symbol": "calculate_soul_urge",
+          "line": 201,
+          "status": "implemented",
+          "shape": "wave"
+        },
+        {
+          "id": "consonants",
+          "label": "Personality",
+          "role": "Consonant channel",
+          "description": "Filters to ASCII consonants, then maps and reduces them independently of the vowel channel.",
+          "source": "crates/engine-numerology/src/lib.rs",
+          "symbol": "calculate_personality",
+          "line": 211,
+          "status": "implemented",
+          "shape": "plate"
+        },
+        {
+          "id": "chaldean",
+          "label": "Chaldean name",
+          "role": "Alternate mapping",
+          "description": "Runs the whole name through the Chaldean table and the shared reducer, exposing a parallel name-number result.",
+          "source": "crates/engine-numerology/src/lib.rs",
+          "symbol": "calculate_chaldean_name",
+          "line": 233,
+          "status": "implemented",
+          "shape": "ring"
+        }
+      ],
+      "connections": [
+        {
+          "from": "alphabets",
+          "to": "expression",
+          "label": "Pythagorean values"
+        },
+        {
+          "from": "alphabets",
+          "to": "vowels",
+          "label": "Pythagorean vowels"
+        },
+        {
+          "from": "alphabets",
+          "to": "consonants",
+          "label": "Pythagorean consonants"
+        },
+        {
+          "from": "alphabets",
+          "to": "chaldean",
+          "label": "Chaldean values"
+        },
+        {
+          "from": "reduction",
+          "to": "date-numbers",
+          "label": "Shared reduction rule"
+        },
+        {
+          "from": "reduction",
+          "to": "expression",
+          "label": "Shared reduction rule"
+        },
+        {
+          "from": "reduction",
+          "to": "vowels",
+          "label": "Shared reduction rule"
+        },
+        {
+          "from": "reduction",
+          "to": "consonants",
+          "label": "Shared reduction rule"
+        },
+        {
+          "from": "reduction",
+          "to": "chaldean",
+          "label": "Shared reduction rule"
+        }
+      ]
+    },
+    {
+      "id": "biofield",
+      "label": "Biofield",
+      "summary": "A symbolic field computed from planetary correspondences, with an explicitly separate mock branch.",
+      "statusNote": "Birth-data calculations now run, contradicting older always-mock docs. They derive numerical correspondences from astrology; they do not measure a human field. Capture-like options in this native engine still produce mock metrics.",
+      "profile": "field-computation",
+      "docs": [
+        "docs/engines/biofield.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "docs/engines/biofield.md says is_mock_data is always true and the Vedic path is not active.",
+          "truth": "engine.rs:119 invokes VedicBiofieldAnalyzer when birth_data is supplied; vedic/mod.rs returns is_mock_data=false for that branch.",
+          "source": "crates/engine-biofield/src/engine.rs"
+        },
+        {
+          "claim": "Capture-shaped options can be mistaken for actual captured analysis.",
+          "truth": "The native capture-shaped branch explicitly generates mock metrics. Actual saved capture lookup is the separate biofield-capture engine.",
+          "source": "crates/engine-biofield/src/engine.rs"
+        },
+        {
+          "claim": "The birth time is described as timezone-aware.",
+          "truth": "vedic/mod.rs parse_birth_datetime attaches UTC directly to the supplied naive birth datetime and does not read birth_data.timezone.",
+          "source": "crates/engine-biofield/src/vedic/mod.rs"
+        },
+        {
+          "claim": "The Vedic label can imply a sidereal planetary calculation equivalent to Panchanga or Transits.",
+          "truth": "vedic/planetary.rs uses the shared calculator’s tropical longitude directly for zodiac signs; it contains no sidereal conversion. This source path differs from the explicit conversions in Panchanga and Transits.",
+          "source": "crates/engine-biofield/src/vedic/planetary.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "natal-sky",
+          "label": "Natal positions",
+          "role": "Astronomical input",
+          "description": "The Vedic path computes natal planetary positions through the shared ephemeris. This path is selected only when birth_data exists.",
+          "source": "crates/engine-biofield/src/vedic/planetary.rs",
+          "symbol": "calculate_all_positions",
+          "line": 223,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "strengths",
+          "label": "Planetary strengths",
+          "role": "Correspondence rules",
+          "description": "Combines planetary dignity, sign-based house proxies and aspects into declared strength scores for the correspondence model.",
+          "source": "crates/engine-biofield/src/vedic/planetary.rs",
+          "symbol": "calculate_planet_strengths",
+          "line": 467,
+          "status": "simplified",
+          "shape": "plate"
+        },
+        {
+          "id": "chakra-map",
+          "label": "Seven chakra correspondences",
+          "role": "Symbolic mapping",
+          "description": "Maps pairs of planets and their strengths/aspects to seven chakra activity and balance values. These values are constructed correspondences, not sensor readings.",
+          "source": "crates/engine-biofield/src/vedic/chakra_map.rs",
+          "symbol": "calculate_all_chakra_readings",
+          "line": 148,
+          "status": "simplified",
+          "shape": "helix"
+        },
+        {
+          "id": "global-metrics",
+          "label": "Field indices",
+          "role": "Derived numeric model",
+          "description": "Computes named fractal-dimension, entropy, coherence, symmetry and vitality indices from positions and aspects. Their names do not make them optical or physiological measurements.",
+          "source": "crates/engine-biofield/src/vedic/chakra_map.rs",
+          "symbol": "calculate_fractal_dimension",
+          "line": 175,
+          "status": "simplified",
+          "shape": "disc"
+        },
+        {
+          "id": "temporal",
+          "label": "Temporal modulation",
+          "role": "Current-transit overlay",
+          "description": "Uses current planetary positions, Moon transit, lunar phase and weekday to modify the symbolic base metrics, then recalculates vitality.",
+          "source": "crates/engine-biofield/src/vedic/temporal.rs",
+          "symbol": "apply_temporal_modulation",
+          "line": 16,
+          "status": "simplified",
+          "shape": "wave"
+        },
+        {
+          "id": "mock-branch",
+          "label": "Simulated fallback",
+          "role": "Alternative branch",
+          "description": "Without birth_data, uses a seed/user-based generator. Capture-like options also map mock values into an 11-field shape with consent/quality echoes; this is not the Python capture pipeline.",
+          "source": "crates/engine-biofield/src/engine.rs",
+          "symbol": "analyze",
+          "line": 119,
+          "status": "placeholder",
+          "shape": "plate"
+        },
+        {
+          "id": "witness",
+          "label": "Witness dyad",
+          "role": "Interpretive text",
+          "description": "Turns the calculated or simulated model into local reflective language and an Aletheios/Pichet dyad. This is not a live LLM or clinical assessment.",
+          "source": "crates/engine-biofield/src/witness.rs",
+          "symbol": "generate_witness_dyad",
+          "line": 24,
+          "status": "simplified",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "natal-sky",
+          "to": "strengths",
+          "label": "Positions + aspects"
+        },
+        {
+          "from": "strengths",
+          "to": "chakra-map",
+          "label": "Planet strength pairs"
+        },
+        {
+          "from": "natal-sky",
+          "to": "global-metrics",
+          "label": "Positions + aspects"
+        },
+        {
+          "from": "strengths",
+          "to": "global-metrics",
+          "label": "Strengths for symmetry"
+        },
+        {
+          "from": "chakra-map",
+          "to": "temporal",
+          "label": "Base chakra values"
+        },
+        {
+          "from": "global-metrics",
+          "to": "temporal",
+          "label": "Base indices"
+        },
+        {
+          "from": "temporal",
+          "to": "witness",
+          "label": "Vedic correspondence result"
+        },
+        {
+          "from": "mock-branch",
+          "to": "witness",
+          "label": "Alternative simulated result"
+        }
+      ]
+    },
+    {
+      "id": "face-reading",
+      "label": "Face Reading",
+      "summary": "A consent-gated landmark adapter plus deterministic fallback and traditional symbolic interpretation.",
+      "statusNote": "A real MediaPipe bridge exists, but landmark-derived proportions and heuristic symbolic interpretation must remain distinct. is_mock_data=false is also used for byte-seeded and birth-data heuristics.",
+      "profile": "facial-lens",
+      "docs": [
+        "docs/engines/face-reading.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "docs/engines/face-reading.md calls the engine a stub with no image processing.",
+          "truth": "There is a consent-gated MediaPipe sidecar hook and real-landmark mapper in landmarks.rs. Availability of that service was not checked in this source-only pass.",
+          "source": "crates/engine-face-reading/src/landmarks.rs"
+        },
+        {
+          "claim": "is_mock_data=false means the result came from real CV.",
+          "truth": "heuristic_from_seed and graceful image/birth fallback paths also set false; backend and landmark summary distinguish the actual producer.",
+          "source": "crates/engine-face-reading/src/engine.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "media-consent",
+          "label": "Media & consent",
+          "role": "Request gate",
+          "description": "Reads image bytes/MIME and consent from options. Only granted consent permits the configured face CV service call.",
+          "source": "crates/engine-face-reading/src/engine.rs",
+          "symbol": "analysis_from_landmark_hook",
+          "line": 161,
+          "status": "implemented",
+          "shape": "lens"
+        },
+        {
+          "id": "landmark-service",
+          "label": "468-landmark service",
+          "role": "Optional external computation",
+          "description": "Calls the Python face-mesh service and accepts only a real landmark response. Timeout, disabled service, missing consent or service fallback diverts to a deterministic heuristic.",
+          "source": "crates/engine-face-reading/src/landmarks.rs",
+          "symbol": "fetch_face_landmarks",
+          "line": 125,
+          "status": "delegated",
+          "shape": "plate"
+        },
+        {
+          "id": "proportions",
+          "label": "Proportion map",
+          "role": "Landmark geometry",
+          "description": "Consumes landmark distances, symmetry and facial proportions. Regional landmark sets produce normalized scores used by the interpretive layer.",
+          "source": "crates/engine-face-reading/src/landmarks.rs",
+          "symbol": "analysis_from_landmarks",
+          "line": 258,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "symbolic-zones",
+          "label": "Five-element lens",
+          "role": "Traditional interpretation",
+          "description": "Maps geometric ratios and regional scores into dosha, five-element and zone vocabulary. These symbolic mappings do not establish personality traits or medical conditions.",
+          "source": "crates/engine-face-reading/src/landmarks.rs",
+          "symbol": "analysis_from_landmarks",
+          "line": 258,
+          "status": "simplified",
+          "shape": "ring"
+        },
+        {
+          "id": "heuristic",
+          "label": "Deterministic fallback",
+          "role": "Alternative branch",
+          "description": "When CV is unavailable, hashes image bytes or birth-data attributes into a seed and creates heuristic observations. This branch is not equivalent to landmark detection.",
+          "source": "crates/engine-face-reading/src/engine.rs",
+          "symbol": "heuristic_from_seed",
+          "line": 49,
+          "status": "placeholder",
+          "shape": "plate"
+        },
+        {
+          "id": "truth-envelope",
+          "label": "Backend & quality",
+          "role": "Provenance boundary",
+          "description": "Names mediapipe-face-cv, heuristic-image-landmark-hook, birth-physiognomy-fallback or mock-stub; carries quality/consent and optional landmark summary.",
+          "source": "crates/engine-face-reading/src/engine.rs",
+          "symbol": "calculate",
+          "line": 273,
+          "status": "implemented",
+          "shape": "crystal"
+        },
+        {
+          "id": "witness",
+          "label": "Witness questions",
+          "role": "Reflective reading",
+          "description": "Generates level-adapted local questions from the analysis. The atlas should explain the code’s symbolic mapping without presenting its health or personality labels as established facts.",
+          "source": "crates/engine-face-reading/src/witness.rs",
+          "symbol": "generate_witness_prompts",
+          "line": 15,
+          "status": "simplified",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "media-consent",
+          "to": "landmark-service",
+          "label": "Granted consent + image"
+        },
+        {
+          "from": "landmark-service",
+          "to": "proportions",
+          "label": "Real landmark response"
+        },
+        {
+          "from": "proportions",
+          "to": "symbolic-zones",
+          "label": "Ratios + regional scores"
+        },
+        {
+          "from": "media-consent",
+          "to": "heuristic",
+          "label": "No consent / unavailable CV"
+        },
+        {
+          "from": "landmark-service",
+          "to": "heuristic",
+          "label": "Failure / non-real response"
+        },
+        {
+          "from": "symbolic-zones",
+          "to": "truth-envelope",
+          "label": "CV-backed interpretation"
+        },
+        {
+          "from": "heuristic",
+          "to": "truth-envelope",
+          "label": "Alternative heuristic result"
+        },
+        {
+          "from": "truth-envelope",
+          "to": "witness",
+          "label": "Analysis + level"
+        }
+      ]
+    },
+    {
+      "id": "nadabrahman",
+      "label": "NadaBrahman",
+      "summary": "A recommendation lattice selecting musical material by time, dosha and rasa.",
+      "statusNote": "The native engine recommends catalogued ragas and optional frequency correspondences. It does not ingest or analyze a voice recording, and it does not synthesize audio.",
+      "profile": "resonance-selector",
+      "docs": [
+        "docs/engines/nadabrahman.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "docs/ENGINES.md describes audio_data, vocal-pattern analysis and frequency signatures.",
+          "truth": "analyze() reads current_time plus optional dosha/rasa/mood/chakra; no audio input is decoded or analyzed.",
+          "source": "crates/engine-nadabrahman/src/engine.rs"
+        },
+        {
+          "claim": "NadaBrahman and Raaga can appear interchangeable.",
+          "truth": "NadaBrahman recommends ragas; the TypeScript raaga engine resolves Melakarta ratios and can optionally create clips. They are separate engine identities.",
+          "source": "ts-engines/src/engines/raaga/engine.ts"
+        }
+      ],
+      "parts": [
+        {
+          "id": "prahar",
+          "label": "Prahar clock",
+          "role": "Time segmentation",
+          "description": "Maps input.current_time.hour() into one of eight three-hour prahars. The current implementation uses the supplied UTC clock hour directly.",
+          "source": "crates/engine-nadabrahman/src/models.rs",
+          "symbol": "from_hour",
+          "line": 91,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "time-ragas",
+          "label": "Time-based ragas",
+          "role": "Primary recommendation",
+          "description": "Looks up the prahar’s ragas and their declared scores, choosing a primary and secondary set; a universal-raga fallback exists if the list is empty.",
+          "source": "crates/engine-nadabrahman/src/data.rs",
+          "symbol": "get_prahar_ragas",
+          "line": 68,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "dosha",
+          "label": "Dosha affinity",
+          "role": "Optional catalog filter",
+          "description": "Adds recommendations from the supplied dosha name’s curated affinity list. The engine does not derive the user’s dosha.",
+          "source": "crates/engine-nadabrahman/src/data.rs",
+          "symbol": "get_ragas_for_dosha",
+          "line": 131,
+          "status": "simplified",
+          "shape": "plate"
+        },
+        {
+          "id": "rasa",
+          "label": "Rasa & mood",
+          "role": "Optional catalog filter",
+          "description": "Adds recommendations from the provided rasa or mood. These are curated associations rather than measured emotional-state inference.",
+          "source": "crates/engine-nadabrahman/src/data.rs",
+          "symbol": "get_ragas_for_rasa",
+          "line": 152,
+          "status": "simplified",
+          "shape": "wave"
+        },
+        {
+          "id": "ranking",
+          "label": "Recommendation weave",
+          "role": "Deduplicate / rank",
+          "description": "Deduplicates by raga number, retains higher scores, combines reasons when replacing an entry, sorts descending and returns the top five.",
+          "source": "crates/engine-nadabrahman/src/engine.rs",
+          "symbol": "deduplicate_recommendations",
+          "line": 128,
+          "status": "implemented",
+          "shape": "helix"
+        },
+        {
+          "id": "frequency",
+          "label": "Chakra frequency map",
+          "role": "Optional symbolic lookup",
+          "description": "Resolves supplied chakra names into declared solfeggio and binaural-target frequencies. No acoustic analysis or physiological measurement occurs.",
+          "source": "crates/engine-nadabrahman/src/data.rs",
+          "symbol": "get_chakra_frequency",
+          "line": 172,
+          "status": "simplified",
+          "shape": "wave"
+        },
+        {
+          "id": "witness",
+          "label": "Musical inquiry",
+          "role": "Reflective language",
+          "description": "Builds local time/raga/dosha-oriented questions and enriches recommendations with arohanam, avarohanam and catalogued qualities.",
+          "source": "crates/engine-nadabrahman/src/witness.rs",
+          "symbol": "generate_witness_prompt",
+          "line": 10,
+          "status": "implemented",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "prahar",
+          "to": "time-ragas",
+          "label": "Prahar number"
+        },
+        {
+          "from": "time-ragas",
+          "to": "ranking",
+          "label": "Time recommendations"
+        },
+        {
+          "from": "dosha",
+          "to": "ranking",
+          "label": "Optional affinity recommendations"
+        },
+        {
+          "from": "rasa",
+          "to": "ranking",
+          "label": "Optional mood recommendations"
+        },
+        {
+          "from": "ranking",
+          "to": "witness",
+          "label": "Top recommendations"
+        },
+        {
+          "from": "prahar",
+          "to": "witness",
+          "label": "Time context"
+        }
+      ]
+    },
+    {
+      "id": "tarot",
+      "label": "Tarot",
+      "summary": "A seeded deck draw assembled into positions, orientations and local symbolic readings.",
+      "statusNote": "The deck/spread reading path is implemented. Interpretations are local text. The provenance confidence value 1 describes this deterministic source path, not divinatory accuracy.",
+      "profile": "card-assembly",
+      "docs": [
+        "docs/engines/tarot.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "docs/ENGINES.md describes birth cards, yearly cards and life-path card sequences.",
+          "truth": "This engine entry point performs named spread readings. It does not calculate birth-card or year-card numerology.",
+          "source": "ts-engines/src/engines/tarot/engine.ts"
+        },
+        {
+          "claim": "The OpenAPI stub describes focal_card and synthesis.",
+          "truth": "The actual result contains spread, question, positions and seed; focal_card/synthesis are not produced here.",
+          "source": "ts-engines/src/engines/tarot/engine.ts"
+        }
+      ],
+      "parts": [
+        {
+          "id": "deck",
+          "label": "78-card library",
+          "role": "Symbolic source",
+          "description": "Loads the 22 Major Arcana and 56 generated Minor Arcana records, with suit, element, keywords and upright/reversed meanings.",
+          "source": "ts-engines/src/engines/tarot/wisdom.ts",
+          "symbol": "loadTarotDeck",
+          "line": 648,
+          "status": "implemented",
+          "shape": "plate"
+        },
+        {
+          "id": "spread",
+          "label": "Spread architecture",
+          "role": "Position system",
+          "description": "Resolves one of five spreads and its ordered positions, each with its own meaning and required card count.",
+          "source": "ts-engines/src/engines/tarot/spreads.ts",
+          "symbol": "getSpreadDefinition",
+          "line": 204,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "shuffle",
+          "label": "Seeded shuffle",
+          "role": "Deck permutation",
+          "description": "Inside drawCards, SeededRandom shuffles a copy of the full deck before selection, so the same seed reproduces the card order.",
+          "source": "ts-engines/src/engines/tarot/shuffle.ts",
+          "symbol": "drawCards",
+          "line": 27,
+          "status": "implemented",
+          "shape": "helix"
+        },
+        {
+          "id": "draw",
+          "label": "Draw & orientation",
+          "role": "Unique-card selection",
+          "description": "Draws the requested number of cards from the shuffled deck and assigns upright/reversed orientations using the seeded random stream.",
+          "source": "ts-engines/src/engines/tarot/shuffle.ts",
+          "symbol": "drawCardsForSpread",
+          "line": 46,
+          "status": "implemented",
+          "shape": "plate"
+        },
+        {
+          "id": "reading",
+          "label": "Position readings",
+          "role": "Meaning binding",
+          "description": "Pairs each drawn card with a spread position, selecting the upright or reversed meaning while carrying the card keywords.",
+          "source": "ts-engines/src/engines/tarot/reading.ts",
+          "symbol": "performReading",
+          "line": 43,
+          "status": "implemented",
+          "shape": "crystal"
+        },
+        {
+          "id": "witness",
+          "label": "Question lens",
+          "role": "Reflective prompts",
+          "description": "Builds seed-aware witness questions from the finished reading. calculate() also records deterministic local provenance, with no generated-text fallback.",
+          "source": "ts-engines/src/engines/tarot/witness.ts",
+          "symbol": "generateQuestionBasedPrompts",
+          "line": 170,
+          "status": "implemented",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "deck",
+          "to": "shuffle",
+          "label": "All78 cards"
+        },
+        {
+          "from": "shuffle",
+          "to": "draw",
+          "label": "Shuffled deck"
+        },
+        {
+          "from": "spread",
+          "to": "draw",
+          "label": "Required card count"
+        },
+        {
+          "from": "draw",
+          "to": "reading",
+          "label": "Cards + orientations"
+        },
+        {
+          "from": "spread",
+          "to": "reading",
+          "label": "Position meanings"
+        },
+        {
+          "from": "reading",
+          "to": "witness",
+          "label": "Completed reading"
+        }
+      ]
+    },
+    {
+      "id": "i-ching",
+      "label": "I Ching",
+      "summary": "A seeded consultation scaffold around a 64-hexagram text library.",
+      "statusNote": "The current casting and relating-hexagram calculation are simplified placeholders. Do not present this as an exact three-coin or yarrow procedure.",
+      "profile": "hexagram-scaffold",
+      "docs": [
+        "docs/engines/iching.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "Metadata advertises three_coins and yarrow_stalks casting methods.",
+          "truth": "method is only echoed in the result; both labels execute the same uniform 6–9 sampler.",
+          "source": "ts-engines/src/engines/i-ching/engine.ts"
+        },
+        {
+          "claim": "The relating hexagram is the primary transformed by its changing lines.",
+          "truth": "The flipped relatingLines array is unused; another rng.nextInt(1,64) supplies the relating hexagram.",
+          "source": "ts-engines/src/engines/i-ching/engine.ts"
+        }
+      ],
+      "parts": [
+        {
+          "id": "library",
+          "label": "64-hexagram library",
+          "role": "Text source",
+          "description": "Provides six-line patterns and curated judgment/image/name records for the selected hexagram number.",
+          "source": "ts-engines/src/engines/i-ching/wisdom.ts",
+          "symbol": "getHexagramByNumber",
+          "line": 114,
+          "status": "implemented",
+          "shape": "plate"
+        },
+        {
+          "id": "primary",
+          "label": "Primary selection",
+          "role": "Explicit or seeded choice",
+          "description": "Uses a validated explicit hexagram 1–64 or chooses a random number uniformly. The primary is chosen independently of the six cast line values.",
+          "source": "ts-engines/src/engines/i-ching/engine.ts",
+          "symbol": "calculate",
+          "line": 37,
+          "status": "simplified",
+          "shape": "disc"
+        },
+        {
+          "id": "lines",
+          "label": "Six sampled lines",
+          "role": "Simplified cast",
+          "description": "Samples each line uniformly from 6, 7, 8, 9. This makes the changing-line probability 50%, and the method parameter does not alter the sampling.",
+          "source": "ts-engines/src/engines/i-ching/engine.ts",
+          "symbol": "calculate",
+          "line": 37,
+          "status": "simplified",
+          "shape": "plate"
+        },
+        {
+          "id": "changing",
+          "label": "Changing-line mask",
+          "role": "Line-state selector",
+          "description": "Marks positions with sampled value 6 or 9 as changing. The primary’s lines are flipped in a local array, but that array is not used to select the relating hexagram.",
+          "source": "ts-engines/src/engines/i-ching/engine.ts",
+          "symbol": "calculate",
+          "line": 37,
+          "status": "simplified",
+          "shape": "helix"
+        },
+        {
+          "id": "relating",
+          "label": "Relating placeholder",
+          "role": "Non-equivalent random result",
+          "description": "When any line changes, selects another random hexagram number instead of resolving the flipped six-line pattern. This is an acknowledged source stub, not a valid transformation.",
+          "source": "ts-engines/src/engines/i-ching/engine.ts",
+          "symbol": "calculate",
+          "line": 37,
+          "status": "placeholder",
+          "shape": "plate"
+        },
+        {
+          "id": "witness",
+          "label": "Consultation questions",
+          "role": "Local reflection",
+          "description": "Builds reflective prompts from the selected primary/relating records and changing positions, then returns the method label and line samples.",
+          "source": "ts-engines/src/engines/i-ching/witness.ts",
+          "symbol": "generateWitnessPrompts",
+          "line": 21,
+          "status": "implemented",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "primary",
+          "to": "library",
+          "label": "Primary number lookup"
+        },
+        {
+          "from": "lines",
+          "to": "changing",
+          "label": "Sampled6 /9 positions"
+        },
+        {
+          "from": "primary",
+          "to": "changing",
+          "label": "Primary line pattern"
+        },
+        {
+          "from": "changing",
+          "to": "relating",
+          "label": "Any change triggers placeholder"
+        },
+        {
+          "from": "relating",
+          "to": "library",
+          "label": "Separate random lookup"
+        },
+        {
+          "from": "primary",
+          "to": "witness",
+          "label": "Primary record"
+        },
+        {
+          "from": "changing",
+          "to": "witness",
+          "label": "Changing positions"
+        },
+        {
+          "from": "relating",
+          "to": "witness",
+          "label": "Placeholder relating record"
+        }
+      ]
+    },
+    {
+      "id": "enneagram",
+      "label": "Enneagram",
+      "summary": "A questionnaire or type lookup joined to nine-pattern taxonomy and reflective movement.",
+      "statusNote": "The questionnaire scoring and lookup paths exist. Confidence is a score-gap heuristic, not a calibrated psychological probability; birth data does not determine the type.",
+      "profile": "ninefold-assessment",
+      "docs": [
+        "docs/engines/enneagram.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "docs/ENGINES.md lists date/name input and instinctual stacking.",
+          "truth": "calculate() consumes answers or explicit type/wing; it does not derive a type from date/name and does not emit instinctual stacking.",
+          "source": "ts-engines/src/engines/enneagram/engine.ts"
+        },
+        {
+          "claim": "The model’s confidence can be read as validated psychological certainty.",
+          "truth": "The value is a declared gap-of-scores formula, not a calibrated likelihood or clinical result.",
+          "source": "ts-engines/src/engines/enneagram/assessment.ts"
+        }
+      ],
+      "parts": [
+        {
+          "id": "questions",
+          "label": "45-question bank",
+          "role": "Assessment source",
+          "description": "Defines 45 weighted statements tied to types and can return them without performing an assessment.",
+          "source": "ts-engines/src/engines/enneagram/assessment.ts",
+          "symbol": "getAssessmentQuestions",
+          "line": 329,
+          "status": "implemented",
+          "shape": "plate"
+        },
+        {
+          "id": "scores",
+          "label": "Nine score channels",
+          "role": "Weighted assessment",
+          "description": "Accumulates answer×weight by associated type, normalizes against each type’s maximum and sorts the nine scores.",
+          "source": "ts-engines/src/engines/enneagram/assessment.ts",
+          "symbol": "calculateAssessment",
+          "line": 340,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "type",
+          "label": "Primary & wing",
+          "role": "Pattern selection",
+          "description": "Chooses the highest score as primary and the highest-scoring adjacent type as wing; direct lookup instead validates a supplied type and adjacent wing.",
+          "source": "ts-engines/src/engines/enneagram/engine.ts",
+          "symbol": "validateWing",
+          "line": 231,
+          "status": "implemented",
+          "shape": "crystal"
+        },
+        {
+          "id": "confidence",
+          "label": "Confidence & tritype",
+          "role": "Heuristic threshold",
+          "description": "Confidence is min(1, gap between top two normalized scores /30). A tritype is included only at confidence ≥ 0.3.",
+          "source": "ts-engines/src/engines/enneagram/assessment.ts",
+          "symbol": "calculateAssessment",
+          "line": 340,
+          "status": "simplified",
+          "shape": "disc"
+        },
+        {
+          "id": "taxonomy",
+          "label": "Movement & centers",
+          "role": "Curated relationships",
+          "description": "Looks up integration/disintegration connections, center, Hornevian group, harmonic group and healthy/average/unhealthy trait text.",
+          "source": "ts-engines/src/engines/enneagram/wisdom.ts",
+          "symbol": "getIntegrationConnection",
+          "line": 545,
+          "status": "implemented",
+          "shape": "helix"
+        },
+        {
+          "id": "witness",
+          "label": "Witness prompts",
+          "role": "Reflective language",
+          "description": "Generates questions for assessment, type lookup or movement. With no parameters it returns starting guidance rather than an invented type.",
+          "source": "ts-engines/src/engines/enneagram/engine.ts",
+          "symbol": "calculate",
+          "line": 128,
+          "status": "implemented",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "questions",
+          "to": "scores",
+          "label": "Answers in question order"
+        },
+        {
+          "from": "scores",
+          "to": "type",
+          "label": "Ranked type scores"
+        },
+        {
+          "from": "scores",
+          "to": "confidence",
+          "label": "Top-score gap"
+        },
+        {
+          "from": "type",
+          "to": "taxonomy",
+          "label": "Primary type / wing"
+        },
+        {
+          "from": "type",
+          "to": "witness",
+          "label": "Pattern selection"
+        },
+        {
+          "from": "confidence",
+          "to": "witness",
+          "label": "Assessment confidence"
+        },
+        {
+          "from": "taxonomy",
+          "to": "witness",
+          "label": "Optional movement context"
+        }
+      ]
+    },
+    {
+      "id": "sacred-geometry",
+      "label": "Sacred Geometry",
+      "summary": "A form-library browser with symbolism, meditation and an optional SVG-status check.",
+      "statusNote": "The TypeScript producer is real, but it returns curated form information rather than a procedural geometric mesh or vector-path construction. Atlas geometry is an explanatory representation.",
+      "profile": "form-library",
+      "docs": [
+        "docs/engines/sacred-geometry.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "docs/ENGINES.md says the engine generates constructions and calculates proportions.",
+          "truth": "The producer returns catalogue data and SVG validation status; it does not generate vertices, SVG d strings or proportional geometry.",
+          "source": "ts-engines/src/engines/sacred-geometry/engine.ts"
+        },
+        {
+          "claim": "The OpenAPI stub includes point_count and symbolic_theme.",
+          "truth": "Neither field is emitted. form.numerology is a symbolic catalog number, and must not be substituted for a calculated point count.",
+          "source": "ts-engines/src/engines/sacred-geometry/engine.ts"
+        }
+      ],
+      "parts": [
+        {
+          "id": "catalog",
+          "label": "Form library",
+          "role": "Curated forms",
+          "description": "Stores the named sacred forms and their descriptions, symbolism, elements, numerology and meditation prompts.",
+          "source": "ts-engines/src/engines/sacred-geometry/wisdom.ts",
+          "symbol": "SACRED_FORMS",
+          "line": 16,
+          "status": "implemented",
+          "shape": "crystal"
+        },
+        {
+          "id": "selection",
+          "label": "Form selection",
+          "role": "Explicit or seeded lookup",
+          "description": "Validates an explicit hyphenated form ID or uses SeededRandom to pick a catalogue entry. It does not generate a new shape.",
+          "source": "ts-engines/src/engines/sacred-geometry/engine.ts",
+          "symbol": "calculate",
+          "line": 56,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "symbolism",
+          "label": "Symbolic anatomy",
+          "role": "Catalog projection",
+          "description": "Projects the selected form’s name, description, elements, numerology and symbolism into the result. Numerology is a per-form symbolic constant, not a mesh point count.",
+          "source": "ts-engines/src/engines/sacred-geometry/engine.ts",
+          "symbol": "calculate",
+          "line": 56,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "meditation",
+          "label": "Meditation layer",
+          "role": "Contemplative text",
+          "description": "Returns the form’s stored meditation prompt and a fixed 5–15 minute duration suggestion, carrying the optional intention.",
+          "source": "ts-engines/src/engines/sacred-geometry/engine.ts",
+          "symbol": "calculate",
+          "line": 56,
+          "status": "implemented",
+          "shape": "wave"
+        },
+        {
+          "id": "svg-check",
+          "label": "SVG status",
+          "role": "Optional string check",
+          "description": "Checks whether supplied markup resembles a complete SVG and lacks two simple script patterns; returns status/reason only. It neither returns SVG markup nor supplies a complete sanitizer.",
+          "source": "ts-engines/src/engines/sacred-geometry/engine.ts",
+          "symbol": "safeSvgPreview",
+          "line": 12,
+          "status": "simplified",
+          "shape": "plate"
+        },
+        {
+          "id": "witness",
+          "label": "Witness lens",
+          "role": "Reflective questions",
+          "description": "Selects form/intention-aware questions using the seed. Geometric forms in the atlas should be labelled conceptual visualizations of this catalog.",
+          "source": "ts-engines/src/engines/sacred-geometry/witness.ts",
+          "symbol": "generateWitnessPrompts",
+          "line": 51,
+          "status": "implemented",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "selection",
+          "to": "catalog",
+          "label": "Form ID / seeded choice"
+        },
+        {
+          "from": "catalog",
+          "to": "symbolism",
+          "label": "Curated form fields"
+        },
+        {
+          "from": "catalog",
+          "to": "meditation",
+          "label": "Stored prompt"
+        },
+        {
+          "from": "catalog",
+          "to": "witness",
+          "label": "Form + intention"
+        }
+      ]
+    },
+    {
+      "id": "sigil-forge",
+      "label": "Sigil Forge",
+      "summary": "Intention reduction and ritual guidance with an optional external image-generation branch.",
+      "statusNote": "Four guidance methods exist; only word elimination computes a letter sequence. Image generation/editing is provider-configured and optional. The engine does not generate a deterministic vector glyph.",
+      "profile": "glyph-forge",
+      "docs": [
+        "docs/engines/sigil-forge.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "OpenAPI describes sigil_id and vector_path, and general docs list planetary/angelic methods.",
+          "truth": "The current producer has four guidance methods and no vector-path generator. Only word-elimination derives letters; imagery is optional provider output.",
+          "source": "ts-engines/src/engines/sigil-forge/engine.ts"
+        },
+        {
+          "claim": "Older per-engine docs describe NVIDIA NIM as the only image path.",
+          "truth": "The engine now uses an ImageProvider abstraction with default/configured providers and optional edit support.",
+          "source": "ts-engines/src/engines/sigil-forge/engine.ts"
+        },
+        {
+          "claim": "A requested image flag guarantees an image is included.",
+          "truth": "guidance.note currently keys on the request flag even if the provider returns an error. A viewer must use generated_image content/status, not this optimistic sentence.",
+          "source": "ts-engines/src/engines/sigil-forge/engine.ts"
+        }
+      ],
+      "parts": [
+        {
+          "id": "intention",
+          "label": "Intention",
+          "role": "Text validation",
+          "description": "Accepts question or intention/intent/intent_text aliases, requires nonempty text and trims it before method selection.",
+          "source": "ts-engines/src/engines/sigil-forge/engine.ts",
+          "symbol": "calculate",
+          "line": 134,
+          "status": "implemented",
+          "shape": "core"
+        },
+        {
+          "id": "method",
+          "label": "Method library",
+          "role": "Guidance selection",
+          "description": "Resolves word-elimination, rose-wheel, pictographic or chaos-star. Automatic choice uses intention length/word count or a seeded pick.",
+          "source": "ts-engines/src/engines/sigil-forge/wisdom.ts",
+          "symbol": "SIGIL_METHODS",
+          "line": 13,
+          "status": "implemented",
+          "shape": "plate"
+        },
+        {
+          "id": "letters",
+          "label": "Letter reduction",
+          "role": "Word-elimination branch",
+          "description": "Removes vowels and spaces, keeps each ASCII consonant once and returns uppercase remaining letters. Other methods return guidance without an equivalent geometric encoder.",
+          "source": "ts-engines/src/engines/sigil-forge/wisdom.ts",
+          "symbol": "processWordElimination",
+          "line": 133,
+          "status": "implemented",
+          "shape": "helix"
+        },
+        {
+          "id": "ritual",
+          "label": "Charging suggestions",
+          "role": "Curated practice",
+          "description": "Samples two charging methods and exposes method steps and witness prompts. These are symbolic practice instructions, not evidence of causal manifestation.",
+          "source": "ts-engines/src/engines/sigil-forge/wisdom.ts",
+          "symbol": "CHARGING_METHODS",
+          "line": 82,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "prompt",
+          "label": "Image prompt",
+          "role": "Generative translation",
+          "description": "Builds a method/style/intention-specific text prompt, with optional reduced-letter hints. It describes an image; it does not compute a glyph path.",
+          "source": "ts-engines/src/engines/sigil-forge/prompt-builder.ts",
+          "symbol": "buildSigilPrompt",
+          "line": 122,
+          "status": "implemented",
+          "shape": "crystal"
+        },
+        {
+          "id": "provider",
+          "label": "Image provider",
+          "role": "Optional generation / edit",
+          "description": "Only requested image generation or editing calls the configured provider. Results carry image content or URL and metadata; unavailable providers and failures produce explicit errors.",
+          "source": "ts-engines/src/engines/sigil-forge/engine.ts",
+          "symbol": "calculate",
+          "line": 134,
+          "status": "delegated",
+          "shape": "lens"
+        },
+        {
+          "id": "result",
+          "label": "Guidance & media",
+          "role": "Result assembly",
+          "description": "Returns guidance, processing, charging suggestions, optional generated_image and SVG status. The SVG check returns status only; no vector_path is emitted.",
+          "source": "ts-engines/src/engines/sigil-forge/engine.ts",
+          "symbol": "safeSvgPreview",
+          "line": 55,
+          "status": "simplified",
+          "shape": "disc"
+        }
+      ],
+      "connections": [
+        {
+          "from": "intention",
+          "to": "method",
+          "label": "Intention length / explicit method"
+        },
+        {
+          "from": "method",
+          "to": "letters",
+          "label": "Only word-elimination"
+        },
+        {
+          "from": "method",
+          "to": "ritual",
+          "label": "Method guidance"
+        },
+        {
+          "from": "intention",
+          "to": "prompt",
+          "label": "Clean intention"
+        },
+        {
+          "from": "method",
+          "to": "prompt",
+          "label": "Method + style"
+        },
+        {
+          "from": "letters",
+          "to": "prompt",
+          "label": "Optional letter hints"
+        },
+        {
+          "from": "prompt",
+          "to": "provider",
+          "label": "Only requested generation"
+        },
+        {
+          "from": "provider",
+          "to": "result",
+          "label": "Image or error"
+        },
+        {
+          "from": "ritual",
+          "to": "result",
+          "label": "Guidance data"
+        }
+      ]
+    },
+    {
+      "id": "raaga",
+      "label": "Raaga",
+      "summary": "A 72-Melakarta musical catalog expanded into swaras, ratios and optional audio.",
+      "statusNote": "Full 72-entry construction and ratio output exist. Local clips are simple sine-note demonstrations; audio timbre/gamaka are explicitly deferred. Clip generation defaults off.",
+      "profile": "musical-assembly",
+      "docs": [
+        "docs/engines/raaga.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "docs/ENGINES.md calls this generative Hindustani composition.",
+          "truth": "The active TypeScript producer is a Carnatic Melakarta ratio system. Local clip generation plays simple sine notes; it does not implement expressive composition/gamaka.",
+          "source": "ts-engines/src/engines/raaga/clip.ts"
+        },
+        {
+          "claim": "audio_ref input suggests analysis of an existing audio recording.",
+          "truth": "audio_ref is read but is not used to extract audio features or determine the raga in calculate().",
+          "source": "ts-engines/src/engines/raaga/engine.ts"
+        },
+        {
+          "claim": "Seeded input/current_time implies all auto-selection is replayable.",
+          "truth": "The current implementation uses new Date().getHours() for automatic selection/context, not input.current_time or the supplied seed.",
+          "source": "ts-engines/src/engines/raaga/engine.ts"
+        }
+      ],
+      "parts": [
+        {
+          "id": "melakarta",
+          "label": "72-Melakarta lattice",
+          "role": "Musical catalog",
+          "description": "Constructs the 72 Melakarta records with swara/shruti indices, arohana/avarohana arrays, names and ratios.",
+          "source": "ts-engines/src/engines/raaga/wisdom.ts",
+          "symbol": "buildMelakarta",
+          "line": 180,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "selection",
+          "label": "Raga selector",
+          "role": "Name / number / context",
+          "description": "Resolves a name first, then number, otherwise dosha×prahar intersection or the first prahar recommendation. Automatic selection reads the server-local current hour.",
+          "source": "ts-engines/src/engines/raaga/engine.ts",
+          "symbol": "calculate",
+          "line": 90,
+          "status": "implemented",
+          "shape": "core"
+        },
+        {
+          "id": "swaras",
+          "label": "Swara frequencies",
+          "role": "Ratio expansion",
+          "description": "Annotates eight ascending swaras with shruti index, rational and decimal ratio, then multiplies each by root_hz to obtain an annotated frequency.",
+          "source": "ts-engines/src/engines/raaga/engine.ts",
+          "symbol": "calculate",
+          "line": 90,
+          "status": "implemented",
+          "shape": "wave"
+        },
+        {
+          "id": "context",
+          "label": "Prahar & dosha",
+          "role": "Curated musical context",
+          "description": "Reports whether the selected Melakarta is recommended for the current prahar, its dosha affinities and optional alternate ragas.",
+          "source": "ts-engines/src/engines/raaga/wisdom.ts",
+          "symbol": "getRaagasForDosha",
+          "line": 240,
+          "status": "simplified",
+          "shape": "disc"
+        },
+        {
+          "id": "ratio-interface",
+          "label": "Ratio interface",
+          "role": "Front-end sound contract",
+          "description": "Exposes strudel_ratios, root_hz and the ascending/descending index arrays for a consuming player; returning these arrays alone does not mean audio was rendered.",
+          "source": "ts-engines/src/engines/raaga/engine.ts",
+          "symbol": "calculate",
+          "line": 90,
+          "status": "implemented",
+          "shape": "plate"
+        },
+        {
+          "id": "clip",
+          "label": "Optional clip path",
+          "role": "Consent + configured renderer",
+          "description": "request_clip plus granted consent enables mode local or service. Local mode synthesizes PCM16 mono sine notes with fades; service mode delegates rendering. Off/error paths retain null clip_url and a status.",
+          "source": "ts-engines/src/engines/raaga/clip.ts",
+          "symbol": "generateRaagaClip",
+          "line": 159,
+          "status": "delegated",
+          "shape": "wave"
+        },
+        {
+          "id": "witness",
+          "label": "Musical inquiry",
+          "role": "Reflective language",
+          "description": "Produces local Melakarta/dosha-aware questions beside the musical data and clip outcome metadata.",
+          "source": "ts-engines/src/engines/raaga/witness.ts",
+          "symbol": "generateWitnessPrompts",
+          "line": 4,
+          "status": "implemented",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "selection",
+          "to": "melakarta",
+          "label": "Resolved Melakarta number"
+        },
+        {
+          "from": "melakarta",
+          "to": "swaras",
+          "label": "Shruti indices + ratios"
+        },
+        {
+          "from": "melakarta",
+          "to": "context",
+          "label": "Selected musical record"
+        },
+        {
+          "from": "melakarta",
+          "to": "ratio-interface",
+          "label": "Ratio arrays"
+        },
+        {
+          "from": "ratio-interface",
+          "to": "clip",
+          "label": "Consent-gated optional render"
+        },
+        {
+          "from": "melakarta",
+          "to": "witness",
+          "label": "Melakarta context"
+        },
+        {
+          "from": "context",
+          "to": "witness",
+          "label": "Optional dosha"
+        }
+      ]
+    },
+    {
+      "id": "financial-biosensor",
+      "label": "Financial Biosensor",
+      "summary": "A declared decision-reflection composite over five engines and one optional biometric sample.",
+      "statusNote": "A composed reflection surface, not financial forecasting or a trading signal. Its house weights are unfitted; absence, coverage and insufficiency are explicit.",
+      "profile": "reflection-composite",
+      "docs": [
+        "docs/baseline/engine-matrix.json",
+        "docs/contributing/engine-onboarding.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "Financial Biosensor can appear to be another standalone tradition engine or market predictor.",
+          "truth": "The baseline calls it a composed-surface; source Declaration explicitly frames decision reflection and rejects forecasting. Its inputs contain no market-price feed.",
+          "source": "crates/engine-financial-biosensor/src/models.rs"
+        },
+        {
+          "claim": "The engine comment says passing HD gates avoids Gene Keys’ second ephemeris pass.",
+          "truth": "The copied Gene Keys input retains birth_data; GeneKeysEngine prioritizes birth_data over hd_gates, so this intended shortcut is not effective on that branch.",
+          "source": "crates/engine-financial-biosensor/src/engine.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "hrv",
+          "label": "Optional HRV sample",
+          "role": "Measured-input boundary",
+          "description": "Validates an optional time-stamped HRV sample and its freshness/range before spending work on the source engines. Missing HRV stays an absence.",
+          "source": "crates/engine-financial-biosensor/src/contributors.rs",
+          "symbol": "heart_rate_variability",
+          "line": 506,
+          "status": "implemented",
+          "shape": "wave"
+        },
+        {
+          "id": "sources",
+          "label": "Five source engines",
+          "role": "Composition bridge",
+          "description": "Reads Human Design first, then Gene Keys, Vimshottari, Transits and Biorhythm. A failed source becomes an absence rather than a fabricated result.",
+          "source": "crates/engine-financial-biosensor/src/engine.rs",
+          "symbol": "calculate",
+          "line": 110,
+          "status": "implemented",
+          "shape": "helix"
+        },
+        {
+          "id": "contributors",
+          "label": "Six contributors",
+          "role": "Normalization adapters",
+          "description": "Converts HRV and the five source results into chronofield, planetary weather, three-wave cycle, energetic-authority and gift/shadow scores with consumed-field provenance.",
+          "source": "crates/engine-financial-biosensor/src/contributors.rs",
+          "symbol": "chronofield",
+          "line": 108,
+          "status": "simplified",
+          "shape": "plate"
+        },
+        {
+          "id": "composite",
+          "label": "Declared composite",
+          "role": "Coverage-weighted calculation",
+          "description": "Renormalizes declared house weights over available contributors. Below 40% coverage it withholds the numeric value; missing HRV also lowers reported confidence.",
+          "source": "crates/engine-financial-biosensor/src/composite.rs",
+          "symbol": "compose",
+          "line": 76,
+          "status": "simplified",
+          "shape": "core"
+        },
+        {
+          "id": "landscape",
+          "label": "Temporal landscape",
+          "role": "Forward resampling",
+          "description": "Builds weekly/monthly reflection views using date-varying Biorhythm and Vimshottari information, keeping absent sources absent. These are model projections, not market forecasts.",
+          "source": "crates/engine-financial-biosensor/src/landscape.rs",
+          "symbol": "weekly_risk_landscape",
+          "line": 153,
+          "status": "simplified",
+          "shape": "disc"
+        },
+        {
+          "id": "ownership",
+          "label": "Decision ownership",
+          "role": "Authorship questions",
+          "description": "Reports which sources were present and absent, carries optional decision context, and asks questions that preserve the person’s ownership of the decision.",
+          "source": "crates/engine-financial-biosensor/src/reflection.rs",
+          "symbol": "decision_ownership_reflection",
+          "line": 14,
+          "status": "implemented",
+          "shape": "lens"
+        },
+        {
+          "id": "provenance",
+          "label": "Formula provenance",
+          "role": "Audit surface",
+          "description": "Records formula version, contributor source/version, raw values, normalization, declared/effective weight, status, coverage and biometric factor.",
+          "source": "crates/engine-financial-biosensor/src/engine.rs",
+          "symbol": "calculate",
+          "line": 110,
+          "status": "implemented",
+          "shape": "plate"
+        }
+      ],
+      "connections": [
+        {
+          "from": "hrv",
+          "to": "contributors",
+          "label": "Optional validated sample"
+        },
+        {
+          "from": "sources",
+          "to": "contributors",
+          "label": "Actual source outputs / absences"
+        },
+        {
+          "from": "contributors",
+          "to": "composite",
+          "label": "Normalized scores + presence"
+        },
+        {
+          "from": "contributors",
+          "to": "landscape",
+          "label": "Available contributors"
+        },
+        {
+          "from": "sources",
+          "to": "landscape",
+          "label": "Date series"
+        },
+        {
+          "from": "contributors",
+          "to": "ownership",
+          "label": "Present / absent sources"
+        },
+        {
+          "from": "contributors",
+          "to": "provenance",
+          "label": "Consumed fields + normalization"
+        },
+        {
+          "from": "composite",
+          "to": "provenance",
+          "label": "Coverage + effective weights"
+        }
+      ]
+    },
+    {
+      "id": "biofield-capture",
+      "label": "Biofield Capture",
+      "summary": "An owner-scoped resolver for a previously persisted capture analysis.",
+      "statusNote": "This engine does not take a photograph or run CV. It re-exposes an existing database reading; API registration requires an available Postgres pool.",
+      "profile": "capture-record",
+      "docs": [
+        "docs/engines/biofield.md",
+        "docs/runbooks/biofield-capture-analysis.md"
+      ],
+      "reconciliations": [
+        {
+          "claim": "The name suggests this engine directly captures images or executes the Python CV service.",
+          "truth": "Its calculate() only resolves a persisted reading. Image acquisition, CV and persistence occur upstream in the capture lifecycle.",
+          "source": "crates/engine-biofield-capture/src/lib.rs"
+        },
+        {
+          "claim": "Nineteen declared engine identities implies every startup exposes all 19.",
+          "truth": "noesis-api registers BiofieldCaptureEngine only when a database pool is available. Runtime availability cannot be inferred from the static catalog.",
+          "source": "crates/noesis-api/src/lib.rs"
+        }
+      ],
+      "parts": [
+        {
+          "id": "reading-id",
+          "label": "Capture reference",
+          "role": "Reading identity",
+          "description": "Requires options.biofield_capture.reading_id and parses it as a UUID. It addresses one persisted reading rather than accepting image pixels.",
+          "source": "crates/engine-biofield-capture/src/lib.rs",
+          "symbol": "extract_reading_id",
+          "line": 34,
+          "status": "implemented",
+          "shape": "core"
+        },
+        {
+          "id": "owner",
+          "label": "Authenticated owner",
+          "role": "Access context",
+          "description": "Requires the internal _auth.user_id UUID supplied by the authenticated API path. A reading ID alone is insufficient.",
+          "source": "crates/engine-biofield-capture/src/lib.rs",
+          "symbol": "extract_user_id",
+          "line": 54,
+          "status": "implemented",
+          "shape": "ring"
+        },
+        {
+          "id": "repository",
+          "label": "Reading repository",
+          "role": "Database dependency",
+          "description": "Calls ReadingsRepository.get_reading(reading_id,user_id) through the configured Postgres pool. Missing, foreign or unreachable data returns an error.",
+          "source": "crates/engine-biofield-capture/src/lib.rs",
+          "symbol": "calculate",
+          "line": 140,
+          "status": "delegated",
+          "shape": "plate"
+        },
+        {
+          "id": "identity-gate",
+          "label": "Engine identity",
+          "role": "Record validation",
+          "description": "Rejects any retrieved record whose engine_id is not biofield-capture, preserving the distinction from natal Biofield readings.",
+          "source": "crates/engine-biofield-capture/src/lib.rs",
+          "symbol": "calculate",
+          "line": 140,
+          "status": "implemented",
+          "shape": "lens"
+        },
+        {
+          "id": "analysis",
+          "label": "Captured analysis",
+          "role": "Persisted envelope",
+          "description": "Carries the stored input/analysis, session ID, analysis version, contract version and quality_assessment into an EngineOutput. No new metrics are computed here.",
+          "source": "crates/engine-biofield-capture/src/lib.rs",
+          "symbol": "build_result",
+          "line": 75,
+          "status": "implemented",
+          "shape": "disc"
+        },
+        {
+          "id": "witness",
+          "label": "Capture reflection",
+          "role": "Stored or fallback prompt",
+          "description": "Reuses a nonempty stored witness prompt; otherwise asks a local question based on sufficient_quality and analysis_version.",
+          "source": "crates/engine-biofield-capture/src/lib.rs",
+          "symbol": "build_witness_prompt",
+          "line": 92,
+          "status": "implemented",
+          "shape": "lens"
+        }
+      ],
+      "connections": [
+        {
+          "from": "reading-id",
+          "to": "repository",
+          "label": "Reading UUID"
+        },
+        {
+          "from": "owner",
+          "to": "repository",
+          "label": "Owner UUID"
+        },
+        {
+          "from": "repository",
+          "to": "identity-gate",
+          "label": "Owner-scoped Reading"
+        },
+        {
+          "from": "identity-gate",
+          "to": "analysis",
+          "label": "Correct engine record"
+        },
+        {
+          "from": "identity-gate",
+          "to": "witness",
+          "label": "Stored prompt / quality"
+        }
+      ]
+    }
+  ],
+  "topologySemantics": "Connections express the described data dependency, shared rule or explicit alternative branch. Component geometry aggregates related source operations and does not represent runtime timing, traffic or physical engine hardware."
+}

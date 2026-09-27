@@ -1,0 +1,48 @@
+{
+  "source_summary": "Supplied Aleph 06-visual-identity.md and brand-config.yaml. The selected 9A poster collection is an explicit user preference for bronze/patina material treatment.",
+  "palette": {
+    "colors": [
+      {
+        "hex": "#070B1D",
+        "name": "Void",
+        "role": "background"
+      },
+      {
+        "hex": "#0E1428",
+        "name": "Deep Surface",
+        "role": "panel"
+      },
+      {
+        "hex": "#F0EDE3",
+        "name": "Parchment",
+        "role": "text"
+      },
+      {
+        "hex": "#8A9BA8",
+        "name": "Silver",
+        "role": "secondary text"
+      },
+      {
+        "hex": "#C5A017",
+        "name": "Gold",
+        "role": "accent"
+      },
+      {
+        "hex": "#10B5A7",
+        "name": "Emerald",
+        "role": "category accent"
+      },
+      {
+        "hex": "#0B50FB",
+        "name": "Indigo",
+        "role": "category accent"
+      },
+      {
+        "hex": "#2D0050",
+        "name": "Violet",
+        "role": "category accent"
+      }
+    ],
+    "gradients": []
+  }
+}

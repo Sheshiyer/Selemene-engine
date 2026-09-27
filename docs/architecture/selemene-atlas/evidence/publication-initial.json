@@ -1,0 +1,58 @@
+{
+  "account_id": "9d9d23b27f32e70ae3afb6a1aa2c0f10",
+  "zone_id": "3c1066df55d4e99464c8bcf1f850894b",
+  "project": "selemene-atlas",
+  "pages_hostname": "selemene-atlas.pages.dev",
+  "production_branch": "main",
+  "deployment": {
+    "id": "1a7be4a4-4252-42b2-a250-715d9bc62e47",
+    "url": "https://1a7be4a4.selemene-atlas.pages.dev",
+    "environment": "production",
+    "created_on": "2026-09-12T01:38:20.747127Z",
+    "latest_stage": {
+      "name": "deploy",
+      "started_on": null,
+      "ended_on": "2026-09-12T01:38:22.017868Z",
+      "status": "success"
+    },
+    "deployment_trigger": {
+      "type": "ad_hoc",
+      "metadata": {
+        "branch": "main",
+        "commit_hash": "9a05f5cc90777f083d7065e491484ef727aeada1",
+        "commit_message": "Publish verified Fivefold Atlas with self-contained document headers; source snapshot 9a05f5cc",
+        "commit_dirty": true
+      }
+    }
+  },
+  "domains": [
+    {
+      "id": "823869b9-1253-446a-9eed-c9b67e6650f6",
+      "name": "atlas.tryambakam.space",
+      "status": "active",
+      "validation_data": {
+        "status": "active",
+        "method": "http"
+      },
+      "verification_data": {
+        "status": "active"
+      }
+    }
+  ],
+  "dns": [
+    {
+      "id": "bd4d71f94bdc52266cbb91d3a2039429",
+      "name": "atlas.tryambakam.space",
+      "type": "CNAME",
+      "content": "selemene-atlas.pages.dev",
+      "proxied": true,
+      "ttl": 1
+    }
+  ],
+  "preservation": {
+    "baseline_records": 38,
+    "existing_records_unchanged": true,
+    "added_records": 1,
+    "only_atlas_added": true
+  }
+}

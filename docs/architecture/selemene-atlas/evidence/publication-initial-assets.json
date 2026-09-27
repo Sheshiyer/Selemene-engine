@@ -1,0 +1,92 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "bytes": 10562,
+    "content_type": "text/html; charset=utf-8",
+    "cache_control": "public, max-age=0, must-revalidate, no-transform",
+    "sha256": "1f14c67b334a5ab1d9e0f04ce14e38cb632e08357112c32e5c4b95b7c738003a",
+    "matches_build": true,
+    "remote_script_injected": false
+  },
+  {
+    "path": "/assets/human-base-preview.png",
+    "status": 200,
+    "bytes": 49004,
+    "content_type": "image/png",
+    "cache_control": "public, max-age=14400, must-revalidate",
+    "sha256": "72349424b9132b4bac7a9526aa4af34558f94f0ebb1d1439e8d72320ba9ba44f",
+    "matches_build": true,
+    "remote_script_injected": false
+  },
+  {
+    "path": "/assets/human-base.glb",
+    "status": 200,
+    "bytes": 652988,
+    "content_type": "model/gltf-binary",
+    "cache_control": "public, max-age=0, must-revalidate",
+    "sha256": "92616cac42e9b5541b4dca3fa60763eedb70dc6f40f0630a33272a62749e7ee3",
+    "matches_build": true,
+    "remote_script_injected": false
+  },
+  {
+    "path": "/assets/human-base.provenance.json",
+    "status": 200,
+    "bytes": 1325,
+    "content_type": "application/json",
+    "cache_control": "public, max-age=0, must-revalidate",
+    "sha256": "15c213b7a483437359d5f773be100af2221a891885d183611234a9acb466fb6c",
+    "matches_build": true,
+    "remote_script_injected": false
+  },
+  {
+    "path": "/assets/index-_CS7-8CM.js",
+    "status": 200,
+    "bytes": 656758,
+    "content_type": "application/javascript",
+    "cache_control": "public, max-age=14400, must-revalidate",
+    "sha256": "ddaeea0a961bc2e7d8af4e395d7f683bb39e4b215583d5ed4d79f2233594f4e1",
+    "matches_build": true,
+    "remote_script_injected": false
+  },
+  {
+    "path": "/assets/index-DOxK_Lhe.css",
+    "status": 200,
+    "bytes": 16892,
+    "content_type": "text/css; charset=utf-8",
+    "cache_control": "public, max-age=14400, must-revalidate",
+    "sha256": "0e67818119f9c2fcceacf9ee4a2d6d6e20470b17727f55793015e672b2ae23f3",
+    "matches_build": true,
+    "remote_script_injected": false
+  },
+  {
+    "path": "/assets/vitruvian-preview.png",
+    "status": 200,
+    "bytes": 62172,
+    "content_type": "image/png",
+    "cache_control": "public, max-age=14400, must-revalidate",
+    "sha256": "88e608fe837d7fa8b0e4dc4cfe273200c216e896956afd73c363e433d0fb15e8",
+    "matches_build": true,
+    "remote_script_injected": false
+  },
+  {
+    "path": "/assets/vitruvian.glb",
+    "status": 200,
+    "bytes": 723548,
+    "content_type": "model/gltf-binary",
+    "cache_control": "public, max-age=0, must-revalidate",
+    "sha256": "997182a820e80fee449fcee5d5b12db3a03d1a68a59eae754d915a12eafec029",
+    "matches_build": true,
+    "remote_script_injected": false
+  },
+  {
+    "path": "/assets/vitruvian.provenance.json",
+    "status": 200,
+    "bytes": 1250,
+    "content_type": "application/json",
+    "cache_control": "public, max-age=0, must-revalidate",
+    "sha256": "7737e5a90171611112d4f4ed5eed9082a15cf61992cdabf861312f54763b0d92",
+    "matches_build": true,
+    "remote_script_injected": false
+  }
+]

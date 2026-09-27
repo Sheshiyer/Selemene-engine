@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "route": "extend-partial",
+  "brand_context": {
+    "name": "Tryambakam Noesis / Selemene",
+    "offering": "Source-grounded interactive engine atlas"
+  },
+  "concept": {
+    "name": "9A sculptural instrument collection",
+    "visual_premise": "Aged bronze instruments, turquoise patina and warm illuminated cores on cream stone, in smoky teal space.",
+    "reference_preferences": [
+      {
+        "status": "fixed",
+        "evidence": "source-declared",
+        "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2",
+        "reason": "User explicitly selected this style, September 12 2026."
+      }
+    ],
+    "avoid": [
+      "No newly invented engine identities or physiological readings.",
+      "No new or regenerated logo.",
+      "No medical/financial claims in imagery.",
+      "No synthetic Sanskrit, pseudo-code or invented text on new instruments."
+    ]
+  },
+  "authoritative_assets": {
+    "logo": {
+      "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/architecture/selemene-atlas/public/assets/tryambakam-sigil.svg",
+      "status": "fixed",
+      "evidence": "source-declared"
+    },
+    "fonts": [
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/architecture/selemene-atlas/public/assets/fonts/Panchang-Variable.woff2",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/architecture/selemene-atlas/public/assets/fonts/Satoshi-Variable.woff2"
+    ],
+    "references": [
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-01-panchanga-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-02-vimshottari-dasha-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-03-transits-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-04-human-design-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-05-gene-keys-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-06-biofield-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-07-biorhythm-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-08-vedic-clock-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-09-nadabrahman-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-10-face-reading-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-11-tarot-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-12-i-ching-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-13-enneagram-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-14-numerology-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-15-sacred-geometry-poster-v2.png",
+      "/Volumes/madara/2026/Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/generated-v3/9A-posters-v2/9A-16-sigil-forge-poster-v2.png"
+    ]
+  },
+  "palette": {
+    "status": "fixed",
+    "evidence": "source-declared",
+    "colors": [
+      {
+        "hex": "#070B1D",
+        "name": "Void",
+        "role": "background"
+      },
+      {
+        "hex": "#0E1428",
+        "name": "Deep Surface",
+        "role": "panel"
+      },
+      {
+        "hex": "#F0EDE3",
+        "name": "Parchment",
+        "role": "text"
+      },
+      {
+        "hex": "#8A9BA8",
+        "name": "Silver",
+        "role": "secondary text"
+      },
+      {
+        "hex": "#C5A017",
+        "name": "Gold",
+        "role": "accent"
+      },
+      {
+        "hex": "#10B5A7",
+        "name": "Emerald",
+        "role": "category accent"
+      },
+      {
+        "hex": "#0B50FB",
+        "name": "Indigo",
+        "role": "category accent"
+      },
+      {
+        "hex": "#2D0050",
+        "name": "Violet",
+        "role": "category accent"
+      }
+    ]
+  },
+  "typography": {
+    "status": "fixed",
+    "evidence": "source-declared",
+    "interface": {
+      "display": {
+        "family": "Panchang",
+        "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/architecture/selemene-atlas/public/assets/fonts/Panchang-Variable.woff2",
+        "style": "normal",
+        "weight": 500
+      },
+      "body": {
+        "family": "Satoshi",
+        "source": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/architecture/selemene-atlas/public/assets/fonts/Satoshi-Variable.woff2",
+        "style": "normal",
+        "weight": 400
+      },
+      "font_links": []
+    },
+    "new_poster_copy": "not_applicable"
+  },
+  "shape_language": {
+    "status": "fixed",
+    "evidence": "visually-observed",
+    "materials": [
+      "aged bronze",
+      "verdigris patina",
+      "engraved mechanical detail",
+      "amber luminous core",
+      "cream terrazzo pedestal"
+    ],
+    "forms": [
+      "orbital rings",
+      "layered geometric assemblies",
+      "fine geometric border"
+    ]
+  },
+  "applications": {
+    "posters": {
+      "preserve_existing": 16,
+      "new_illustrations": [
+        "biofield-capture",
+        "financial-biosensor",
+        "raaga"
+      ],
+      "format": "portrait PNG; exact names rendered separately in HTML",
+      "composition": "Single centered sculptural instrument on cylindrical cream terrazzo plinth, deep teal smoky background, thin gold geometric frame.",
+      "logo": "not_applicable",
+      "title": "not_applicable",
+      "status": "proposed new output; existing style user-selected"
+    },
+    "engine_rooms": {
+      "geometry": "Distinct procedural assemblies using the same physical material vocabulary. Each selectable assembly part represents a named software responsibility.",
+      "mapping": "Pancha Kosha categories are interpretive, not anatomical measurements."
+    }
+  },
+  "unknowns": [
+    "Pancha Kosha mapping absent from source brand documents.",
+    "Exact poster serif family unknown; preserved in original rasters only."
+  ],
+  "precedence_note": "User-selected 9A poster styling governs this application, including bronze and terrazzo; newer text guidelines are not used to erase that preference."
+}
