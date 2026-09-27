@@ -54,7 +54,7 @@ cd /Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine
 git checkout -b codex/selemene-capability-consumer-surface codex/selemene-task3-task4-capability-parity
 ```
 
-### Task A1: Align `confidence` across contract schema, fixture, Rust, and both SDKs
+### Task 1 (A1): Align `confidence` across contract schema, fixture, Rust, and both SDKs
 
 **Files:**
 - Modify: `contracts/v1/schemas/provenance.schema.json`
@@ -170,7 +170,7 @@ git commit -m "feat(contract): add optional provenance.confidence across schema,
 
 ---
 
-### Task A2: Pass TypeScript provenance through the Rust bridge and API envelope
+### Task 2 (A2): Pass TypeScript provenance through the Rust bridge and API envelope
 
 **Files:**
 - Modify: `crates/noesis-bridge/src/ts_client.rs:40-56` (`TsEngineResponse`)
@@ -319,7 +319,7 @@ git commit -m "feat(api): carry sidecar provenance through the bridge and always
 
 ---
 
-### Task A3: Public `GET /api/v1/engines/capabilities` (API-key surface)
+### Task 3 (A3): Public `GET /api/v1/engines/capabilities` (API-key surface)
 
 **Files:**
 - Create: `crates/noesis-api/src/capabilities.rs`
@@ -487,7 +487,7 @@ git commit -m "feat(api): public GET /api/v1/engines/capabilities with native + 
 
 ---
 
-### Task A4: SDK capability methods and Python health typing
+### Task 4 (A4): SDK capability methods and Python health typing
 
 **Files:**
 - Modify: `packages/noesis-engine-sdk/src/client.ts:135-142` (add `capabilities()`), `packages/noesis-engine-sdk/src/types.ts:138-144` (`PythonSidecarHealthResponse`)
@@ -636,7 +636,7 @@ git commit -m "feat(sdk): capabilities() / listCapabilities() and python capabil
 
 ---
 
-### Task A5: Build the vendored tarball for sankalpa and record evidence
+### Task 5 (A5): Build the vendored tarball for sankalpa and record evidence
 
 **Files:**
 - Create: `/Volumes/madara/2026/Projects/tryambakam-noesis/sankalpa/vendor/selemene-engine-sdk-0.2.0.tgz`
@@ -671,7 +671,7 @@ git commit -m "docs(capability): slice 4 consumer-surface evidence"
 
 Each consumer task is independent of the others and depends only on Phase A being merged and deployed (until deployed, the 404 fallback paths are what run in production). Work each in its own repo on a new branch `codex/<repo>-capability-parity` from that repo's current branch listed in the survey table.
 
-### Task B1: urania-137 capability client, typed provenance, live status panel
+### Task 6 (B1): urania-137 capability client, typed provenance, live status panel
 
 **Files:**
 - Modify: `src/types/index.ts:77` (`EngineResult`), append `EngineCapability` types
@@ -813,7 +813,7 @@ git commit -m "feat(engine-status): consume contract-v1 capabilities and typed p
 
 ---
 
-### Task B2: noesis-raycast capabilities in the API client and Engines command
+### Task 7 (B2): noesis-raycast capabilities in the API client and Engines command
 
 **Files:**
 - Modify: `src/lib/types.ts:58-63` (`EngineSummary`), `:150-160` (`EngineExecutionResult`)
@@ -961,7 +961,7 @@ git commit -m "feat(engines): show contract-v1 availability and keep provenance 
 
 ---
 
-### Task B3: antahkarana `selemene_capabilities` Tauri command feeding the roster
+### Task 8 (B3): antahkarana `selemene_capabilities` Tauri command feeding the roster
 
 **Files:**
 - Modify: `src-tauri/src/lib.rs` (new command after `selemene_health` at `:287-324`; register at `:2376-2384`)
@@ -1115,7 +1115,7 @@ git commit -m "feat(roster): live engine availability via selemene_capabilities 
 
 ---
 
-### Task B4: sankalpa gateway `capabilities` IPC on the 0.2.0 SDK (baseline for the twc-shell port)
+### Task 9 (B4): sankalpa gateway `capabilities` IPC on the 0.2.0 SDK (baseline for the twc-shell port)
 
 Context: sankalpa is tombstoned (R4, 2026-07-28). This task keeps its gateway contract-current so the future port copies a correct pattern. It does not build a release.
 
@@ -1236,7 +1236,7 @@ git commit -m "feat(gateway): capabilities IPC on engine-sdk 0.2.0 (port baselin
 
 ---
 
-### Task B5: noesismirror-web minimal Selemene capability client with a test runner
+### Task 10 (B5): noesismirror-web minimal Selemene capability client with a test runner
 
 Context: no Selemene integration exists. The design doc plans a witness-agents pipeline, not engine calls. This task installs the smallest correct foundation: Vitest (which the bootstrap plan at `docs/plans/2026-06-27-noesismirror-web-bootstrap.md:181-188` already intended) and one env-configured capability client, so the world-config builder can later gate beacons on engine availability.
 
@@ -1359,7 +1359,7 @@ git commit -m "feat(selemene): vitest + contract-v1 capability client foundation
 
 # Phase C: Verification and handoff
 
-### Task C1: Cross-repo verification receipt
+### Task 11 (C1): Cross-repo verification receipt
 
 **Files:**
 - Modify: `Selemene-engine/docs/plans/selemene-engine/RUNTIME-CAPABILITY-EVIDENCE.md` (append "Consumer rollout receipts")
