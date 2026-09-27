@@ -76,7 +76,8 @@ const PROVIDERS: Provider[] = [
     name: 'nvidia',
     hostname: 'integrate.api.nvidia.com',
     path: '/v1/chat/completions',
-    defaultModel: 'nvidia/llama-3.3-nemotron-super-49b-v1.5',
+    // llama-3.3-nemotron-super-49b-v1.5 reached EOL on 2026-08-26 (NIM 410).
+    defaultModel: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
     keyKvKey: 'NVIDIA_API_KEY',
   },
   {

@@ -147,7 +147,7 @@ test('nebius fallback: Token Factory endpoint + DeepSeek-V4-Pro default model', 
   }
 });
 
-test('nvidia fallback: NIM endpoint + nemotron-super-49b default model', async () => {
+test('nvidia fallback: NIM endpoint + nemotron-3-nano-omni default model', async () => {
   const env = {
     // No COMMANDCODE/NEBIUS key → chain falls through to nvidia.
     LLM_SECRETS: { get: async (key: string) => (key === 'NVIDIA_API_KEY' ? 'nv-key' : null) },
@@ -167,7 +167,7 @@ test('nvidia fallback: NIM endpoint + nemotron-super-49b default model', async (
     const body = (await res.json()) as { provider?: string };
     assert.equal(body.provider, 'nvidia');
     assert.equal(calledUrl, 'https://integrate.api.nvidia.com/v1/chat/completions');
-    assert.equal(sentBody.model, 'nvidia/llama-3.3-nemotron-super-49b-v1.5');
+    assert.equal(sentBody.model, 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning');
   } finally {
     globalThis.fetch = originalFetch;
   }
