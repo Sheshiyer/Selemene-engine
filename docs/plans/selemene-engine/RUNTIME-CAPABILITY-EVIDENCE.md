@@ -118,10 +118,47 @@ Date: 2026-08-31. Same branch as Slice 2. Scope: **partial** slice toward GitHub
 - Any actual fallback path for tarot — none exists today, so `fallback_used` is trivially always `false`; if a fallback path is later added, this field must be revisited.
 - W3E slots `06`, `09`, `10`, `17`, `18`, `25`, `27`, `28` for tarot, and slot `07` (this pattern) for the other six Task-4 candidate engines (biofield, face-reading, raaga, sigil-forge, i-ching, sacred-geometry) — all remain open follow-up work.
 
+## Slice 4: Consumer surface (2026-09-27)
+
+Date: 2026-09-27. Branch: `codex/selemene-capability-consumer-surface`, HEAD `23f48d28`. Scope: Phase A of the capability-parity consumer rollout — align the contract's `confidence` field, thread real provenance through the bridge, expose a public capability-discovery route, and update the two SDKs plus the vendored sankalpa consumer tarball. Tasks 1–4 covered the four items below; this task (5) packs the tarball and records this evidence.
+
+### Behavior
+
+- **A1 — `confidence` alignment (commit `5d7d682b`):** `confidence` added to `contracts/v1/schemas/provenance.schema.json` (min 0, max 1), the `engine-result.json` fixture, Rust `Provenance.confidence: Option<f64>`, and both SDKs' `ContractProvenance`.
+- **A2 — bridge provenance pass-through (commits `8a4127cd`, `54d088de`):** bridge `TsEngineResponse.provenance: Option<Value>` is stashed under the reserved key `__contract_provenance` (`noesis_bridge::CONTRACT_PROVENANCE_KEY`). `ApiEngineOutputResponse::from` lifts only that key when present; otherwise it derives `Provenance` from `CalculationMetadata` (native/typescript/python from backend, engine_version, cached, fallback_used=false). A `tracing::warn!` fires on contract parse failure. Engine-owned `result["provenance"]` (engine-financial-biosensor) is left intact.
+- **A3 — public capability route (commit `c24e5306`):** new `crates/noesis-api/src/capabilities.rs::collect_capabilities`; public `GET /api/v1/engines/capabilities` added to the auth-middleware group, returning `{capabilities,count}` with native rows (`available`, runtime_kind native) plus bridge rows (readiness-derived). The admin route now delegates to the same collector.
+- **A4 — SDK methods and versions (commit `23f48d28`):** `packages/noesis-engine-sdk` bumped to 0.2.0 with `EngineClient.capabilities()`; `packages/noesis-sdk-ts` bumped to 3.4.0 with `listCapabilities()` and new `EngineCapability`/`EngineCapabilitiesResponse` types; `PythonSidecarHealthResponse.capability_status?` added.
+- **A5 (this task):** vendored tarball rebuilt for sankalpa at `/Volumes/madara/2026/Projects/tryambakam-noesis/sankalpa/vendor/selemene-engine-sdk-0.2.0.tgz` from `packages/noesis-engine-sdk` 0.2.0. The prior `selemene-engine-sdk-0.1.0.tgz` was left in place (not deleted). Nothing was staged or committed in the sankalpa repo — that is a later task.
+
+### TDD receipts (exact numbers copied from the completed tasks)
+
+**RED**
+- A1: `cargo test -p noesis-core --test contract_v1_authority canonical_result_provenance_round_trips_confidence --locked` — compile error, `no field \`confidence\`` on `Provenance`.
+
+**GREEN**
+- A1: `contract_v1_authority` 7/7 passed; `noesis-engine-sdk` bun 36/36 passed + typecheck clean; `noesis-sdk-ts` vitest 11/11 passed + typecheck clean; `pnpm run gate:contracts` green.
+- A2: `noesis-bridge` 41+1 passed; `test_calculate_*` 17 passed; `openapi_schema_tests` 4 passed; 3 new `noesis-api` unit tests passed; `cargo build --workspace --locked` clean; `pnpm run gate:contracts` green.
+- A3: `capability_route_tests` 5/5 passed; `route_inventory` 1/1 passed (snapshot `docs/baseline/api-route-inventory.json` regenerated, +2 routes); `noesis-api` lib 97 passed; workspace build clean; `pnpm run gate:contracts` green. RED for this task was the route returning `404` before the handler existed.
+- A4: `engine-sdk` 39/39 passed + typecheck clean; `noesis-sdk-ts` 12/12 passed + typecheck clean; `pnpm run gate:contracts` green.
+
+### A5 tarball verification (this task, run this session)
+
+- `cd packages/noesis-engine-sdk && pnpm build` — `tsc -p tsconfig.build.json`, clean.
+- `pnpm pack --pack-destination /Volumes/madara/2026/Projects/tryambakam-noesis/sankalpa/vendor/` produced `selemene-engine-sdk-0.2.0.tgz` directly (no rename needed) — the pack name follows the package name `@selemene/engine-sdk`.
+- `tar -tzf selemene-engine-sdk-0.2.0.tgz` confirmed `package/dist/client.js` is present.
+- `tar -xzOf selemene-engine-sdk-0.2.0.tgz package/dist/client.js | grep -c capabilities` → `3` (> 0).
+- `ls -la /Volumes/madara/2026/Projects/tryambakam-noesis/sankalpa/vendor/` showed both `selemene-engine-sdk-0.1.0.tgz` (20378 bytes, untouched) and the new `selemene-engine-sdk-0.2.0.tgz` (22757 bytes).
+- **Note:** sankalpa is tombstoned (R4, 2026-07-28), so this tarball is a port baseline for a dead consumer, not a release artifact for an active one — it exists so a future reactivation or port has a known-good 0.2.0 vendor snapshot to start from.
+
+### Remaining boundaries (Slice 4)
+
+- Consumer wiring — sankalpa (or any other consumer) actually importing `capabilities()`/`listCapabilities()` and reading `capability_status` — is Phase B of the plan, not this slice. Nothing was deployed, and no consumer repo's code or git state was touched by this task.
+
 ## Remaining boundaries
 
 - ~~Native Rust/API runtime capability adoption remains a separate slice.~~ **Closed by Slice 2** above (2026-08-31) for the bridge-proxied capability-discovery surface specifically; native (non-bridge-proxied) Rust engines, if any are added later, are still a separate concern.
 - ~~Python/database-conditional capability reporting remains a separate slice.~~ **Partially closed by Slice 2**: Python sidecar local self-check capability status is done. `database-conditional` `RuntimeKind` reporting (for any future DB-backed engine) remains open — nothing in this repo currently needs it.
 - Per-engine semantic completion repair remains a separate slice, now begun (partially) for tarot slot `07` only — see Slice 3.
 - GitHub Actions immutable SHA pinning (`ISC-217`) remains open.
-- No push, publication, deployment, or remote mutation to GitHub issues beyond what was explicitly authorized occurred in Slices 2–3; no deploy occurred.
+- Consumer wiring for the capability surface (Phase B: sankalpa and other repos actually consuming the new SDK methods) remains open — see Slice 4.
+- No push, publication, deployment, or remote mutation to GitHub issues beyond what was explicitly authorized occurred in Slices 2–4; no deploy occurred.
