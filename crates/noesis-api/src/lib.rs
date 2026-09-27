@@ -1528,29 +1528,67 @@ fn validate_contract_consent(
     Ok(())
 }
 
+/// Remove the bridge's reserved contract-v1 provenance block from an engine
+/// output's `result` and parse it. Engine-owned `result["provenance"]` data is
+/// left untouched. An unparseable block is still removed (it must never leak
+/// into responses or persisted readings) and logged; `None` is returned so the
+/// caller derives provenance from metadata.
+fn take_contract_provenance(
+    output: &mut EngineOutput,
+) -> Option<noesis_core::contract::Provenance> {
+    let raw = output
+        .result
+        .as_object_mut()
+        .and_then(|o| o.remove(noesis_bridge::CONTRACT_PROVENANCE_KEY))?;
+    match serde_json::from_value(raw) {
+        Ok(provenance) => Some(provenance),
+        Err(e) => {
+            tracing::warn!(
+                engine_id = %output.engine_id,
+                error = %e,
+                "sidecar provenance block failed contract-v1 parse; deriving from metadata"
+            );
+            None
+        }
+    }
+}
+
+/// Strip the reserved provenance key from every engine output in a workflow
+/// result so it reaches neither workflow responses nor persisted readings.
+fn strip_workflow_contract_provenance(workflow: &mut WorkflowResult) {
+    for output in workflow.engine_outputs.values_mut() {
+        let _ = take_contract_provenance(output);
+    }
+}
+
+/// Split a successful engine output into the JSON persisted as a reading's
+/// `result_data` (reserved provenance key removed) and the API envelope
+/// (carrying the lifted provenance).
+fn split_persisted_and_envelope(mut output: EngineOutput) -> (Value, ApiEngineOutputResponse) {
+    let lifted = take_contract_provenance(&mut output);
+    let result_data = serde_json::to_value(&output).unwrap_or_default();
+    (
+        result_data,
+        ApiEngineOutputResponse::envelope_from(output, lifted),
+    )
+}
+
 impl From<EngineOutput> for ApiEngineOutputResponse {
     fn from(output: EngineOutput) -> Self {
         let mut output = output;
-        // Bridge engines stash the sidecar's contract-v1 provenance under a
-        // reserved key; lift it into the envelope. Engine-owned
-        // `result["provenance"]` data is left untouched. Native engines (or
-        // sidecars that omit or send an invalid block) get one derived from
-        // `CalculationMetadata`.
-        let lifted: Option<noesis_core::contract::Provenance> = output
-            .result
-            .as_object_mut()
-            .and_then(|o| o.remove(noesis_bridge::CONTRACT_PROVENANCE_KEY))
-            .and_then(|v| match serde_json::from_value(v) {
-                Ok(provenance) => Some(provenance),
-                Err(e) => {
-                    tracing::warn!(
-                        engine_id = %output.engine_id,
-                        error = %e,
-                        "sidecar provenance block failed contract-v1 parse; deriving from metadata"
-                    );
-                    None
-                }
-            });
+        let lifted = take_contract_provenance(&mut output);
+        Self::envelope_from(output, lifted)
+    }
+}
+
+impl ApiEngineOutputResponse {
+    /// Build the envelope from an output whose reserved provenance key has
+    /// already been taken. Native engines (or sidecars that omit or send an
+    /// invalid block) get provenance derived from `CalculationMetadata`.
+    fn envelope_from(
+        output: EngineOutput,
+        lifted: Option<noesis_core::contract::Provenance>,
+    ) -> Self {
         let provenance = Some(lifted.unwrap_or_else(|| noesis_core::contract::Provenance {
             runtime_kind: match output.metadata.backend.as_str() {
                 "typescript" => noesis_core::contract::RuntimeKind::TypeScript,
@@ -1608,7 +1646,8 @@ struct ApiWorkflowResultResponse {
 }
 
 impl From<WorkflowResult> for ApiWorkflowResultResponse {
-    fn from(workflow: WorkflowResult) -> Self {
+    fn from(mut workflow: WorkflowResult) -> Self {
+        strip_workflow_contract_provenance(&mut workflow);
         let engine_results = workflow.engine_outputs.clone();
         Self {
             workflow,
@@ -2836,6 +2875,9 @@ async fn calculate_handler(
                 "success",
                 duration_secs,
             );
+            // Lift the bridge's reserved provenance key before persisting so
+            // stored readings never carry it; the envelope keeps the lift.
+            let (result_data, envelope) = split_persisted_and_envelope(output);
 
             increment_free_tier_counter(&state, &user);
 
@@ -2849,9 +2891,9 @@ async fn calculate_handler(
                     workflow_id: None,
                     input_hash,
                     input_data: input_json,
-                    result_data: serde_json::to_value(&output).unwrap_or_default(),
-                    witness_prompt: Some(output.witness_prompt.clone()),
-                    consciousness_level: output.consciousness_level as i16,
+                    result_data,
+                    witness_prompt: Some(envelope.output.witness_prompt.clone()),
+                    consciousness_level: envelope.output.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
                     client_event_id: None,
                     client_device_id: None,
@@ -2909,7 +2951,7 @@ async fn calculate_handler(
                 });
             }
 
-            Ok(Json(output.into()))
+            Ok(Json(envelope))
         }
         Err(e) => {
             state.metrics.record_engine_calculation_with_status(
@@ -3279,7 +3321,8 @@ async fn execute_workflow_by_id(
     billing::emit_usage_event(&user_id_str, &workflow_label, &user.tier);
 
     match result {
-        Ok(workflow_result) => {
+        Ok(mut workflow_result) => {
+            strip_workflow_contract_provenance(&mut workflow_result);
             state.metrics.record_engine_calculation_with_status(
                 &workflow_label,
                 "success",
@@ -4784,5 +4827,57 @@ mod provenance_envelope_tests {
             .result
             .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
             .is_none());
+    }
+
+    fn bridge_output() -> EngineOutput {
+        let mut output = output_with_result(json!({
+            "cards": [],
+            (noesis_bridge::CONTRACT_PROVENANCE_KEY): {
+                "runtime_kind": "typescript",
+                "implementation_version": "2.0.0",
+                "cached": false,
+                "fallback_used": false
+            }
+        }));
+        output.engine_id = "tarot".to_string();
+        output.metadata.backend = "typescript".to_string();
+        output
+    }
+
+    #[test]
+    fn persisted_result_data_drops_reserved_key_but_envelope_keeps_provenance() {
+        let (result_data, envelope) = split_persisted_and_envelope(bridge_output());
+        let persisted = serde_json::to_string(&result_data).unwrap();
+        assert!(!persisted.contains(noesis_bridge::CONTRACT_PROVENANCE_KEY));
+        assert_eq!(result_data["result"]["cards"], json!([]));
+        let prov = envelope.provenance.as_ref().expect("lifted provenance");
+        assert_eq!(prov.implementation_version, "2.0.0");
+        assert_eq!(
+            prov.runtime_kind,
+            noesis_core::contract::RuntimeKind::TypeScript
+        );
+        let wire = serde_json::to_string(&envelope).unwrap();
+        assert!(!wire.contains(noesis_bridge::CONTRACT_PROVENANCE_KEY));
+    }
+
+    #[test]
+    fn workflow_response_never_exposes_reserved_key() {
+        let mut engine_outputs = HashMap::new();
+        engine_outputs.insert("tarot".to_string(), bridge_output());
+        engine_outputs.insert(
+            "native".to_string(),
+            output_with_result(json!({"provenance": {"formula_version": "x"}})),
+        );
+        let workflow = WorkflowResult {
+            workflow_id: "daily-practice".to_string(),
+            engine_outputs,
+            synthesis: None,
+            total_time_ms: 1.0,
+            timestamp: chrono::Utc::now(),
+        };
+        let response = ApiWorkflowResultResponse::from(workflow);
+        let wire = serde_json::to_string(&response).unwrap();
+        assert!(!wire.contains("__contract_provenance"));
+        assert!(wire.contains("formula_version"));
     }
 }
