@@ -1527,14 +1527,26 @@ fn validate_contract_consent(
 impl From<EngineOutput> for ApiEngineOutputResponse {
     fn from(output: EngineOutput) -> Self {
         let mut output = output;
-        // Bridge engines stash the sidecar's contract-v1 provenance at
-        // `result["provenance"]`; lift it into the envelope. Native engines
-        // (or sidecars that omit it) get one derived from `CalculationMetadata`.
+        // Bridge engines stash the sidecar's contract-v1 provenance under a
+        // reserved key; lift it into the envelope. Engine-owned
+        // `result["provenance"]` data is left untouched. Native engines (or
+        // sidecars that omit or send an invalid block) get one derived from
+        // `CalculationMetadata`.
         let lifted: Option<noesis_core::contract::Provenance> = output
             .result
             .as_object_mut()
-            .and_then(|o| o.remove("provenance"))
-            .and_then(|v| serde_json::from_value(v).ok());
+            .and_then(|o| o.remove(noesis_bridge::CONTRACT_PROVENANCE_KEY))
+            .and_then(|v| match serde_json::from_value(v) {
+                Ok(provenance) => Some(provenance),
+                Err(e) => {
+                    tracing::warn!(
+                        engine_id = %output.engine_id,
+                        error = %e,
+                        "sidecar provenance block failed contract-v1 parse; deriving from metadata"
+                    );
+                    None
+                }
+            });
         let provenance = Some(lifted.unwrap_or_else(|| noesis_core::contract::Provenance {
             runtime_kind: match output.metadata.backend.as_str() {
                 "typescript" => noesis_core::contract::RuntimeKind::TypeScript,
@@ -4652,5 +4664,91 @@ mod p4_contract_tests {
             ]
         );
         assert_eq!(value["status"], "ok");
+    }
+}
+
+#[cfg(test)]
+mod provenance_envelope_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn output_with_result(result: Value) -> EngineOutput {
+        EngineOutput {
+            engine_id: "test-engine".to_string(),
+            result,
+            witness_prompt: "?".to_string(),
+            consciousness_level: 0,
+            metadata: noesis_core::CalculationMetadata {
+                calculation_time_ms: 1.0,
+                backend: "native".to_string(),
+                precision_achieved: "exact".to_string(),
+                cached: false,
+                timestamp: chrono::Utc::now(),
+                engine_version: "9.9.9".to_string(),
+            },
+        }
+    }
+
+    #[test]
+    fn native_engine_result_provenance_is_left_intact() {
+        let envelope = ApiEngineOutputResponse::from(output_with_result(
+            json!({"provenance": {"formula_version": "x"}}),
+        ));
+        assert_eq!(
+            envelope.output.result["provenance"],
+            json!({"formula_version": "x"})
+        );
+        let prov = envelope.provenance.expect("derived provenance");
+        assert_eq!(
+            prov.runtime_kind,
+            noesis_core::contract::RuntimeKind::Native
+        );
+        assert_eq!(prov.implementation_version, "9.9.9");
+    }
+
+    #[test]
+    fn reserved_key_valid_block_is_lifted_verbatim() {
+        let envelope = ApiEngineOutputResponse::from(output_with_result(json!({
+            "cards": [],
+            (noesis_bridge::CONTRACT_PROVENANCE_KEY): {
+                "runtime_kind": "typescript",
+                "implementation_version": "1.0.0",
+                "cached": false,
+                "fallback_used": false,
+                "confidence": 1
+            }
+        })));
+        let prov = envelope.provenance.expect("lifted provenance");
+        assert_eq!(prov.confidence, Some(1.0));
+        assert_eq!(
+            prov.runtime_kind,
+            noesis_core::contract::RuntimeKind::TypeScript
+        );
+        assert_eq!(prov.implementation_version, "1.0.0");
+        assert!(envelope
+            .output
+            .result
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+    }
+
+    #[test]
+    fn reserved_key_invalid_block_is_removed_and_derived() {
+        let envelope = ApiEngineOutputResponse::from(output_with_result(json!({
+            (noesis_bridge::CONTRACT_PROVENANCE_KEY): {"runtime_kind": "bogus", "extra": 1}
+        })));
+        let prov = envelope.provenance.expect("derived provenance");
+        assert_eq!(
+            prov.runtime_kind,
+            noesis_core::contract::RuntimeKind::Native
+        );
+        assert_eq!(prov.implementation_version, "9.9.9");
+        assert!(!prov.fallback_used);
+        assert!(prov.confidence.is_none());
+        assert!(envelope
+            .output
+            .result
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
     }
 }

@@ -35,6 +35,12 @@ pub struct TsEngineRequest {
     pub quality: Option<Value>,
 }
 
+/// Reserved key under which the bridge stashes the sidecar's contracts/v1
+/// provenance block inside `EngineOutput::result`. It is bridge-owned
+/// scaffolding (not engine data) and is lifted out by the API envelope, so it
+/// never collides with an engine's own `result["provenance"]` payload.
+pub const CONTRACT_PROVENANCE_KEY: &str = "__contract_provenance";
+
 /// Response format from TypeScript engines
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TsEngineResponse {

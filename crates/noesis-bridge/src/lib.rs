@@ -32,7 +32,7 @@ pub mod python_client;
 pub mod ts_client;
 pub use error::BridgeError;
 pub use python_client::PythonServiceClient;
-pub use ts_client::{TsHealthResponse, WitnessPrompt};
+pub use ts_client::{TsHealthResponse, WitnessPrompt, CONTRACT_PROVENANCE_KEY};
 
 pub use noesis_core::{
     CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
@@ -525,7 +525,7 @@ impl ConsciousnessEngine for BridgeEngine {
                 object.insert("generated_audio".to_string(), generated_audio);
             }
             if let Some(provenance) = ts_response.provenance {
-                object.insert("provenance".to_string(), provenance);
+                object.insert(CONTRACT_PROVENANCE_KEY.to_string(), provenance);
             }
         }
 
