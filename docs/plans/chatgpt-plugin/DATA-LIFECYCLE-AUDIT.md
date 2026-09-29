@@ -91,3 +91,7 @@ Safe interim wording: "Calculations can save supplied reading inputs and results
 to your Selemene account and may update your profile and usage history. Account
 linking and stored reading data are separate. Retention and deletion procedures
 must be finalized before this draft is published as the service policy."
+
+## Parent follow-up: telemetry configuration presence
+
+A later read-only CLI query against the same explicit production API service returned `SENTRY_DSN` and `RUST_LOG` as configured. Only variable presence was printed; no values were saved or exposed. Sentry configuration is therefore present in the root service. Event delivery, payload/redaction behavior, account destination and retention remain unverified. Final processor disclosures must account for this configured error-monitoring integration rather than implying that Cloudflare and Railway are the entire processor inventory.

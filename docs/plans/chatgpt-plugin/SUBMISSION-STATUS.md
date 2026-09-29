@@ -1,12 +1,12 @@
 # Selemene Engine submission preparation
 
-As of 2026-09-30: **public plugin source drafted; packaging intentionally blocked; no upload, submission or publication performed by this preparation lane**.
+As of 2026-09-30: **customer MCP implemented and deployed; website MotionSkin draft verified locally; public packaging remains blocked on publisher, policy, reviewer and demo facts. No plugin upload, review submission or publication has occurred.**
 
 ## Prepared locally
 
 - `plugins/selemene-engine/plugin.json`: Agent Plugins 1.0 identity/version 0.1.0, listing copy, three prompts, five positive and three negative cases, release notes. Subtitle `Personal symbolic reflection` is 28 characters.
 - `plugins/selemene-engine/skills/selemene-reading/SKILL.md`: reflection-first workflow for all seven tools, input/auth authority, persistence disclosure, no blind retries and accurate partial-result handling.
-- `plugins/selemene-engine/assets/icon.png`: 512 × 512 transparent PNG derived from the existing Tryambakam sigil with preserved geometry/color. Asset is an existing brand conversion, not a generated substitute. Small-size/light-and-dark inspection still needs a recorded receipt.
+- `plugins/selemene-engine/assets/icon.png`: 512 × 512 transparent PNG derived from the existing Tryambakam sigil with preserved geometry/color. Asset is an existing brand conversion, not a generated substitute. The parent inspected256px and48px versions on light/dark backgrounds; see ICON-REVIEW.md. Actual directory/composer placement remains unverified.
 - `plugins/selemene-engine/scripts/create-package.py`: offline readiness validator and public-upload builder. Missing endpoint, publisher, URL/demo/publication facts or verification receipts prevent ZIP creation. Upload inventory excludes scripts, private evidence and account bindings.
 - `REVIEW-CASES.md`: all eight connected-host cases explicitly **Not run**.
 - `DEMO-WALKTHROUGH.md`: concrete rehearsal/recording sequence; no recording claimed.
@@ -21,13 +21,13 @@ As of 2026-09-30: **public plugin source drafted; packaging intentionally blocke
 | Category | Supported category from the actual intended dashboard |
 | Website/support | Actual public umbrella/plugin pages and functioning support arrangement, content inspected |
 | Privacy/terms | User confirms no existing pages; website work is authorized separately. Publish content grounded in confirmed collection/use/sharing/retention/deletion facts and legal decisions |
-| MCP server | Verified deployed HTTPS endpoint; real initialization, discovery, annotations and account-bound calls |
+| MCP server | Deployed endpoint/public metadata verified; local actual SDK tests pass. Still require real-account browser approval and connected ChatGPT calls |
 | Review cases | Align final tool schemas, run in connected ChatGPT, record evidence against candidate manifest/deployment |
 | Demo | Real successful interactions recorded, replayed and hosted at a verified reviewer-accessible URL |
 | Reviewer access | Dedicated account and secure portal login instructions; never include credentials in ZIP |
 | Final portal steps | Correct identity/domain verification, imported metadata, saved-version connection/tests, scans and developer-completed attestations |
 
-No `mcp.json` exists until a real verified endpoint is available. No author identity, listing URLs, country targeting, commerce declaration, demo URL or category has been invented. Policy publication is not established by draft source text.
+`mcp.json` now points to the deployed, discovery-verified HTTPS endpoint at https://selemene-mcp.sheshnarayan-iyer.workers.dev/mcp. See DEPLOYMENT-RECEIPT.md. Local18-test OAuth/SDK suite passes; live public metadata and keyless browser denial pass. Successful real-account approval and connected ChatGPT calls remain unverified. No author identity, listing URLs, country targeting, commerce declaration, demo URL or category has been invented. Policy publication is not established by draft source text.
 
 ## Local verification
 

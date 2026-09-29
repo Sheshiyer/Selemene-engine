@@ -28,3 +28,7 @@ A focused repair used the same noesis-build rail, session tag selemene-mcp-repai
 - npm audit --omit=dev --json after final dependency changes: zero vulnerabilities, 96 production dependencies.
 
 The test runtime has a minimal cloudflare:workers WorkerEntrypoint shim for Node; this is not native workerd or deployed browser proof. No remote deployment, infrastructure mutation, real reading, paid provider call, or credentials were performed by this implementation lane. Deployment, policy/publisher identity, ChatGPT E2E and submission approval remain separate evidence.
+
+## Parent integration follow-up
+
+The implemented bundle was committed as a1ddbb65 and deployed; see DEPLOYMENT-RECEIPT.md for exact namespace, endpoint and version. c79806c0 subsequently corrected a real-browser consent referrer-policy defect. Two additional regression tests bring the suite to18passing tests; typecheck passes. The earlier16-test and placeholder statements above describe the initial implementation handoff, not final deployment state.
