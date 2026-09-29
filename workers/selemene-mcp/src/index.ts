@@ -88,6 +88,10 @@ function providerOptions(env: Env): OAuthProviderOptions<Env> {
       bearer_methods_supported: ["header"],
       resource_name: "Selemene Engine",
     },
+    // Provider 1.2.1 publishes requiredScopes as the minimal resource scope set.
+    // scopesSupported above advertises the complete authorization catalog; writes
+    // request mcp:calculate through tool metadata and the insufficient_scope challenge.
+    // Do not also set resourceMetadata.scopes_supported: the provider rejects both.
     requiredScopes: ["mcp:read"],
     accessTokenTTL: 3600, // 1 hour
     refreshTokenTTL: 30 * 24 * 3600, // 30 days

@@ -79,6 +79,26 @@ beforeEach(()=>{
 afterEach(()=>{vi.unstubAllGlobals();});
 
 describe('full OAuth + official MCP Client interoperability',()=>{
+ it('advertises minimal resource scope, full authorization catalog and calculation step-up',async()=>{
+  const protectedResource=await dispatch('/.well-known/oauth-protected-resource/mcp');
+  expect(protectedResource.status).toBe(200);
+  expect((await protectedResource.json()).scopes_supported).toEqual(['mcp:read']);
+  const authorizationServer=await dispatch('/.well-known/oauth-authorization-server');
+  expect(authorizationServer.status).toBe(200);
+  expect((await authorizationServer.json()).scopes_supported).toEqual(['mcp:read','mcp:calculate']);
+  const readConnection=await link(KEY_A,'mcp:read');
+  const c=await mcp(readConnection.access_token);
+  const tools=await c.listTools();
+  expect(tools.tools.find(tool=>tool.name==='selemene_calculate')._meta.securitySchemes)
+    .toEqual([{type:'oauth2',scopes:['mcp:read','mcp:calculate']}]);
+  const result=await c.callTool({name:'selemene_calculate',arguments:{engine_id:'numerology',birth_data:birth}});
+  expect(result.isError).toBe(true);
+  expect(result._meta['mcp/www_authenticate'][0]).toContain('error="insufficient_scope"');
+  expect(result._meta['mcp/www_authenticate'][0]).toContain('scope="mcp:read mcp:calculate"');
+  expect(calls.filter(call=>call.method==='POST')).toHaveLength(0);
+  await c.close();
+ });
+
  it('links two separate customers, exact scopes, encrypted storage, discovery and isolated calculation',async()=>{
   const a=await link(KEY_A);const b=await link(KEY_B);
   expect(a.scope.split(' ')).toContain('mcp:calculate');
@@ -104,6 +124,23 @@ describe('full OAuth + official MCP Client interoperability',()=>{
   for(const change of [{code_challenge:null},{code_challenge_method:'plain'},{resource:null},{resource:'https://evil.test/mcp'}]){
    expect((await authPage(client,undefined,change)).status).toBeGreaterThanOrEqual(400);
   }
+ });
+ it('preserves navigation POST Origin on the consent form without allowing null Origin',async()=>{
+  const client=await register();
+  const page=await authPage(client);
+  expect(page.headers.get('referrer-policy')).toBe('same-origin');
+  expect(page.headers.get('content-security-policy')).toContain("form-action 'self'");
+  expect(page.headers.get('content-security-policy')).toContain("frame-ancestors 'none'");
+  const denied=await consent(page,undefined,'deny');
+  expect(denied.status).toBe(302);
+  expect(denied.headers.get('referrer-policy')).toBe('no-referrer');
+  expect(new URL(denied.headers.get('location')).searchParams.get('error')).toBe('access_denied');
+  // The remedy is the form page's policy, not accepting opaque/null origins.
+  for(const action of ['approve','deny']){
+   const nullOrigin=await consent(await authPage(client),KEY_A,action,{origin:'null'});
+   expect(nullOrigin.status).toBe(403);
+  }
+  expect(calls).toHaveLength(0);
  });
  it('binds consent to browser; deny works; rejects Origin/action and chunked oversized forms',async()=>{
   const client=await register();

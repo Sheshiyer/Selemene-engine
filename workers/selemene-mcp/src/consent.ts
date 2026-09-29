@@ -11,7 +11,8 @@
 //   - Secure HttpOnly SameSite __Host- cookie for API key binding
 //   - Unknown scopes rejected
 //   - Generic errors; never raw exceptions
-//   - All pages: referrer-policy no-referrer, CSP frame-ancestors none
+//   - Consent form: same-origin referrer policy preserves navigation POST Origin.
+//     Cross-origin referrers remain suppressed; errors/redirects use no-referrer.
 //   - Customer API key only in encrypted grant props
 //   - Backend users/me id validated as non-empty string
 //   - Clear cookies on deny
@@ -125,7 +126,9 @@ async function renderConsent(
   const headers = new Headers(libHeaders);
   headers.set("content-type", "text/html; charset=utf-8");
   headers.set("cache-control", "no-store");
-  headers.set("referrer-policy", "no-referrer");
+  // Fetch treats no-referrer navigation POSTs as Origin:null, even same-origin.
+  // Preserve our exact Origin CSRF check while suppressing cross-origin referrers.
+  headers.set("referrer-policy", "same-origin");
   headers.set(
     "content-security-policy",
     "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'",
@@ -198,6 +201,7 @@ async function handleConsentPost(
       const denied = await helpers.denyConsent(request, handle);
       const headers = new Headers(denied.headers);
       headers.set("location", denied.redirectTo);
+      headers.set("referrer-policy", "no-referrer");
       return new Response(null, { status: 302, headers });
     } catch {
       return renderLocalError(400, "Consent transaction expired or already used.");
@@ -266,6 +270,7 @@ async function handleConsentPost(
       props,
     });
     headers.set("location", redirectTo);
+    headers.set("referrer-policy", "no-referrer");
 
     return new Response(null, { status: 302, headers });
   } catch {
