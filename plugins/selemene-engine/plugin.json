@@ -15,7 +15,8 @@
           "Explain available combined reading workflows and their required inputs."
         ],
         "logo": "assets/icon.png",
-        "composerIcon": "assets/icon.png"
+        "composerIcon": "assets/icon.png",
+        "websiteURL": "https://www.tryambakam.space/selemene/"
       },
       "review": {
         "test_cases": {

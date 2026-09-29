@@ -150,3 +150,5 @@ Implementation reopened with thirty-two stable criteria. The original twelve inv
 - **ISC-32 remains open.** No plugin upload, portal review submission, human attestation or publication is claimed.
 
 Progress is 28 of 32 recorded criteria. The checklist's local implementation and public discovery completions do not waive the browser/customer release gates above.
+
+- Website follow-up: MotionSkin site deployed from tryambakam-space6feceab as dpl_9YMGkwHxcV3C8ZTjtP5jABfyeBuS and promoted to www.tryambakam.space. All5routes and5animation assets returned200 with source byte equality; desktop/mobile/reduced-motion/no-JS/module-failure checks passed. ISC-29 remains open because privacy/terms/support are review drafts awaiting publisher/contact/retention decisions. Landing websiteURL is configured; this does not approve effective legal policies.

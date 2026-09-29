@@ -38,3 +38,9 @@ Four synthetic temporary-directory guard tests pass: candidate ZIP creation does
 Candidate ZIP readiness uses local protocol verification and the required verified endpoint, facts and demo. `--submission-check` adds the connected review cases for the saved submission version, avoiding a circular dependency before the first upload.
 
 Once facts arrive, write the supported fields into the manifest, save verification outside the public package, rerun checks, then build and inspect the ZIP. A ZIP can be prepared before portal access, but public submission still requires authenticated setup and authorized developer attestations. Do not describe an uploaded draft as submitted for review, or a submitted candidate as published.
+
+## Website now live
+
+The approved MotionSkin draft is deployed at https://www.tryambakam.space/selemene/ from website source6feceab, deploymentdpl_9YMGkwHxcV3C8ZTjtP5jABfyeBuS. All five routes and animation assets return200 and match source. Desktop/mobile and fallback checks pass. The package websiteURL is now set. The other listing URLs remain unset: public privacy/terms/support drafts do not yet provide effective policies or a functioning private support arrangement.
+
+PREPARATION-EVIDENCE.json contains only the verified website, endpoint, local protocol/annotation and icon evidence for the exact current manifest. Unknown publisher/category/countries/commerce/demo facts remain missing. The validator still rejects a public ZIP; no empty or invented evidence is used to pass it.
