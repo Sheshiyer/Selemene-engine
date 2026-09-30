@@ -25,7 +25,17 @@ interface Provider {
   headers: (apiKey: string) => Record<string, string>;
 }
 
+export interface LlmCallReceipt {
+  provider: string;
+  requested_model: string;
+  returned_model: string | null;
+  finish_reason: string | null;
+  usage: unknown;
+  elapsed_ms: number;
+}
+
 interface LlmOptions {
+  onReceipt?: (receipt: LlmCallReceipt) => void;
   temperature?: number;
   timeout_ms?: number;
 }
@@ -108,7 +118,9 @@ async function callProvider(
   maxTokens: number,
   temperature: number,
   timeoutMs: number,
+  onReceipt?: (receipt: LlmCallReceipt) => void,
 ): Promise<string> {
+  const started = Date.now();
   const body = JSON.stringify({
     model,
     messages: [
@@ -147,13 +159,16 @@ async function callProvider(
               reject(new Error(`API error: ${parsed.error.message || parsed.error.code}`));
               return;
             }
-const content = parsed.choices?.[0]?.message?.content;
-             const reasoning = parsed.choices?.[0]?.message?.reasoning_content || parsed.choices?.[0]?.message?.reasoning;
-             const final = (content || reasoning || '').trim();
-            if (!final) {
-              reject(new Error('Empty response content'));
+            const content = parsed.choices?.[0]?.message?.content;
+            const final = typeof content === 'string' ? content.trim() : '';
+            if (!final || parsed.choices?.[0]?.finish_reason === 'length') {
+              reject(new Error(!final ? 'Empty final response content' : 'Truncated response: token limit reached'));
               return;
             }
+            onReceipt?.({ provider: provider.name, requested_model: model,
+              returned_model: typeof parsed.model === 'string' ? parsed.model : null,
+              finish_reason: parsed.choices?.[0]?.finish_reason ?? null,
+              usage: parsed.usage ?? null, elapsed_ms: Date.now() - started });
             resolve(final);
           } catch (e) {
             reject(e);
@@ -188,7 +203,7 @@ export function createLlmCall(opts: LlmOptions = {}): LlmCall {
       const start = Date.now();
       try {
         const result = await callProvider(
-          provider, apiKey, provider.model, system, user, maxTokens, temperature, timeoutMs,
+          provider, apiKey, provider.model, system, user, maxTokens, temperature, timeoutMs, opts.onReceipt,
         );
         const latency = Date.now() - start;
         if (process.env.DEBUG_LLM) {
@@ -205,6 +220,53 @@ export function createLlmCall(opts: LlmOptions = {}): LlmCall {
     }
 
     throw new Error(`All LLM providers failed:\n${errors.map(e => `  - ${e}`).join('\n')}`);
+  };
+}
+
+/** Explicit local combo route for detailed reference reports; no silent provider substitution. */
+export function createOmniRouteLlmCall(combo: string, opts: LlmOptions = {}): LlmCall {
+  const key = process.env.OMNIROUTE_API_KEY;
+  if (!key) throw new Error('OMNIROUTE_API_KEY required for the configured report combo');
+  return async (system, user, callOpts) => {
+    const started = Date.now();
+    const response = await fetch('http://127.0.0.1:20128/v1/chat/completions', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({ model: combo, messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+        max_tokens: Math.min(callOpts.max_tokens, 16384), temperature: opts.temperature ?? 0.4,
+        stream: true, stream_options: { include_usage: true } }),
+      signal: AbortSignal.timeout(opts.timeout_ms ?? 240000),
+    });
+    if (!response.ok) throw new Error(`OmniRoute ${response.status}: ${(await response.text()).slice(0, 160)}`);
+    if (!response.body) throw new Error('OmniRoute returned no stream');
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '', content = '', returnedModel: string | null = null, finishReason: string | null = null;
+    let usage: unknown = null;
+    const consume = (line: string) => {
+      if (!line.startsWith('data:')) return;
+      const payload = line.slice(5).trim();
+      if (!payload || payload === '[DONE]') return;
+      const chunk = JSON.parse(payload);
+      if (chunk.error) throw new Error(`OmniRoute stream error: ${chunk.error.message ?? 'unknown'}`);
+      returnedModel = chunk.model ?? returnedModel;
+      usage = chunk.usage ?? usage;
+      const choice = chunk.choices?.[0];
+      if (typeof choice?.delta?.content === 'string') content += choice.delta.content;
+      finishReason = choice?.finish_reason ?? finishReason;
+    };
+    for (;;) {
+      const { done, value } = await reader.read();
+      buffer += decoder.decode(value, { stream: !done });
+      const lines = buffer.split('\n'); buffer = lines.pop() ?? '';
+      for (const line of lines) consume(line.trimEnd());
+      if (done) { consume(buffer.trim()); break; }
+    }
+    if (!content.trim() || finishReason !== 'stop') {
+      throw new Error(`OmniRoute returned empty or truncated final content (model=${returnedModel ?? 'unknown'}, finish_reason=${finishReason ?? 'missing'}, content_chars=${content.length}, max_tokens=${Math.min(callOpts.max_tokens, 16384)})`);
+    }
+    opts.onReceipt?.({ provider: 'omniroute', requested_model: combo, returned_model: returnedModel,
+      finish_reason: finishReason, usage, elapsed_ms: Date.now() - started });
+    return content.trim();
   };
 }
 

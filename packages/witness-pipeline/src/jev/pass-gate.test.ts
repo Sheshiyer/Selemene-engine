@@ -29,6 +29,17 @@ const result = (over: Partial<JevResult['answers']> = {}): JevResult => ({
 });
 
 describe('jev pass gate', () => {
+  it('judges the complete reference section with its retrieved passages', async () => {
+    const client = vi.fn(async () => result());
+    const engineFacts = 'x'.repeat(7000) + 'LAST_ENGINE_FACT';
+    const output = 'y'.repeat(14000) + 'FINAL_SECTION_CLAIM';
+    const frameworkPassages = [{ id: 'sw:gk:4:life_theme', source: 'corpus', text: 'Attributed meaning' }];
+    await createJevPassGate(client, 'shadow').judge(input({ engineFacts, output, frameworkPassages, fullContext: true }));
+    const state = (client.mock.calls[0] as any)[0].state;
+    expect(state.engine_facts).toBe(engineFacts);
+    expect(state.section).toBe(output);
+    expect(state.attributed_framework_passages).toEqual(frameworkPassages);
+  });
   it('thresholds are exactly 0.5 and 0.85', () => {
     expect(JEV_ASK_THRESHOLD).toBe(0.5);
     expect(JEV_ACT_THRESHOLD).toBe(0.85);
@@ -196,6 +207,7 @@ describe('guardrail policy', () => {
     const q = buildPassQuestions(input({ guardrailPolicy: 'forecast-allowed' }));
     expect((q.guardrail_clean as any).instructions).toBe(GUARDRAIL_QUESTION['forecast-allowed'][0]);
     expect((buildPassQuestions(input()).guardrail_clean as any).instructions).toBe(GUARDRAIL_QUESTION.descriptive[0]);
+    expect(GUARDRAIL_QUESTION.descriptive[0]).toContain('Engine-recorded dates');
     const client = vi.fn(async (req: any) => ({ model: 'j', answers: Object.fromEntries(Object.keys(req.questions).map((k) => [k, { type: 'noul', noul: 0.1 }])) }));
     await findPredictiveSentences(client as any, 'The Jupiter period tends to emphasise study and teaching over these years.', 'forecast-allowed');
     expect((client.mock.calls[0] as any)[0].questions.s0.instructions).toContain(SENTENCE_QUESTION['forecast-allowed'][0]);

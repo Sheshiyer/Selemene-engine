@@ -88,3 +88,51 @@ describe('auditSectionOutput', () => {
     expect(rubric.chart_fidelity_score).toBeLessThanOrEqual(1.0);
   });
 });
+
+
+describe('rubric leakage-gate extension (additive)', () => {
+  it('omits leakage fields when publicContent is not supplied', () => {
+    const rubric = auditSectionOutput({
+      sectionId: 'opening',
+      title: 'Opening',
+      targetWords: 50,
+      output: 'Any prose.',
+      modelRequested: 'tier-default',
+      modelUsed: 'tier-default',
+      latencyMs: 5,
+    });
+    expect(rubric.leakage_gate).toBeUndefined();
+    expect(rubric.leakage_violations).toBeUndefined();
+  });
+
+  it('reports pass for clean public content', () => {
+    const rubric = auditSectionOutput({
+      sectionId: 'opening',
+      title: 'Opening',
+      targetWords: 50,
+      output: 'x',
+      modelRequested: 'tier-default',
+      modelUsed: 'tier-default',
+      latencyMs: 5,
+      publicContent: 'Your Vedic Kundali highlights a Scorpio Lagna with a supportive Jupiter.',
+    });
+    expect(rubric.leakage_gate).toBe('pass');
+    expect(rubric.leakage_violations).toEqual([]);
+  });
+
+  it('reports fail with compact block-violation strings for leaked content', () => {
+    const rubric = auditSectionOutput({
+      sectionId: 'opening',
+      title: 'Opening',
+      targetWords: 50,
+      output: 'x',
+      modelRequested: 'tier-default',
+      modelUsed: 'tier-default',
+      latencyMs: 5,
+      publicContent: 'Per sw:hd:type:generator:desc the reading proceeds.',
+    });
+    expect(rubric.leakage_gate).toBe('fail');
+    expect(rubric.leakage_violations && rubric.leakage_violations.length).toBeGreaterThan(0);
+    expect(rubric.leakage_violations && rubric.leakage_violations[0]).toMatch(/cf_passage_id@L1/);
+  });
+});

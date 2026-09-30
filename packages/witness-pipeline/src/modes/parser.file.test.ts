@@ -18,4 +18,17 @@ describe('parseModeDoc (file-based)', () => {
     const l1 = doc.frontmatter.register_variants?.l1_l3;
     expect(l1?.target_words).toEqual({ min: 8000, max: 10000 });
   });
+
+  it('keeps the detailed Human Design and three-partner reports section-by-section', () => {
+    const solo = parseModeDoc(resolve(__dirname, '../../modes/human-design-integrated-12.md'));
+    const triad = parseModeDoc(resolve(__dirname, '../../modes/business-partners-triad-12.md'));
+    expect(solo.frontmatter.mode).toBe('human-design-integrated-12');
+    expect(solo.frontmatter.pass_plan).toHaveLength(12);
+    expect(solo.frontmatter.subject_count).toEqual({ min: 1, max: 1 });
+    expect(solo.frontmatter.jev_guardrail).toBe('descriptive');
+    expect(triad.frontmatter.mode).toBe('business-partners-triad-12');
+    expect(triad.frontmatter.pass_plan).toHaveLength(12);
+    expect(triad.frontmatter.subject_count).toEqual({ min: 3, max: 3 });
+    expect(triad.frontmatter.relationship_types).toContain('business-partners');
+  });
 });

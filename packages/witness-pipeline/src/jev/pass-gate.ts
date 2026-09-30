@@ -27,6 +27,9 @@ export interface JevPassInput {
   rubric: SectionRubric;
   /** From the mode doc; default 'descriptive'. */
   guardrailPolicy?: JevGuardrailPolicy;
+  /** Reference reports require judgment of the complete section and its retrieved evidence. */
+  frameworkPassages?: Array<{ id: string; source: string; text: string }>;
+  fullContext?: boolean;
 }
 
 export type JevVerdict = 'pass' | 'fail' | 'could-not-tell';
@@ -64,7 +67,7 @@ export interface JevRetryRecord {
 
 export const GUARDRAIL_QUESTION: Record<JevGuardrailPolicy, [string, { true: string; false: string }]> = {
   descriptive: [
-    'Is this witness section free of predictions, diagnoses, guarantees, and promises about outcomes, investments, health, or life events?',
+    'Is this witness section free of predictions, diagnoses, guarantees, and promises about outcomes, investments, health, or life events? Engine-recorded dates, current-period boundaries, and quoted symbolic themes count as descriptive evidence when they are not used to claim what will happen.',
     { true: 'Descriptive pattern witness only; facts and open questions', false: 'Contains a forecast, diagnosis, guarantee, or promised outcome' },
   ],
   'forecast-allowed': [
@@ -227,8 +230,9 @@ export function createJevPassGate(client: JevClient | null, mode: JevGateMode = 
         register: input.register,
         relationship_type: input.relationshipType ?? null,
         subjects: input.subjectNames,
-        engine_facts: input.engineFacts.slice(0, 6000),
-        section: input.output.slice(0, 12000),
+        engine_facts: input.fullContext ? input.engineFacts : input.engineFacts.slice(0, 6000),
+        section: input.fullContext ? input.output : input.output.slice(0, 12000),
+        ...(input.frameworkPassages ? { attributed_framework_passages: input.frameworkPassages } : {}),
       };
       const started = Date.now();
       try {
