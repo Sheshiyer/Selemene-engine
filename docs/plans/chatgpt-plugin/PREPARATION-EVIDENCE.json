@@ -3,8 +3,8 @@
   "checks": {
     "websiteURL": {
       "value": "https://www.tryambakam.space/selemene/",
-      "verified_at": "2026-09-29T23:22:22.395275+00:00",
-      "evidence": "Website deployment dpl_9YMGkwHxcV3C8ZTjtP5jABfyeBuS; public HTTP200/source byte equality and IAB rendered verification."
+      "verified_at": "2026-09-30T08:23:16.899092+00:00",
+      "evidence": "Website PR13 merged as df7ced81b80cc7a76e3b4f3c353468124db2a8c8; Ready production dpl_Ct5sR7cWonh36vyyree5qj3jTerE; twelve public HTTP200/source-equality checks in website-main-live-checks.json. Earlier IAB desktop/mobile rendering evidence retained; policy drafts remain drafts."
     },
     "endpoint": {
       "value": "https://selemene-mcp.sheshnarayan-iyer.workers.dev/mcp",

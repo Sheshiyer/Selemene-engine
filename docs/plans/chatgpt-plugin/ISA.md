@@ -92,6 +92,8 @@ Implement an account-bound customer MCP server, correct relevant authorization d
 
 ## Decisions
 
+- 2026-09-30: User explicitly authorized submission and website publication. Website PR13 is merged and its automatic production deployment verified. Submission remains incomplete: authenticated portal access and an available individual publisher identity were observed, but public policy facts and reviewer evidence cannot be inferred from infrastructure credentials.
+
 - 2026-09-30: Initial deployment `a1ddbb65` / `9e80e849-b54b-422a-b45a-9efd0598c895` passed public discovery but exposed a browser Origin policy defect. Parent subsequently deployed `c79806c0` / `e8d38136-faa5-426f-abcd-63a5e56d76b7` and verified the Deny path in the in-app browser. Authenticated customer acceptance remains open.
 
 - 2026-09-30: User approved the existing website draft and requested MotionSkin plus MotionSites MCP. Design/content approval is recorded; missing publisher/contact/retention facts remain unresolved, not silently inferred. Selected Particle Field template via live MCP; preserve its five-panel motion with existing Tryambakam sigil and shared companion-page shell. Website draft baseline d9a1127; new visual verification required after redesign.
@@ -150,5 +152,7 @@ Implementation reopened with thirty-two stable criteria. The original twelve inv
 - **ISC-32 remains open.** No plugin upload, portal review submission, human attestation or publication is claimed.
 
 Progress is 28 of 32 recorded criteria. The checklist's local implementation and public discovery completions do not waive the browser/customer release gates above.
+
+- Authorized release follow-up: website PR13 merged as `df7ced81b80cc7a76e3b4f3c353468124db2a8c8`; Vercel deployment `dpl_Ct5sR7cWonh36vyyree5qj3jTerE` Ready. Twelve live route/asset checks returned200 and matched source bytes (`website-main-live-checks.json`). Authenticated OpenAI portal exposes an individual publisher identity and Upload Plugin, but no Selemene package was uploaded or submitted. ISC-28,29,31,32 remain open.
 
 - Website follow-up: MotionSkin site deployed from tryambakam-space6feceab as dpl_9YMGkwHxcV3C8ZTjtP5jABfyeBuS and promoted to www.tryambakam.space. All5routes and5animation assets returned200 with source byte equality; desktop/mobile/reduced-motion/no-JS/module-failure checks passed. ISC-29 remains open because privacy/terms/support are review drafts awaiting publisher/contact/retention decisions. Landing websiteURL is configured; this does not approve effective legal policies.

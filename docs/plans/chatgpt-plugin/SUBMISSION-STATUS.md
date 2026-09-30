@@ -1,6 +1,6 @@
 # Selemene Engine submission preparation
 
-As of 2026-09-30: **customer MCP implemented and deployed; website MotionSkin draft verified locally; public packaging remains blocked on publisher, policy, reviewer and demo facts. No plugin upload, review submission or publication has occurred.**
+As of 2026-09-30: **customer MCP deployed; MotionSkin website published and merged into main; authenticated OpenAI submission portal inspected. Public packaging remains blocked on confirmed publisher/policy facts and reviewer/demo evidence. No plugin upload, review submission or publication has occurred.**
 
 ## Prepared locally
 
@@ -44,3 +44,12 @@ Once facts arrive, write the supported fields into the manifest, save verificati
 The approved MotionSkin draft is deployed at https://www.tryambakam.space/selemene/ from website source6feceab, deploymentdpl_9YMGkwHxcV3C8ZTjtP5jABfyeBuS. All five routes and animation assets return200 and match source. Desktop/mobile and fallback checks pass. The package websiteURL is now set. The other listing URLs remain unset: public privacy/terms/support drafts do not yet provide effective policies or a functioning private support arrangement.
 
 PREPARATION-EVIDENCE.json contains only the verified website, endpoint, local protocol/annotation and icon evidence for the exact current manifest. Unknown publisher/category/countries/commerce/demo facts remain missing. The validator still rejects a public ZIP; no empty or invented evidence is used to pass it.
+
+## Authorized publication follow-up
+
+- User authorized proceeding with submission and site publication. Website PR https://github.com/Sheshiyer/tryambakam-space/pull/13 merged at 2026-09-30T08:18:07Z as `df7ced81b80cc7a76e3b4f3c353468124db2a8c8`.
+- Vercel automatically produced Ready production deployment `dpl_Ct5sR7cWonh36vyyree5qj3jTerE`, aliased to both public domains. `website-main-live-checks.json` records twelve public routes/assets returning 200 with exact local-source byte equality. Effective legal policy status is unchanged.
+- The in-app browser reached authenticated `https://platform.openai.com/plugins` in Personal organization / Default project. Upload Plugin lists one available individual identity: `SHESHNARAYAN CUMBIPURAM NATESHAN`. This establishes an available portal identity, not a confirmed legal controller or support address. No Selemene draft is present in the observed listing; no ZIP was selected or uploaded.
+- OpenAI's current submission instructions require a complete package, MCP connection/domain verification, executed review cases, accessible recording, reviewer credentials and final policy attestations: https://developers.openai.com/plugins/deploy/submission. Infrastructure CLI authentication does not supply these facts or evidence.
+- A concrete question for the public legal publisher/operator and support/privacy email remains pending. Country targeting, commerce, retention/deletion commitments, real connected test cases and demo evidence remain unresolved.
+- Engine PR1492 inherited a Rust dependency advisory. See `CI-SECURITY-FOLLOWUP.md` for its targeted patch and validation state. Website merge does not deploy the engine's Rust phase-authority fix to Railway.
