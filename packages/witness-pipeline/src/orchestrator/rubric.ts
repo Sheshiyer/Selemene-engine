@@ -1,4 +1,10 @@
 import type { SectionRubric } from './integrated.js';
+import { leakageGate, blockViolations } from './leakage-gate.js';
+
+/** Count report text and numbers, excluding Markdown-only separators and punctuation. */
+export function countReportWords(text: string): number {
+  return text.trim().split(/\s+/).filter(token => /[\p{L}\p{N}]/u.test(token)).length;
+}
 
 export interface AuditSectionInput {
   sectionId: string;
@@ -10,6 +16,13 @@ export interface AuditSectionInput {
   latencyMs: number;
   engineResults?: any[];
   relationshipType?: string;
+  /**
+   * Optional public reader-facing content. When supplied, the deterministic
+   * leakage gate runs against this text and its pass/fail result plus the
+   * compact block-violation list are attached to the SectionRubric. Absence
+   * of this field preserves the historical rubric shape exactly.
+   */
+  publicContent?: string;
 }
 
 const SYSTEM_PATTERNS = [
@@ -81,7 +94,7 @@ function computeFidelity(output: string, engineFacts: Set<string>): { score: num
 }
 
 export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
-  const words = input.output.trim().split(/\s+/).filter(Boolean).length;
+  const words = countReportWords(input.output);
   const ratio = input.targetWords > 0 ? words / input.targetWords : 0;
   const deterministicFactCount = SYSTEM_PATTERNS.reduce((sum, re) => {
     return sum + (input.output.match(re)?.length ?? 0);
@@ -94,6 +107,10 @@ export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
 
   const engineFacts = extractKeyFactsFromEngines(input.engineResults || []);
   const fid = computeFidelity(input.output, engineFacts);
+
+  const publicText = typeof input.publicContent === 'string' ? input.publicContent : undefined;
+  const leakage = publicText !== undefined ? leakageGate(publicText) : undefined;
+  const leakageBlocks = leakage ? blockViolations(leakage) : [];
 
   return {
     section_id: input.sectionId,
@@ -113,6 +130,8 @@ export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
     latency_ms: input.latencyMs,
     chart_fidelity_score: engineFacts.size > 0 ? Number(fid.score.toFixed(3)) : undefined,
     chart_fidelity_details: engineFacts.size > 0 ? fid.details : undefined,
+    leakage_gate: leakage ? (leakage.passed ? 'pass' : 'fail') : undefined,
+    leakage_violations: leakage ? leakageBlocks.map(v => `${v.pattern_id}@L${v.line_number}: ${v.matched_text}`) : undefined,
   };
 }
 

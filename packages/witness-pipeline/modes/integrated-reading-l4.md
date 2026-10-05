@@ -73,3 +73,7 @@ Hold structure and vitality. Surface primary tension. Offer precise invitations.
 ### 2026-07-10 — L4 explicit coverage
 **Question:** Do we need a dedicated L4 mode doc for matrix enumeration?
 **Adopted:** Yes — thin alias with L4 frontmatter for parser and matrix coverage.
+
+### 2026-09-27 — Jev shadow matrix: synthesis pass confidently predictive and short of target
+**Question:** What did the live Jev shadow gate flag in this mode?
+**Adopted:** Shadow/gift language may name the process, not the outcome. Reach the target length with engine facts, not forecasts.

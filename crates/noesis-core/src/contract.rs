@@ -15,6 +15,7 @@ use utoipa::ToSchema;
 pub const CONTRACT_VERSION: &str = "v1";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub enum ContractVersion {
     #[serde(rename = "v1")]
     V1,
@@ -133,7 +134,7 @@ pub enum RuntimeKind {
     Composed,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Provenance {
@@ -145,6 +146,9 @@ pub struct Provenance {
     pub backend_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub provider_id: Option<String>,
+    /// Confidence in the result, 0-1. Populated per-engine; omitted where not yet computed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -182,6 +186,7 @@ pub struct ContractError {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum CapabilityAvailability {
     Declared,
@@ -191,6 +196,7 @@ pub enum CapabilityAvailability {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct EngineCapability {
     pub contract_version: ContractVersion,

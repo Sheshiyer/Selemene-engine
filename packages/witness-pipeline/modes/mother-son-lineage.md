@@ -64,3 +64,7 @@ Synthesize the lineage field observations. End with one open witness question. N
 ### 2026-07-10 — Seeded from relationship mapping contract
 **Question:** Can we declare explicit mother-son roles without romantic presumption?
 **Adopted:** Yes — roles + relationship_context + header.
+
+### 2026-09-27 — Jev shadow matrix: opening and lineage-field drifted to prediction
+**Question:** What did the live Jev shadow gate flag in this mode?
+**Adopted:** No statements about what the son will carry or become. Name the transmission as present in both charts; leave the future as an open question.

@@ -147,3 +147,7 @@ When register is l1_l3, avoid or soften Gene Keys shadow language and siddhi lan
 
 **Question:** Should register variants affect only length or also depth of shadow/siddhi language?
 **Adopted:** Yes — l1_l3 synthesis template must explicitly instruct lighter language and forbid siddhi framing.
+
+### 2026-09-27 — Jev shadow matrix: somatic and synthesis passes hovered at the ask threshold
+**Question:** What did the live Jev shadow gate flag in this mode?
+**Adopted:** Braid facts as present-tense convergence. Replace "this suggests X will" with "X and Y are both present; their overlap appears as".

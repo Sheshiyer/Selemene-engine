@@ -69,7 +69,8 @@ export interface CalculationMetadata {
 }
 
 export interface SelemeneEngineOutput {
-  engine_id: SelemeneEngineId;
+  /** vedic-kundali is a provenance-backed local report supplement, not an API route. */
+  engine_id: SelemeneEngineId | 'vedic-kundali';
   result: unknown;
   witness_prompt: string;
   consciousness_level: number;

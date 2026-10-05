@@ -8,6 +8,8 @@ export interface RenderPipelineInput {
   sourcePackDir: string;
   outputDir: string;
   brandConfigPath: string;
+  /** Document title; defaults to the L0 kundali title for backward compatibility. */
+  title?: string;
 }
 
 export interface RenderPipelineOutput {
@@ -19,7 +21,7 @@ export async function renderLocalArtifacts(input: RenderPipelineInput): Promise<
   const readingMd = await readFile(join(input.sourcePackDir, 'reading.md'), 'utf-8');
   const manifest = JSON.parse(await readFile(join(input.sourcePackDir, 'manifest.json'), 'utf-8'));
   const brandTokens = await loadBrandTokens(input.brandConfigPath);
-  const title = `L0 Integrated Kundali — ${manifest.person_id}`;
+  const title = input.title ?? `L0 Integrated Kundali — ${manifest.person_id}`;
 
   const html = await renderReadingToHtml({ title, markdown: readingMd, brandTokens });
   const htmlPath = join(input.outputDir, 'reading.html');

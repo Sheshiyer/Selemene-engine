@@ -1,6 +1,6 @@
 {
   "name": "@selemene/engine-sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Typed TypeScript client SDK for the 4 focus consciousness engines (biofield, face-reading, raaga, sigil-forge) with FROZEN media contracts (image_data, consent, generated_image/generated_audio) and local-first consent enforcement",
   "type": "module",
   "sideEffects": false,

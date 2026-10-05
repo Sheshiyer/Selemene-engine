@@ -26,6 +26,7 @@
 
 import { CONSENT_SCOPES, requireConsent, resolveConsent } from './consent.js'
 import { EngineSdkError } from './errors.js'
+import type { ContractEngineCapability } from './contract-v1.js'
 import type {
   BiofieldAnalyzeInput,
   BiofieldAnalyzeResponse,
@@ -138,6 +139,14 @@ export class EngineClient {
       this.request<PythonSidecarHealthResponse>('GET', `${this.pyUrl}/health`),
     ])
     return { ts, python }
+  }
+
+  /** contracts/v1 capability discovery (api route when P4 configured, else ts server). */
+  async capabilities(): Promise<{ capabilities: ContractEngineCapability[]; count: number }> {
+    const url = this.apiUrl
+      ? `${this.apiUrl}/api/v1/engines/capabilities`
+      : `${this.tsUrl}/engines/capabilities`
+    return this.request('GET', url)
   }
 
   /** @internal POST an EngineInput to the calculate route for `engineId` (api when P4 configured, else ts server). */

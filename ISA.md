@@ -1,13 +1,13 @@
 ---
 project: Selemene-engine
-task: "P6 Wave 2 performance, recovery, runtime status, and accessible depth"
-effort: E3
-effort_source: classifier
-phase: complete
-progress: 170/170
+task: "Reader-facing witness contract repair and eight bilingual deliveries"
+effort: E4
+effort_source: continuity-restore
+phase: execute
+progress: 188/234
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-07-19T03:05:00+05:30
+updated: 2026-09-30T13:19:00Z
 ---
 
 ## Problem
@@ -289,6 +289,76 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-162: Full tests, typecheck, production build, and browser journeys pass at desktop, narrow, recovery, and reduced-motion states (probe: repository and browser gates).
 - [x] ISC-163: Anti: Wave 2 introduces no raw media, credentials, unrestricted renderer fetch, or Electron-boundary regression (probe: source, bundle, and trust-boundary scans).
 
+### Witness report architecture repair — 2026-09-30
+
+- [x] ISC-171: The report manifest requires Opening and Parts I–XI (probe: manifest test).
+- [x] ISC-172: Required subsection omissions block report acceptance (probe: negative coverage test).
+- [x] ISC-173: Each accepted section records an Aletheios contribution (probe: missing-receipt test).
+- [x] ISC-174: Each accepted section records a Pichet contribution (probe: missing-receipt test).
+- [x] ISC-175: Each accepted section records grounding passage provenance (probe: receipt test).
+- [x] ISC-176: Failed required retrieval blocks acceptance (probe: failing-adapter test).
+- [x] ISC-177: Empty required retrieval differs from successful grounding (probe: empty-result test).
+- [x] ISC-178: Synthesis consumes every accepted section artifact (probe: captured synthesis input).
+- [x] ISC-179: Required rubric failures block final acceptance (probe: negative gate test).
+- [x] ISC-180: Missing required rubric gates block acceptance (probe: missing-gate test).
+- [x] ISC-181: Anti: existing eight reports are not overwritten by repair tests (probe: artifact diff).
+- [ ] ISC-182: One real pilot has verified witness execution receipts (probe: pilot receipts).
+- [ ] ISC-183: One real pilot has verified knowledge retrieval receipts (probe: pilot receipts).
+- [ ] ISC-184: One real pilot matches the required subsection manifest (probe: pilot coverage report).
+- [ ] ISC-185: The rendered pilot has readable tables and page boundaries (probe: page inspection).
+- [ ] ISC-186: The final bilingual set passes per-subject source and section parity checks (probe: report-set audit).
+
+### Reader-facing witness contract correction — 2026-09-30
+
+- [ ] ISC-187: The recovered legacy matrix records the exact source files and SHA-256 hashes that define its stages (probe: matrix provenance readback).
+- [ ] ISC-188: The recovered matrix preserves the sequence locked facts → per-engine micro-interpretation → Aletheios → Pichet → symbolic synthesis (probe: matrix schema test).
+- [ ] ISC-189: The repaired route constructs the private interpretation map before public chapter synthesis (probe: captured execution order test).
+- [ ] ISC-190: Each private map entry separates engine fact, sourced interpretation, symbolic meaning, and public claim (probe: schema validation test).
+- [ ] ISC-191: Each private engine fact binds an exact field path, value, subject, source artifact, and hash (probe: evidence-map fixture test).
+- [ ] ISC-192: Each private interpretation binds at least one engine fact and one permitted tradition or Vectorize passage (probe: negative traceability test).
+- [ ] ISC-193: Each private symbolic meaning records an Aletheios structural contribution (probe: missing-witness test).
+- [ ] ISC-194: Each private symbolic meaning records a Pichet experiential contribution (probe: missing-witness test).
+- [ ] ISC-195: Contradictions, uncertainty, and rejected meanings remain explicit in the private map (probe: contradiction fixture test).
+- [ ] ISC-196: Each factual or symbolic public claim resolves to one or more private map entry IDs (probe: claim-coverage audit).
+- [ ] ISC-197: Anti: public prose contains no source IDs, hashes, backend names, receipt timestamps, or tool names (probe: leakage scanner).
+- [ ] ISC-198: Anti: public prose contains no JSON keys, generation instructions, rubric language, or review workflow narration (probe: leakage scanner).
+- [ ] ISC-199: Anti: public prose does not replace source leakage with repeated provenance or uncertainty disclaimers (probe: repetition grader).
+- [ ] ISC-200: Public prose uses meaningful chart vocabulary naturally when that vocabulary is supported by the private map (probe: chapter vocabulary audit).
+- [ ] ISC-201: Reader-relevant uncertainty appears as concise natural language at the affected claim (probe: uncertainty placement audit).
+- [ ] ISC-202: Factual traceability is graded against the private map rather than requiring visible citations in reader prose (probe: grader contract test).
+- [ ] ISC-203: Any presentation leakage blocks chapter acceptance (probe: adversarial leakage fixture test).
+- [ ] ISC-204: Reference-depth review checks section coverage, interpretive development, cross-system braiding, tables, and closing synthesis (probe: depth rubric test).
+- [x] ISC-205: Sheshnarayan EN Part I Convergence Map exists as one complete representative chapter (probe: chapter manifest readback).
+- [x] ISC-206: The representative chapter has a separate machine-readable private evidence map (probe: sidecar schema readback).
+- [x] ISC-207: Representative-chapter Aletheios and Pichet receipts bind the exact chapter and map hashes (probe: receipt binding test).
+- [x] ISC-208: Representative-chapter Cloudflare passages bind exact account, index, IDs, content hashes, and fresh readback (probe: grounding receipt test).
+- [x] ISC-209: Every representative-chapter claim passes the private claim-to-source audit (probe: source audit receipt).
+- [x] ISC-210: The representative chapter passes the public leakage gate with zero blockers (probe: leakage receipt).
+- [x] ISC-211: The representative chapter passes reference-depth and natural-reading review (probe: comparative chapter review).
+- [ ] ISC-212: Anti: technical tests, Jev verdicts, or successful rendering alone never set product acceptance (probe: acceptance-state test).
+- [ ] ISC-213: Anti: bulk report generation cannot start before ISC-205 through ISC-211 pass (probe: generation gate test).
+- [ ] ISC-214: Triad review partitions the oversized payload into bounded, semantically complete units (probe: partition manifest test).
+- [ ] ISC-215: Conservative triad aggregation retains every subject fact and every partition blocker (probe: aggregation completeness test).
+- [ ] ISC-216: Triad aggregate verdict binds every partition receipt and the original full-payload hash (probe: aggregate receipt test).
+- [ ] ISC-217: Gary English is product-accepted under the corrected contract (probe: deliverable receipt).
+- [ ] ISC-218: Gary French is product-accepted under the corrected contract (probe: deliverable receipt).
+- [ ] ISC-219: Mohan English is product-accepted under the corrected contract (probe: deliverable receipt).
+- [ ] ISC-220: Mohan French is product-accepted under the corrected contract (probe: deliverable receipt).
+- [ ] ISC-221: Sheshnarayan English is product-accepted under the corrected contract (probe: deliverable receipt).
+- [ ] ISC-222: Sheshnarayan French is product-accepted under the corrected contract (probe: deliverable receipt).
+- [ ] ISC-223: Business triad English is product-accepted under the corrected contract (probe: deliverable receipt).
+- [ ] ISC-224: Business triad French is product-accepted under the corrected contract (probe: deliverable receipt).
+- [ ] ISC-225: All eight final DOCX files open and contain their accepted chapter set (probe: DOCX structural audit).
+- [ ] ISC-226: All eight final PDF files preserve the accepted DOCX text and chapter order (probe: text-unit parity audit).
+- [ ] ISC-227: Every page of all sixteen final artifacts passes visual inspection without clipping or broken tables (probe: rendered-page review).
+- [ ] ISC-228: English and French pairs preserve subject facts, dates, section coverage, and interpretive meaning (probe: bilingual parity audit).
+- [ ] ISC-229: The recorded Rao-house, dasha-duration, end-date, birth-confidence, and unsupported-ranking corrections survive every final report (probe: correction regression audit).
+- [ ] ISC-230: Product acceptance remains false until all eight report receipts and all DOCX/PDF gates pass (probe: report-set state test).
+- [ ] ISC-231: Anti: no stopped leaking generation process is resumed or reused as an accepted run (probe: process and provenance audit).
+- [ ] ISC-232: Existing dirty work and immutable receipts remain byte-preserved outside explicitly edited contract files (probe: before/after hash inventory).
+- [ ] ISC-233: Anti: this work performs no Cloudflare corpus mutation, deployment, merge, push, or release activation (probe: command and remote-state audit).
+- [ ] ISC-234: Anti: unsupported medical, biological, deterministic psychological, or predictive claims are absent from public readings (probe: sensitive-claim audit).
+
 ## Test Strategy
 
 | isc | type | check | threshold | tool |
@@ -313,6 +383,11 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 | ISC-138..147 | recovery | source-aware resolution, malformed hash fallback, loading/empty/error/retry/race and recovery actions | exact state transitions and zero fabricated evidence | Vitest plus browser automation |
 | ISC-148..155 | runtime status | live typed status, local/auth-required/remote-ready/error/retry and anti-secret rendering | exact fixtures and zero sensitive configuration | Vitest, rg, browser automation |
 | ISC-156..163 | accessible depth gate | reduced motion, WebGL fallback, keyboard/dialog focus, cleanup, full gates and trust anti-scan | all focused and repository gates pass | Vitest, npm, rg, browser automation |
+| ISC-171..186 | historical report architecture | manifest, witness, grounding, rubric, pilot, render, bilingual parity | historical evidence only; no product acceptance | Bun tests, saved receipts, rendered review |
+| ISC-187..204 | interpretation boundary | recovered matrix, private traceability, public leakage, reference depth | exact schema bindings and zero public leakage | Bun tests, hash readback, leakage/depth graders |
+| ISC-205..213 | representative chapter gate | complete Sheshnarayan EN Part I plus private map and receipts | every chapter gate passes before bulk generation | saved sidecars, source audit, comparative review |
+| ISC-214..216 | triad bounded review | partition completeness, conservative aggregation, receipt binding | zero dropped facts or blockers | partition and aggregation tests |
+| ISC-217..234 | eight-report delivery | per-report acceptance, DOCX/PDF parity, page QA, corrections, release boundaries | 8/8 reports and 16/16 artifacts pass | report-set audit, DOCX/PDF render, process/remote audit |
 
 ## Features
 
@@ -338,6 +413,11 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 | GatewayStatusSurface | Render the existing narrow gateway readiness contract without exposing privileged configuration | ISC-148..155 | TrustedDesktopGateway | true |
 | AccessibleDepthFallback | Preserve witness navigation under reduced motion, WebGL failure, keyboard use, dialog focus, and unmount races | ISC-156..161 | LazyDepthBoundary | true |
 | P6Wave2Gate | Verify performance, recovery, runtime status, accessibility, trust boundaries, and responsive browser journeys | ISC-162..163 | ReadingRecoveryState, GatewayStatusSurface, AccessibleDepthFallback | false |
+| InterpretationMatrixRecovery | Recover and codify the existing fact-to-interpretation-to-symbolic-meaning architecture | ISC-187..196 | none | false |
+| ReaderFacingBoundary | Move provenance and review machinery into private sidecars while preserving rich public meaning | ISC-197..204 | InterpretationMatrixRecovery | false |
+| RepresentativeChapterGate | Prove Sheshnarayan EN Part I and its separate private evidence map | ISC-205..213 | ReaderFacingBoundary | false |
+| BoundedTriadReview | Repair oversized triad judging with conservative partition aggregation | ISC-214..216 | RepresentativeChapterGate | true |
+| EightBilingualDeliveries | Generate, review, render, and package all individual and triad reports | ISC-217..234 | RepresentativeChapterGate, BoundedTriadReview | false |
 
 ## Architecture
 
@@ -358,6 +438,12 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 <!-- arch-assets:end -->
 
 ## Decisions
+
+- 2026-09-30 11:44 +0200: refined: Prior technical verification is historical evidence only; no report is product-accepted under the corrected reader-facing contract.
+- 2026-09-30 11:44 +0200: The recovered matrix is the existing legacy seven-stage flow: immutable engine facts, per-engine micro-readings, Aletheios structural witness, Pichet embodied witness, and public symbolic synthesis, governed by the 16-engine lexicon and Kosha routing.
+- 2026-09-30 11:44 +0200: Root-cause-at-ingestion: the current reference route asks public prose to carry attribution, source mechanics, uncertainty machinery, and grading evidence. The repair introduces a private interpretation map before synthesis and grades public claims against it.
+- 2026-09-30 11:44 +0200: Sheshnarayan English Part I, The Convergence Map, is the representative chapter because it exercises the cross-system matrix, both witness roles, Vectorize grounding, tables, contradictions, and natural symbolic synthesis in one bounded artifact.
+- 2026-09-30 11:44 +0200: Bulk generation remains mechanically blocked until the representative chapter and its private evidence map pass factual, witness, grounding, leakage, and reference-depth gates.
 
 - 2026-07-19 02:15: refined: The live integration plan names Phase 6 Wave 2 as performance, empty states, and error handling; Wave 1 is complete and remains immutable.
 - 2026-07-19 02:15: Root-cause-at-ingestion: payload provenance and failure detail disappear inside `payloadLoader`, while Three.js enters the shell through the synchronous `App.tsx` import; both seams must be fixed before display polish.
@@ -410,6 +496,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 - 2026-07-18: Merged Sankalpa trusted gateway and result continuity as `7e08431`; Electron main now owns authenticated transport, exact operation consent, runtime input validation, CSP/navigation restrictions, and trusted-top-frame IPC.
 - 2026-07-18: Final independent boundary review returned `GO`, and browser Gate 4 returned `PASS` after measured Sigil/Face layout and Biofield consent-control corrections.
 
+- 2026-09-30 00:55: refined: User confirms witness dyad and grounding infrastructure are both required. Twelve generated sections and Jev shadow judgments alone do not establish reference-depth or architecture acceptance. Preserve existing dirty pipeline edits; repair in place with compatible opt-in behavior.
+
 ## Changelog
 
 - 2026-07-18 | conjectured: the OpenCode handoff accurately described the current stopping point
@@ -436,6 +524,11 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
   refuted_by: browser QA measured Sigil overflow, a collapsed Face camera, and duplicate Biofield consent controls at the desktop viewport
   learned: continuity features need measured browser geometry and interaction validation in addition to pure-function tests
   criterion_now: ISC-80 includes Gate 4 browser validation of the integrated focus-to-Noesis journey
+
+- 2026-09-30 | conjectured: Existing twelve-pass report PASS might establish full integrated-report acceptance.
+  refuted by: The inspected route omits dyad and retriever wiring; final verification omits advertised quality dimensions; the legacy stitcher already encodes Opening plus Parts I–XI.
+  learned: Evidence correctness, interpretive depth, architecture participation and document rendering require distinct probes.
+  criterion now: ISC-171 through ISC-186 capture the missing report contract.
 
 ## Verification
 
@@ -484,3 +577,51 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 - ISC-106..119: Browser Gate 4 passed Unicode Threshold → Raaga → Sigil → combined Noesis → clear. It visibly proved two observations, retained inquiry, exact engine labels, a concrete current-practice route, and the explicit empty state without functional console, page, request, or HTTP errors.
 - ISC-120..122: The final Sankalpa gate passed with 85/85 tests, both TypeScript projects, production build, whitespace checks, and sensitive fixture-value bundle scans. The only build warning is the known Three.js chunk-size optimization queued for Wave 2.
 - Final review: Independent code audit returned GO with no P0/P1 findings after Unicode, strict context allowlists, single-envelope cache atomicity, malformed-state resilience, and timezone-collision remediation.
+
+- ISC-171: Parser probe — reference mode returns opening plus part1 through part11 with descriptive policy.
+- ISC-176: Synthetic verification — retrieval failure case blocks acceptance; focused suite reports 71 passed.
+- ISC-177: Synthetic verification — empty required retrieval is now a blocker; success with zero passages is also rejected.
+- ISC-179: Code inspection and focused tests — reference gate requirements cannot be disabled through override flags.
+- ISC-180: Synthetic verification — removing guardrail_gate yields opening:required_gate_missing:guardrail_gate.
+- 2026-09-30 runtime boundary: Real CLI preflight exits 1 with dyad:not_configured and grounding:unconfigured before filesystem writes. No real pilot or bilingual report regeneration has passed; ISC-172 through ISC-175, ISC-178 and ISC-181 through ISC-186 remain open.
+
+- 2026-09-30 execution repair evidence: actual CF get_by_ids preflight returns 31/35 Shesh passages and 59/63 Gary passages using account 9d9d23b27f32e70ae3afb6a1aa2c0f10; batches obey observed 20-ID service limit. Stored-vector query also succeeds with private ed namespace excluded. CLI --reference-preflight now calls the real adapter.
+- 2026-09-30 source/execution gates: reference mode now invokes retrieve -> authoritative Aletheios/Pichet identities -> full-prior-section reconciliation -> Jev. Persona/source/output hashes and raw synthesis inputs checkpointed. 178 focused orchestrator/grounding/pattern tests passed; subsequent targeted Jev/reference checks 86/86 after full-context review repair. Full pilot still unaccepted; MiniMax pilot correctly stopped on Part I word-fit, later OmniRoute pilot in progress. No complete or rendered/bilingual acceptance claimed.
+
+- ISC-205: File readback — `runs/sheshnarayan-en-2026-09-30T12-36-41-933Z/reading.md` contains one complete 1,327-word Part I with subsections 1.1, 1.2 and 1.3 and no duplicate wrapper title.
+- ISC-206: JSON readback — `part1.private-evidence-map.json` reports 11 consumed engines, 88 micro-interpretations, 25 Cloudflare IDs and 12 reviewed primary passages.
+- ISC-207: Hash probes — the evidence map and `part1.receipt.json` bind output SHA-256 `e7984e15782f2e8125329afaf372d168365cdae6cb7e189558b04c3a10a51e4b`, both raw witness outputs, the engine-facts hash and audit-input hash.
+- ISC-208: Fresh retrieval probe — the run preflight returned 25/41 live Cloudflare passages for account `9d9d23b27f32e70ae3afb6a1aa2c0f10`, index `witness-wisdom-corpus`, combined with 12 registry passages whose registry hash is `8101b6eb07b052000dcbdcc9ec5f181633a57758271c3c56c009f939783a8510`.
+- ISC-209: Source-audit receipt — the first audit caught both erroneous five-value Numerology claims; the repaired chapter was re-audited clean with 25 claim checks, 9 referenced sources, and empty uncovered/orphaned micro-interpretation arrays.
+- ISC-210: Deterministic scan and receipt — `leakage_gate` passed with zero violations; direct grep found no private IDs, hashes, tool/backend labels, pipeline labels, receipt labels, or predictive language.
+- ISC-211: Comparative review — the chapter preserves the supplied DOCX/PDF Part I structure (identity table, bedrock convergence, system texture, closing reflection), matches their chapter-scale detail, and replaces categorical legacy claims with source-bounded natural prose. Hash-bound reverification `reverification-2026-09-30T12-55-00-870Z.json` passed with zero blockers/warnings and fresh active Jev passes on all four dimensions.
+
+- 2026-09-30 ISC-181: all eight top-level report files in reports-12 match their corresponding matrix-runs/<subject-language>/reading.md byte for byte; repair run outputs remain separate.
+
+- 2026-09-30 refined: A live chapter received all four Jev passes while manual source review found false degree comparisons and unsupported attribution. Add an explicit hash-bound claim-to-source model audit before Jev; do not describe vocabulary-count rubric or Jev score as deterministic factual proof. The current pilot stopped at part4 word-fit (1732 counted words, upper bound1680); four prior chapters remain unaccepted pending source corrections.
+
+- 2026-09-30 continuation checkpoint: source-audit review is required in the real route and uses noesis-verify separately from composition. A clean audit requires inspectable claim/source entries; raw responses are reparsed by final verification. Live composer-rail review missed a known degree error; the verify rail caught it. The false-clean response is preserved as regression evidence. Missing precision now prints not supplied. The word counter excludes Markdown-only punctuation; one additional bounded length edit retains all drafts without widening limits. Checkpoint reuse validates fresh retrieved source text and input/persona/runtime identities.
+- Current full pilot: `reports-reference/runs/sheshnarayan-en-2026-09-30T00-50-49-498Z`, composition requested through noesis-build, review through noesis-verify; execution session 5283 is active. Preflight returned31 usable passages of35 requested. No final report acceptance. Earlier pilot `00-17-07-772Z` completed opening and PartsI–III, then failed PartIV word-fit; source-review findings remain preserved.
+- Verification checkpoint: TypeScript clean; 276 focused tests passed before the final quotation-normalization test, followed by all130 tests in the four changed audit/execution/verifier suites (one additional test). Wide-table preview has five visually inspected pages; nested inline markup was subsequently repaired and still needs full final-document render. ISC-182 through ISC-186 remain open.
+
+- 2026-09-30 01:00 UTC continuation: pilot `00-50-49-498Z` terminated at Part I synthesis timeout after both witness outputs; session 5283 is terminal, not active. Opening remains editorially unaccepted (six numerology fields, empty Enneagram scope, and prompt-only citation findings).
+- Live corpus review found identical category boilerplate for Gene Keys23/43/49. Exact observed boilerplate is now excluded by the adapter; new live preflight `01-00-22-375Z` returned19 usable/35requested (previous31 included12generic passages). No CF corpus was mutated. Adapter20tests and engine-facts4tests pass. Compact numerology now includes supplied Chaldean value; mode instructs explicit scope/count/citation distinctions. Full report and bilingual acceptance remain open.
+
+- 2026-09-30 01:04 UTC checkpoint: bounded transient synthesis retry implemented, preserving first error and both existing witness contributions; arbitrary errors and deliberate cancellation are not retried. Parent tightened HTTP message detection to exclude unrelated numbers. 162 tests across execution, resume, both final verifiers and CF adapter passed; TypeScript and diff whitespace checks clean. New full pilot `reports-reference/runs/sheshnarayan-en-2026-09-30T01-04-32-223Z` is active in session23489, with19/35usable CF passages. Earlier session14034 builder is terminal; wrapper model attribution unresolved, so its actual provider is not certified. No final report accepted.
+
+- 2026-09-30 continuation: new opening `01-04-32-223Z` has an explicit source-review correction despite model audit clean: it contradictorily calls transit natal coordinates tropical. Current `crates/engine-transits/src/ephemeris.rs`42/75 converts to Lahiri sidereal. Review saved to opening.editorial-review.json. The live run continues; do not treat clean model audits as final factual acceptance. Runner finalAccepted now staysfalse while editorial/render/parity review is pending (current running process predates this runner-only fix).
+
+- 2026-09-30 01:13 UTC checkpoint: session23489 is terminal. Pilot `01-04-32-223Z` completed opening, then failed PartI source audit: the 30-entry clean ledger includes a paraphrased quoted claim (`panchanga (~159.83°, vedic-kundali ~159.806°)`) absent from the chapter. Both voices and synthesis are saved; no transport timeout this run. Next repair should recover the audit response against the saved draft, not restart full generation.
+- New immutable editorial-revision primitive and24passing tests; parent fixed missing receipt hash acceptance and overlapping occurrence detection. Live opening correction stored in opening.editorial-revision.json and opening.editorial-candidate.md, original untouched; base1c59c75b..., revision0ba9725c..., all sourceAudit/Jev/document/coherence reviews pending. `tools/humdes-extractor/apply-opening-editorial.mts` is a source-specific reproduction harness for this reviewed correction. No final report accepted. Worker25219 terminal; no live generation process remains.
+
+- 2026-09-30 01:24 UTC: audit-only response recovery implemented with at most one extra model response for malformed/insufficient output, preserving raw failed response, validation reason and recovery prompt. No retry of caller passage-hash mismatch, no prose/voice reruns. 167 tests across audit/execution/two verifiers/editorial-revision passed; TypeScript and diff checks clean. Worker25047 terminal (wrapper attribution unresolved).
+- Saved PartI audit-only recovery succeeded (38checks), but manual source review found numerical count, dates, unsupported interpretation/provenance and ordinal-citation defects. They are fixed through immutable patches. Latest candidate is part1.editorial-candidate-v3.md / editorial-revision-v3.json, hash d98feb48a0fd50a6b5238c1d1e8e2ee0483b12fb3f3df8730bc3e5783b7406ce,1435words. Prior revisions preserved. Opening corrected candidate589words has fresh clean25check audit at01-23-18.
+- Fresh Jev reviews of both revised candidates remain guardrail could-not-tell, allother dimensionspass. The mode requires an explicit disposition of ambiguity; current strict finalverifiers only allowallpass, so a transparent hash-bound resolution workflow is still needed, never relabeling the originalverdict. Editorial revisions also need a provenance-aware continuation path: preserve raw synthesis/witness receipts and pass revised prior context to subsequentchapters without claiming model reruns. Avoid restarting opening/PartI unnecessarily. No complete report, rendering or bilingualacceptance.
+
+- Final checkpoint01:25UTC: latest PartI v3 fresh source audit succeeded with55quotedclaimchecks (`part1.audit-recovery-2026-09-30T01-24-51.346Z.json`). Prior empty/truncated response is retained separately. Session85464 terminal; no live processes from this turn remain. Both latest editorial candidates now have fresh source audits, but Jev guardrail dispositions, coherent continuation, full generation, render and bilingual review remain pending.
+
+- 2026-09-30 01:42 UTC: full nonblank-line Jev diagnostics covered opening6units and PartI41units, complete withno flags at existing0.5 threshold. Direct assistant review dispositions saved for exact revised hashes; original could-not-tell remains. New guardrail-disposition validator hardened by parent: requires judged/unblocked and otherdimensionspass, exact policy questions, per-batch statehash, parsed object equality with hashed raw evidence, and finalAcceptedfalse. 48tests pass; real opening/PartI dispositions validate and sidecars saved. This leaf validator is NOT yet integrated into final report acceptance.
+- Editorial prefix loader + runner --editorial-prefix implemented. Recomputes edits from original receipt, checks input/persona/freshCF/source/audit/Jev hashes and contiguous prefix, preservesrawsynthesis/output_hash/outcome unchanged, passes revised text separately. Supports explicitly supplied current implementation code only after exactbyte/hash/scope verification. Latest96tests (prefix21, disposition48,resume27) pass; TypeScript and diffchecks clean. Worker71479 and9175 terminal; wrappermodelattribution unresolved.
+- Original audit wrappers used canonicalJSON base hash; new opening.audit-raw-bound.json and part1.audit-raw-bound.json bindexactreceiptfilebytes andlinkpreservedoldwrappers. Modelresponses/inputhashesunchanged. Manifest editorial-prefix.manifest.json now references raw-bound wrappers.
+- ACTIVE LIVE PROCESS session34695, newrun `reports-reference/runs/sheshnarayan-en-2026-09-30T01-41-24-265Z`, command run-reference-report.mts --combo noesis-build --editorial-prefix priorrun/editorial-prefix.manifest.json. FreshCF19/35, openingandPartIreused, PartIIbothvoicescompletedwithactualreturnedmodelclaude-opus-4-7; synthesisunderway. Poll thishandlebeforeanyrestart. ReusedPartIlogoutcome=failed is ORIGINAL preservedauditfailure, notcurrentgenerationtermination. No fullfinalacceptance yet.
+- Remaining finalacceptance work: provenance-aware verifier must validate originalrawgeneration hashes separately from effective editorial output/review hashes, preserve generation-time prior-version edges (PartI used originalopening) and require whole-documentcoherence onfinaleditedtext. Current strict verifier intentionally blocks editorial mismatches; do not rewrite rawreceipts or silently relabel Jev. Fullpilot/render/bilingual/triad stillpending.

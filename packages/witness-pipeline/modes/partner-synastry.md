@@ -1,43 +1,70 @@
 ---
-mode_id: partner-synastry
-title: Partner Synastry Reading
-version: 1.0.0
-engines:
-  - human-design
-  - gene-keys
-  - numerology
-  - vimshottari
-register_band: relationship
-consciousness_gate: 2
-routing_preference: dyad
-relationship_mode: partner-synastry
+mode: partner-synastry
+report_level: L2
+subject_count:
+  min: 2
+  max: 2
+roles:
+  - partner
+  - partner
+target_words:
+  min: 3200
+  max: 5000
+architecture: linear
+pass_plan:
+  - id: opening
+    title: Opening
+    target_words: 300
+    template: opening-template
+  - id: structural-compatibility
+    title: Structural Compatibility (Aletheios)
+    target_words: 1100
+    template: structural-template
+  - id: energetic-dance
+    title: Energetic Dance (Pichet)
+    target_words: 1100
+    template: energetic-template
+  - id: synthesis
+    title: Synthesis
+    target_words: 700
+    template: synthesis-template
+engine_overlay_weights:
+  human-design: 1.0
+  gene-keys: 0.9
+  numerology: 0.7
+  vimshottari: 0.8
+house_overlay: [1, 7]
+bridge_mandates:
+  - "Use only the relationship type the caller declared; never assume marriage, romance, or a future"
+  - "Compare two fields; do not rank or score the partners against each other"
+  - "Name growth edges as present tensions, not as outcomes"
+  - "Consciousness level 2 minimum; level 3 and above may name shadow/gift dynamics"
+svg_topology: dyad-arc
+relationship_types:
+  - unmarried-partners
+  - married-partners
+  - custom
 ---
 
-# Partner Synastry Reading
+## opening-template
+# {{relationship_header}}
 
-A comparative reading that examines the interplay between two individuals'
-consciousness patterns to reveal relationship dynamics, growth edges, and
-complementary potentials.
+Subjects: {{subject_roles}}
 
-## Engine Selection
+Mapping goal: {{mapping_goal}}
 
-This mode uses four engines for each person:
+A comparative pattern witness of two fields. Register: {{register}}.
 
-1. **Human Design** - Bodygraph comparison, channel activations
-2. **Gene Keys** - Shared/complementary activation sequences
-3. **Numerology** - Name/number compatibility and friction points
-4. **Vimshottari Dasha** - Timing synchronicities and phase alignments
+## structural-template
+Aletheios pillar. Compare the two partners' Human Design bodygraphs (types, authorities, definition, defined centres, channels shared or bridged), Gene Keys activation sequences, and numerology codes using the engine facts supplied. Name what is shared, what is complementary, and what is absent. Stay descriptive.
 
-## Interpretation Flow
+## energetic-template
+Pichet pillar. Witness how the two fields move together: authority styles in decision moments, sacral or emotional timing, the current Vimshottari periods of each partner side by side. Describe the dance as it is present now; no forecast.
 
-1. Run engines for Person A (primary)
-2. Run engines for Person B (partner)
-3. Aletheios synthesizes structural compatibility patterns
-4. Pichet synthesizes the energetic dance between fields
-5. Final synthesis frames the relationship as a growth crucible
+## synthesis-template
+Braid the structural and energetic observations. Name the present tensions as growth edges. One open question. No prescriptions, no outcomes.
 
-## Consciousness Level Gating
-
-- Level 0-1: Not available (relationship readings require self-awareness)
-- Level 2: Basic compatibility patterns, avoid projection language
-- Level 3+: Full shadow/gift dynamics, include co-transformation potential
+## lessons
+### 2026-09-27 — Migrated from the legacy mode_id frontmatter to the mode-doc schema
+**Question:** The original document declared engines, a register band and a consciousness gate but no pass plan, so `parseModeDoc` rejected it. What is the minimal faithful migration?
+**Adopted:** Keep the four-engine selection as overlay weights, express the Aletheios/Pichet/synthesis flow as three passes after an opening, carry the level-2 gate as a bridge mandate, and let the caller's relationship_context decide the framing.

@@ -4,6 +4,8 @@ export type TopologyKey = 'dyad-arc' | 'triad-triangle' | 'pentagon' | 'web-grap
 export type ArchitectureKey = 'linear' | 'hierarchical';
 export type RegisterBand = 'l1_l3' | 'l4_l5';
 export type ReportLevel = 'L0' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
+/** How the Jev guardrail judges a pass: pure descriptive witness, or dated forecasts allowed while promises stay forbidden. */
+export type JevGuardrailPolicy = 'descriptive' | 'forecast-allowed';
 
 export interface PassSpec {
   id: string;
@@ -42,6 +44,7 @@ export interface ModeConfig {
   relationship_types?: string[];
   register_variants?: RegisterVariants;
   report_level?: ReportLevel;
+  jev_guardrail?: JevGuardrailPolicy;
 }
 
 export interface LessonsEntry {

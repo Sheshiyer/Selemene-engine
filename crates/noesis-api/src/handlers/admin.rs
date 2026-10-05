@@ -4632,7 +4632,7 @@ pub async fn bridge_health(
 }
 
 /// GET /api/v1/admin/engines/capabilities — Rust/API contract-v1 capability
-/// discovery for the bridge-proxied TypeScript engines.
+/// discovery for native engines and the bridge-proxied TypeScript engines.
 ///
 /// Mirrors the `contracts/v1` `EngineCapability` shape already produced by
 /// the TypeScript `/engines/capabilities` endpoint, using the same bridge
@@ -4650,40 +4650,7 @@ pub async fn engine_capabilities(
         return Ok(resp);
     }
 
-    let readiness = state.bridge().readiness_status().await;
-    let healthy_by_engine_id: HashMap<String, bool> = match &readiness {
-        Ok(status) => status
-            .engines
-            .iter()
-            .map(|engine| (engine.engine_id.clone(), engine.healthy))
-            .collect(),
-        Err(_) => HashMap::new(),
-    };
-
-    let capabilities: Vec<noesis_core::contract::EngineCapability> = state
-        .bridge()
-        .engines()
-        .iter()
-        .map(|engine| {
-            let engine_id = engine.engine_id().to_string();
-            let availability = match healthy_by_engine_id.get(&engine_id) {
-                Some(true) => noesis_core::contract::CapabilityAvailability::Available,
-                _ => noesis_core::contract::CapabilityAvailability::Unavailable,
-            };
-
-            noesis_core::contract::EngineCapability {
-                contract_version: noesis_core::contract::ContractVersion::V1,
-                engine_id,
-                display_name: engine.engine_name().to_string(),
-                availability,
-                runtime_kind: noesis_core::contract::RuntimeKind::TypeScript,
-                dependencies: Vec::new(),
-                required_phase: Some(engine.required_phase()),
-                implementation_version: None,
-            }
-        })
-        .collect();
-
+    let capabilities = crate::capabilities::collect_capabilities(&state).await;
     Ok((StatusCode::OK, Json(capabilities)).into_response())
 }
 
