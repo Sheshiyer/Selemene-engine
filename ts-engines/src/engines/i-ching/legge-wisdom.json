@@ -1,0 +1,3027 @@
+{
+  "metadata": {
+    "title": "The Sacred Books of China, Part II: The Yi King",
+    "translator": "James Legge",
+    "year": 1882,
+    "edition": "Oxford, Clarendon Press; Sacred Books of the East, volume XVI",
+    "url": "https://archive.org/details/sacredbooksofchi16conf",
+    "scanContributor": "Princeton Theological Seminary Library",
+    "transcriptionStatus": "scan_reviewed_normalized_transcription",
+    "schemaVersion": 1,
+    "retrievedOn": "2026-10-07",
+    "totalHexagrams": 64,
+    "coverage": [
+      "64 primary judgments",
+      "64 Great Symbolism images"
+    ],
+    "exclusions": [
+      "six line texts",
+      "small Symbolism/line commentary",
+      "modern meanings",
+      "translator footnotes"
+    ],
+    "normalizations": [
+      "Whitespace collapsed; print end-line word splits joined.",
+      "Roman section markers and editorial headings excluded.",
+      "Historical transliteration tone marks/italic consonant typography normalized to ASCII; the z-shaped consonant is rendered Z.",
+      "English wording, archaic grammar and source punctuation retained; no modern paraphrases added."
+    ],
+    "uncertainty": "OCR is not authoritative. All selected passages were visually checked against the pinned original PDF; this normalized transcription is not a character-perfect diplomatic edition or an independent second proofread.",
+    "rightsEvidence": {
+      "archiveStatus": "NOT_IN_COPYRIGHT",
+      "region": "US",
+      "sourcePublication": 1882,
+      "scope": "Original historical text; source/publication facts, not a publisher licensing attestation."
+    }
+  },
+  "hexagrams": [
+    {
+      "number": 1,
+      "judgment": "Khien (represents) what is great and originating, penetrating, advantageous, correct and firm.",
+      "image": "Heaven, in its motion, (gives the idea of) strength. The superior man, in accordance with this, nerves himself to ceaseless activity.",
+      "provenance": {
+        "judgmentPage": 57,
+        "judgmentPages": [
+          57
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 57,
+            "pdfPage": 91,
+            "archiveLeaf": 91,
+            "paragraphIndex": 4,
+            "lineStart": 1,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n91/mode/1up"
+          }
+        ],
+        "imagePage": 267,
+        "imagePages": [
+          267
+        ],
+        "imageSources": [
+          {
+            "printedPage": 267,
+            "pdfPage": 301,
+            "archiveLeaf": 301,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n301/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 2,
+      "judgment": "Khwan (represents) what is great and originating, penetrating, advantageous, correct and having the firmness of a mare. When the superior man (here intended) has to make any movement, if he take the initiative, he will go astray ; if he follow, he will find his (proper) lord. The advantageousness will be seen in his getting friends in the south-west, and losing friends in the north-east. If he rest in correctness and firmness, there will be good fortune.",
+      "image": "The (capacity and sustaining) power of the earth is what is denoted by Khwan. The superior man, in accordance with this, with his large virtue supports (men and) things.",
+      "provenance": {
+        "judgmentPage": 59,
+        "judgmentPages": [
+          59,
+          60
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 59,
+            "pdfPage": 93,
+            "archiveLeaf": 93,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n93/mode/1up"
+          },
+          {
+            "printedPage": 60,
+            "pdfPage": 94,
+            "archiveLeaf": 94,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n94/mode/1up"
+          }
+        ],
+        "imagePage": 268,
+        "imagePages": [
+          268
+        ],
+        "imageSources": [
+          {
+            "printedPage": 268,
+            "pdfPage": 302,
+            "archiveLeaf": 302,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n302/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 3,
+      "judgment": "Kun (indicates that in the case which it presupposes) there will be great progress and success, and the advantage will come from being correct and firm. (But) any movement in advance should not be (lightly) undertaken. There will be advantage in appointing feudal princes.",
+      "image": "(The trigram representing) clouds and (that representing) thunder form Kun. The superior man, in accordance with this, (adjusts his measures of government) as in sorting the threads of the warp and woof.",
+      "provenance": {
+        "judgmentPage": 62,
+        "judgmentPages": [
+          62
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 62,
+            "pdfPage": 96,
+            "archiveLeaf": 96,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n96/mode/1up"
+          }
+        ],
+        "imagePage": 270,
+        "imagePages": [
+          270
+        ],
+        "imageSources": [
+          {
+            "printedPage": 270,
+            "pdfPage": 304,
+            "archiveLeaf": 304,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n304/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 4,
+      "judgment": "Mang (indicates that in the case which it presupposes) there will be progress and success. I do not (go and) seek the youthful and inexperienced, but he comes and seeks me. When he shows (the sincerity that marks) the first recourse to divination, I instruct him. If he apply a second and third time, that is troublesome ; and I do not instruct the troublesome. There will be advantage in being firm and correct.",
+      "image": "(The trigram representing) a mountain, and beneath it that for a spring issuing forth form Mang. The superior man, in accordance with this, strives to be resolute in his conduct and nourishes his virtue.",
+      "provenance": {
+        "judgmentPage": 64,
+        "judgmentPages": [
+          64,
+          65
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 64,
+            "pdfPage": 98,
+            "archiveLeaf": 98,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n98/mode/1up"
+          },
+          {
+            "printedPage": 65,
+            "pdfPage": 99,
+            "archiveLeaf": 99,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n99/mode/1up"
+          }
+        ],
+        "imagePage": 271,
+        "imagePages": [
+          271
+        ],
+        "imageSources": [
+          {
+            "printedPage": 271,
+            "pdfPage": 305,
+            "archiveLeaf": 305,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n305/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 5,
+      "judgment": "Hsu intimates that, with the sincerity which is declared in it, there will be brilliant success. With firmness there will be good fortune ; and it will be advantageous to cross the great stream.",
+      "image": "(The trigram for) clouds ascending over that for the sky forms Hsu. The superior man, in accordance with this, eats and drinks, feasts and enjoys himself (as if there were nothing else to employ him).",
+      "provenance": {
+        "judgmentPage": 67,
+        "judgmentPages": [
+          67
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 67,
+            "pdfPage": 101,
+            "archiveLeaf": 101,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n101/mode/1up"
+          }
+        ],
+        "imagePage": 272,
+        "imagePages": [
+          272,
+          273
+        ],
+        "imageSources": [
+          {
+            "printedPage": 272,
+            "pdfPage": 306,
+            "archiveLeaf": 306,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n306/mode/1up"
+          },
+          {
+            "printedPage": 273,
+            "pdfPage": 307,
+            "archiveLeaf": 307,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n307/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 6,
+      "judgment": "Sung intimates how, though there is sincerity in one's contention, he will yet meet with opposition and obstruction ; but if he cherish an apprehensive caution, there will be good fortune, while, if he must prosecute the contention to the (bitter) end, there will be evil. It will be advantageous to see the great man ; it will not be advantageous to cross the great stream.",
+      "image": "(The trigram representing) heaven and (that representing) water, moving away from each other, form Sung. The superior man, in accordance with this, in the transaction of affairs takes good counsel about his first steps.",
+      "provenance": {
+        "judgmentPage": 69,
+        "judgmentPages": [
+          69
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 69,
+            "pdfPage": 103,
+            "archiveLeaf": 103,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n103/mode/1up"
+          }
+        ],
+        "imagePage": 274,
+        "imagePages": [
+          274
+        ],
+        "imageSources": [
+          {
+            "printedPage": 274,
+            "pdfPage": 308,
+            "archiveLeaf": 308,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n308/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 7,
+      "judgment": "Sze indicates how, in the case which it supposes, with firmness and correctness, and (a leader of) age and experience, there will be good fortune and no error.",
+      "image": "(The trigram representing) the earth and in the midst of it that representing water, form Sze. The superior man, in accordance with this, nourishes and educates the people, and collects (from among them) the multitudes (of the hosts).",
+      "provenance": {
+        "judgmentPage": 71,
+        "judgmentPages": [
+          71,
+          72
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 71,
+            "pdfPage": 105,
+            "archiveLeaf": 105,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n105/mode/1up"
+          },
+          {
+            "printedPage": 72,
+            "pdfPage": 106,
+            "archiveLeaf": 106,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n106/mode/1up"
+          }
+        ],
+        "imagePage": 275,
+        "imagePages": [
+          275
+        ],
+        "imageSources": [
+          {
+            "printedPage": 275,
+            "pdfPage": 309,
+            "archiveLeaf": 309,
+            "paragraphIndex": 5,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n309/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 8,
+      "judgment": "Pi indicates that (under the conditions which it supposes) there is good fortune. But let (the principal party intended in it) re-examine himself, (as if) by divination, whether his virtue be great, unintermitting, and firm. If it be so, there will be no error. Those who have not rest will then come to him ; and with those who are (too) late in coming it will be ill.",
+      "image": "(The trigram representing) the earth, and over it (that representing) water, form Pi. The ancient kings, in accordance with this, established the various states and maintained an affectionate relation to their princes.",
+      "provenance": {
+        "judgmentPage": 73,
+        "judgmentPages": [
+          73,
+          74
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 73,
+            "pdfPage": 107,
+            "archiveLeaf": 107,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n107/mode/1up"
+          },
+          {
+            "printedPage": 74,
+            "pdfPage": 108,
+            "archiveLeaf": 108,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n108/mode/1up"
+          }
+        ],
+        "imagePage": 277,
+        "imagePages": [
+          277
+        ],
+        "imageSources": [
+          {
+            "printedPage": 277,
+            "pdfPage": 311,
+            "archiveLeaf": 311,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n311/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 9,
+      "judgment": "Hsiao Khu indicates that (under its conditions) there will be progress and success. (We see) dense clouds, but no rain coming from our borders in the west.",
+      "image": "(The trigram representing) the sky, and that representing wind moving above it, form Hsiao Khu. The superior man, in accordance with this, adorns the outward manifestation of his virtue.",
+      "provenance": {
+        "judgmentPage": 76,
+        "judgmentPages": [
+          76
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 76,
+            "pdfPage": 110,
+            "archiveLeaf": 110,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n110/mode/1up"
+          }
+        ],
+        "imagePage": 278,
+        "imagePages": [
+          278
+        ],
+        "imageSources": [
+          {
+            "printedPage": 278,
+            "pdfPage": 312,
+            "archiveLeaf": 312,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n312/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 10,
+      "judgment": "(Li suggests the idea of) one treading on the tail of a tiger, which does not bite him. There will be progress and success.",
+      "image": "(The trigram representing) the sky above, and below it (that representing the waters of) a marsh, form Li. The superior man, in accordance with this, discriminates between high and low, and gives settlement to the aims of the people.",
+      "provenance": {
+        "judgmentPage": 78,
+        "judgmentPages": [
+          78
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 78,
+            "pdfPage": 112,
+            "archiveLeaf": 112,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n112/mode/1up"
+          }
+        ],
+        "imagePage": 280,
+        "imagePages": [
+          280
+        ],
+        "imageSources": [
+          {
+            "printedPage": 280,
+            "pdfPage": 314,
+            "archiveLeaf": 314,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n314/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 11,
+      "judgment": "In Thai (we see) the little gone and the great come. (It indicates that) there will be good fortune, with progress and success.",
+      "image": "(The trigrams for) heaven and earth in communication together form Thai. The (sage) sovereign, in harmony with this, fashions and completes (his regulations) after the courses of heaven and earth, and assists the application of the adaptations furnished by them, — in order to benefit the people.",
+      "provenance": {
+        "judgmentPage": 81,
+        "judgmentPages": [
+          81
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 81,
+            "pdfPage": 115,
+            "archiveLeaf": 115,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n115/mode/1up"
+          }
+        ],
+        "imagePage": 281,
+        "imagePages": [
+          281
+        ],
+        "imageSources": [
+          {
+            "printedPage": 281,
+            "pdfPage": 315,
+            "archiveLeaf": 315,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n315/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 12,
+      "judgment": "In Phi there is the want of good understanding between the (different classes of) men, and its indication is unfavourable to the firm and correct course of the superior man. We see in it the great gone and the little come.",
+      "image": "(The trigrams of) heaven and earth, not in intercommunication, form Phi. The superior man, in accordance with this, restrains (the manifestation) of his virtue, and avoids the calamities (that threaten him). There is no opportunity of conferring on him the glory of emolument.",
+      "provenance": {
+        "judgmentPage": 83,
+        "judgmentPages": [
+          83,
+          84
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 83,
+            "pdfPage": 117,
+            "archiveLeaf": 117,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n117/mode/1up"
+          },
+          {
+            "printedPage": 84,
+            "pdfPage": 118,
+            "archiveLeaf": 118,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n118/mode/1up"
+          }
+        ],
+        "imagePage": 282,
+        "imagePages": [
+          282
+        ],
+        "imageSources": [
+          {
+            "printedPage": 282,
+            "pdfPage": 316,
+            "archiveLeaf": 316,
+            "paragraphIndex": 4,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n316/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 13,
+      "judgment": "Thung Zan (or 'Union of men') appears here (as we find it) in the (remote districts of the) country, indicating progress and success. It will be advantageous to cross the great stream. It will be advantageous to maintain the firm correctness of the superior man.",
+      "image": "(The trigrams for) heaven and fire form Thung Zan. The superior man, in accordance with this), distinguishes things according to their kinds and classes.",
+      "provenance": {
+        "judgmentPage": 86,
+        "judgmentPages": [
+          86
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 86,
+            "pdfPage": 120,
+            "archiveLeaf": 120,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n120/mode/1up"
+          }
+        ],
+        "imagePage": 284,
+        "imagePages": [
+          284
+        ],
+        "imageSources": [
+          {
+            "printedPage": 284,
+            "pdfPage": 318,
+            "archiveLeaf": 318,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n318/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "Great Symbolism retains the original printed unmatched ')' after 'this' on page284."
+      ]
+    },
+    {
+      "number": 14,
+      "judgment": "Ta Yu indicates that, (under the circumstances which it implies), there will be great progress and success.",
+      "image": "(The trigram for) heaven and (that of) fire above it form Ta Yu. The superior man, in accordance with this, represses what is evil and gives distinction to what is good, in sympathy with the excellent Heaven-conferred (nature).",
+      "provenance": {
+        "judgmentPage": 88,
+        "judgmentPages": [
+          88
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 88,
+            "pdfPage": 122,
+            "archiveLeaf": 122,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n122/mode/1up"
+          }
+        ],
+        "imagePage": 285,
+        "imagePages": [
+          285
+        ],
+        "imageSources": [
+          {
+            "printedPage": 285,
+            "pdfPage": 319,
+            "archiveLeaf": 319,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n319/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 15,
+      "judgment": "Khien indicates progress and success. The superior man, (being humble as it implies), will have a (good) issue (to his undertakings).",
+      "image": "(The trigram for) the earth and (that of) a mountain in the midst of it form Khien. The superior man, in accordance with this, diminishes what is excessive (in himself), and increases where there is any defect, bringing about an equality, according to the nature of the case, in his treatment (of himself and others).",
+      "provenance": {
+        "judgmentPage": 89,
+        "judgmentPages": [
+          89
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 89,
+            "pdfPage": 123,
+            "archiveLeaf": 123,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n123/mode/1up"
+          }
+        ],
+        "imagePage": 286,
+        "imagePages": [
+          286
+        ],
+        "imageSources": [
+          {
+            "printedPage": 286,
+            "pdfPage": 320,
+            "archiveLeaf": 320,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n320/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 2 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 16,
+      "judgment": "Yu indicates that, (in the state which it implies), feudal princes may be set up, and the hosts put in motion, with advantage.",
+      "image": "(The trigrams for) the earth and thunder issuing from it with its crashing noise form Yu. The ancient kings, in accordance with this, composed their music and did honour to virtue, presenting it especially and most grandly to God, when they associated with Him (at the service) their highest ancestor and their father.",
+      "provenance": {
+        "judgmentPage": 91,
+        "judgmentPages": [
+          91
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 91,
+            "pdfPage": 125,
+            "archiveLeaf": 125,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n125/mode/1up"
+          }
+        ],
+        "imagePage": 287,
+        "imagePages": [
+          287,
+          288
+        ],
+        "imageSources": [
+          {
+            "printedPage": 287,
+            "pdfPage": 321,
+            "archiveLeaf": 321,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n321/mode/1up"
+          },
+          {
+            "printedPage": 288,
+            "pdfPage": 322,
+            "archiveLeaf": 322,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n322/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 17,
+      "judgment": "Sui indicates that (under its conditions) there will be great progress and success. But it will be advantageous to be firm and correct. There will (then) be no error.",
+      "image": "(The trigram for the waters of) a marsh and (that for) thunder (hidden) in the midst of it form Sui. The superior man in accordance with this, when it is getting towards dark, enters (his house) and rests.",
+      "provenance": {
+        "judgmentPage": 93,
+        "judgmentPages": [
+          93
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 93,
+            "pdfPage": 127,
+            "archiveLeaf": 127,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n127/mode/1up"
+          }
+        ],
+        "imagePage": 289,
+        "imagePages": [
+          289
+        ],
+        "imageSources": [
+          {
+            "printedPage": 289,
+            "pdfPage": 323,
+            "archiveLeaf": 323,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n323/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 18,
+      "judgment": "Ku indicates great progress and success (to him who deals properly with the condition represented by it). There will be advantage in (efforts like that of) crossing the great stream. (He should weigh well, however, the events of) three days before the turning point, and those (to be done) three days after it.",
+      "image": "(The trigram for) a mountain, and below it that for wind, form Ku. The superior man, in accordance with this, (addresses himself to) help the people and nourish his own virtue.",
+      "provenance": {
+        "judgmentPage": 95,
+        "judgmentPages": [
+          95
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 95,
+            "pdfPage": 129,
+            "archiveLeaf": 129,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n129/mode/1up"
+          }
+        ],
+        "imagePage": 290,
+        "imagePages": [
+          290
+        ],
+        "imageSources": [
+          {
+            "printedPage": 290,
+            "pdfPage": 324,
+            "archiveLeaf": 324,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n324/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 19,
+      "judgment": "Lin (indicates that under the conditions supposed in it) there will be great progress and success, while it will be advantageous to be firmly correct. In the eighth month there will be evil.",
+      "image": "(The trigram for) the waters of a marsh and that for the earth above it form Lin. The superior man, in accordance with this, has his purposes of instruction that are inexhaustible, and nourishes and supports the people without limit.",
+      "provenance": {
+        "judgmentPage": 97,
+        "judgmentPages": [
+          97
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 97,
+            "pdfPage": 131,
+            "archiveLeaf": 131,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n131/mode/1up"
+          }
+        ],
+        "imagePage": 291,
+        "imagePages": [
+          291
+        ],
+        "imageSources": [
+          {
+            "printedPage": 291,
+            "pdfPage": 325,
+            "archiveLeaf": 325,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n325/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 20,
+      "judgment": "Kwan shows (how he whom it represents should be like) the worshipper who has washed his hands, but not (yet) presented his offerings ; — with sincerity and an appearance of dignity (commanding reverent regard).",
+      "image": "(The trigram representing) the earth, and that for wind moving above it, form Kwan. The ancient kings, in accordance with this, examined the (different) regions (of the kingdom), to see the (ways of the) people, and set forth their instructions.",
+      "provenance": {
+        "judgmentPage": 99,
+        "judgmentPages": [
+          99,
+          100
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 99,
+            "pdfPage": 133,
+            "archiveLeaf": 133,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n133/mode/1up"
+          },
+          {
+            "printedPage": 100,
+            "pdfPage": 134,
+            "archiveLeaf": 134,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n134/mode/1up"
+          }
+        ],
+        "imagePage": 292,
+        "imagePages": [
+          292
+        ],
+        "imageSources": [
+          {
+            "printedPage": 292,
+            "pdfPage": 326,
+            "archiveLeaf": 326,
+            "paragraphIndex": 4,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n326/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 21,
+      "judgment": "Shih Ho indicates successful progress (in the condition of things which it supposes). It will be advantageous to use legal constraints.",
+      "image": "(The trigrams representing) thunder and lightning form Shih Ho. The ancient kings, in accordance with this, framed their penalties with intelligence, and promulgated their laws.",
+      "provenance": {
+        "judgmentPage": 101,
+        "judgmentPages": [
+          101
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 101,
+            "pdfPage": 135,
+            "archiveLeaf": 135,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n135/mode/1up"
+          }
+        ],
+        "imagePage": 293,
+        "imagePages": [
+          293
+        ],
+        "imageSources": [
+          {
+            "printedPage": 293,
+            "pdfPage": 327,
+            "archiveLeaf": 327,
+            "paragraphIndex": 6,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n327/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 22,
+      "judgment": "Pi indicates that there should be free course (in what it denotes). There will be little advantage (however) if it be allowed to advance (and take the lead).",
+      "image": "(The trigram representing) a mountain and that for fire under it form Pi. The superior man, in accordance with this, throws a brilliancy around his various processes of government, but does not dare (in a similar way) to decide cases of criminal litigation.",
+      "provenance": {
+        "judgmentPage": 103,
+        "judgmentPages": [
+          103
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 103,
+            "pdfPage": 137,
+            "archiveLeaf": 137,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n137/mode/1up"
+          }
+        ],
+        "imagePage": 294,
+        "imagePages": [
+          294
+        ],
+        "imageSources": [
+          {
+            "printedPage": 294,
+            "pdfPage": 328,
+            "archiveLeaf": 328,
+            "paragraphIndex": 6,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n328/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 23,
+      "judgment": "Po indicates that (in the state which it symbolises) it will not be advantageous to make a movement in any direction whatever.",
+      "image": "(The trigrams representing) the earth, and (above it) that for a mountain, which adheres to the earth, form Po. Superiors, in accordance with this, seek to strengthen those below them, to secure the peace and stability of their own position.",
+      "provenance": {
+        "judgmentPage": 105,
+        "judgmentPages": [
+          105
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 105,
+            "pdfPage": 139,
+            "archiveLeaf": 139,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n139/mode/1up"
+          }
+        ],
+        "imagePage": 296,
+        "imagePages": [
+          296
+        ],
+        "imageSources": [
+          {
+            "printedPage": 296,
+            "pdfPage": 330,
+            "archiveLeaf": 330,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n330/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 24,
+      "judgment": "Fu indicates that there will be free course and progress (in what it denotes). (The subject of it) finds no one to distress him in his exits and entrances ; friends come to him, and no error is committed. He will return and repeat his (proper) course. In seven days comes his return. There will be advantage in whatever direction movement is made.",
+      "image": "(The trigram representing) the earth and that for thunder in the midst of it form Fu. The ancient kings, in accordance with this, on the day of the (winter) solstice, shut the gates of the passes (from one state to another), so that the travelling merchants could not (then) pursue their journeys, nor the princes go on with the inspection of their states.",
+      "provenance": {
+        "judgmentPage": 107,
+        "judgmentPages": [
+          107,
+          108
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 107,
+            "pdfPage": 141,
+            "archiveLeaf": 141,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n141/mode/1up"
+          },
+          {
+            "printedPage": 108,
+            "pdfPage": 142,
+            "archiveLeaf": 142,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n142/mode/1up"
+          }
+        ],
+        "imagePage": 297,
+        "imagePages": [
+          297
+        ],
+        "imageSources": [
+          {
+            "printedPage": 297,
+            "pdfPage": 331,
+            "archiveLeaf": 331,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n331/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 25,
+      "judgment": "Wu Wang indicates great progress and success, while there will be advantage in being firm and correct. If (its subject and his action) be not correct, he will fall into errors, and it will not be advantageous for him to move in any direction.",
+      "image": "The thunder rolls all under the sky, and to (every)thing there is given (its nature), free from all insincerity. The ancient kings, in accordance with this, (made their regulations) in complete accordance with the seasons, thereby nourishing all things.",
+      "provenance": {
+        "judgmentPage": 109,
+        "judgmentPages": [
+          109,
+          110
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 109,
+            "pdfPage": 143,
+            "archiveLeaf": 143,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n143/mode/1up"
+          },
+          {
+            "printedPage": 110,
+            "pdfPage": 144,
+            "archiveLeaf": 144,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n144/mode/1up"
+          }
+        ],
+        "imagePage": 299,
+        "imagePages": [
+          299
+        ],
+        "imageSources": [
+          {
+            "printedPage": 299,
+            "pdfPage": 333,
+            "archiveLeaf": 333,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n333/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 26,
+      "judgment": "Under the conditions of Ta Khu it will be advantageous to be firm and correct. (If its subject do not seek to) enjoy his revenues in his own family (without taking service at court), there will be good fortune. It will be advantageous for him to cross the great stream.",
+      "image": "(The trigram representing) a mountain, and in the midst of it that (representing) heaven, form Ta Khu. The superior man, in accordance with this, stores largely in his memory the words and deeds of former men, to subserve the accumulation of his virtue.",
+      "provenance": {
+        "judgmentPage": 112,
+        "judgmentPages": [
+          112
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 112,
+            "pdfPage": 146,
+            "archiveLeaf": 146,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n146/mode/1up"
+          }
+        ],
+        "imagePage": 300,
+        "imagePages": [
+          300
+        ],
+        "imageSources": [
+          {
+            "printedPage": 300,
+            "pdfPage": 334,
+            "archiveLeaf": 334,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n334/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 27,
+      "judgment": "I indicates that with firm correctness there will be good fortune (in what is denoted by it). We must look at what we are seeking to nourish, and by the exercise of our thoughts seek for the proper aliment.",
+      "image": "(The trigram representing) a mountain and under it that for thunder form I. The superior man, in accordance with this, (enjoins) watchfulness over our words, and the temperate regulation of our eating and drinking.",
+      "provenance": {
+        "judgmentPage": 114,
+        "judgmentPages": [
+          114
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 114,
+            "pdfPage": 148,
+            "archiveLeaf": 148,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n148/mode/1up"
+          }
+        ],
+        "imagePage": 301,
+        "imagePages": [
+          301
+        ],
+        "imageSources": [
+          {
+            "printedPage": 301,
+            "pdfPage": 335,
+            "archiveLeaf": 335,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n335/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 28,
+      "judgment": "Ta Kwo suggests to us a beam that is weak. There will be advantage in moving (under its conditions) in any direction whatever; there will be success.",
+      "image": "(The trigram representing) trees hidden beneath that for the waters of a marsh forms Ta Kwo. The superior man, in accordance with this, stands up alone and has no fear, and keeps retired from the world without regret.",
+      "provenance": {
+        "judgmentPage": 116,
+        "judgmentPages": [
+          116
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 116,
+            "pdfPage": 150,
+            "archiveLeaf": 150,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n150/mode/1up"
+          }
+        ],
+        "imagePage": 302,
+        "imagePages": [
+          302
+        ],
+        "imageSources": [
+          {
+            "printedPage": 302,
+            "pdfPage": 336,
+            "archiveLeaf": 336,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n336/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 29,
+      "judgment": "Khan, here repeated, shows the possession of sincerity, through which the mind is penetrating. Action (in accordance with this) will be of high value.",
+      "image": "(The representation of) water flowing on continuously forms the repeated Khan. The superior man, in accordance with this, maintains constantly the virtue (of his heart) and (the integrity of) his conduct, and practises the business of instruction.",
+      "provenance": {
+        "judgmentPage": 118,
+        "judgmentPages": [
+          118
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 118,
+            "pdfPage": 152,
+            "archiveLeaf": 152,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n152/mode/1up"
+          }
+        ],
+        "imagePage": 303,
+        "imagePages": [
+          303
+        ],
+        "imageSources": [
+          {
+            "printedPage": 303,
+            "pdfPage": 337,
+            "archiveLeaf": 337,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n337/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 30,
+      "judgment": "Li indicates that, (in regard to what it denotes), it will be advantageous to be firm and correct, and that thus there will be free course and success. Let (its subject) also nourish (a docility like that of) the cow, and there will be good fortune.",
+      "image": "(The trigram for) brightness, repeated, forms Li. The great man, in accordance with this, cultivates more and more his brilliant (virtue), and diffuses its brightness over the four quarters (of the land).",
+      "provenance": {
+        "judgmentPage": 120,
+        "judgmentPages": [
+          120,
+          121
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 120,
+            "pdfPage": 154,
+            "archiveLeaf": 154,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n154/mode/1up"
+          },
+          {
+            "printedPage": 121,
+            "pdfPage": 155,
+            "archiveLeaf": 155,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n155/mode/1up"
+          }
+        ],
+        "imagePage": 304,
+        "imagePages": [
+          304
+        ],
+        "imageSources": [
+          {
+            "printedPage": 304,
+            "pdfPage": 338,
+            "archiveLeaf": 338,
+            "paragraphIndex": 4,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n338/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 31,
+      "judgment": "Hsien indicates that, (on the fulfilment of the conditions implied in it), there will be free course and success. Its advantageousness will depend on the being firm and correct, (as) in marrying a young lady. There will be good fortune.",
+      "image": "(The trigram representing) a mountain and above it that for (the waters of) a marsh form Hsien. The superior man, in accordance with this, keeps his mind free from pre-occupation, and open to receive (the influences of) others.",
+      "provenance": {
+        "judgmentPage": 123,
+        "judgmentPages": [
+          123
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 123,
+            "pdfPage": 157,
+            "archiveLeaf": 157,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n157/mode/1up"
+          }
+        ],
+        "imagePage": 305,
+        "imagePages": [
+          305
+        ],
+        "imageSources": [
+          {
+            "printedPage": 305,
+            "pdfPage": 339,
+            "archiveLeaf": 339,
+            "paragraphIndex": 4,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n339/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 32,
+      "judgment": "Hang indicates successful progress and no error (in what it denotes). But the advantage will come from being firm and correct ; and movement in any direction whatever will be advantageous.",
+      "image": "(The trigram representing) thunder and that for wind form Hang. The superior man, in accordance with this, stands firm, and does not change his method (of operation).",
+      "provenance": {
+        "judgmentPage": 125,
+        "judgmentPages": [
+          125
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 125,
+            "pdfPage": 159,
+            "archiveLeaf": 159,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n159/mode/1up"
+          }
+        ],
+        "imagePage": 307,
+        "imagePages": [
+          307
+        ],
+        "imageSources": [
+          {
+            "printedPage": 307,
+            "pdfPage": 341,
+            "archiveLeaf": 341,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n341/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 33,
+      "judgment": "Thun indicates successful progress (in its circumstances). To a small extent it will (still) be advantageous to be firm and correct.",
+      "image": "(The trigram representing) the sky and below it that for a mountain form Thun. The superior man, in accordance with this, keeps small men at a distance, not by showing that he hates them, but by his own dignified gravity.",
+      "provenance": {
+        "judgmentPage": 127,
+        "judgmentPages": [
+          127
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 127,
+            "pdfPage": 161,
+            "archiveLeaf": 161,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n161/mode/1up"
+          }
+        ],
+        "imagePage": 308,
+        "imagePages": [
+          308
+        ],
+        "imageSources": [
+          {
+            "printedPage": 308,
+            "pdfPage": 342,
+            "archiveLeaf": 342,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n342/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 34,
+      "judgment": "Ta Kwang indicates that (under the conditions which it symbolises) it will be advantageous to be firm and correct.",
+      "image": "(The trigram representing) heaven and above it that for thunder form Ta Kwang. The superior man, in accordance with this, does not take a step which is not according to propriety.",
+      "provenance": {
+        "judgmentPage": 129,
+        "judgmentPages": [
+          129
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 129,
+            "pdfPage": 163,
+            "archiveLeaf": 163,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n163/mode/1up"
+          }
+        ],
+        "imagePage": 309,
+        "imagePages": [
+          309
+        ],
+        "imageSources": [
+          {
+            "printedPage": 309,
+            "pdfPage": 343,
+            "archiveLeaf": 343,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n343/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 35,
+      "judgment": "In Zin we see a prince who secures the tranquillity (of the people) presented on that account with numerous horses (by the king), and three times in a day received at interviews.",
+      "image": "(The trigram representing) the earth and that for the bright (sun) coming forth above it form Zin. The superior man, according to this, gives himself to make more brilliant his bright virtue.",
+      "provenance": {
+        "judgmentPage": 131,
+        "judgmentPages": [
+          131
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 131,
+            "pdfPage": 165,
+            "archiveLeaf": 165,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n165/mode/1up"
+          }
+        ],
+        "imagePage": 310,
+        "imagePages": [
+          310
+        ],
+        "imageSources": [
+          {
+            "printedPage": 310,
+            "pdfPage": 344,
+            "archiveLeaf": 344,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n344/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 36,
+      "judgment": "Ming I indicates that (in the circumstances which it denotes) it will be advantageous to realise the difficulty (of the position), and maintain firm correctness.",
+      "image": "(The trigram representing) the earth and that for the bright (sun) entering within it form Ming I. The superior man, in accordance with this, conducts his management of men ; — he shows his intelligence by keeping it obscured.",
+      "provenance": {
+        "judgmentPage": 134,
+        "judgmentPages": [
+          134,
+          135
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 134,
+            "pdfPage": 168,
+            "archiveLeaf": 168,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n168/mode/1up"
+          },
+          {
+            "printedPage": 135,
+            "pdfPage": 169,
+            "archiveLeaf": 169,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n169/mode/1up"
+          }
+        ],
+        "imagePage": 311,
+        "imagePages": [
+          311
+        ],
+        "imageSources": [
+          {
+            "printedPage": 311,
+            "pdfPage": 345,
+            "archiveLeaf": 345,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n345/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 37,
+      "judgment": "For (the realisation of what is taught in) Kia Zan, (or for the regulation of the family), what is most advantageous is that the wife be firm and correct.",
+      "image": "(The trigram representing) fire, and that for wind coming forth from it, form Kia Zan. The superior man, in accordance with this, orders his words according to (the truth of) things, and his conduct so that it is uniformly consistent.",
+      "provenance": {
+        "judgmentPage": 136,
+        "judgmentPages": [
+          136,
+          137
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 136,
+            "pdfPage": 170,
+            "archiveLeaf": 170,
+            "paragraphIndex": 4,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n170/mode/1up"
+          },
+          {
+            "printedPage": 137,
+            "pdfPage": 171,
+            "archiveLeaf": 171,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n171/mode/1up"
+          },
+          {
+            "printedPage": 137,
+            "pdfPage": 171,
+            "archiveLeaf": 171,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n171/mode/1up"
+          }
+        ],
+        "imagePage": 312,
+        "imagePages": [
+          312
+        ],
+        "imageSources": [
+          {
+            "printedPage": 312,
+            "pdfPage": 346,
+            "archiveLeaf": 346,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n346/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 38,
+      "judgment": "Khwei indicates that, (notwithstanding the condition of things which it denotes), in small matters there will (still) be good success.",
+      "image": "(The trigram representing) fire above, and that for (the waters of) a marsh below, form Khwei. The superior man, in accordance with this, where there is a general agreement, yet admits diversity.",
+      "provenance": {
+        "judgmentPage": 139,
+        "judgmentPages": [
+          139
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 139,
+            "pdfPage": 173,
+            "archiveLeaf": 173,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n173/mode/1up"
+          }
+        ],
+        "imagePage": 314,
+        "imagePages": [
+          314
+        ],
+        "imageSources": [
+          {
+            "printedPage": 314,
+            "pdfPage": 348,
+            "archiveLeaf": 348,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n348/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 39,
+      "judgment": "In (the state indicated by) Kien advantage will be found in the south-west, and the contrary in the north-east. It will be advantageous (also) to meet with the great man. (In these circumstances), with firmness and correctness, there will be good fortune.",
+      "image": "(The trigram representing) a mountain, and above it that for water, form Kien. The superior man, in accordance with this, turns round (and examines) himself, and cultivates his virtue.",
+      "provenance": {
+        "judgmentPage": 141,
+        "judgmentPages": [
+          141,
+          142
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 141,
+            "pdfPage": 175,
+            "archiveLeaf": 175,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n175/mode/1up"
+          },
+          {
+            "printedPage": 142,
+            "pdfPage": 176,
+            "archiveLeaf": 176,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n176/mode/1up"
+          }
+        ],
+        "imagePage": 315,
+        "imagePages": [
+          315
+        ],
+        "imageSources": [
+          {
+            "printedPage": 315,
+            "pdfPage": 349,
+            "archiveLeaf": 349,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n349/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 40,
+      "judgment": "In (the state indicated by) Kieh advantage will be found in the south-west. If no (further) operations be called for, there will be good fortune in coming back (to the old conditions). If some operations be called for, there will be good fortune in the early conducting of them.",
+      "image": "(The trigram representing) thunder and that for rain, with these phenomena in a state of manifestation, form Kieh. The superior man, in accordance with this, forgives errors, and deals gently with crimes.",
+      "provenance": {
+        "judgmentPage": 144,
+        "judgmentPages": [
+          144
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 144,
+            "pdfPage": 178,
+            "archiveLeaf": 178,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n178/mode/1up"
+          }
+        ],
+        "imagePage": 316,
+        "imagePages": [
+          316
+        ],
+        "imageSources": [
+          {
+            "printedPage": 316,
+            "pdfPage": 350,
+            "archiveLeaf": 350,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n350/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 41,
+      "judgment": "In (what is denoted by) Sun, if there be sincerity (in him who employs it), there will be great good fortune : — freedom from error ; firmness and correctness that can be maintained ; and advantage in every movement that shall be made. In what shall this (sincerity in the exercise of Sun) be employed? (Even) in sacrifice two baskets of grain, (though there be nothing else), may be presented.",
+      "image": "(The trigram representing) a mountain and beneath it that for the waters of a marsh form Sun. The superior man, in accordance with this, restrains his wrath and represses his desires.",
+      "provenance": {
+        "judgmentPage": 146,
+        "judgmentPages": [
+          146,
+          147
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 146,
+            "pdfPage": 180,
+            "archiveLeaf": 180,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n180/mode/1up"
+          },
+          {
+            "printedPage": 147,
+            "pdfPage": 181,
+            "archiveLeaf": 181,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n181/mode/1up"
+          }
+        ],
+        "imagePage": 317,
+        "imagePages": [
+          317
+        ],
+        "imageSources": [
+          {
+            "printedPage": 317,
+            "pdfPage": 351,
+            "archiveLeaf": 351,
+            "paragraphIndex": 4,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n351/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 42,
+      "judgment": "Yi indicates that (in the state which it denotes) there will be advantage in every movement which shall be undertaken, that it will be advantageous (even) to cross the great stream.",
+      "image": "(The trigram representing) wind and that for thunder form Yi. The superior man, in accordance with this, when he sees what is good, moves towards it ; and when he sees his errors, he turns from them.",
+      "provenance": {
+        "judgmentPage": 149,
+        "judgmentPages": [
+          149
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 149,
+            "pdfPage": 183,
+            "archiveLeaf": 183,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n183/mode/1up"
+          }
+        ],
+        "imagePage": 319,
+        "imagePages": [
+          319
+        ],
+        "imageSources": [
+          {
+            "printedPage": 319,
+            "pdfPage": 353,
+            "archiveLeaf": 353,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n353/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 43,
+      "judgment": "Kwai requires (in him who would fulfil its meaning) the exhibition (of the culprit's guilt) in the royal court, and a sincere and earnest appeal (for sympathy and support), with a consciousness of the peril (involved in cutting off the criminal). He should (also) make announcement in his own city, and show that it will not be well to have recourse at once to arms. (In this way) there will be advantage in whatever he shall go forward to.",
+      "image": "(The trigram representing) heaven and that for the waters of a marsh mounting above it form Kwai. The superior man, in accordance with this, bestows emolument on those below him, and dislikes allowing his gifts to accumulate (undispensed).",
+      "provenance": {
+        "judgmentPage": 151,
+        "judgmentPages": [
+          151,
+          152
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 151,
+            "pdfPage": 185,
+            "archiveLeaf": 185,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n185/mode/1up"
+          },
+          {
+            "printedPage": 152,
+            "pdfPage": 186,
+            "archiveLeaf": 186,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n186/mode/1up"
+          }
+        ],
+        "imagePage": 320,
+        "imagePages": [
+          320
+        ],
+        "imageSources": [
+          {
+            "printedPage": 320,
+            "pdfPage": 354,
+            "archiveLeaf": 354,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n354/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 44,
+      "judgment": "Kau shows a female who is bold and strong. It will not be good to marry (such) a female.",
+      "image": "(The trigram representing) wind and that for the sky above it form Kau. The sovereign, in accordance with this, delivers his charges, and promulgates his announcements throughout the four quarters (of the kingdom).",
+      "provenance": {
+        "judgmentPage": 154,
+        "judgmentPages": [
+          154
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 154,
+            "pdfPage": 188,
+            "archiveLeaf": 188,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n188/mode/1up"
+          }
+        ],
+        "imagePage": 321,
+        "imagePages": [
+          321
+        ],
+        "imageSources": [
+          {
+            "printedPage": 321,
+            "pdfPage": 355,
+            "archiveLeaf": 355,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n355/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 45,
+      "judgment": "In (the state denoted by) Zhui, the king will repair to his ancestral temple. It will be advantageous (also) to meet with the great man ; and then there will be progress and success, though the advantage must come through firm correctness. The use of great victims will conduce to good fortune ; and in whatever direction movement is made, it will be advantageous.",
+      "image": "(The trigram representing the) earth and that for the waters of a marsh raised above it form Zhui. The superior man, in accordance with this, has his weapons of war put in good repair, to be prepared against unforeseen contingencies.",
+      "provenance": {
+        "judgmentPage": 156,
+        "judgmentPages": [
+          156,
+          157
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 156,
+            "pdfPage": 190,
+            "archiveLeaf": 190,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n190/mode/1up"
+          },
+          {
+            "printedPage": 157,
+            "pdfPage": 191,
+            "archiveLeaf": 191,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n191/mode/1up"
+          }
+        ],
+        "imagePage": 323,
+        "imagePages": [
+          323
+        ],
+        "imageSources": [
+          {
+            "printedPage": 323,
+            "pdfPage": 357,
+            "archiveLeaf": 357,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n357/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 46,
+      "judgment": "Shang indicates that (under its conditions) there will be great progress and success. Seeking by (the qualities implied in it) to meet with the great man, its subject need have no anxiety. Advance to the south will be fortunate.",
+      "image": "(The trigram representing) wood and that for the earth with the wood growing in the midst of it form Shang. The superior man, in accordance with this, pays careful attention to his virtue, and accumulates the small developments of it till it is high and great.",
+      "provenance": {
+        "judgmentPage": 159,
+        "judgmentPages": [
+          159,
+          160
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 159,
+            "pdfPage": 193,
+            "archiveLeaf": 193,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n193/mode/1up"
+          },
+          {
+            "printedPage": 160,
+            "pdfPage": 194,
+            "archiveLeaf": 194,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n194/mode/1up"
+          }
+        ],
+        "imagePage": 324,
+        "imagePages": [
+          324
+        ],
+        "imageSources": [
+          {
+            "printedPage": 324,
+            "pdfPage": 358,
+            "archiveLeaf": 358,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n358/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 47,
+      "judgment": "In (the condition denoted by) Khwan there may (yet be) progress and success. For the firm and correct, the (really) great man, there will be good fortune. He will fall into no error. If he make speeches, his words cannot be made good.",
+      "image": "(The trigram representing) a marsh, and (below it that for a defile, which has drained the other dry so that there is) no water in it, form Khwan. The superior man, in accordance with this, will sacrifice his life in order to carry out his purpose.",
+      "provenance": {
+        "judgmentPage": 161,
+        "judgmentPages": [
+          161,
+          162
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 161,
+            "pdfPage": 195,
+            "archiveLeaf": 195,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n195/mode/1up"
+          },
+          {
+            "printedPage": 162,
+            "pdfPage": 196,
+            "archiveLeaf": 196,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n196/mode/1up"
+          }
+        ],
+        "imagePage": 325,
+        "imagePages": [
+          325
+        ],
+        "imageSources": [
+          {
+            "printedPage": 325,
+            "pdfPage": 359,
+            "archiveLeaf": 359,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n359/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 48,
+      "judgment": "(Looking at) Zing, (we think of) how (the site of) a town may be changed, while (the fashion of) its wells undergoes no change. (The water of a well) never disappears and never receives (any great) increase, and those who come and those who go can draw and enjoy the benefit. If (the drawing) have nearly been accomplished, but, before the rope has quite reached the water, the bucket is broken, this is evil.",
+      "image": "(The trigram representing) wood and above it that for water form Zing. The superior man, in accordance with this, comforts the people, and stimulates them to mutual helpfulness.",
+      "provenance": {
+        "judgmentPage": 164,
+        "judgmentPages": [
+          164,
+          165
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 164,
+            "pdfPage": 198,
+            "archiveLeaf": 198,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n198/mode/1up"
+          },
+          {
+            "printedPage": 165,
+            "pdfPage": 199,
+            "archiveLeaf": 199,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n199/mode/1up"
+          }
+        ],
+        "imagePage": 327,
+        "imagePages": [
+          327
+        ],
+        "imageSources": [
+          {
+            "printedPage": 327,
+            "pdfPage": 361,
+            "archiveLeaf": 361,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n361/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 49,
+      "judgment": "(What takes place as indicated by) Ko is believed in only after it has been accomplished. There will be great progress and success. Advantage will come from being firm and correct. (In that case) occasion for repentance will disappear.",
+      "image": "(The trigram representing the waters of) a marsh and that for fire in the midst of them form Ko. The superior man, in accordance with this, regulates his (astronomical) calculations, and makes clear the seasons and times.",
+      "provenance": {
+        "judgmentPage": 167,
+        "judgmentPages": [
+          167
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 167,
+            "pdfPage": 201,
+            "archiveLeaf": 201,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n201/mode/1up"
+          }
+        ],
+        "imagePage": 328,
+        "imagePages": [
+          328
+        ],
+        "imageSources": [
+          {
+            "printedPage": 328,
+            "pdfPage": 362,
+            "archiveLeaf": 362,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n362/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 50,
+      "judgment": "Ting gives the intimation of great progress and success.",
+      "image": "(The trigram representing) wood and above it that for fire form Ting. The superior man, in accordance with this, keeps his every position correct, and maintains secure the appointment (of Heaven).",
+      "provenance": {
+        "judgmentPage": 169,
+        "judgmentPages": [
+          169
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 169,
+            "pdfPage": 203,
+            "archiveLeaf": 203,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n203/mode/1up"
+          }
+        ],
+        "imagePage": 329,
+        "imagePages": [
+          329
+        ],
+        "imageSources": [
+          {
+            "printedPage": 329,
+            "pdfPage": 363,
+            "archiveLeaf": 363,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n363/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 51,
+      "judgment": "Kan gives the intimation of ease and development. When (the time of) movement (which it indicates) comes, (the subject of the hexagram) will be found looking out with apprehension, and yet smiling and talking cheerfully. When the movement (like a crash of thunder) terrifies all within a hundred li, he will be (like the sincere worshipper) who is not (startled into) letting go his ladle and (cup of) sacrificial spirits.",
+      "image": "(The trigram representing) thunder, being repeated, forms Kan. The superior man, in accordance with this, is fearful and apprehensive, cultivates (his virtue), and examines (his faults).",
+      "provenance": {
+        "judgmentPage": 172,
+        "judgmentPages": [
+          172,
+          173
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 172,
+            "pdfPage": 206,
+            "archiveLeaf": 206,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n206/mode/1up"
+          },
+          {
+            "printedPage": 173,
+            "pdfPage": 207,
+            "archiveLeaf": 207,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n207/mode/1up"
+          }
+        ],
+        "imagePage": 330,
+        "imagePages": [
+          330
+        ],
+        "imageSources": [
+          {
+            "printedPage": 330,
+            "pdfPage": 364,
+            "archiveLeaf": 364,
+            "paragraphIndex": 5,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n364/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 52,
+      "judgment": "When one's resting is like that of the back, and he loses all consciousness of self; when he walks in his courtyard, and does not see any (of the persons) in it, — there will be no error.",
+      "image": "(Two trigrams representing) a mountain, one over the other, form Kan. The superior man, in accordance with this, does not go in his thoughts beyond the (duties of the) position in which he is.",
+      "provenance": {
+        "judgmentPage": 175,
+        "judgmentPages": [
+          175,
+          176
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 175,
+            "pdfPage": 209,
+            "archiveLeaf": 209,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n209/mode/1up"
+          },
+          {
+            "printedPage": 176,
+            "pdfPage": 210,
+            "archiveLeaf": 210,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n210/mode/1up"
+          }
+        ],
+        "imagePage": 331,
+        "imagePages": [
+          331,
+          332
+        ],
+        "imageSources": [
+          {
+            "printedPage": 331,
+            "pdfPage": 365,
+            "archiveLeaf": 365,
+            "paragraphIndex": 9,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n365/mode/1up"
+          },
+          {
+            "printedPage": 332,
+            "pdfPage": 366,
+            "archiveLeaf": 366,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n366/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 53,
+      "judgment": "Kien suggests to us the marriage of a young lady, and the good fortune (attending it). There will be advantage in being firm and correct.",
+      "image": "(The trigram representing) a mountain and above it that for a tree form Kien. The superior man, in accordance with this, attains to and maintains his extraordinary virtue, and makes the manners of the people good.",
+      "provenance": {
+        "judgmentPage": 178,
+        "judgmentPages": [
+          178
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 178,
+            "pdfPage": 212,
+            "archiveLeaf": 212,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n212/mode/1up"
+          }
+        ],
+        "imagePage": 333,
+        "imagePages": [
+          333
+        ],
+        "imageSources": [
+          {
+            "printedPage": 333,
+            "pdfPage": 367,
+            "archiveLeaf": 367,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n367/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 54,
+      "judgment": "Kwei Mei indicates that (under the conditions which it denotes) action will be evil, and in no wise advantageous.",
+      "image": "(The trigram representing the waters of) a marsh and over it that for thunder form Kwei Mei. The superior man, in accordance with this, having regard to the far-distant end, knows the mischief (that may be done at the beginning).",
+      "provenance": {
+        "judgmentPage": 180,
+        "judgmentPages": [
+          180
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 180,
+            "pdfPage": 214,
+            "archiveLeaf": 214,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n214/mode/1up"
+          },
+          {
+            "printedPage": 180,
+            "pdfPage": 214,
+            "archiveLeaf": 214,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n214/mode/1up"
+          }
+        ],
+        "imagePage": 334,
+        "imagePages": [
+          334
+        ],
+        "imageSources": [
+          {
+            "printedPage": 334,
+            "pdfPage": 368,
+            "archiveLeaf": 368,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n368/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 55,
+      "judgment": "Fang intimates progress and development. When a king has reached the point (which the name denotes) there is no occasion to be anxious (through fear of a change). Let him be as the sun at noon.",
+      "image": "(The trigrams representing) thunder and lightning combine to form Fang. The superior man, in accordance with this, decides cases of litigation, and apportions punishments with exactness.",
+      "provenance": {
+        "judgmentPage": 183,
+        "judgmentPages": [
+          183,
+          184
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 183,
+            "pdfPage": 217,
+            "archiveLeaf": 217,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n217/mode/1up"
+          },
+          {
+            "printedPage": 184,
+            "pdfPage": 218,
+            "archiveLeaf": 218,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n218/mode/1up"
+          }
+        ],
+        "imagePage": 335,
+        "imagePages": [
+          335
+        ],
+        "imageSources": [
+          {
+            "printedPage": 335,
+            "pdfPage": 369,
+            "archiveLeaf": 369,
+            "paragraphIndex": 6,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n369/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 56,
+      "judgment": "Lu intimates that (in the condition which it denotes) there may be some little attainment and progress. If the stranger or traveller be firm and correct as he ought to be, there will be good fortune.",
+      "image": "(The trigram representing) a mountain and above it that for fire form Lu. The superior man, in accordance with this, exerts his wisdom and caution in the use of punishments and not allowing litigations to continue.",
+      "provenance": {
+        "judgmentPage": 187,
+        "judgmentPages": [
+          187
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 187,
+            "pdfPage": 221,
+            "archiveLeaf": 221,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n221/mode/1up"
+          }
+        ],
+        "imagePage": 337,
+        "imagePages": [
+          337
+        ],
+        "imageSources": [
+          {
+            "printedPage": 337,
+            "pdfPage": 371,
+            "archiveLeaf": 371,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n371/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 57,
+      "judgment": "Sun intimates that (under the conditions which it denotes) there will be some little attainment and progress. There will be advantage in movement onward in whatever direction. It will be advantageous (also) to see the great man.",
+      "image": "(Two trigrams representing) wind, following each other, form Sun. The superior man, in accordance with this, reiterates his orders, and secures the practice of his affairs.",
+      "provenance": {
+        "judgmentPage": 189,
+        "judgmentPages": [
+          189,
+          190
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 189,
+            "pdfPage": 223,
+            "archiveLeaf": 223,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n223/mode/1up"
+          },
+          {
+            "printedPage": 190,
+            "pdfPage": 224,
+            "archiveLeaf": 224,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n224/mode/1up"
+          }
+        ],
+        "imagePage": 338,
+        "imagePages": [
+          338
+        ],
+        "imageSources": [
+          {
+            "printedPage": 338,
+            "pdfPage": 372,
+            "archiveLeaf": 372,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n372/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 58,
+      "judgment": "Tui intimates that (under its conditions) there will be progress and attainment. (But) it will be advantageous to be firm and correct.",
+      "image": "(Two symbols representing) the waters of a marsh, one over the other, form Tui. The superior man, in accordance with this, (encourages) the conversation of friends and (the stimulus of) their (common) practice.",
+      "provenance": {
+        "judgmentPage": 192,
+        "judgmentPages": [
+          192
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 192,
+            "pdfPage": 226,
+            "archiveLeaf": 226,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n226/mode/1up"
+          }
+        ],
+        "imagePage": 340,
+        "imagePages": [
+          340
+        ],
+        "imageSources": [
+          {
+            "printedPage": 340,
+            "pdfPage": 374,
+            "archiveLeaf": 374,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n374/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 59,
+      "judgment": "Hwan intimates that (under its conditions) there will be progress and success. The king goes to his ancestral temple ; and it will be advantageous to cross the great stream. It will be advantageous to be firm and correct.",
+      "image": "(The trigram representing) water and that for wind moving above the water form Hwan. The ancient kings, in accordance with this, presented offerings to God and established the ancestral temple.",
+      "provenance": {
+        "judgmentPage": 194,
+        "judgmentPages": [
+          194,
+          195
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 194,
+            "pdfPage": 228,
+            "archiveLeaf": 228,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n228/mode/1up"
+          },
+          {
+            "printedPage": 195,
+            "pdfPage": 229,
+            "archiveLeaf": 229,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n229/mode/1up"
+          }
+        ],
+        "imagePage": 341,
+        "imagePages": [
+          341
+        ],
+        "imageSources": [
+          {
+            "printedPage": 341,
+            "pdfPage": 375,
+            "archiveLeaf": 375,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n375/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 60,
+      "judgment": "Kieh intimates that (under its conditions) there will be progress and attainment. (But) if the regulations (which it prescribes) be severe and difficult, they cannot be permanent.",
+      "image": "(The trigram representing) a lake, and above it that for water, form Kieh. The superior man, in accordance with this, constructs his (methods of) numbering and measurement, and discusses (points of) virtue and conduct.",
+      "provenance": {
+        "judgmentPage": 197,
+        "judgmentPages": [
+          197
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 197,
+            "pdfPage": 231,
+            "archiveLeaf": 231,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n231/mode/1up"
+          }
+        ],
+        "imagePage": 342,
+        "imagePages": [
+          342
+        ],
+        "imageSources": [
+          {
+            "printedPage": 342,
+            "pdfPage": 376,
+            "archiveLeaf": 376,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n376/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 61,
+      "judgment": "Kung Fu (moves even) pigs and fish, and leads to good fortune. There will be advantage in crossing the great stream. There will be advantage in being firm and correct.",
+      "image": "(The trigram representing the waters of) a marsh and that for wind above it form Kung Fu. The superior man, in accordance with this, deliberates about cases of litigation and delays (the infliction of) death.",
+      "provenance": {
+        "judgmentPage": 199,
+        "judgmentPages": [
+          199,
+          200
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 199,
+            "pdfPage": 233,
+            "archiveLeaf": 233,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": 2,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n233/mode/1up"
+          },
+          {
+            "printedPage": 200,
+            "pdfPage": 234,
+            "archiveLeaf": 234,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n234/mode/1up"
+          }
+        ],
+        "imagePage": 343,
+        "imagePages": [
+          343
+        ],
+        "imageSources": [
+          {
+            "printedPage": 343,
+            "pdfPage": 377,
+            "archiveLeaf": 377,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n377/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 62,
+      "judgment": "Hsiao Kwo indicates that (in the circumstances which it implies) there will be progress and attainment. But it will be advantageous to be firm and correct. (What the name denotes) may be done in small affairs, but not in great affairs. (It is like) the notes that come down from a bird on the wing ; — to descend is better than to ascend. There will (in this way) be great good fortune.",
+      "image": "(The trigram representing) a hill and that for thunder above it form Hsiao Kwo. The superior man, in accordance with this, in his conduct exceeds in humility, in mourning exceeds in sorrow, and in his expenditure exceeds in economy.",
+      "provenance": {
+        "judgmentPage": 201,
+        "judgmentPages": [
+          201,
+          202
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 201,
+            "pdfPage": 235,
+            "archiveLeaf": 235,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n235/mode/1up"
+          },
+          {
+            "printedPage": 202,
+            "pdfPage": 236,
+            "archiveLeaf": 236,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n236/mode/1up"
+          }
+        ],
+        "imagePage": 344,
+        "imagePages": [
+          344
+        ],
+        "imageSources": [
+          {
+            "printedPage": 344,
+            "pdfPage": 378,
+            "archiveLeaf": 378,
+            "paragraphIndex": 4,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n378/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+      ]
+    },
+    {
+      "number": 63,
+      "judgment": "Ki Zi intimates progress and success in small matters. There will be advantage in being firm and correct. There has been good fortune in the beginning ; there may be disorder in the end.",
+      "image": "(The trigram representing) fire and that for water above it form Ki Zi. The superior man, in accordance with this, thinks of evil (that may come), and beforehand guards against it.",
+      "provenance": {
+        "judgmentPage": 204,
+        "judgmentPages": [
+          204,
+          205
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 204,
+            "pdfPage": 238,
+            "archiveLeaf": 238,
+            "paragraphIndex": 3,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n238/mode/1up"
+          },
+          {
+            "printedPage": 205,
+            "pdfPage": 239,
+            "archiveLeaf": 239,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n239/mode/1up"
+          }
+        ],
+        "imagePage": 345,
+        "imagePages": [
+          345,
+          346
+        ],
+        "imageSources": [
+          {
+            "printedPage": 345,
+            "pdfPage": 379,
+            "archiveLeaf": 379,
+            "paragraphIndex": 7,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n379/mode/1up"
+          },
+          {
+            "printedPage": 346,
+            "pdfPage": 380,
+            "archiveLeaf": 380,
+            "paragraphIndex": 1,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n380/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    },
+    {
+      "number": 64,
+      "judgment": "Wei Zi intimates progress and success (in the circumstances which it implies). (We see) a young fox that has nearly crossed (the stream), when its tail gets immersed. There will be no advantage in any way.",
+      "image": "(The trigram representing) water and that for fire above it form Wei Zi. The superior man, in accordance with this, carefully discriminates among (the qualities of) things, and the (different) positions they (naturally) occupy.",
+      "provenance": {
+        "judgmentPage": 207,
+        "judgmentPages": [
+          207
+        ],
+        "judgmentSources": [
+          {
+            "printedPage": 207,
+            "pdfPage": 241,
+            "archiveLeaf": 241,
+            "paragraphIndex": 2,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n241/mode/1up"
+          }
+        ],
+        "imagePage": 346,
+        "imagePages": [
+          346
+        ],
+        "imageSources": [
+          {
+            "printedPage": 346,
+            "pdfPage": 380,
+            "archiveLeaf": 380,
+            "paragraphIndex": 9,
+            "lineStart": null,
+            "lineEndExclusive": null,
+            "url": "https://archive.org/details/sacredbooksofchi16conf/page/n380/mode/1up"
+          }
+        ]
+      },
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "transcriptionNotes": [
+        "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+        "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+        "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+      ]
+    }
+  ]
+}

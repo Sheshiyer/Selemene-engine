@@ -131,15 +131,14 @@ describe('TS baseline registry', () => {
       'sigil-forge',
       'tarot',
     ])
-    // sigil-forge bumped to 2.0.0 when image-gen support shipped; the
-    // other four remain at 1.0.0. Test the actual version mapping rather
-    // than asserting global 1.0.0 (which silently drifted out of date).
+    // Versions identify changed engine behavior: image generation in
+    // sigil-forge and verified cast mapping/text provenance in I Ching.
     const versionsById = Object.fromEntries(
       body.engines.map((engine) => [engine.id, engine.version]),
     )
     expect(versionsById).toEqual({
       enneagram: '1.0.0',
-      'i-ching': '1.0.0',
+      'i-ching': '1.1.0',
       raaga: '1.0.0',
       'sacred-geometry': '1.0.0',
       'sigil-forge': '2.0.0',
