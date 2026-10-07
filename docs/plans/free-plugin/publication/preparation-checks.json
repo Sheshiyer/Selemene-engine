@@ -1,0 +1,36 @@
+{
+  "status": "draft-not-ready-for-public-submission",
+  "checks": {
+    "inventory": [
+      "assets/icon.png",
+      "mcp.json",
+      "plugin.json",
+      "skills/selemene-onboarding/SKILL.md",
+      "skills/selemene-reading/SKILL.md",
+      "skills/selemene-reading/references/host-reading-flow.md"
+    ],
+    "positive_cases": 5,
+    "negative_cases": 3,
+    "covered_tool_count": 8,
+    "all_tools_covered": true,
+    "private_source_unchanged": true,
+    "exact_service_credential_absent": true,
+    "forbidden_app_bindings_absent": true,
+    "icon_dimensions": [
+      512,
+      512
+    ],
+    "icon_sha256": "7a9b053b7e7fce21aa0aa4c460dabd5465c2510b97672f434adfa7e401bf5d9f",
+    "draft_manifest_sha256": "c2ff3c5681a8c11453cf5ba89b0875f64448f238f7026b9c14767c935e8e750d"
+  },
+  "missing": [
+    "confirmed publisher and countries",
+    "effective verified privacy, terms and support URLs",
+    "reviewer-accessible demo recording",
+    "source-quality remediation or narrowed public scope",
+    "exact saved-submission connection and executed cases",
+    "scans and developer attestations",
+    "review approval and publication"
+  ],
+  "checked_at": "2026-10-07T19:02:25.579119+00:00"
+}

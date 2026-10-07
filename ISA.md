@@ -4,10 +4,10 @@ task: "P6 Wave 2 performance, recovery, runtime status, and accessible depth"
 effort: E3
 effort_source: classifier
 phase: complete
-progress: 202/202
+progress: 206/218
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-07-19T03:05:00+05:30
+updated: 2026-10-07T19:02:25.579119+00:00
 ---
 
 ## Problem
@@ -324,6 +324,26 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-269: Saved plugin files match the reviewed package version.
 - [x] ISC-270: Existing OAuth Worker and unrelated witness WIP remain preserved.
 
+### Public Selemene plugin continuation — 2026-10-07
+
+- [x] ISC-271: Current saved plugin identity, version and private scope are verified.
+- [x] ISC-272: Installed connector returns real catalog and preflight results.
+- [ ] ISC-273: User confirms the intended verified publisher and countries.
+- [ ] ISC-274: Published privacy policy covers actual free shared-service storage.
+- [ ] ISC-275: Published terms and support identify the selected publisher and contact.
+- [x] ISC-276: Five positive and three negative review cases cover all eight tools.
+- [x] ISC-277: Current host produces a reading from a real synthetic calculation.
+- [ ] ISC-278: Reviewer-accessible demo recording shows the actual host flow.
+- [ ] ISC-279: Public ZIP contains verified listing, review and publication fields.
+- [ ] ISC-280: Saved portal draft imports the intended package and MCP connection.
+- [ ] ISC-281: Authorized submission completes all required scans and attestations.
+- [ ] ISC-282: Approved release is publicly published with verified targeting.
+- [ ] ISC-283: Anti: no credential or unverified policy claim enters the public upload.
+- [ ] ISC-284: Anti: private plugin identity and unrelated witness WIP are preserved.
+
+- [ ] ISC-285: Public I Ching behavior has verified cast semantics or is omitted.
+- [ ] ISC-286: Public Gene Keys behavior has verified lines and meanings or is omitted.
+
 ## Test Strategy
 
 | isc | type | check | threshold | tool |
@@ -373,6 +393,8 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 | GatewayStatusSurface | Render the existing narrow gateway readiness contract without exposing privileged configuration | ISC-148..155 | TrustedDesktopGateway | true |
 | AccessibleDepthFallback | Preserve witness navigation under reduced motion, WebGL failure, keyboard use, dialog focus, and unmount races | ISC-156..161 | LazyDepthBoundary | true |
 | P6Wave2Gate | Verify performance, recovery, runtime status, accessibility, trust boundaries, and responsive browser journeys | ISC-162..163 | ReadingRecoveryState, GatewayStatusSurface, AccessibleDepthFallback | false |
+
+| PublicSelemenePlugin | Complete public listing, policy, demo and portal release gates for the existing free plugin | ISC-271..286 | FreeChatGPTPlugin | true |
 
 ## Decisions
 
@@ -432,6 +454,8 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - 2026-07-18: Merged the packable SDK as `f2cc7a83a` and the Raaga clip-consent correction as `d4f071434`; the final package has 22 files and no raw source entries.
 - 2026-07-18: Merged Sankalpa trusted gateway and result continuity as `7e08431`; Electron main now owns authenticated transport, exact operation consent, runtime input validation, CSP/navigation restrictions, and trusted-top-frame IPC.
 - 2026-07-18: Final independent boundary review returned `GO`, and browser Gate 4 returned `PASS` after measured Sigil/Face layout and Biofield consent-control corrections.
+
+- 2026-10-07: refined: User explicitly authorized public publication of the existing Selemene Engine plugin. Preserve private identity and prepare a separate public upload; publication requires actual publisher, policies, demo, connected review checks and authorized attestations. Existing witness queue remains separate.
 
 ## Changelog
 
@@ -548,3 +572,9 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
   candidate checklist and distinguish public contract from runtime records.
 
 - 2026-10-07: ISC-239..270 verified for the free private plugin: separate Worker 78262f06-054a-49ac-8f48-dccc507c1814; 77 Worker, 18 existing OAuth, 13 package tests; 14 anonymous live checks. Private plugin plugins_6ac68a62e61081918179487264135f28 release pluginrel_6ac68a646a3481918caccb45c95ad63f saved and read back. ChatGPT narration is the implemented host policy; a reading in an installed real ChatGPT host and public marketplace publication are not claimed. Evidence: isolated worktree docs/plans/free-plugin/. Existing witness acceptance queue remains unchanged.
+
+- ISC-271: metadata probe — saved plugin version 0.2.0, USER scope, PRIVATE discoverability, release pluginrel_6ac68a646a3481918caccb45c95ad63f.
+- ISC-272: installed connector probe — catalog contains 11 reviewed engines; incomplete numerology preflight requires name, coordinates and timezone; complete fixture returns can_calculate true.
+
+- ISC-276: staged manifest probe — exactly five positive and three negative cases cover all eight installed tools; execution status remains separate.
+- ISC-277: installed host rehearsal — native-rust numerology 3.3.1 returned life path 3, expression 7 and soul urge 7; current ChatGPT host composed synthetic-numerology-reading.md from those actual results.

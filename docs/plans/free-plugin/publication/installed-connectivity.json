@@ -1,0 +1,439 @@
+{
+  "schema": "selemene.installed-connectivity.v1",
+  "observed_at": "2026-10-07 18:47:32 UTC",
+  "evidence_surface": "Actual installed Selemene plugin MCP tools invoked through this Codex host conversation",
+  "plugin_version": "0.2.0",
+  "plugin_source": "created-by-me-remote/selemene-engine",
+  "mcp_endpoint": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+  "client_credential_supplied": false,
+  "discovered_callable_tools": [
+    "mcp__selemene__selemene_calculate",
+    "mcp__selemene__selemene_engine_info",
+    "mcp__selemene__selemene_list_engines",
+    "mcp__selemene__selemene_list_workflows",
+    "mcp__selemene__selemene_prepare_reading",
+    "mcp__selemene__selemene_run_workflow",
+    "mcp__selemene__selemene_vedic_chart",
+    "mcp__selemene__selemene_workflow_info"
+  ],
+  "new_persistence_calculations": 0,
+  "calls": [
+    {
+      "tool": "mcp__selemene__selemene_list_engines",
+      "arguments": {},
+      "is_error": false,
+      "raw_result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"engines\":[{\"engine_id\":\"numerology\",\"title\":\"Numerology\",\"summary\":\"Numerological analysis derived from name and date of birth.\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]},{\"engine_id\":\"human-design\",\"title\":\"Human Design\",\"summary\":\"Human Design chart requiring exact birth date, time, and location.\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]},{\"engine_id\":\"gene-keys\",\"title\":\"Gene Keys\",\"summary\":\"Gene Keys profile composed over Human Design; requires birth data with exact time.\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]},{\"engine_id\":\"vimshottari\",\"title\":\"Vimshottari Dasha\",\"summary\":\"Vedic dasha periods derived from a natal chart. Requires birth data with exact time.\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]},{\"engine_id\":\"panchanga\",\"title\":\"Panchanga\",\"summary\":\"Vedic almanac. Natal mode requires full birth_data with exact time and empty parameters.\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]},{\"engine_id\":\"vedic-clock\",\"title\":\"Vedic Clock\",\"summary\":\"Time-of-day energetic mapping. Requires explicit timezone (IANA or offset minutes).\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]},{\"engine_id\":\"biorhythm\",\"title\":\"Biorhythm\",\"summary\":\"Classical biorhythm curves. Requires birth data and explicit current_time.\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]},{\"engine_id\":\"transits\",\"title\":\"Transits\",\"summary\":\"Current planetary transits against natal chart. Requires birth data with exact time.\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]},{\"engine_id\":\"enneagram\",\"title\":\"Enneagram\",\"summary\":\"Enneagram type via 45-answer inventory (1–5) or known type (1–9). Never question-based.\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]},{\"engine_id\":\"tarot\",\"title\":\"Tarot\",\"summary\":\"Symbolic tarot reflection with spread options.\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]},{\"engine_id\":\"i-ching\",\"title\":\"I Ching\",\"summary\":\"I Ching hexagram reflection with divination method options.\",\"catalog_present\":true,\"readiness_source\":\"unknown\",\"capability\":null,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"],\"warnings\":[]}],\"capabilities_source\":\"unknown\",\"note\":\"Catalog membership does not imply operational readiness. Use selemene_engine_info for per-engine requirements.\"}"
+          },
+          {
+            "type": "text",
+            "text": "{\"interpretation_policy\":\"Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.\"}"
+          }
+        ],
+        "structuredContent": {
+          "engines": [
+            {
+              "engine_id": "numerology",
+              "title": "Numerology",
+              "summary": "Numerological analysis derived from name and date of birth.",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            },
+            {
+              "engine_id": "human-design",
+              "title": "Human Design",
+              "summary": "Human Design chart requiring exact birth date, time, and location.",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            },
+            {
+              "engine_id": "gene-keys",
+              "title": "Gene Keys",
+              "summary": "Gene Keys profile composed over Human Design; requires birth data with exact time.",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            },
+            {
+              "engine_id": "vimshottari",
+              "title": "Vimshottari Dasha",
+              "summary": "Vedic dasha periods derived from a natal chart. Requires birth data with exact time.",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            },
+            {
+              "engine_id": "panchanga",
+              "title": "Panchanga",
+              "summary": "Vedic almanac. Natal mode requires full birth_data with exact time and empty parameters.",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            },
+            {
+              "engine_id": "vedic-clock",
+              "title": "Vedic Clock",
+              "summary": "Time-of-day energetic mapping. Requires explicit timezone (IANA or offset minutes).",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            },
+            {
+              "engine_id": "biorhythm",
+              "title": "Biorhythm",
+              "summary": "Classical biorhythm curves. Requires birth data and explicit current_time.",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            },
+            {
+              "engine_id": "transits",
+              "title": "Transits",
+              "summary": "Current planetary transits against natal chart. Requires birth data with exact time.",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            },
+            {
+              "engine_id": "enneagram",
+              "title": "Enneagram",
+              "summary": "Enneagram type via 45-answer inventory (1–5) or known type (1–9). Never question-based.",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            },
+            {
+              "engine_id": "tarot",
+              "title": "Tarot",
+              "summary": "Symbolic tarot reflection with spread options.",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            },
+            {
+              "engine_id": "i-ching",
+              "title": "I Ching",
+              "summary": "I Ching hexagram reflection with divination method options.",
+              "catalog_present": true,
+              "readiness_source": "unknown",
+              "capability": null,
+              "side_effects": [
+                "persists a reading row bound to the authenticated user",
+                "logs a usage event and may increment the free-tier monthly counter",
+                "awards experience points and may auto-promote the consciousness level",
+                "may populate the user's stored profile from birth_data on first use"
+              ],
+              "warnings": []
+            }
+          ],
+          "capabilities_source": "unknown",
+          "note": "Catalog membership does not imply operational readiness. Use selemene_engine_info for per-engine requirements.",
+          "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls."
+        }
+      }
+    },
+    {
+      "tool": "mcp__selemene__selemene_engine_info",
+      "arguments": {
+        "engine_id": "numerology"
+      },
+      "is_error": false,
+      "raw_result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"engine_id\":\"numerology\",\"upstream\":{\"engine_id\":\"numerology\",\"engine_name\":\"Numerology\",\"required_phase\":0},\"reviewed_schema\":{\"input_schema\":{\"type\":\"object\",\"properties\":{\"engine_id\":{\"type\":\"string\",\"const\":\"numerology\"},\"birth_data\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"minLength\":1},\"date\":{\"type\":\"string\",\"pattern\":\"^\\\\d{4}-\\\\d{2}-\\\\d{2}$\"},\"time\":{\"anyOf\":[{\"type\":\"string\",\"pattern\":\"^([01]\\\\d|2[0-3]):[0-5]\\\\d$\"},{\"type\":\"null\"}]},\"latitude\":{\"type\":\"number\",\"minimum\":-90,\"maximum\":90},\"longitude\":{\"type\":\"number\",\"minimum\":-180,\"maximum\":180},\"timezone\":{\"type\":\"string\",\"minLength\":1}},\"required\":[\"name\",\"date\",\"latitude\",\"longitude\",\"timezone\"],\"additionalProperties\":false,\"description\":\"REQUIRED. name is the full birth name. Parameters.full_name is NOT accepted.\"},\"parameters\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}},\"required\":[\"engine_id\",\"birth_data\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"},\"title\":\"Numerology\",\"summary\":\"Numerological analysis derived from name and date of birth.\",\"requires_birth_data\":true,\"requires_exact_time\":false,\"requires_current_time\":false,\"side_effects\":[\"persists a reading row bound to the authenticated user\",\"logs a usage event and may increment the free-tier monthly counter\",\"awards experience points and may auto-promote the consciousness level\",\"may populate the user's stored profile from birth_data on first use\"]}}"
+          },
+          {
+            "type": "text",
+            "text": "{\"interpretation_policy\":\"Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.\"}"
+          }
+        ],
+        "structuredContent": {
+          "engine_id": "numerology",
+          "upstream": {
+            "engine_id": "numerology",
+            "engine_name": "Numerology",
+            "required_phase": 0
+          },
+          "reviewed_schema": {
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "engine_id": {
+                  "type": "string",
+                  "const": "numerology"
+                },
+                "birth_data": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "time": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "latitude": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90
+                    },
+                    "longitude": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    },
+                    "timezone": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "date",
+                    "latitude",
+                    "longitude",
+                    "timezone"
+                  ],
+                  "additionalProperties": false,
+                  "description": "REQUIRED. name is the full birth name. Parameters.full_name is NOT accepted."
+                },
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "engine_id",
+                "birth_data"
+              ],
+              "additionalProperties": false,
+              "$schema": "http://json-schema.org/draft-07/schema#"
+            },
+            "title": "Numerology",
+            "summary": "Numerological analysis derived from name and date of birth.",
+            "requires_birth_data": true,
+            "requires_exact_time": false,
+            "requires_current_time": false,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ]
+          },
+          "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls."
+        }
+      }
+    },
+    {
+      "tool": "mcp__selemene__selemene_list_workflows",
+      "arguments": {},
+      "is_error": false,
+      "raw_result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"workflows\":[{\"workflow_id\":\"decision-support\",\"safe_engine_ids\":[\"tarot\",\"i-ching\",\"human-design\",\"enneagram\",\"gene-keys\"],\"description\":\"Multi-engine decision support combining tarot, I Ching, human design, enneagram, and gene keys.\"}],\"note\":\"Only workflows whose engine composition is fully within the reviewed non-media allowlist are exposed. Unknown or unreviewed workflows are denied.\"}"
+          },
+          {
+            "type": "text",
+            "text": "{\"interpretation_policy\":\"Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.\"}"
+          }
+        ],
+        "structuredContent": {
+          "workflows": [
+            {
+              "workflow_id": "decision-support",
+              "safe_engine_ids": [
+                "tarot",
+                "i-ching",
+                "human-design",
+                "enneagram",
+                "gene-keys"
+              ],
+              "description": "Multi-engine decision support combining tarot, I Ching, human design, enneagram, and gene keys."
+            }
+          ],
+          "note": "Only workflows whose engine composition is fully within the reviewed non-media allowlist are exposed. Unknown or unreviewed workflows are denied.",
+          "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls."
+        }
+      }
+    },
+    {
+      "tool": "mcp__selemene__selemene_prepare_reading",
+      "arguments": {
+        "engine_id": "numerology",
+        "birth_data": {
+          "date": "1990-01-01"
+        }
+      },
+      "is_error": false,
+      "raw_result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"engine_id\":\"numerology\",\"valid\":false,\"errors\":[],\"missing\":[\"birth_data.name\",\"birth_data.latitude\",\"birth_data.longitude\",\"birth_data.timezone\"],\"can_calculate\":false,\"reviewed_schema\":{\"requires_birth_data\":true,\"requires_exact_time\":false,\"requires_current_time\":false}}"
+          },
+          {
+            "type": "text",
+            "text": "{\"interpretation_policy\":\"Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.\",\"shared_storage_disclosure\":\"Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history.\"}"
+          }
+        ],
+        "structuredContent": {
+          "engine_id": "numerology",
+          "valid": false,
+          "errors": [],
+          "missing": [
+            "birth_data.name",
+            "birth_data.latitude",
+            "birth_data.longitude",
+            "birth_data.timezone"
+          ],
+          "can_calculate": false,
+          "reviewed_schema": {
+            "requires_birth_data": true,
+            "requires_exact_time": false,
+            "requires_current_time": false
+          },
+          "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+          "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+        }
+      }
+    },
+    {
+      "tool": "mcp__selemene__selemene_workflow_info",
+      "arguments": {
+        "workflow_id": "decision-support"
+      },
+      "is_error": false,
+      "raw_result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"workflow_id\":\"decision-support\",\"engine_ids\":[\"tarot\",\"i-ching\",\"human-design\",\"enneagram\",\"gene-keys\"],\"safe\":true}"
+          },
+          {
+            "type": "text",
+            "text": "{\"interpretation_policy\":\"Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.\"}"
+          }
+        ],
+        "structuredContent": {
+          "workflow_id": "decision-support",
+          "engine_ids": [
+            "tarot",
+            "i-ching",
+            "human-design",
+            "enneagram",
+            "gene-keys"
+          ],
+          "safe": true,
+          "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls."
+        }
+      }
+    }
+  ],
+  "evidence_limits": [
+    "These are real installed-connector calls, not the standalone SDK smoke harness.",
+    "This receipt verifies safe tool connectivity and responses; it does not establish completion of the saved five-positive/three-negative host review cases.",
+    "No engine calculation, workflow execution, or Vedic chart request was made in this pass.",
+    "No full reading narration, ChatGPT web UI interaction, screen/demo recording, document export, independent certification, or portal submission is claimed."
+  ],
+  "saved_review_case_coverage": {
+    "positive_count": 5,
+    "negative_count": 3,
+    "uncovered_callable_tools": [
+      "mcp__selemene__selemene_vedic_chart",
+      "mcp__selemene__selemene_run_workflow"
+    ]
+  }
+}

@@ -1,0 +1,1820 @@
+{
+  "schema": "selemene.publication.installed-host-rehearsal.v1",
+  "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+  "release_id": "pluginrel_6ac68a646a3481918caccb45c95ad63f",
+  "environment": "Current Codex ChatGPT-host conversation with installed mcp__selemene__ connector",
+  "scope": "Actual connector execution and host-composed rehearsal; not exact saved public-portal review cases or recorded video",
+  "synthetic": true,
+  "storage": "User authorized shared administrator persistence; no real person's data used",
+  "numerology": {
+    "input": {
+      "engine_id": "numerology",
+      "birth_data": {
+        "name": "Test Reader",
+        "date": "1990-01-01",
+        "time": "12:00",
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "timezone": "Asia/Kolkata"
+      }
+    },
+    "info": {
+      "engine_id": "numerology",
+      "upstream": {
+        "engine_id": "numerology",
+        "engine_name": "Numerology",
+        "required_phase": 0
+      },
+      "reviewed_schema": {
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "engine_id": {
+              "type": "string",
+              "const": "numerology"
+            },
+            "birth_data": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "date": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "time": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "latitude": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90
+                },
+                "longitude": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                },
+                "timezone": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "name",
+                "date",
+                "latitude",
+                "longitude",
+                "timezone"
+              ],
+              "additionalProperties": false,
+              "description": "REQUIRED. name is the full birth name. Parameters.full_name is NOT accepted."
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "engine_id",
+            "birth_data"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "title": "Numerology",
+        "summary": "Numerological analysis derived from name and date of birth.",
+        "requires_birth_data": true,
+        "requires_exact_time": false,
+        "requires_current_time": false,
+        "side_effects": [
+          "persists a reading row bound to the authenticated user",
+          "logs a usage event and may increment the free-tier monthly counter",
+          "awards experience points and may auto-promote the consciousness level",
+          "may populate the user's stored profile from birth_data on first use"
+        ]
+      },
+      "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls."
+    },
+    "preflight": {
+      "engine_id": "numerology",
+      "valid": true,
+      "errors": [],
+      "missing": [],
+      "can_calculate": true,
+      "reviewed_schema": {
+        "requires_birth_data": true,
+        "requires_exact_time": false,
+        "requires_current_time": false
+      },
+      "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+      "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+    },
+    "result": {
+      "engine_id": "numerology",
+      "side_effects": [
+        "persists a reading row bound to the authenticated user",
+        "logs a usage event and may increment the free-tier monthly counter",
+        "awards experience points and may auto-promote the consciousness level",
+        "may populate the user's stored profile from birth_data on first use"
+      ],
+      "persistence_status": "not_confirmed",
+      "disclosure": "Persistence is async best-effort; status is not confirmed until a subsequent query.",
+      "result": {
+        "engine_id": "numerology",
+        "result": {
+          "birthday": {
+            "is_master": false,
+            "meaning": "Leadership, independence, pioneering",
+            "reduction_chain": [
+              1
+            ],
+            "value": 1
+          },
+          "chaldean_name": {
+            "is_master": false,
+            "meaning": "Power, abundance, achievement",
+            "reduction_chain": [
+              35,
+              8
+            ],
+            "value": 8
+          },
+          "expression": {
+            "is_master": false,
+            "meaning": "Analysis, wisdom, introspection",
+            "reduction_chain": [
+              43,
+              7
+            ],
+            "value": 7
+          },
+          "life_path": {
+            "is_master": false,
+            "meaning": "Creativity, expression, joy",
+            "reduction_chain": [
+              3
+            ],
+            "value": 3
+          },
+          "personality": {
+            "is_master": false,
+            "meaning": "Compassion, completion, universal love",
+            "reduction_chain": [
+              27,
+              9
+            ],
+            "value": 9
+          },
+          "soul_urge": {
+            "is_master": false,
+            "meaning": "Analysis, wisdom, introspection",
+            "reduction_chain": [
+              16,
+              7
+            ],
+            "value": 7
+          }
+        },
+        "witness_prompt": "Your Life Path 3 speaks of creative expression. Notice: is the joy you share a reflection of inner joy, or a mask over silence?",
+        "metadata": {
+          "calculation_time_ms": 0.011302,
+          "backend": "native-rust",
+          "precision_achieved": "exact",
+          "cached": false,
+          "timestamp": "2026-10-07T18:49:12.197338774Z",
+          "engine_version": "3.3.1"
+        },
+        "contract_version": "v1",
+        "envelope_version": "1",
+        "witness_prompts": [
+          {
+            "prompt": "Your Life Path 3 speaks of creative expression. Notice: is the joy you share a reflection of inner joy, or a mask over silence?",
+            "themes": []
+          }
+        ],
+        "calculated_at": "2026-10-07T18:49:12.197338774+00:00",
+        "processing_time_ms": 0.011302
+      },
+      "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+      "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+    }
+  },
+  "vedic_chart": {
+    "input": {
+      "birth_data": {
+        "name": "Test Reader",
+        "date": "1990-01-01",
+        "time": "12:00",
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "timezone": "Asia/Kolkata"
+      }
+    },
+    "result": {
+      "chart_kind": "vedic-d1-d9",
+      "result": {
+        "d1": {
+          "ascendant": {
+            "sign": "pisces",
+            "degree": 13.239441614413465,
+            "nakshatra": "Uttara Bhadrapada",
+            "pada": 3
+          },
+          "ayanamsa": 23.710330357289536,
+          "house_system": "whole_sign",
+          "houses": [
+            {
+              "number": 1,
+              "sign": "pisces",
+              "cusp": 330,
+              "degree": 0,
+              "house_type": "dharma",
+              "is_kendra": true,
+              "is_panapara": false,
+              "is_apoklima": false
+            },
+            {
+              "number": 2,
+              "sign": "aries",
+              "cusp": 0,
+              "degree": 0,
+              "house_type": "artha",
+              "is_kendra": false,
+              "is_panapara": true,
+              "is_apoklima": false
+            },
+            {
+              "number": 3,
+              "sign": "taurus",
+              "cusp": 30,
+              "degree": 0,
+              "house_type": "kama",
+              "is_kendra": false,
+              "is_panapara": false,
+              "is_apoklima": true
+            },
+            {
+              "number": 4,
+              "sign": "gemini",
+              "cusp": 60,
+              "degree": 0,
+              "house_type": "moksha",
+              "is_kendra": true,
+              "is_panapara": false,
+              "is_apoklima": false
+            },
+            {
+              "number": 5,
+              "sign": "cancer",
+              "cusp": 90,
+              "degree": 0,
+              "house_type": "dharma",
+              "is_kendra": false,
+              "is_panapara": true,
+              "is_apoklima": false
+            },
+            {
+              "number": 6,
+              "sign": "leo",
+              "cusp": 120,
+              "degree": 0,
+              "house_type": "artha",
+              "is_kendra": false,
+              "is_panapara": false,
+              "is_apoklima": true
+            },
+            {
+              "number": 7,
+              "sign": "virgo",
+              "cusp": 150,
+              "degree": 0,
+              "house_type": "kama",
+              "is_kendra": true,
+              "is_panapara": false,
+              "is_apoklima": false
+            },
+            {
+              "number": 8,
+              "sign": "libra",
+              "cusp": 180,
+              "degree": 0,
+              "house_type": "moksha",
+              "is_kendra": false,
+              "is_panapara": true,
+              "is_apoklima": false
+            },
+            {
+              "number": 9,
+              "sign": "scorpio",
+              "cusp": 210,
+              "degree": 0,
+              "house_type": "dharma",
+              "is_kendra": false,
+              "is_panapara": false,
+              "is_apoklima": true
+            },
+            {
+              "number": 10,
+              "sign": "sagittarius",
+              "cusp": 240,
+              "degree": 0,
+              "house_type": "artha",
+              "is_kendra": true,
+              "is_panapara": false,
+              "is_apoklima": false
+            },
+            {
+              "number": 11,
+              "sign": "capricorn",
+              "cusp": 270,
+              "degree": 0,
+              "house_type": "kama",
+              "is_kendra": false,
+              "is_panapara": true,
+              "is_apoklima": false
+            },
+            {
+              "number": 12,
+              "sign": "aquarius",
+              "cusp": 300,
+              "degree": 0,
+              "house_type": "moksha",
+              "is_kendra": false,
+              "is_panapara": false,
+              "is_apoklima": true
+            }
+          ],
+          "moon": {
+            "sign": "aquarius",
+            "degree": 6.475670613296074,
+            "nakshatra": "Dhanishtha",
+            "pada": 4,
+            "rashi_lord": "Saturn"
+          },
+          "native": {
+            "birth_date": "1990-01-01",
+            "birth_time": "12:00:00",
+            "latitude": 12.9716,
+            "longitude": 77.5946,
+            "timezone": 5.5
+          },
+          "notes": [
+            "Native computation via Swiss Ephemeris (Lahiri ayanamsa, whole-sign houses)"
+          ],
+          "planets": [
+            {
+              "name": "Sun",
+              "longitude": 256.87029380746316,
+              "sign": "sagittarius",
+              "degree": 16.870293807463156,
+              "minutes": 52,
+              "house": 10,
+              "is_retrograde": false,
+              "nakshatra": "Purva Ashadha",
+              "pada": 2,
+              "speed": 1.0194862480517215,
+              "latitude": 0.0000029740060718014185
+            },
+            {
+              "name": "Moon",
+              "longitude": 306.4756706132961,
+              "sign": "aquarius",
+              "degree": 6.475670613296074,
+              "minutes": 28,
+              "house": 12,
+              "is_retrograde": false,
+              "nakshatra": "Dhanishtha",
+              "pada": 4,
+              "speed": 13.424677873801238,
+              "latitude": 1.2000460885522413
+            },
+            {
+              "name": "Mars",
+              "longitude": 226.12849280213766,
+              "sign": "scorpio",
+              "degree": 16.128492802137657,
+              "minutes": 7,
+              "house": 9,
+              "is_retrograde": false,
+              "nakshatra": "Anuradha",
+              "pada": 4,
+              "speed": 0.7036318236965594,
+              "latitude": -0.030415348124913987
+            },
+            {
+              "name": "Mercury",
+              "longitude": 272.02479186834756,
+              "sign": "capricorn",
+              "degree": 2.024791868347563,
+              "minutes": 1,
+              "house": 11,
+              "is_retrograde": true,
+              "nakshatra": "Uttara Ashadha",
+              "pada": 2,
+              "speed": -0.2493041419908906,
+              "latitude": 0.5587515141275703
+            },
+            {
+              "name": "Jupiter",
+              "longitude": 71.46922790897862,
+              "sign": "gemini",
+              "degree": 11.469227908978624,
+              "minutes": 28,
+              "house": 4,
+              "is_retrograde": true,
+              "nakshatra": "Ardra",
+              "pada": 2,
+              "speed": -0.13460268518567828,
+              "latitude": -0.11751728920901237
+            },
+            {
+              "name": "Venus",
+              "longitude": 282.54025652926515,
+              "sign": "capricorn",
+              "degree": 12.54025652926515,
+              "minutes": 32,
+              "house": 11,
+              "is_retrograde": true,
+              "nakshatra": "Shravana",
+              "pada": 1,
+              "speed": -0.12064940940735186,
+              "latitude": 1.8449370114258197
+            },
+            {
+              "name": "Saturn",
+              "longitude": 261.9200902190129,
+              "sign": "sagittarius",
+              "degree": 21.920090219012877,
+              "minutes": 55,
+              "house": 10,
+              "is_retrograde": false,
+              "nakshatra": "Purva Ashadha",
+              "pada": 3,
+              "speed": 0.11825030702756545,
+              "latitude": 0.2935802803477585
+            },
+            {
+              "name": "Rahu",
+              "longitude": 293.15334090971214,
+              "sign": "capricorn",
+              "degree": 23.153340909712142,
+              "minutes": 9,
+              "house": 11,
+              "is_retrograde": false,
+              "nakshatra": "Shravana",
+              "pada": 4,
+              "speed": 0.020166086105855952,
+              "latitude": 0
+            },
+            {
+              "name": "Ketu",
+              "longitude": 113.15334090971214,
+              "sign": "cancer",
+              "degree": 23.153340909712142,
+              "minutes": 9,
+              "house": 5,
+              "is_retrograde": true,
+              "nakshatra": "Ashlesha",
+              "pada": 2,
+              "speed": -0.020166086105855952,
+              "latitude": 0
+            }
+          ],
+          "special_points": {
+            "lagna": 343.23944161441347,
+            "midheaven": null,
+            "part_of_fortune": 32.84481842024644
+          }
+        },
+        "d9": {
+          "d9_lagna": "pisces",
+          "navamsa_positions": [
+            {
+              "planet": "Sun",
+              "sign": "taurus",
+              "degree": 1.8326442671683982,
+              "is_vargottama": false
+            },
+            {
+              "planet": "Moon",
+              "sign": "virgo",
+              "degree": 28.28103551966467,
+              "is_vargottama": false
+            },
+            {
+              "planet": "Mars",
+              "sign": "sagittarius",
+              "degree": 25.156435219238908,
+              "is_vargottama": false
+            },
+            {
+              "planet": "Mercury",
+              "sign": "aries",
+              "degree": 18.22312681512807,
+              "is_vargottama": false
+            },
+            {
+              "planet": "Jupiter",
+              "sign": "pisces",
+              "degree": 13.223051180807612,
+              "is_vargottama": false
+            },
+            {
+              "planet": "Venus",
+              "sign": "cancer",
+              "degree": 22.86230876338635,
+              "is_vargottama": false
+            },
+            {
+              "planet": "Saturn",
+              "sign": "gemini",
+              "degree": 17.280811971115888,
+              "is_vargottama": false
+            },
+            {
+              "planet": "Rahu",
+              "sign": "libra",
+              "degree": 28.38006818740927,
+              "is_vargottama": false
+            },
+            {
+              "planet": "Ketu",
+              "sign": "libra",
+              "degree": 28.38006818740927,
+              "is_vargottama": false
+            }
+          ],
+          "source": {
+            "birth_date": "1990-01-01",
+            "birth_time": "12:00:00",
+            "latitude": 12.9716,
+            "longitude": 77.5946,
+            "timezone": 5.5
+          },
+          "vargottama": []
+        }
+      },
+      "calculation_method": "Swiss Ephemeris planetary positions, approximate linear Lahiri ayanamsa, whole-sign houses",
+      "limitations": {
+        "unavailable_fields": [
+          "combustion",
+          "dignities",
+          "yogas",
+          "atmakaraka",
+          "darakaraka"
+        ],
+        "ayanamsa_precision": "The chart handler uses an approximate linear Lahiri formula (23.85 + Julian centuries since J2000 * 1.3968 degrees), rather than a separately verified sidereal ayanamsa implementation.",
+        "note": "This D1/D9 bundle is not the richer local vedic-kundali report supplement."
+      },
+      "persistence_status": "not_persisted_by_chart_handler",
+      "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls."
+    }
+  },
+  "workflow": {
+    "input": {
+      "workflow_id": "decision-support",
+      "birth_data": {
+        "name": "Test Reader",
+        "date": "1990-01-01",
+        "time": "12:00",
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "timezone": "Asia/Kolkata"
+      },
+      "options": {
+        "type": 5,
+        "question": "For this synthetic review fixture, how might I reflect on balancing exploration with completing one small creative task?",
+        "spread": "three_card",
+        "method": "three_coins"
+      }
+    },
+    "result": {
+      "workflow_id": "decision-support",
+      "persistence_status": "not_confirmed",
+      "disclosure": "Persistence is async best-effort; status is not confirmed until a subsequent query.",
+      "side_effects": [
+        "persists a reading row bound to the authenticated user",
+        "logs a usage event and may increment the free-tier monthly counter",
+        "awards experience points and may auto-promote the consciousness level",
+        "may populate the user's stored profile from birth_data on first use"
+      ],
+      "declared_engine_ids": [
+        "tarot",
+        "i-ching",
+        "human-design",
+        "enneagram",
+        "gene-keys"
+      ],
+      "returned_engine_ids": [
+        "gene-keys",
+        "i-ching",
+        "tarot",
+        "human-design",
+        "enneagram"
+      ],
+      "missing_engine_ids": [],
+      "partial": false,
+      "omission_note": null,
+      "result": {
+        "workflow_id": "decision-support",
+        "engine_outputs": {
+          "gene-keys": {
+            "engine_id": "gene-keys",
+            "result": {
+              "activation_sequence": {
+                "evolution": [
+                  48,
+                  21
+                ],
+                "lifes_work": [
+                  38,
+                  39
+                ],
+                "purpose": [
+                  39,
+                  21
+                ],
+                "radiance": [
+                  38,
+                  48
+                ]
+              },
+              "active_keys": [
+                {
+                  "gift": "Perseverance",
+                  "key_number": 38,
+                  "line": 3,
+                  "name": "Gene Key 38",
+                  "shadow": "Tension",
+                  "siddhi": "Perseverance",
+                  "source": "PersonalitySun"
+                },
+                {
+                  "gift": "Provocation",
+                  "key_number": 39,
+                  "line": 3,
+                  "name": "Gene Key 39",
+                  "shadow": "Provocation",
+                  "siddhi": "Provocation",
+                  "source": "PersonalityEarth"
+                },
+                {
+                  "gift": "Wisdom",
+                  "key_number": 48,
+                  "line": 3,
+                  "name": "Gene Key 48",
+                  "shadow": "Insignificance",
+                  "siddhi": "Wisdom",
+                  "source": "DesignSun"
+                },
+                {
+                  "gift": "Authority",
+                  "key_number": 21,
+                  "line": 3,
+                  "name": "Gene Key 21",
+                  "shadow": "Control",
+                  "siddhi": "Valor",
+                  "source": "DesignEarth"
+                }
+              ],
+              "frequency_assessments": [
+                {
+                  "gene_key": 38,
+                  "gift": "Perseverance",
+                  "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+                  "name": "Gene Key 38",
+                  "recognition_prompts": {
+                    "gift": [
+                      "When do you experience Perseverance arising naturally, without effort?",
+                      "Can you notice the space between the Tension pattern and the emergence of Perseverance?",
+                      "What happens when Perseverance flows through you? How does it feel different from the shadow?",
+                      "When this gift is active, who are you serving? What opens?",
+                      "Does this quality arise more often now than in the past?"
+                    ],
+                    "shadow": [
+                      "Do you notice yourself reacting unconsciously through the pattern of Tension?",
+                      "When Tension arises, can you feel the contraction or resistance in your body?",
+                      "Do you find yourself caught in Tension without realizing it until later?",
+                      "What triggers this pattern? When does it feel most intense?",
+                      "Can you witness the pattern without trying to change or fix it?"
+                    ],
+                    "siddhi": [
+                      "Have you had moments where Perseverance dissolved into Perseverance?",
+                      "When Perseverance is present, is there still a 'you' experiencing it?",
+                      "What remains when the personal expression of Perseverance falls away?",
+                      "Have you touched a state beyond your individual consciousness?",
+                      "Can you rest in the paradox of this frequency without needing to understand it?"
+                    ]
+                  },
+                  "shadow": "Tension",
+                  "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+                  "siddhi": "Perseverance",
+                  "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+                  "suggested_frequency": "Gift"
+                },
+                {
+                  "gene_key": 39,
+                  "gift": "Provocation",
+                  "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+                  "name": "Gene Key 39",
+                  "recognition_prompts": {
+                    "gift": [
+                      "When do you experience Provocation arising naturally, without effort?",
+                      "Can you notice the space between the Provocation pattern and the emergence of Provocation?",
+                      "What happens when Provocation flows through you? How does it feel different from the shadow?",
+                      "When this gift is active, who are you serving? What opens?",
+                      "Does this quality arise more often now than in the past?"
+                    ],
+                    "shadow": [
+                      "Do you notice yourself reacting unconsciously through the pattern of Provocation?",
+                      "When Provocation arises, can you feel the contraction or resistance in your body?",
+                      "Do you find yourself caught in Provocation without realizing it until later?",
+                      "What triggers this pattern? When does it feel most intense?",
+                      "Can you witness the pattern without trying to change or fix it?"
+                    ],
+                    "siddhi": [
+                      "Have you had moments where Provocation dissolved into Provocation?",
+                      "When Provocation is present, is there still a 'you' experiencing it?",
+                      "What remains when the personal expression of Provocation falls away?",
+                      "Have you touched a state beyond your individual consciousness?",
+                      "Can you rest in the paradox of this frequency without needing to understand it?"
+                    ]
+                  },
+                  "shadow": "Provocation",
+                  "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+                  "siddhi": "Provocation",
+                  "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+                  "suggested_frequency": "Gift"
+                },
+                {
+                  "gene_key": 48,
+                  "gift": "Wisdom",
+                  "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+                  "name": "Gene Key 48",
+                  "recognition_prompts": {
+                    "gift": [
+                      "When do you experience Wisdom arising naturally, without effort?",
+                      "Can you notice the space between the Insignificance pattern and the emergence of Wisdom?",
+                      "What happens when Wisdom flows through you? How does it feel different from the shadow?",
+                      "When this gift is active, who are you serving? What opens?",
+                      "Does this quality arise more often now than in the past?"
+                    ],
+                    "shadow": [
+                      "Do you notice yourself reacting unconsciously through the pattern of Insignificance?",
+                      "When Insignificance arises, can you feel the contraction or resistance in your body?",
+                      "Do you find yourself caught in Insignificance without realizing it until later?",
+                      "What triggers this pattern? When does it feel most intense?",
+                      "Can you witness the pattern without trying to change or fix it?"
+                    ],
+                    "siddhi": [
+                      "Have you had moments where Wisdom dissolved into Wisdom?",
+                      "When Wisdom is present, is there still a 'you' experiencing it?",
+                      "What remains when the personal expression of Wisdom falls away?",
+                      "Have you touched a state beyond your individual consciousness?",
+                      "Can you rest in the paradox of this frequency without needing to understand it?"
+                    ]
+                  },
+                  "shadow": "Insignificance",
+                  "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+                  "siddhi": "Wisdom",
+                  "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+                  "suggested_frequency": "Gift"
+                },
+                {
+                  "gene_key": 21,
+                  "gift": "Authority",
+                  "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+                  "name": "Gene Key 21",
+                  "recognition_prompts": {
+                    "gift": [
+                      "When do you experience Authority arising naturally, without effort?",
+                      "Can you notice the space between the Control pattern and the emergence of Authority?",
+                      "What happens when Authority flows through you? How does it feel different from the shadow?",
+                      "When this gift is active, who are you serving? What opens?",
+                      "Does this quality arise more often now than in the past?"
+                    ],
+                    "shadow": [
+                      "Do you notice yourself reacting unconsciously through the pattern of Control?",
+                      "When Control arises, can you feel the contraction or resistance in your body?",
+                      "Do you find yourself caught in Control without realizing it until later?",
+                      "What triggers this pattern? When does it feel most intense?",
+                      "Can you witness the pattern without trying to change or fix it?"
+                    ],
+                    "siddhi": [
+                      "Have you had moments where Authority dissolved into Valor?",
+                      "When Valor is present, is there still a 'you' experiencing it?",
+                      "What remains when the personal expression of Authority falls away?",
+                      "Have you touched a state beyond your individual consciousness?",
+                      "Can you rest in the paradox of this frequency without needing to understand it?"
+                    ]
+                  },
+                  "shadow": "Control",
+                  "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+                  "siddhi": "Valor",
+                  "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+                  "suggested_frequency": "Gift"
+                }
+              ]
+            },
+            "witness_prompt": "How do your conscious gifts Perseverance (38) and Wisdom (48) create your core magnetism? When you're most authentic, what happens in the interplay between Provocation (39) and Authority (21) as your higher calling reveals itself? What invitation lives in the space between Tension becoming Perseverance and Provocation becoming Provocation?",
+            "metadata": {
+              "calculation_time_ms": 1.801086,
+              "backend": "hd-derived",
+              "precision_achieved": "Standard",
+              "cached": false,
+              "timestamp": "2026-10-07T18:50:17.422033370Z",
+              "engine_version": "3.3.1"
+            }
+          },
+          "i-ching": {
+            "engine_id": "i-ching",
+            "result": {
+              "casting": {
+                "line_values": [
+                  6,
+                  7,
+                  6,
+                  6,
+                  6,
+                  6
+                ],
+                "method": "three_coins"
+              },
+              "changing_lines": [
+                1,
+                3,
+                4,
+                5,
+                6
+              ],
+              "primary_hexagram": {
+                "chinese_name": "乾 (Qián)",
+                "image": "The movement of heaven is full of power. Thus the superior person makes themselves strong and untiring.",
+                "judgment": "The Creative works sublime success, furthering through perseverance.",
+                "meaning": "Pure yang energy, heaven, creative power, strong action",
+                "name": "The Creative",
+                "number": 1
+              },
+              "relating_hexagram": {
+                "chinese_name": "卦64",
+                "image": "The image for hexagram 64.",
+                "judgment": "The judgment for hexagram 64.",
+                "meaning": "Meaning for hexagram 64 (stub data)",
+                "name": "Hexagram 64",
+                "number": 64
+              },
+              "seed": 356107833
+            },
+            "witness_prompt": "What does The Creative illuminate about your current situation?",
+            "metadata": {
+              "calculation_time_ms": 1,
+              "backend": "typescript",
+              "precision_achieved": "exact",
+              "cached": false,
+              "timestamp": "2026-10-07T18:50:17.433Z",
+              "engine_version": "3.3.1"
+            }
+          },
+          "tarot": {
+            "engine_id": "tarot",
+            "result": {
+              "positions": [
+                {
+                  "card": {
+                    "arcana": "minor",
+                    "element": "fire",
+                    "id": "wands-6",
+                    "interpretation": {
+                      "keywords": [
+                        "victory",
+                        "success",
+                        "recognition",
+                        "achievement"
+                      ],
+                      "meaning": "Success, public recognition, progress, self-confidence"
+                    },
+                    "isReversed": false,
+                    "name": "Six of Wands",
+                    "number": 6,
+                    "suit": "wands"
+                  },
+                  "meaning": "What has led to this moment; influences from the past",
+                  "name": "Past",
+                  "position": 0
+                },
+                {
+                  "card": {
+                    "arcana": "minor",
+                    "element": "fire",
+                    "id": "wands-2",
+                    "interpretation": {
+                      "keywords": [
+                        "planning",
+                        "decisions",
+                        "discovery",
+                        "progress"
+                      ],
+                      "meaning": "Planning, making decisions, leaving home, personal goals"
+                    },
+                    "isReversed": false,
+                    "name": "Two of Wands",
+                    "number": 2,
+                    "suit": "wands"
+                  },
+                  "meaning": "The current situation; where you stand now",
+                  "name": "Present",
+                  "position": 1
+                },
+                {
+                  "card": {
+                    "arcana": "minor",
+                    "element": "water",
+                    "id": "cups-1",
+                    "interpretation": {
+                      "keywords": [
+                        "love",
+                        "emotion",
+                        "intuition",
+                        "new relationships"
+                      ],
+                      "meaning": "Love, new relationships, compassion, creativity, overwhelming emotion"
+                    },
+                    "isReversed": false,
+                    "name": "Ace of Cups",
+                    "number": 1,
+                    "suit": "cups"
+                  },
+                  "meaning": "What may unfold; potential outcomes and energies ahead",
+                  "name": "Future",
+                  "position": 2
+                }
+              ],
+              "question": "For this synthetic review fixture, how might I reflect on balancing exploration with completing one small creative task?",
+              "spread": {
+                "description": "Past, Present, and Future - a classic spread for understanding the flow of time",
+                "name": "Three Card Spread",
+                "type": "three_card"
+              }
+            },
+            "witness_prompt": "How do these cards speak to your question: \"For this synthetic review fixture, how might I reflect on balancing exploration with completing one small creative task?\"?",
+            "metadata": {
+              "calculation_time_ms": 1,
+              "backend": "typescript",
+              "precision_achieved": "exact",
+              "cached": false,
+              "timestamp": "2026-10-07T18:50:17.437Z",
+              "engine_version": "3.3.1"
+            }
+          },
+          "human-design": {
+            "engine_id": "human-design",
+            "result": {
+              "active_channels": [
+                "39-55",
+                "41-30",
+                "9-52"
+              ],
+              "authority": "Emotional",
+              "defined_centers": [
+                "Root",
+                "SolarPlexus",
+                "Sacral"
+              ],
+              "definition": "Single",
+              "design_activations": {
+                "earth": {
+                  "gate": 21,
+                  "line": 4,
+                  "longitude": 12.579701238265216
+                },
+                "jupiter": {
+                  "gate": 39,
+                  "line": 1,
+                  "longitude": 100.0055401959508
+                },
+                "mars": {
+                  "gate": 48,
+                  "line": 2,
+                  "longitude": 190.567348031621
+                },
+                "mercury": {
+                  "gate": 6,
+                  "line": 4,
+                  "longitude": 176.04465830797278
+                },
+                "moon": {
+                  "gate": 26,
+                  "line": 1,
+                  "longitude": 257.6328473516725
+                },
+                "neptune": {
+                  "gate": 38,
+                  "line": 1,
+                  "longitude": 279.6668588510413
+                },
+                "northnode": {
+                  "gate": 30,
+                  "line": 1,
+                  "longitude": 324.51056994086423
+                },
+                "pluto": {
+                  "gate": 1,
+                  "line": 1,
+                  "longitude": 223.84087524319006
+                },
+                "saturn": {
+                  "gate": 58,
+                  "line": 5,
+                  "longitude": 277.79123034501515
+                },
+                "southnode": {
+                  "gate": 29,
+                  "line": 1,
+                  "longitude": 144.51056994086423
+                },
+                "sun": {
+                  "gate": 48,
+                  "line": 4,
+                  "longitude": 192.57970123826524
+                },
+                "uranus": {
+                  "gate": 10,
+                  "line": 4,
+                  "longitude": 271.6195636417512
+                },
+                "venus": {
+                  "gate": 14,
+                  "line": 3,
+                  "longitude": 236.83507894411468
+                }
+              },
+              "hd_type": "Generator",
+              "personality_activations": {
+                "earth": {
+                  "gate": 39,
+                  "line": 2,
+                  "longitude": 100.58062416475269
+                },
+                "jupiter": {
+                  "gate": 52,
+                  "line": 2,
+                  "longitude": 95.17955826626816
+                },
+                "mars": {
+                  "gate": 9,
+                  "line": 5,
+                  "longitude": 249.8388231594272
+                },
+                "mercury": {
+                  "gate": 61,
+                  "line": 6,
+                  "longitude": 295.7351222256371
+                },
+                "moon": {
+                  "gate": 55,
+                  "line": 1,
+                  "longitude": 330.1860009705856
+                },
+                "neptune": {
+                  "gate": 38,
+                  "line": 3,
+                  "longitude": 282.02943126773425
+                },
+                "northnode": {
+                  "gate": 13,
+                  "line": 4,
+                  "longitude": 316.8636712670017
+                },
+                "pluto": {
+                  "gate": 1,
+                  "line": 5,
+                  "longitude": 227.0868929622191
+                },
+                "saturn": {
+                  "gate": 54,
+                  "line": 1,
+                  "longitude": 285.6304205763024
+                },
+                "southnode": {
+                  "gate": 7,
+                  "line": 4,
+                  "longitude": 136.86367126700168
+                },
+                "sun": {
+                  "gate": 38,
+                  "line": 2,
+                  "longitude": 280.5806241647527
+                },
+                "uranus": {
+                  "gate": 58,
+                  "line": 3,
+                  "longitude": 275.77172113807916
+                },
+                "venus": {
+                  "gate": 41,
+                  "line": 5,
+                  "longitude": 306.2505868865547
+                }
+              },
+              "profile": "2/4"
+            },
+            "witness_prompt": "What does it feel like in your body when you wait to respond to life's invitations rather than initiating?",
+            "metadata": {
+              "calculation_time_ms": 1.8216389999999998,
+              "backend": "swiss-ephemeris",
+              "precision_achieved": "Standard",
+              "cached": false,
+              "timestamp": "2026-10-07T18:50:17.419073797Z",
+              "engine_version": "3.3.1"
+            }
+          },
+          "enneagram": {
+            "engine_id": "enneagram",
+            "result": {
+              "mode": "lookup",
+              "typeAnalysis": {
+                "center": "head",
+                "disintegration": {
+                  "description": "Fives become scattered and impulsive like unhealthy Sevens",
+                  "name": "The Enthusiast",
+                  "type": 7
+                },
+                "harmonicGroup": "competency",
+                "hornevianGroup": "withdrawn",
+                "integration": {
+                  "description": "Fives access confidence and decisiveness of healthy Eights",
+                  "name": "The Challenger",
+                  "type": 8
+                },
+                "type": {
+                  "averageTraits": [
+                    "Detached and preoccupied",
+                    "Conceptualizing and specializing",
+                    "Withdrawn and isolated",
+                    "Provocative and antagonistic",
+                    "Reducing needs and minimizing involvement"
+                  ],
+                  "coreDesire": "To be capable and competent",
+                  "coreFear": "Being useless, incapable, or incompetent",
+                  "coreWeakness": "Avarice—withholding oneself from engagement with the world",
+                  "description": "Perceptive, innovative, secretive, and isolated. Fives are alert, insightful, and curious. They fear being overwhelmed by needs and retreat into their minds.",
+                  "healthyTraits": [
+                    "Visionary and pioneering",
+                    "Observing reality objectively",
+                    "Open-minded and curious",
+                    "Perceptive and insightful",
+                    "Independent and innovative"
+                  ],
+                  "keyMotivations": [
+                    "Understanding the environment",
+                    "Possessing knowledge and being competent",
+                    "Having everything figured out",
+                    "Defending self from intrusions"
+                  ],
+                  "name": "The Investigator",
+                  "number": 5,
+                  "unhealthyTraits": [
+                    "Nihilistic and eccentric",
+                    "Isolated and terrified",
+                    "Distorted perceptions",
+                    "Rejecting all social attachments",
+                    "Schizoid and delusional"
+                  ]
+                },
+                "wings": [
+                  {
+                    "name": "The Individualist",
+                    "number": 4
+                  },
+                  {
+                    "name": "The Loyalist",
+                    "number": 6
+                  }
+                ]
+              }
+            },
+            "witness_prompt": "What would you have to feel if this pattern dissolved?",
+            "metadata": {
+              "calculation_time_ms": 2,
+              "backend": "typescript",
+              "precision_achieved": "exact",
+              "cached": false,
+              "timestamp": "2026-10-07T18:50:17.436Z",
+              "engine_version": "3.3.1"
+            }
+          }
+        },
+        "synthesis": null,
+        "total_time_ms": 21.863506,
+        "timestamp": "2026-10-07T18:50:17.438831854Z",
+        "engine_results": {
+          "gene-keys": {
+            "engine_id": "gene-keys",
+            "result": {
+              "activation_sequence": {
+                "evolution": [
+                  48,
+                  21
+                ],
+                "lifes_work": [
+                  38,
+                  39
+                ],
+                "purpose": [
+                  39,
+                  21
+                ],
+                "radiance": [
+                  38,
+                  48
+                ]
+              },
+              "active_keys": [
+                {
+                  "gift": "Perseverance",
+                  "key_number": 38,
+                  "line": 3,
+                  "name": "Gene Key 38",
+                  "shadow": "Tension",
+                  "siddhi": "Perseverance",
+                  "source": "PersonalitySun"
+                },
+                {
+                  "gift": "Provocation",
+                  "key_number": 39,
+                  "line": 3,
+                  "name": "Gene Key 39",
+                  "shadow": "Provocation",
+                  "siddhi": "Provocation",
+                  "source": "PersonalityEarth"
+                },
+                {
+                  "gift": "Wisdom",
+                  "key_number": 48,
+                  "line": 3,
+                  "name": "Gene Key 48",
+                  "shadow": "Insignificance",
+                  "siddhi": "Wisdom",
+                  "source": "DesignSun"
+                },
+                {
+                  "gift": "Authority",
+                  "key_number": 21,
+                  "line": 3,
+                  "name": "Gene Key 21",
+                  "shadow": "Control",
+                  "siddhi": "Valor",
+                  "source": "DesignEarth"
+                }
+              ],
+              "frequency_assessments": [
+                {
+                  "gene_key": 38,
+                  "gift": "Perseverance",
+                  "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+                  "name": "Gene Key 38",
+                  "recognition_prompts": {
+                    "gift": [
+                      "When do you experience Perseverance arising naturally, without effort?",
+                      "Can you notice the space between the Tension pattern and the emergence of Perseverance?",
+                      "What happens when Perseverance flows through you? How does it feel different from the shadow?",
+                      "When this gift is active, who are you serving? What opens?",
+                      "Does this quality arise more often now than in the past?"
+                    ],
+                    "shadow": [
+                      "Do you notice yourself reacting unconsciously through the pattern of Tension?",
+                      "When Tension arises, can you feel the contraction or resistance in your body?",
+                      "Do you find yourself caught in Tension without realizing it until later?",
+                      "What triggers this pattern? When does it feel most intense?",
+                      "Can you witness the pattern without trying to change or fix it?"
+                    ],
+                    "siddhi": [
+                      "Have you had moments where Perseverance dissolved into Perseverance?",
+                      "When Perseverance is present, is there still a 'you' experiencing it?",
+                      "What remains when the personal expression of Perseverance falls away?",
+                      "Have you touched a state beyond your individual consciousness?",
+                      "Can you rest in the paradox of this frequency without needing to understand it?"
+                    ]
+                  },
+                  "shadow": "Tension",
+                  "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+                  "siddhi": "Perseverance",
+                  "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+                  "suggested_frequency": "Gift"
+                },
+                {
+                  "gene_key": 39,
+                  "gift": "Provocation",
+                  "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+                  "name": "Gene Key 39",
+                  "recognition_prompts": {
+                    "gift": [
+                      "When do you experience Provocation arising naturally, without effort?",
+                      "Can you notice the space between the Provocation pattern and the emergence of Provocation?",
+                      "What happens when Provocation flows through you? How does it feel different from the shadow?",
+                      "When this gift is active, who are you serving? What opens?",
+                      "Does this quality arise more often now than in the past?"
+                    ],
+                    "shadow": [
+                      "Do you notice yourself reacting unconsciously through the pattern of Provocation?",
+                      "When Provocation arises, can you feel the contraction or resistance in your body?",
+                      "Do you find yourself caught in Provocation without realizing it until later?",
+                      "What triggers this pattern? When does it feel most intense?",
+                      "Can you witness the pattern without trying to change or fix it?"
+                    ],
+                    "siddhi": [
+                      "Have you had moments where Provocation dissolved into Provocation?",
+                      "When Provocation is present, is there still a 'you' experiencing it?",
+                      "What remains when the personal expression of Provocation falls away?",
+                      "Have you touched a state beyond your individual consciousness?",
+                      "Can you rest in the paradox of this frequency without needing to understand it?"
+                    ]
+                  },
+                  "shadow": "Provocation",
+                  "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+                  "siddhi": "Provocation",
+                  "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+                  "suggested_frequency": "Gift"
+                },
+                {
+                  "gene_key": 48,
+                  "gift": "Wisdom",
+                  "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+                  "name": "Gene Key 48",
+                  "recognition_prompts": {
+                    "gift": [
+                      "When do you experience Wisdom arising naturally, without effort?",
+                      "Can you notice the space between the Insignificance pattern and the emergence of Wisdom?",
+                      "What happens when Wisdom flows through you? How does it feel different from the shadow?",
+                      "When this gift is active, who are you serving? What opens?",
+                      "Does this quality arise more often now than in the past?"
+                    ],
+                    "shadow": [
+                      "Do you notice yourself reacting unconsciously through the pattern of Insignificance?",
+                      "When Insignificance arises, can you feel the contraction or resistance in your body?",
+                      "Do you find yourself caught in Insignificance without realizing it until later?",
+                      "What triggers this pattern? When does it feel most intense?",
+                      "Can you witness the pattern without trying to change or fix it?"
+                    ],
+                    "siddhi": [
+                      "Have you had moments where Wisdom dissolved into Wisdom?",
+                      "When Wisdom is present, is there still a 'you' experiencing it?",
+                      "What remains when the personal expression of Wisdom falls away?",
+                      "Have you touched a state beyond your individual consciousness?",
+                      "Can you rest in the paradox of this frequency without needing to understand it?"
+                    ]
+                  },
+                  "shadow": "Insignificance",
+                  "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+                  "siddhi": "Wisdom",
+                  "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+                  "suggested_frequency": "Gift"
+                },
+                {
+                  "gene_key": 21,
+                  "gift": "Authority",
+                  "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+                  "name": "Gene Key 21",
+                  "recognition_prompts": {
+                    "gift": [
+                      "When do you experience Authority arising naturally, without effort?",
+                      "Can you notice the space between the Control pattern and the emergence of Authority?",
+                      "What happens when Authority flows through you? How does it feel different from the shadow?",
+                      "When this gift is active, who are you serving? What opens?",
+                      "Does this quality arise more often now than in the past?"
+                    ],
+                    "shadow": [
+                      "Do you notice yourself reacting unconsciously through the pattern of Control?",
+                      "When Control arises, can you feel the contraction or resistance in your body?",
+                      "Do you find yourself caught in Control without realizing it until later?",
+                      "What triggers this pattern? When does it feel most intense?",
+                      "Can you witness the pattern without trying to change or fix it?"
+                    ],
+                    "siddhi": [
+                      "Have you had moments where Authority dissolved into Valor?",
+                      "When Valor is present, is there still a 'you' experiencing it?",
+                      "What remains when the personal expression of Authority falls away?",
+                      "Have you touched a state beyond your individual consciousness?",
+                      "Can you rest in the paradox of this frequency without needing to understand it?"
+                    ]
+                  },
+                  "shadow": "Control",
+                  "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+                  "siddhi": "Valor",
+                  "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+                  "suggested_frequency": "Gift"
+                }
+              ]
+            },
+            "witness_prompt": "How do your conscious gifts Perseverance (38) and Wisdom (48) create your core magnetism? When you're most authentic, what happens in the interplay between Provocation (39) and Authority (21) as your higher calling reveals itself? What invitation lives in the space between Tension becoming Perseverance and Provocation becoming Provocation?",
+            "metadata": {
+              "calculation_time_ms": 1.801086,
+              "backend": "hd-derived",
+              "precision_achieved": "Standard",
+              "cached": false,
+              "timestamp": "2026-10-07T18:50:17.422033370Z",
+              "engine_version": "3.3.1"
+            }
+          },
+          "i-ching": {
+            "engine_id": "i-ching",
+            "result": {
+              "casting": {
+                "line_values": [
+                  6,
+                  7,
+                  6,
+                  6,
+                  6,
+                  6
+                ],
+                "method": "three_coins"
+              },
+              "changing_lines": [
+                1,
+                3,
+                4,
+                5,
+                6
+              ],
+              "primary_hexagram": {
+                "chinese_name": "乾 (Qián)",
+                "image": "The movement of heaven is full of power. Thus the superior person makes themselves strong and untiring.",
+                "judgment": "The Creative works sublime success, furthering through perseverance.",
+                "meaning": "Pure yang energy, heaven, creative power, strong action",
+                "name": "The Creative",
+                "number": 1
+              },
+              "relating_hexagram": {
+                "chinese_name": "卦64",
+                "image": "The image for hexagram 64.",
+                "judgment": "The judgment for hexagram 64.",
+                "meaning": "Meaning for hexagram 64 (stub data)",
+                "name": "Hexagram 64",
+                "number": 64
+              },
+              "seed": 356107833
+            },
+            "witness_prompt": "What does The Creative illuminate about your current situation?",
+            "metadata": {
+              "calculation_time_ms": 1,
+              "backend": "typescript",
+              "precision_achieved": "exact",
+              "cached": false,
+              "timestamp": "2026-10-07T18:50:17.433Z",
+              "engine_version": "3.3.1"
+            }
+          },
+          "tarot": {
+            "engine_id": "tarot",
+            "result": {
+              "positions": [
+                {
+                  "card": {
+                    "arcana": "minor",
+                    "element": "fire",
+                    "id": "wands-6",
+                    "interpretation": {
+                      "keywords": [
+                        "victory",
+                        "success",
+                        "recognition",
+                        "achievement"
+                      ],
+                      "meaning": "Success, public recognition, progress, self-confidence"
+                    },
+                    "isReversed": false,
+                    "name": "Six of Wands",
+                    "number": 6,
+                    "suit": "wands"
+                  },
+                  "meaning": "What has led to this moment; influences from the past",
+                  "name": "Past",
+                  "position": 0
+                },
+                {
+                  "card": {
+                    "arcana": "minor",
+                    "element": "fire",
+                    "id": "wands-2",
+                    "interpretation": {
+                      "keywords": [
+                        "planning",
+                        "decisions",
+                        "discovery",
+                        "progress"
+                      ],
+                      "meaning": "Planning, making decisions, leaving home, personal goals"
+                    },
+                    "isReversed": false,
+                    "name": "Two of Wands",
+                    "number": 2,
+                    "suit": "wands"
+                  },
+                  "meaning": "The current situation; where you stand now",
+                  "name": "Present",
+                  "position": 1
+                },
+                {
+                  "card": {
+                    "arcana": "minor",
+                    "element": "water",
+                    "id": "cups-1",
+                    "interpretation": {
+                      "keywords": [
+                        "love",
+                        "emotion",
+                        "intuition",
+                        "new relationships"
+                      ],
+                      "meaning": "Love, new relationships, compassion, creativity, overwhelming emotion"
+                    },
+                    "isReversed": false,
+                    "name": "Ace of Cups",
+                    "number": 1,
+                    "suit": "cups"
+                  },
+                  "meaning": "What may unfold; potential outcomes and energies ahead",
+                  "name": "Future",
+                  "position": 2
+                }
+              ],
+              "question": "For this synthetic review fixture, how might I reflect on balancing exploration with completing one small creative task?",
+              "spread": {
+                "description": "Past, Present, and Future - a classic spread for understanding the flow of time",
+                "name": "Three Card Spread",
+                "type": "three_card"
+              }
+            },
+            "witness_prompt": "How do these cards speak to your question: \"For this synthetic review fixture, how might I reflect on balancing exploration with completing one small creative task?\"?",
+            "metadata": {
+              "calculation_time_ms": 1,
+              "backend": "typescript",
+              "precision_achieved": "exact",
+              "cached": false,
+              "timestamp": "2026-10-07T18:50:17.437Z",
+              "engine_version": "3.3.1"
+            }
+          },
+          "human-design": {
+            "engine_id": "human-design",
+            "result": {
+              "active_channels": [
+                "39-55",
+                "41-30",
+                "9-52"
+              ],
+              "authority": "Emotional",
+              "defined_centers": [
+                "Root",
+                "SolarPlexus",
+                "Sacral"
+              ],
+              "definition": "Single",
+              "design_activations": {
+                "earth": {
+                  "gate": 21,
+                  "line": 4,
+                  "longitude": 12.579701238265216
+                },
+                "jupiter": {
+                  "gate": 39,
+                  "line": 1,
+                  "longitude": 100.0055401959508
+                },
+                "mars": {
+                  "gate": 48,
+                  "line": 2,
+                  "longitude": 190.567348031621
+                },
+                "mercury": {
+                  "gate": 6,
+                  "line": 4,
+                  "longitude": 176.04465830797278
+                },
+                "moon": {
+                  "gate": 26,
+                  "line": 1,
+                  "longitude": 257.6328473516725
+                },
+                "neptune": {
+                  "gate": 38,
+                  "line": 1,
+                  "longitude": 279.6668588510413
+                },
+                "northnode": {
+                  "gate": 30,
+                  "line": 1,
+                  "longitude": 324.51056994086423
+                },
+                "pluto": {
+                  "gate": 1,
+                  "line": 1,
+                  "longitude": 223.84087524319006
+                },
+                "saturn": {
+                  "gate": 58,
+                  "line": 5,
+                  "longitude": 277.79123034501515
+                },
+                "southnode": {
+                  "gate": 29,
+                  "line": 1,
+                  "longitude": 144.51056994086423
+                },
+                "sun": {
+                  "gate": 48,
+                  "line": 4,
+                  "longitude": 192.57970123826524
+                },
+                "uranus": {
+                  "gate": 10,
+                  "line": 4,
+                  "longitude": 271.6195636417512
+                },
+                "venus": {
+                  "gate": 14,
+                  "line": 3,
+                  "longitude": 236.83507894411468
+                }
+              },
+              "hd_type": "Generator",
+              "personality_activations": {
+                "earth": {
+                  "gate": 39,
+                  "line": 2,
+                  "longitude": 100.58062416475269
+                },
+                "jupiter": {
+                  "gate": 52,
+                  "line": 2,
+                  "longitude": 95.17955826626816
+                },
+                "mars": {
+                  "gate": 9,
+                  "line": 5,
+                  "longitude": 249.8388231594272
+                },
+                "mercury": {
+                  "gate": 61,
+                  "line": 6,
+                  "longitude": 295.7351222256371
+                },
+                "moon": {
+                  "gate": 55,
+                  "line": 1,
+                  "longitude": 330.1860009705856
+                },
+                "neptune": {
+                  "gate": 38,
+                  "line": 3,
+                  "longitude": 282.02943126773425
+                },
+                "northnode": {
+                  "gate": 13,
+                  "line": 4,
+                  "longitude": 316.8636712670017
+                },
+                "pluto": {
+                  "gate": 1,
+                  "line": 5,
+                  "longitude": 227.0868929622191
+                },
+                "saturn": {
+                  "gate": 54,
+                  "line": 1,
+                  "longitude": 285.6304205763024
+                },
+                "southnode": {
+                  "gate": 7,
+                  "line": 4,
+                  "longitude": 136.86367126700168
+                },
+                "sun": {
+                  "gate": 38,
+                  "line": 2,
+                  "longitude": 280.5806241647527
+                },
+                "uranus": {
+                  "gate": 58,
+                  "line": 3,
+                  "longitude": 275.77172113807916
+                },
+                "venus": {
+                  "gate": 41,
+                  "line": 5,
+                  "longitude": 306.2505868865547
+                }
+              },
+              "profile": "2/4"
+            },
+            "witness_prompt": "What does it feel like in your body when you wait to respond to life's invitations rather than initiating?",
+            "metadata": {
+              "calculation_time_ms": 1.8216389999999998,
+              "backend": "swiss-ephemeris",
+              "precision_achieved": "Standard",
+              "cached": false,
+              "timestamp": "2026-10-07T18:50:17.419073797Z",
+              "engine_version": "3.3.1"
+            }
+          },
+          "enneagram": {
+            "engine_id": "enneagram",
+            "result": {
+              "mode": "lookup",
+              "typeAnalysis": {
+                "center": "head",
+                "disintegration": {
+                  "description": "Fives become scattered and impulsive like unhealthy Sevens",
+                  "name": "The Enthusiast",
+                  "type": 7
+                },
+                "harmonicGroup": "competency",
+                "hornevianGroup": "withdrawn",
+                "integration": {
+                  "description": "Fives access confidence and decisiveness of healthy Eights",
+                  "name": "The Challenger",
+                  "type": 8
+                },
+                "type": {
+                  "averageTraits": [
+                    "Detached and preoccupied",
+                    "Conceptualizing and specializing",
+                    "Withdrawn and isolated",
+                    "Provocative and antagonistic",
+                    "Reducing needs and minimizing involvement"
+                  ],
+                  "coreDesire": "To be capable and competent",
+                  "coreFear": "Being useless, incapable, or incompetent",
+                  "coreWeakness": "Avarice—withholding oneself from engagement with the world",
+                  "description": "Perceptive, innovative, secretive, and isolated. Fives are alert, insightful, and curious. They fear being overwhelmed by needs and retreat into their minds.",
+                  "healthyTraits": [
+                    "Visionary and pioneering",
+                    "Observing reality objectively",
+                    "Open-minded and curious",
+                    "Perceptive and insightful",
+                    "Independent and innovative"
+                  ],
+                  "keyMotivations": [
+                    "Understanding the environment",
+                    "Possessing knowledge and being competent",
+                    "Having everything figured out",
+                    "Defending self from intrusions"
+                  ],
+                  "name": "The Investigator",
+                  "number": 5,
+                  "unhealthyTraits": [
+                    "Nihilistic and eccentric",
+                    "Isolated and terrified",
+                    "Distorted perceptions",
+                    "Rejecting all social attachments",
+                    "Schizoid and delusional"
+                  ]
+                },
+                "wings": [
+                  {
+                    "name": "The Individualist",
+                    "number": 4
+                  },
+                  {
+                    "name": "The Loyalist",
+                    "number": 6
+                  }
+                ]
+              }
+            },
+            "witness_prompt": "What would you have to feel if this pattern dissolved?",
+            "metadata": {
+              "calculation_time_ms": 2,
+              "backend": "typescript",
+              "precision_achieved": "exact",
+              "cached": false,
+              "timestamp": "2026-10-07T18:50:17.436Z",
+              "engine_version": "3.3.1"
+            }
+          }
+        }
+      },
+      "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+      "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+    }
+  },
+  "limitations": [
+    "Saved public submission does not exist yet",
+    "A reviewer-accessible recording is not available",
+    "Automatic execution of the five positive/three negative host prompts remains unverified",
+    "I Ching workflow output includes explicit stub descriptions and a suspected cast/hexagram mapping inconsistency; do not treat these as complete source interpretation"
+  ]
+}

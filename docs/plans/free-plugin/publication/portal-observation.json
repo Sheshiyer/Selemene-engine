@@ -1,0 +1,23 @@
+{
+  "schema": "selemene.publication.portal-observation.v1",
+  "url": "https://platform.openai.com/plugins",
+  "observed_at": "2026-10-07",
+  "organization": "Personal",
+  "project_name": "not established by this UI inspection",
+  "developer_identity_choices": [
+    "Individual — SHESHNARAYAN CUMBIPURAM NATESHAN"
+  ],
+  "selemene_submission_visible": false,
+  "other_plugins_shown": 2,
+  "archive_selected": false,
+  "archive_uploaded": false,
+  "submitted_for_review": false,
+  "published": false,
+  "selected_publisher_confirmed_by_user": false,
+  "notes": [
+    "Current portal has one available individual identity",
+    "The existing personal private Selemene plugin is still USER/PRIVATE and is installed",
+    "The available verified identity does not supply the required controller/contact/retention/country facts",
+    "Do not modify other plugin submissions"
+  ]
+}
