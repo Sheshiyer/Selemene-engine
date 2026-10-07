@@ -1,0 +1,44 @@
+{
+  "schema": "selemene.publication.rust-deployment-packet.v1",
+  "source_commit": "9300ad41860d111b8595bd46c802699cb287901b",
+  "context": "/tmp/selemene-rust-publication-9300ad41-7caaoh3b",
+  "files": 618,
+  "top_level_inputs": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "Dockerfile.prod",
+    ".dockerignore",
+    "railway.toml",
+    "crates",
+    "data",
+    "migrations"
+  ],
+  "source_repo": "Sheshiyer/Selemene-engine",
+  "target_service": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+  "config_path_preserved": "/railway.toml",
+  "dockerfile_preserved": "Dockerfile.prod",
+  "database_target_change": false,
+  "variables_or_domains_change": false,
+  "migration_runner_added": false,
+  "startup_limit": "Existing startup runs an immediate-and-daily purge of revoked inactive API keys older than30days; no zero-DB-write claim",
+  "checks": {
+    "gene_keys_tests": 77,
+    "api_lib_tests": 102,
+    "gene_keys_all_targets": "passed",
+    "local_toolchain": "isolated Rust1.99",
+    "local_docker_build": "not available; existing Docker daemon is not running"
+  },
+  "deployment_state": "SUCCESS",
+  "deployment_id": "04d7fea4-ff2b-4459-a057-77269a041f1a",
+  "observed_at": "2026-10-07T20:12:47.793325+00:00",
+  "production_build": {
+    "dockerfile": "Dockerfile.prod",
+    "rust_builder": "1.89",
+    "architecture": "amd64",
+    "image_digest": "sha256:0edd6f84f4bdbeddadb54c1ea5de13d5db22e2004f97df368a2b236fb7f8171f",
+    "healthcheck": "/health/live passed"
+  },
+  "installed_connector_verification": "passed: all four canonical activation spheres match actual Human Design gate/line/source",
+  "installed_workflow_verification": "passed: all five engines returned, partial=false, I Ching cast and Gene Keys spheres consistent",
+  "meaning_dataset_status": "unverified_incomplete; complete authorized verified meanings remain pending"
+}

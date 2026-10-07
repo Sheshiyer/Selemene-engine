@@ -1,13 +1,13 @@
 ---
 project: Selemene-engine
-task: "P6 Wave 2 performance, recovery, runtime status, and accessible depth"
+task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: classifier
-phase: complete
-progress: 206/218
+phase: verify
+progress: 209/220
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-07T19:32:26.376707+00:00
+updated: 2026-10-07T20:17:31.318289+00:00
 ---
 
 ## Problem
@@ -341,8 +341,10 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [ ] ISC-283: Anti: no credential or unverified policy claim enters the public upload.
 - [ ] ISC-284: Anti: private plugin identity and unrelated witness WIP are preserved.
 
-- [ ] ISC-285: Public I Ching casting and textual sources are verified end to end.
+- [x] ISC-285: Public I Ching casting and textual sources are verified end to end.
 - [ ] ISC-286: Public Gene Keys activation lines and meanings are verified end to end.
+- [x] ISC-286.1: Installed Gene Keys canonical spheres match actual Human Design gates, lines and sources.
+- [x] ISC-286.2: Staged reading instructions explicitly preserve incomplete meanings and source limits.
 
 ## Test Strategy
 
@@ -582,3 +584,8 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 
 - ISC-276: staged manifest probe — exactly five positive and three negative cases cover all eight installed tools; execution status remains separate.
 - ISC-277: installed host rehearsal — native-rust numerology 3.3.1 returned life path 3, expression 7 and soul urge 7; current ChatGPT host composed synthetic-numerology-reading.md from those actual results.
+
+- ISC-285: Local62TS tests and typecheck pass; original-source64judgment/image dataset reproduces byte-identically. Exact-sourceTS deployment98d5b4f9-4834-4e7d-a81c-1a30e6806059 is SUCCESS. Actual installed I Ching tool returns algorithm1.1.0, cast50 with changing line1 to14, matching line patterns and exact source passages/pages; individual changing-line texts remain explicitly unavailable. See installed-iching-after-repair.json and ts-deployment-packet.json.
+
+- ISC-286.1: Actual installed connector comparison after Rust deployment04d7fea4 SUCCESS preserves Life’s Work38.2, Evolution39.2, Radiance48.4 and Purpose21.4 with correct Sun/Earth sources. Actual decision-support returns all five engines partial=false and the same verified coordinates. Complete meaning-source verification remains open under ISC-286. See installed-gene-keys-after-repair.json and installed-workflow-after-repair.json.
+- ISC-286.2: Staged reading SKILL/reference source read and focused independent audit confirm canonical activation_spheres, unavailable/null lines, unverified_incomplete meaning limits, not_measured lens, I Ching source/page boundaries and host synthesis when service synthesis is null. These are instruction-file checks, not exact public case/demo execution.

@@ -1,5 +1,7 @@
 # Source readiness audit: I Ching and Gene Keys
 
+**Historical baseline, superseded for repaired fields:** This audit describes commit74608e54 and the initial installed workflow, before source remediation. Current source/test and deployed I Ching status are in [source-remediation.json](source-remediation.json). Gene Keys activation repair is tested; production verification is pending, and its meaning dataset remains unverified/incomplete. The intended public scope retains all reviewed engines. Historical omission options below are not the selected plan.
+
 Inspected on 2026-10-07. This is a read-only source audit following the primary operator's genuine installed-plugin `decision-support` execution. That execution returned all five expected engine outputs, but its I Ching payload reported `casting.line_values: [6, 7, 6, 6, 6, 6]`, primary hexagram `1 / The Creative`, and relating hexagram `64` with explicit stub wording. Those observations were supplied by the primary operator; this audit did not issue another calculation.
 
 The inspected I Ching engine/data and Gene Keys engine/loader/data are byte-identical in MAIN and the plugin worktree. Worktree HEAD at inspection was `74608e5466033313b8b1a5216e12f764103bd736`. File links below point to the inspected local worktree. This audit does not independently establish the deployed upstream's source revision, validate the traditional material against an external edition, or replace the returned results with a newly computed reading.

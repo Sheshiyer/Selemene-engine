@@ -6,7 +6,7 @@ Use the existing private Selemene Engine v0.2.0 development installation. Do not
 
 ## Capture
 
-Use a screen recorder that captures the intended ChatGPT host, with unrelated conversations and account details off screen. Computer controls and screenshots available in this session do not establish video capture. An available Plugin Management search did not return a relevant recording connector. If the creator starts their recorder, the visible walkthrough can be performed with the available in-app browser/computer controls.
+Use a screen recorder that captures the intended ChatGPT host, with unrelated conversations and account details off screen. Computer controls and screenshots available in this session do not establish video capture. The available tool inventory and browser capability documentation did not expose a recording/export tool. On 2026-10-07, QuickTime screen-recording controls were attempted through supported Computer APIs, but no recorder control or saved recording was established; selecting the Screenshot app timed out. No recording is claimed. The installed plugin page's preparation prompt navigated to ChatGPT Desktop, so the demo should use that actual desktop host rather than claim a browser-only chat flow. If the creator starts their recorder, the visible walkthrough can be performed with the available Computer controls.
 
 1. Show the installed plugin name, version and its two skills. Explain that no Selemene login or user API key is required.
 2. Ask: “What kinds of personal reflection can Selemene help me explore, and which engines are available to the free service?” Show the actual catalog and distinguish catalog presence from operational readiness.

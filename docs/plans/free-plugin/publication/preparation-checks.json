@@ -21,16 +21,22 @@
       512
     ],
     "icon_sha256": "7a9b053b7e7fce21aa0aa4c460dabd5465c2510b97672f434adfa7e401bf5d9f",
-    "draft_manifest_sha256": "c2ff3c5681a8c11453cf5ba89b0875f64448f238f7026b9c14767c935e8e750d"
+    "draft_manifest_sha256": "2311edeb97e0daf3d539abddd45eae7d4097cd144f0472c0291b48301c2209d4",
+    "i_ching_source_and_live_semantics": "verified after targeted deployment",
+    "gene_keys_activation_source_and_tests": "passed locally and through actual installed connector after production deploy",
+    "integrated_workflow_after_repairs": "all five returned; corrected cast and canonical spheres consistent",
+    "staged_reading_instructions": "explicit canonical spheres, incomplete meanings, source limits, unmeasured lens and host synthesis",
+    "public_guard": "NOT READY, exit1; no archive created",
+    "current_stage_validation": "staging-validation.json"
   },
   "missing": [
     "confirmed publisher and countries",
     "effective verified privacy, terms and support URLs",
     "reviewer-accessible demo recording",
-    "source-quality remediation or narrowed public scope",
+    "complete verified authorized Gene Keys meaning dataset",
     "exact saved-submission connection and executed cases",
     "scans and developer attestations",
     "review approval and publication"
   ],
-  "checked_at": "2026-10-07T19:02:25.579119+00:00"
+  "checked_at": "2026-10-07T20:16:14.835694+00:00"
 }

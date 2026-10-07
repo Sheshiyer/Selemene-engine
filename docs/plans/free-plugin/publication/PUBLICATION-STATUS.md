@@ -1,17 +1,17 @@
 # Selemene public publication preparation
 
-Prepared 2026-10-07 18:55 UTC. **Incomplete preparation copy; no public ZIP, portal draft upload, review submission, approval or public publication is claimed.** The user has authorized publication, and the parent is gathering the remaining factual answers and evidence.
+Updated 2026-10-07 20:20 UTC. **Incomplete preparation copy; no public ZIP, portal draft upload, review submission, approval or public publication is claimed.** The user has authorized publication, and the parent is gathering the remaining factual answers and evidence.
 
 ## Separate public source and preserved private release
 
-The reversible staging root is `public-package/selemene-engine/`. It contains the same portable identity `selemene-engine`, version `0.2.0`, icon, onboarding/reading skills, host reading reference and credential-free Streamable HTTP MCP connection as the finished private source. Only the staged manifest has refreshed reviewer cases and an explicit `review.commerce: false`.
+The reversible staging root is `public-package/selemene-engine/`. It retains portable identity `selemene-engine`, version `0.2.0`, the original icon and onboarding skill, and the credential-free Streamable HTTP MCP connection. The staged manifest has refreshed reviewer cases, accurate source limitations and an explicit `review.commerce: false`. Its two reading instruction files also preserve the repaired calculation and source-quality contracts.
 
 | Artifact | Known state |
 | --- | --- |
 | Private plugin | `plugins_6ac68a62e61081918179487264135f28`, USER scope, PRIVATE discoverability |
 | Private release | `pluginrel_6ac68a646a3481918caccb45c95ad63f`, version `0.2.0` |
 | Private source manifest SHA-256 | `f974719334bff543532de460fb7156f1c7c246daf0c60112112b5644f1ebcdf1` |
-| Staged public manifest SHA-256 | `c2ff3c5681a8c11453cf5ba89b0875f64448f238f7026b9c14767c935e8e750d` |
+| Staged public manifest SHA-256 | `2311edeb97e0daf3d539abddd45eae7d4097cd144f0472c0291b48301c2209d4` |
 | MCP endpoint | `https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp` |
 | Public stage inventory | Six portable files; no `.app.json`, private binding, scripts, environment file, client credential or ZIP |
 | Reviewer cases | Exactly five positive and three negative; all eight callable tools covered; every refreshed host case **Not run** |
@@ -53,17 +53,21 @@ The review set in [review-cases.md](review-cases.md) uses only a synthetic fixtu
 
 Unverified policy URLs and demo are absent instead of placeholder values. Known site paths or drafted policies are not effective free-release policy evidence. Publisher facts, countries and policy commitments remain pending in the parent task; no second questionnaire is introduced here. [policy-preparation.md](policy-preparation.md) belongs to the independent policy lane and should be updated by its owner when the actual answers arrive.
 
-## Technical publication gaps — I Ching and Gene Keys semantics
+## Technical source remediation and remaining meaning gap
 
-The parent source audit found primary and relating hexagrams sampled independently of `line_values`, with 56 of 64 descriptions explicit stubs. Therefore, a five-output decision-support response is semantically incomplete and does not establish a valid line-derived cast/transformation or complete five-system reading. P4 explicitly preserves and discloses this limitation, prohibits silent recomputation and invented meanings/citations, and records actual omissions. Publication readiness requires an explicit resolution in the parent task; successful transport does not close it. No engine or private-source fix is included in this stage.
+The initial source defects are preserved as historical evidence in [source-readiness-audit.md](source-readiness-audit.md). Current remediation evidence is [source-remediation.json](source-remediation.json); it supersedes the baseline defect descriptions for verified fields.
 
-The Gene Keys audit additionally found 58 generic records and fixed line `3`. The returned line cannot be represented as calculated from this fixture, and generic entries do not establish a complete canonical or birth-derived Gene Keys profile. P4 now requires this disclosure, forbids invented replacement meanings, and keeps the integrated reading explicitly incomplete. This is a second source completeness gap for the parent publication decision.
+I Ching now derives primary and relating patterns from the actual three-coin line values, verifies all64 King Wen mappings, and supplies all64 primary judgments and Great Symbolism images from the scan-reviewed1882 Legge transcription. Source/test and exact-source production deployment checks pass. The actual installed connector returned algorithm1.1.0 with hexagram50 changing on line1 to14, matching exact source passages and page references. Individual changing-line passages remain unavailable; first-eight legacy names/Chinese labels/summaries are unverified, and other modern summaries/Chinese labels are unavailable. This establishes the declared casting and sourced-passage scope, not a complete edition or a fully sourced moving-line corpus.
 
-The separate Vedic chart case preserves Swiss Ephemeris planetary-position provenance, approximate linear Lahiri ayanamsa, whole-sign houses and unavailable advanced fields. No independent chart certification, original hosted report renderer, external narration model or uncreated document export is claimed. Detailed narrative remains a host ChatGPT capability driven by returned facts and the bundled reading flow.
+Gene Keys activation repair passes77 crate tests and102 API library tests, plus all-target compilation. Real Human Design gate/line/source values and canonical spheres are preserved, gate-only lines are null, and legacy arrays are labeled. The exact-source Rust deployment04d7fea4 is SUCCESS and its actual installed result preserves Life’s Work38.2, Evolution39.2, Radiance48.4 and Purpose21.4, each matching the independently returned Human Design gate/line/source. Gate-only input is rejected by the free connector; null line behavior is local engine/test evidence only. A complete authorized verified meaning dataset has not been supplied. The remaining58 generic records and unverified labels/descriptions are explicitly marked; no detailed canonical Gene Keys meaning is certified. ISC-286 stays open.
+
+P4 retains all five intended engines and requires these distinct factual/source boundaries. Updated case execution remains **Not run**; local source tests and actual installed single-engine/workflow route checks are narrower evidence. The repaired decision-support route returned all five engines with partial=false, a consistent I Ching29 changing on lines5/6 into4, and canonical Gene Keys spheres matching its own Human Design output. No public package, portal submission, or review approval follows from those checks.
+
+The separate Vedic chart case retains Swiss Ephemeris planetary-position provenance, approximate linear Lahiri ayanamsa, whole-sign houses and unavailable advanced fields. Detailed narrative remains a host ChatGPT capability driven by returned facts and the bundled reading flow.
 
 ## Local preparation verification
 
-- The copied MCP, icon and three skill/reference files are byte-identical to private source; only the staged manifest differs.
+- The copied MCP, icon and onboarding skill are byte-identical to private source. The staged manifest and two reading instruction files differ to make source limits explicit. Private originals remain unchanged.
 - Stage format/safety checks pass using the unchanged private builder's validation logic with `--check` against this root. This creates no private export and establishes no public readiness.
 - The unchanged original public guard evaluated against this stage with `--check` returns exit `1`, **NOT READY**, for the deliberately missing publisher/category/policy/demo/country fields and absent current exact-manifest evidence. It no longer reports commerce as missing because the declaration is an actual boolean.
 - The guard was not weakened, copied into the package or used with `--output`. No archive was created, uploaded or submitted.
@@ -74,7 +78,7 @@ Existing `../live-smoke.json`, `../deployment-receipt.json` and [installed-conne
 ## Continuation within the authorized publication task
 
 1. Resolve publisher/countries/policy facts in the parent task, verify actual portal category and current policy content, then update only this separate public stage with known values.
-2. Resolve or explicitly bound the I Ching semantic publication gap; keep partial/source-limited behavior visible.
+2. Complete and verify the full remaining Gene Keys meaning-source work; retain all intended engine scope and keep actual source limits visible.
 3. Rehearse the exact review cases in the intended host using the existing development/private release, produce and verify a real recording, and record actual case outcomes.
 4. Assemble fresh exact-manifest evidence and run the unchanged public guard. Create a public ZIP only after candidate readiness passes; inspect the complete archive for forbidden bindings and credentials.
 5. Inspect/reuse the actual intended public draft, preserve private identity, upload the concrete candidate, verify saved connection/imported values and run saved-submission cases/scans. Complete applicable developer attestations and submit for authorized review. Publish only after approval; record actual responses separately.

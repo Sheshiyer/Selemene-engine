@@ -1,0 +1,17 @@
+{
+  "schema": "selemene.publication.ts-deployment-packet.v1",
+  "source_commit": "62b4a087ae62dc37e4e8ae6b877339c9aa4047b2",
+  "context": "/tmp/selemene-ts-publication-62b4a087-gvr2ibe4/context",
+  "files": 66,
+  "only_prefix": "ts-engines/",
+  "lockfile_sha256": "6ea1b3bc4e90630d1ddb9885ba7c4da64c3a38867cf133edbbb1a6e0efc02a03",
+  "source_dataset_sha256": "2842d9fa558a1a96f3dbb2a9aed2d47a6952aca1aa0ec5aed6914194fc38529b",
+  "root_directory_preserved": "/ts-engines",
+  "config_path_preserved": "/ts-engines/railway.toml",
+  "docker_lockfile_included": true,
+  "local_docker_build": "unavailable: Docker daemon is not running; Railway build must pass before acceptance",
+  "deployment_state": "SUCCESS",
+  "deployment_id": "98d5b4f9-4834-4e7d-a81c-1a30e6806059",
+  "installed_connector_verification": "passed",
+  "previous_deployment": "ef0033cf-6ffe-4229-9f70-1d6564d03afe"
+}

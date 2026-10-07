@@ -1,0 +1,53 @@
+{
+  "schema": "selemene.publication.staging-validation.v1",
+  "checked_at": "2026-10-07T20:16:14.835694+00:00",
+  "manifest_sha256": "2311edeb97e0daf3d539abddd45eae7d4097cd144f0472c0291b48301c2209d4",
+  "inventory": [
+    "assets/icon.png",
+    "mcp.json",
+    "plugin.json",
+    "skills/selemene-onboarding/SKILL.md",
+    "skills/selemene-reading/SKILL.md",
+    "skills/selemene-reading/references/host-reading-flow.md"
+  ],
+  "stage_file_sha256": {
+    "assets/icon.png": "7a9b053b7e7fce21aa0aa4c460dabd5465c2510b97672f434adfa7e401bf5d9f",
+    "mcp.json": "1203b35853b8dd6c85897ca57793106216ca6b485acd2e3d2d3e954d4c6afcfb",
+    "plugin.json": "2311edeb97e0daf3d539abddd45eae7d4097cd144f0472c0291b48301c2209d4",
+    "skills/selemene-onboarding/SKILL.md": "3044e4bbb8c9b403d2ecf5855de3bc48dcc967a9cb551d48022c2b44cc92fc6a",
+    "skills/selemene-reading/SKILL.md": "184a2b146800dbcde90b5912a7744da59d2b21de5b6d23735e2851c64af3c11c",
+    "skills/selemene-reading/references/host-reading-flow.md": "937026dbd0e791e9048f7bad1c631005a5b0ad549fbf6beeaeffaf666f64e303"
+  },
+  "private_original_files_equal_committed_source": true,
+  "private_manifest_sha256": "f974719334bff543532de460fb7156f1c7c246daf0c60112112b5644f1ebcdf1",
+  "byte_identical_to_private": [
+    "mcp.json",
+    "assets/icon.png",
+    "skills/selemene-onboarding/SKILL.md"
+  ],
+  "staged_changes": [
+    "plugin.json",
+    "skills/selemene-reading/SKILL.md",
+    "skills/selemene-reading/references/host-reading-flow.md"
+  ],
+  "exact_service_credential_absent": true,
+  "forbidden_bindings_absent": true,
+  "icon_dimensions": [
+    512,
+    512
+  ],
+  "positive_cases": 5,
+  "negative_cases": 3,
+  "private_format_guard": {
+    "exit_code": 0,
+    "output": "Private format and safety checks passed; no archive requested.\nPrivate export does not establish service deployment, host execution or public publication."
+  },
+  "public_guard": {
+    "exit_code": 1,
+    "output": "NOT READY \u2014 no archive created.\n- developerName must be present and no longer than 80 characters.\n- Verified dashboard category is missing.\n- supportURL: verified public HTTPS page is missing.\n- privacyPolicyURL: verified public HTTPS page is missing.\n- termsOfServiceURL: verified public HTTPS page is missing.\n- Verified reviewer-accessible demo recording URL is missing.\n- Explicit country targeting is missing (empty array means all countries only if chosen).\n- External evidence must identify this exact manifest SHA-256.\n- Current verification evidence is missing: websiteURL.\n- Current verification evidence is missing: supportURL.\n- Current verification evidence is missing: privacyPolicyURL.\n- Current verification evidence is missing: termsOfServiceURL.\n- Current verification evidence is missing: developerName.\n- Current verification evidence is missing: category.\n- Current verification evidence is missing: endpoint.\n- Current verification evidence is missing: demo_recording_url.\n- Current verification evidence is missing: publication.countries.\n- Current verification evidence is missing: review.commerce.\n- Current verification evidence is missing: protocol_contract_tests.\n- Current verification evidence is missing: tool_annotations.\n- Current verification evidence is missing: icon_visual_inspection.",
+    "root_override_only": true,
+    "guard_logic_unchanged": true,
+    "no_archive_export": true
+  },
+  "public_submission": "not_uploaded_or_submitted"
+}

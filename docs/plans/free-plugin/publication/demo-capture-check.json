@@ -1,0 +1,25 @@
+{
+  "schema": "selemene.publication.demo-capture-check.v1",
+  "observed_on": "2026-10-07",
+  "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+  "installed_page_version": "0.2.0",
+  "actual_reading_host": "ChatGPT Desktop (installed page prompt opened the desktop handoff)",
+  "page_restored_after_check": true,
+  "video_recording": "not_established",
+  "reviewer_accessible_url": null,
+  "checks": [
+    {
+      "surface": "Tool inventory and browser capability documentation",
+      "result": "No recording/export tool exposed; computer controls and screenshots alone are insufficient."
+    },
+    {
+      "surface": "QuickTime via supported Computer APIs",
+      "result": "Recording-menu attempt did not establish recorder controls or a saved recording."
+    },
+    {
+      "surface": "Screenshot via supported Computer APIs",
+      "result": "App selection timed out; no video or export produced."
+    }
+  ],
+  "next_action": "Creator starts a supported recorder for the real ChatGPT host; perform synthetic walkthrough, verify saved playback, then host and verify the actual recording URL."
+}

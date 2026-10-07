@@ -1,0 +1,75 @@
+{
+  "schema": "selemene.publication.source-remediation.v1",
+  "observed_at": "2026-10-07T20:12:47.793325+00:00",
+  "scope": "Full reviewed engine set retained; verification and source meanings remain separate",
+  "typescript": {
+    "source_commit": "62b4a087ae62dc37e4e8ae6b877339c9aa4047b2",
+    "cast_and_text_commit": "83566632",
+    "build_lock_commit": "62b4a087",
+    "algorithm_version": "1.1.0",
+    "tests": {
+      "passed": 62,
+      "failed": 0,
+      "assertions": 2066,
+      "typecheck": "passed"
+    },
+    "source_reproduction": "dataset and provenance byte-identical",
+    "dataset_sha256": "2842d9fa558a1a96f3dbb2a9aed2d47a6952aca1aa0ec5aed6914194fc38529b",
+    "coverage": {
+      "primary_judgments": 64,
+      "great_symbolism_images": 64,
+      "individual_changing_line_passages": 0
+    },
+    "deployment_id": "98d5b4f9-4834-4e7d-a81c-1a30e6806059",
+    "deployment_status": "SUCCESS",
+    "installed_connector_verification": "passed; cast50, line1 changes to14, source passages/page data match",
+    "production_build": {
+      "runtime_bun": "1.4.2",
+      "frozen_dependency_lock": true,
+      "elysia": "1.4.22",
+      "swagger": "1.3.1",
+      "healthcheck": "passed"
+    },
+    "limitations": [
+      "Individual changing-line passages unavailable",
+      "Legacy first8 names/Chinese labels/summaries unverified; other names are generic identifiers and those summaries/Chinese labels unavailable",
+      "Normalized historical transcription; no independent second proofread",
+      "Rust bridge engine_version reports adapter version3.3.1; algorithm version is supplied separately"
+    ]
+  },
+  "gene_keys": {
+    "source_commit": "9300ad41860d111b8595bd46c802699cb287901b",
+    "tests": {
+      "gene_keys_passed": 77,
+      "gene_keys_failed": 0,
+      "api_lib_passed": 102,
+      "api_lib_failed": 0,
+      "all_targets_check": "passed",
+      "toolchain": "isolated Rust1.99.0"
+    },
+    "activation_coordinates": "actual HD gate/line/source with canonical Sun/Earth spheres; gate-only line=null",
+    "source_quality": "unverified_incomplete",
+    "meanings": "Complete authorized verified dataset still pending user answer",
+    "witness": "configured lens explicitly not a measurement",
+    "legacy_arrays": "preserved with explicit legacy semantics",
+    "deployment_id": "04d7fea4-ff2b-4459-a057-77269a041f1a",
+    "deployment_status": "SUCCESS",
+    "installed_connector_verification": "passed; Life\u2019s Work38.2, Evolution39.2, Radiance48.4, Purpose21.4 match actual Human Design",
+    "gate_only_public_connector": "rejected by input validation; null line behavior is local engine/test evidence only"
+  },
+  "independent_review": {
+    "status": "no_actionable_new_findings",
+    "scope": "Changed engine calculation/serialization and direct API consumers; not historical scan reproofread or Gene Keys source permission"
+  },
+  "public_submission": "not_uploaded_or_submitted",
+  "private_plugin": "original USER/PRIVATE identity preserved",
+  "integrated_workflow": {
+    "surface": "actual installed decision-support connector",
+    "partial": false,
+    "returned_engines": 5,
+    "i_ching_cast_consistent": true,
+    "gene_keys_spheres_match_actual_human_design": true,
+    "exact_public_review_case_status": "Not run",
+    "receipt": "installed-workflow-after-repair.json"
+  }
+}

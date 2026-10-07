@@ -1,0 +1,508 @@
+{
+  "schema": "selemene.publication.installed-gene-keys-verification.v1",
+  "observed_at": "2026-10-07T20:08:51.256647599Z",
+  "deployment_id": "04d7fea4-ff2b-4459-a057-77269a041f1a",
+  "source_commit": "9300ad41860d111b8595bd46c802699cb287901b",
+  "fixture": {
+    "name": "Synthetic Test Reader",
+    "date": "1990-01-01",
+    "time": "12:00",
+    "latitude": 12.9716,
+    "longitude": 77.5946,
+    "timezone": "Asia/Kolkata"
+  },
+  "surface": "actual installed Selemene connector",
+  "verification": {
+    "canonical_activation_spheres_match_actual_human_design": [
+      {
+        "sphere": "lifes_work",
+        "source": "PersonalitySun",
+        "gate": 38,
+        "line": 2,
+        "passed": true
+      },
+      {
+        "sphere": "evolution",
+        "source": "PersonalityEarth",
+        "gate": 39,
+        "line": 2,
+        "passed": true
+      },
+      {
+        "sphere": "radiance",
+        "source": "DesignSun",
+        "gate": 48,
+        "line": 4,
+        "passed": true
+      },
+      {
+        "sphere": "purpose",
+        "source": "DesignEarth",
+        "gate": 21,
+        "line": 4,
+        "passed": true
+      }
+    ],
+    "meaning_source_quality": "unverified_incomplete",
+    "measurement_status": "not_measured",
+    "persistence_status": "not_confirmed",
+    "complete_meanings_verified": false,
+    "exact_public_review_case_status": "Not run"
+  },
+  "actual_results": {
+    "human_design": {
+      "engine_id": "human-design",
+      "side_effects": [
+        "persists a reading row bound to the authenticated user",
+        "logs a usage event and may increment the free-tier monthly counter",
+        "awards experience points and may auto-promote the consciousness level",
+        "may populate the user's stored profile from birth_data on first use"
+      ],
+      "persistence_status": "not_confirmed",
+      "disclosure": "Persistence is async best-effort; status is not confirmed until a subsequent query.",
+      "result": {
+        "engine_id": "human-design",
+        "result": {
+          "active_channels": [
+            "39-55",
+            "41-30",
+            "9-52"
+          ],
+          "authority": "Emotional",
+          "defined_centers": [
+            "Sacral",
+            "Root",
+            "SolarPlexus"
+          ],
+          "definition": "Single",
+          "design_activations": {
+            "earth": {
+              "gate": 21,
+              "line": 4,
+              "longitude": 12.579701238265216
+            },
+            "jupiter": {
+              "gate": 39,
+              "line": 1,
+              "longitude": 100.0055401959508
+            },
+            "mars": {
+              "gate": 48,
+              "line": 2,
+              "longitude": 190.567348031621
+            },
+            "mercury": {
+              "gate": 6,
+              "line": 4,
+              "longitude": 176.04465830797278
+            },
+            "moon": {
+              "gate": 26,
+              "line": 1,
+              "longitude": 257.6328473516725
+            },
+            "neptune": {
+              "gate": 38,
+              "line": 1,
+              "longitude": 279.6668588510413
+            },
+            "northnode": {
+              "gate": 30,
+              "line": 1,
+              "longitude": 324.51056994086423
+            },
+            "pluto": {
+              "gate": 1,
+              "line": 1,
+              "longitude": 223.84087524319006
+            },
+            "saturn": {
+              "gate": 58,
+              "line": 5,
+              "longitude": 277.79123034501515
+            },
+            "southnode": {
+              "gate": 29,
+              "line": 1,
+              "longitude": 144.51056994086423
+            },
+            "sun": {
+              "gate": 48,
+              "line": 4,
+              "longitude": 192.57970123826524
+            },
+            "uranus": {
+              "gate": 10,
+              "line": 4,
+              "longitude": 271.6195636417512
+            },
+            "venus": {
+              "gate": 14,
+              "line": 3,
+              "longitude": 236.83507894411468
+            }
+          },
+          "hd_type": "Generator",
+          "personality_activations": {
+            "earth": {
+              "gate": 39,
+              "line": 2,
+              "longitude": 100.58062416475269
+            },
+            "jupiter": {
+              "gate": 52,
+              "line": 2,
+              "longitude": 95.17955826626816
+            },
+            "mars": {
+              "gate": 9,
+              "line": 5,
+              "longitude": 249.8388231594272
+            },
+            "mercury": {
+              "gate": 61,
+              "line": 6,
+              "longitude": 295.7351222256371
+            },
+            "moon": {
+              "gate": 55,
+              "line": 1,
+              "longitude": 330.1860009705856
+            },
+            "neptune": {
+              "gate": 38,
+              "line": 3,
+              "longitude": 282.02943126773425
+            },
+            "northnode": {
+              "gate": 13,
+              "line": 4,
+              "longitude": 316.8636712670017
+            },
+            "pluto": {
+              "gate": 1,
+              "line": 5,
+              "longitude": 227.0868929622191
+            },
+            "saturn": {
+              "gate": 54,
+              "line": 1,
+              "longitude": 285.6304205763024
+            },
+            "southnode": {
+              "gate": 7,
+              "line": 4,
+              "longitude": 136.86367126700168
+            },
+            "sun": {
+              "gate": 38,
+              "line": 2,
+              "longitude": 280.5806241647527
+            },
+            "uranus": {
+              "gate": 58,
+              "line": 3,
+              "longitude": 275.77172113807916
+            },
+            "venus": {
+              "gate": 41,
+              "line": 5,
+              "longitude": 306.2505868865547
+            }
+          },
+          "profile": "2/4"
+        },
+        "witness_prompt": "How do you experience yourself riding the emotional wave before making decisions, without forcing clarity?",
+        "metadata": {
+          "calculation_time_ms": 3.621812,
+          "backend": "swiss-ephemeris",
+          "precision_achieved": "Standard",
+          "cached": false,
+          "timestamp": "2026-10-07T20:08:50.581362804Z",
+          "engine_version": "3.3.1"
+        },
+        "contract_version": "v1",
+        "envelope_version": "1",
+        "witness_prompts": [
+          {
+            "prompt": "How do you experience yourself riding the emotional wave before making decisions, without forcing clarity?",
+            "themes": []
+          }
+        ],
+        "calculated_at": "2026-10-07T20:08:50.581362804+00:00",
+        "processing_time_ms": 3.621812
+      },
+      "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+      "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+    },
+    "gene_keys": {
+      "engine_id": "gene-keys",
+      "side_effects": [
+        "persists a reading row bound to the authenticated user",
+        "logs a usage event and may increment the free-tier monthly counter",
+        "awards experience points and may auto-promote the consciousness level",
+        "may populate the user's stored profile from birth_data on first use"
+      ],
+      "persistence_status": "not_confirmed",
+      "disclosure": "Persistence is async best-effort; status is not confirmed until a subsequent query.",
+      "result": {
+        "engine_id": "gene-keys",
+        "result": {
+          "activation_sequence": {
+            "evolution": [
+              48,
+              21
+            ],
+            "lifes_work": [
+              38,
+              39
+            ],
+            "purpose": [
+              39,
+              21
+            ],
+            "radiance": [
+              38,
+              48
+            ]
+          },
+          "activation_sequence_semantics": "legacy_gate_pair_relationships_not_canonical_spheres",
+          "activation_spheres": {
+            "evolution": {
+              "key_number": 39,
+              "line": 2,
+              "source": "PersonalityEarth"
+            },
+            "lifes_work": {
+              "key_number": 38,
+              "line": 2,
+              "source": "PersonalitySun"
+            },
+            "purpose": {
+              "key_number": 21,
+              "line": 4,
+              "source": "DesignEarth"
+            },
+            "radiance": {
+              "key_number": 48,
+              "line": 4,
+              "source": "DesignSun"
+            }
+          },
+          "active_keys": [
+            {
+              "gift": "Perseverance",
+              "key_number": 38,
+              "line": 2,
+              "meaning_source_quality": "unverified_incomplete",
+              "name": "Gene Key 38",
+              "shadow": "Tension",
+              "siddhi": "Perseverance",
+              "source": "PersonalitySun"
+            },
+            {
+              "gift": "Provocation",
+              "key_number": 39,
+              "line": 2,
+              "meaning_source_quality": "unverified_incomplete",
+              "name": "Gene Key 39",
+              "shadow": "Provocation",
+              "siddhi": "Provocation",
+              "source": "PersonalityEarth"
+            },
+            {
+              "gift": "Wisdom",
+              "key_number": 48,
+              "line": 4,
+              "meaning_source_quality": "unverified_incomplete",
+              "name": "Gene Key 48",
+              "shadow": "Insignificance",
+              "siddhi": "Wisdom",
+              "source": "DesignSun"
+            },
+            {
+              "gift": "Authority",
+              "key_number": 21,
+              "line": 4,
+              "meaning_source_quality": "unverified_incomplete",
+              "name": "Gene Key 21",
+              "shadow": "Control",
+              "siddhi": "Valor",
+              "source": "DesignEarth"
+            }
+          ],
+          "frequency_assessment_context": {
+            "basis": "configured_service_level",
+            "measurement_status": "not_measured",
+            "note": "Suggested frequency is a configured reflection lens, not a measured user consciousness or frequency. Framework records may be incomplete."
+          },
+          "frequency_assessments": [
+            {
+              "gene_key": 38,
+              "gift": "Perseverance",
+              "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+              "name": "Gene Key 38",
+              "recognition_prompts": {
+                "gift": [
+                  "When do you experience Perseverance arising naturally, without effort?",
+                  "Can you notice the space between the Tension pattern and the emergence of Perseverance?",
+                  "What happens when Perseverance flows through you? How does it feel different from the shadow?",
+                  "When this gift is active, who are you serving? What opens?",
+                  "Does this quality arise more often now than in the past?"
+                ],
+                "shadow": [
+                  "Do you notice yourself reacting unconsciously through the pattern of Tension?",
+                  "When Tension arises, can you feel the contraction or resistance in your body?",
+                  "Do you find yourself caught in Tension without realizing it until later?",
+                  "What triggers this pattern? When does it feel most intense?",
+                  "Can you witness the pattern without trying to change or fix it?"
+                ],
+                "siddhi": [
+                  "Have you had moments where Perseverance dissolved into Perseverance?",
+                  "When Perseverance is present, is there still a 'you' experiencing it?",
+                  "What remains when the personal expression of Perseverance falls away?",
+                  "Have you touched a state beyond your individual consciousness?",
+                  "Can you rest in the paradox of this frequency without needing to understand it?"
+                ]
+              },
+              "shadow": "Tension",
+              "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+              "siddhi": "Perseverance",
+              "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+              "suggested_frequency": "Siddhi"
+            },
+            {
+              "gene_key": 39,
+              "gift": "Provocation",
+              "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+              "name": "Gene Key 39",
+              "recognition_prompts": {
+                "gift": [
+                  "When do you experience Provocation arising naturally, without effort?",
+                  "Can you notice the space between the Provocation pattern and the emergence of Provocation?",
+                  "What happens when Provocation flows through you? How does it feel different from the shadow?",
+                  "When this gift is active, who are you serving? What opens?",
+                  "Does this quality arise more often now than in the past?"
+                ],
+                "shadow": [
+                  "Do you notice yourself reacting unconsciously through the pattern of Provocation?",
+                  "When Provocation arises, can you feel the contraction or resistance in your body?",
+                  "Do you find yourself caught in Provocation without realizing it until later?",
+                  "What triggers this pattern? When does it feel most intense?",
+                  "Can you witness the pattern without trying to change or fix it?"
+                ],
+                "siddhi": [
+                  "Have you had moments where Provocation dissolved into Provocation?",
+                  "When Provocation is present, is there still a 'you' experiencing it?",
+                  "What remains when the personal expression of Provocation falls away?",
+                  "Have you touched a state beyond your individual consciousness?",
+                  "Can you rest in the paradox of this frequency without needing to understand it?"
+                ]
+              },
+              "shadow": "Provocation",
+              "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+              "siddhi": "Provocation",
+              "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+              "suggested_frequency": "Siddhi"
+            },
+            {
+              "gene_key": 48,
+              "gift": "Wisdom",
+              "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+              "name": "Gene Key 48",
+              "recognition_prompts": {
+                "gift": [
+                  "When do you experience Wisdom arising naturally, without effort?",
+                  "Can you notice the space between the Insignificance pattern and the emergence of Wisdom?",
+                  "What happens when Wisdom flows through you? How does it feel different from the shadow?",
+                  "When this gift is active, who are you serving? What opens?",
+                  "Does this quality arise more often now than in the past?"
+                ],
+                "shadow": [
+                  "Do you notice yourself reacting unconsciously through the pattern of Insignificance?",
+                  "When Insignificance arises, can you feel the contraction or resistance in your body?",
+                  "Do you find yourself caught in Insignificance without realizing it until later?",
+                  "What triggers this pattern? When does it feel most intense?",
+                  "Can you witness the pattern without trying to change or fix it?"
+                ],
+                "siddhi": [
+                  "Have you had moments where Wisdom dissolved into Wisdom?",
+                  "When Wisdom is present, is there still a 'you' experiencing it?",
+                  "What remains when the personal expression of Wisdom falls away?",
+                  "Have you touched a state beyond your individual consciousness?",
+                  "Can you rest in the paradox of this frequency without needing to understand it?"
+                ]
+              },
+              "shadow": "Insignificance",
+              "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+              "siddhi": "Wisdom",
+              "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+              "suggested_frequency": "Siddhi"
+            },
+            {
+              "gene_key": 21,
+              "gift": "Authority",
+              "gift_description": "The gift frequency expresses the balanced state of consciousness that serves the collective good.",
+              "name": "Gene Key 21",
+              "recognition_prompts": {
+                "gift": [
+                  "When do you experience Authority arising naturally, without effort?",
+                  "Can you notice the space between the Control pattern and the emergence of Authority?",
+                  "What happens when Authority flows through you? How does it feel different from the shadow?",
+                  "When this gift is active, who are you serving? What opens?",
+                  "Does this quality arise more often now than in the past?"
+                ],
+                "shadow": [
+                  "Do you notice yourself reacting unconsciously through the pattern of Control?",
+                  "When Control arises, can you feel the contraction or resistance in your body?",
+                  "Do you find yourself caught in Control without realizing it until later?",
+                  "What triggers this pattern? When does it feel most intense?",
+                  "Can you witness the pattern without trying to change or fix it?"
+                ],
+                "siddhi": [
+                  "Have you had moments where Authority dissolved into Valor?",
+                  "When Valor is present, is there still a 'you' experiencing it?",
+                  "What remains when the personal expression of Authority falls away?",
+                  "Have you touched a state beyond your individual consciousness?",
+                  "Can you rest in the paradox of this frequency without needing to understand it?"
+                ]
+              },
+              "shadow": "Control",
+              "shadow_description": "The shadow frequency represents the unconscious pattern that creates limitation and suffering in this area of life.",
+              "siddhi": "Valor",
+              "siddhi_description": "The siddhi frequency embodies the highest potential of human consciousness in this archetypal pattern.",
+              "suggested_frequency": "Siddhi"
+            }
+          ],
+          "line_provenance": "preserved_human_design_activations",
+          "meaning_source_quality": {
+            "note": "Bundled records include generic templates and unverified labels/descriptions; a complete authorized verified wisdom dataset has not been supplied.",
+            "source": "bundled_gene_keys_framework_records",
+            "status": "unverified_incomplete"
+          }
+        },
+        "witness_prompt": "Reflection lens: Siddhi contemplation (configured service setting; not a measurement of user consciousness or frequency). Life's Work: Gene Key 38 line 2 (PersonalitySun). Evolution: Gene Key 39 line 2 (PersonalityEarth). Radiance: Gene Key 48 line 4 (DesignSun). Purpose: Gene Key 21 line 4 (DesignEarth). Framework records may be incomplete; these coordinates do not establish a complete wisdom reading. What transcendent or beyond-personal perspective, if any, feels useful to contemplate with these symbolic coordinates?",
+        "metadata": {
+          "calculation_time_ms": 1.4372479999999999,
+          "backend": "hd-derived",
+          "precision_achieved": "Standard",
+          "cached": false,
+          "timestamp": "2026-10-07T20:08:51.256647599Z",
+          "engine_version": "3.3.1"
+        },
+        "contract_version": "v1",
+        "envelope_version": "1",
+        "witness_prompts": [
+          {
+            "prompt": "Reflection lens: Siddhi contemplation (configured service setting; not a measurement of user consciousness or frequency). Life's Work: Gene Key 38 line 2 (PersonalitySun). Evolution: Gene Key 39 line 2 (PersonalityEarth). Radiance: Gene Key 48 line 4 (DesignSun). Purpose: Gene Key 21 line 4 (DesignEarth). Framework records may be incomplete; these coordinates do not establish a complete wisdom reading. What transcendent or beyond-personal perspective, if any, feels useful to contemplate with these symbolic coordinates?",
+            "themes": []
+          }
+        ],
+        "calculated_at": "2026-10-07T20:08:51.256647599+00:00",
+        "processing_time_ms": 1.4372479999999999
+      },
+      "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+      "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+    }
+  }
+}
