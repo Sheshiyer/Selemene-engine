@@ -7,7 +7,7 @@ phase: complete
 progress: 206/218
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-07T19:02:25.579119+00:00
+updated: 2026-10-07T19:32:26.376707+00:00
 ---
 
 ## Problem
@@ -341,8 +341,8 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [ ] ISC-283: Anti: no credential or unverified policy claim enters the public upload.
 - [ ] ISC-284: Anti: private plugin identity and unrelated witness WIP are preserved.
 
-- [ ] ISC-285: Public I Ching behavior has verified cast semantics or is omitted.
-- [ ] ISC-286: Public Gene Keys behavior has verified lines and meanings or is omitted.
+- [ ] ISC-285: Public I Ching casting and textual sources are verified end to end.
+- [ ] ISC-286: Public Gene Keys activation lines and meanings are verified end to end.
 
 ## Test Strategy
 
@@ -456,6 +456,10 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - 2026-07-18: Final independent boundary review returned `GO`, and browser Gate 4 returned `PASS` after measured Sigil/Face layout and Biofield consent-control corrections.
 
 - 2026-10-07: refined: User explicitly authorized public publication of the existing Selemene Engine plugin. Preserve private identity and prepare a separate public upload; publication requires actual publisher, policies, demo, connected review checks and authorized attestations. Existing witness queue remains separate.
+
+- 2026-10-07: refined: Continue correcting the affected engines and source datasets without narrowing the intended public reading scope. Fix I Ching casting/mapping and Gene Keys birth-derived lines at ingestion; keep full source and deployed acceptance unproven until verified.
+
+- 2026-10-07 refined: Publication retains the full reviewed engine scope. I Ching cast mapping and Gene Keys birth lines are being corrected in the isolated worktree, with source provenance and live deployment checks required before their public criteria close. Two routed code attempts produced invalid or incomplete output and were rejected; bounded corrective work and actual compiler tests continue.
 
 ## Changelog
 

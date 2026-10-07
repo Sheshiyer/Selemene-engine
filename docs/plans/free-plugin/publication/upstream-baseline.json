@@ -1,0 +1,38 @@
+{
+  "schema": "selemene.publication.upstream-baseline.v1",
+  "observed_at": "2026-10-07 19:19:50 UTC",
+  "scope": "Read-only Railway metadata and remote git head; no live service was changed",
+  "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+  "environment": {
+    "id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+    "name": "production"
+  },
+  "services": {
+    "typescript": {
+      "id": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
+      "name": "ts-engines",
+      "deployment_id": "ef0033cf-6ffe-4229-9f70-1d6564d03afe",
+      "status": "SUCCESS",
+      "instance_status": "RUNNING",
+      "created_at": "2026-09-08T18:43:47.816Z",
+      "source_commit": "ebd97fe940a3454b0425ff60d56003b07337564e"
+    },
+    "rust": {
+      "id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+      "name": "Selemene-engine",
+      "deployment_id": "ee9cb602-d3d3-4db3-a8d6-d06fc75090a8",
+      "status": "SUCCESS",
+      "instance_status": "RUNNING",
+      "created_at": "2026-09-08T18:10:21.092Z",
+      "source_commit": null,
+      "image_digest": "sha256:ba3baabf749bce30c9543f2049410b2da8df6d574067f6dba7ef3c0d4680ec82"
+    }
+  },
+  "remote_main": "ebd97fe940a3454b0425ff60d56003b07337564e",
+  "acceptance": [
+    "Corrected source must be built, tested and deployed to exact upstream services",
+    "Deployment and actual installed connector output must prove corrected behavior separately",
+    "Metadata status alone does not prove engine semantics or Rust source provenance",
+    "Do not change database target, migration history or unrelated media/witness services"
+  ]
+}
