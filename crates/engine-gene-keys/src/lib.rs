@@ -1,7 +1,8 @@
 //! Gene Keys Consciousness Engine
 //!
 //! Shadow-Gift-Siddhi transformation framework.
-//! Maps HD gate activations to Gene Keys and calculates the 4 Core Activation Sequences.
+//! Preserves HD activation values and exposes the canonical four spheres.
+//! Legacy gate-pair fields remain available for compatibility; wisdom coverage is separate.
 
 pub mod engine;
 pub mod frequency;
@@ -18,8 +19,8 @@ pub use mapping::{
     map_hd_to_gene_keys,
 };
 pub use models::{
-    ActivationSequence, ActivationSource, GeneKey, GeneKeyActivation, GeneKeysChart, GeneKeysData,
-    GeneKeysInfo,
+    ActivationSequence, ActivationSource, CanonicalActivationSphere, CanonicalActivationSpheres,
+    GeneKey, GeneKeyActivation, GeneKeysChart, GeneKeysData, GeneKeysInfo,
 };
 pub use transformation::{
     generate_complete_pathways, generate_transformation_pathways, TransformationPathway,

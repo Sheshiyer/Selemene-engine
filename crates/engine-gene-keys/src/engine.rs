@@ -17,7 +17,7 @@ use std::time::Instant;
 
 use crate::{
     frequency::assess_frequencies,
-    models::{GeneKeyActivation, GeneKeysChart},
+    models::{ActivationSequence, ActivationSource, GeneKeyActivation, GeneKeysChart},
     wisdom::get_gene_key,
     witness::generate_witness_prompt,
 };
@@ -59,6 +59,7 @@ impl GeneKeysEngine {
         let personality_sun = hd_gates
             .get("personality_sun")
             .and_then(|v| v.as_u64())
+            .filter(|v| (1..=64).contains(v))
             .map(|v| v as u8)
             .ok_or_else(|| {
                 EngineError::ValidationError(
@@ -69,6 +70,7 @@ impl GeneKeysEngine {
         let personality_earth = hd_gates
             .get("personality_earth")
             .and_then(|v| v.as_u64())
+            .filter(|v| (1..=64).contains(v))
             .map(|v| v as u8)
             .ok_or_else(|| {
                 EngineError::ValidationError(
@@ -79,6 +81,7 @@ impl GeneKeysEngine {
         let design_sun = hd_gates
             .get("design_sun")
             .and_then(|v| v.as_u64())
+            .filter(|v| (1..=64).contains(v))
             .map(|v| v as u8)
             .ok_or_else(|| {
                 EngineError::ValidationError(
@@ -89,6 +92,7 @@ impl GeneKeysEngine {
         let design_earth = hd_gates
             .get("design_earth")
             .and_then(|v| v.as_u64())
+            .filter(|v| (1..=64).contains(v))
             .map(|v| v as u8)
             .ok_or_else(|| {
                 EngineError::ValidationError(
@@ -114,27 +118,8 @@ impl GeneKeysEngine {
         Ok((personality_sun, personality_earth, design_sun, design_earth))
     }
 
-    /// Create Gene Keys chart from gates only (simplified version).
-    ///
-    /// # Known limitation: `line` is a placeholder on this path
-    ///
-    /// This constructor receives four gate numbers and nothing else, so the
-    /// hexagram line is not derivable here and every activation is assigned a
-    /// fixed `line: 3`. Any consumer reading `active_keys[*].line` from a chart
-    /// built this way is reading a constant, not a calculation.
-    ///
-    /// This is not a value that can be guessed: the line comes from the
-    /// fractional position within a gate, which requires the ephemeris
-    /// longitude. The Human Design engine does compute it — its activations are
-    /// shaped `{ gate, line, longitude }` — but the `hd_gates` option this path
-    /// consumes carries only the four gate numbers (see
-    /// [`Self::extract_hd_gates_from_options`]), so the line is discarded
-    /// before it ever reaches here.
-    ///
-    /// Fixing it properly means widening the `hd_gates` option to carry the
-    /// line alongside the gate and updating its producers. That is a contract
-    /// change and deliberately out of scope; until then the limitation is
-    /// documented rather than papered over.
+    /// Preserve gate-only compatibility without pretending an HD line is known.
+    /// Sentinel 0 is internal; serialized output uses null for unavailable lines.
     fn create_chart_from_gates(
         personality_sun: u8,
         personality_earth: u8,
@@ -154,26 +139,25 @@ impl GeneKeysEngine {
         let active_keys = vec![
             GeneKeyActivation {
                 key_number: personality_sun,
-                // Placeholder, not a calculation -- see the fn doc comment.
-                line: 3,
+                line: 0,
                 source: ActivationSource::PersonalitySun,
                 gene_key_data: get_gene_key(personality_sun).cloned(),
             },
             GeneKeyActivation {
                 key_number: personality_earth,
-                line: 3,
+                line: 0,
                 source: ActivationSource::PersonalityEarth,
                 gene_key_data: get_gene_key(personality_earth).cloned(),
             },
             GeneKeyActivation {
                 key_number: design_sun,
-                line: 3,
+                line: 0,
                 source: ActivationSource::DesignSun,
                 gene_key_data: get_gene_key(design_sun).cloned(),
             },
             GeneKeyActivation {
                 key_number: design_earth,
-                line: 3,
+                line: 0,
                 source: ActivationSource::DesignEarth,
                 gene_key_data: get_gene_key(design_earth).cloned(),
             },
@@ -185,58 +169,60 @@ impl GeneKeysEngine {
         })
     }
 
-    fn extract_gate_from_activations(
-        activations: &serde_json::Map<String, Value>,
-        planet: &str,
-        block_name: &str,
-    ) -> Result<u8, EngineError> {
-        let gate = activations
-            .get(planet)
-            .and_then(|v| v.get("gate"))
-            .and_then(|v| v.as_u64())
-            .ok_or_else(|| {
-                EngineError::CalculationError(format!(
-                    "Missing or invalid '{}' gate in {}",
-                    planet, block_name
-                ))
-            })?;
-
-        if !(1..=64).contains(&gate) {
-            return Err(EngineError::CalculationError(format!(
-                "Invalid '{}' gate in {}: {} (must be 1-64)",
-                planet, block_name, gate
-            )));
-        }
-
-        Ok(gate as u8)
-    }
-
-    fn extract_hd_gates_from_hd_result(result: &Value) -> Result<(u8, u8, u8, u8), EngineError> {
-        let personality = result
-            .get("personality_activations")
-            .and_then(|v| v.as_object())
-            .ok_or_else(|| {
-                EngineError::CalculationError(
-                    "HD output missing personality_activations".to_string(),
-                )
-            })?;
-
-        let design = result
-            .get("design_activations")
-            .and_then(|v| v.as_object())
-            .ok_or_else(|| {
-                EngineError::CalculationError("HD output missing design_activations".to_string())
-            })?;
-
-        let personality_sun =
-            Self::extract_gate_from_activations(personality, "sun", "personality_activations")?;
-        let personality_earth =
-            Self::extract_gate_from_activations(personality, "earth", "personality_activations")?;
-        let design_sun = Self::extract_gate_from_activations(design, "sun", "design_activations")?;
-        let design_earth =
-            Self::extract_gate_from_activations(design, "earth", "design_activations")?;
-
-        Ok((personality_sun, personality_earth, design_sun, design_earth))
+    /// Preserve both values from the actual public HD result shape.
+    /// Missing/invalid birth lines fail rather than receiving a placeholder.
+    fn create_chart_from_hd_result(result: &Value) -> Result<GeneKeysChart, EngineError> {
+        let read_activation = |block_name: &str, planet: &str, source: ActivationSource| {
+            let activation = result
+                .get(block_name)
+                .and_then(Value::as_object)
+                .and_then(|block| block.get(planet))
+                .ok_or_else(|| {
+                    EngineError::CalculationError(format!(
+                        "HD output missing {block_name}.{planet} activation"
+                    ))
+                })?;
+            let read_integer = |field: &str, maximum: u64| {
+                activation.get(field).and_then(Value::as_u64)
+                    .filter(|value| (1..=maximum).contains(value))
+                    .map(|value| value as u8)
+                    .ok_or_else(|| EngineError::CalculationError(format!(
+                        "Missing or invalid {field} in {block_name}.{planet} (must be integer 1-{maximum})"
+                    )))
+            };
+            let gate = read_integer("gate", 64)?;
+            let line = read_integer("line", 6)?;
+            Ok::<_, EngineError>(GeneKeyActivation {
+                key_number: gate,
+                line,
+                source,
+                gene_key_data: get_gene_key(gate).cloned(),
+            })
+        };
+        let active_keys = vec![
+            read_activation(
+                "personality_activations",
+                "sun",
+                ActivationSource::PersonalitySun,
+            )?,
+            read_activation(
+                "personality_activations",
+                "earth",
+                ActivationSource::PersonalityEarth,
+            )?,
+            read_activation("design_activations", "sun", ActivationSource::DesignSun)?,
+            read_activation("design_activations", "earth", ActivationSource::DesignEarth)?,
+        ];
+        let activation_sequence = ActivationSequence::from_activations(
+            active_keys[0].key_number,
+            active_keys[1].key_number,
+            active_keys[2].key_number,
+            active_keys[3].key_number,
+        );
+        Ok(GeneKeysChart {
+            activation_sequence,
+            active_keys,
+        })
     }
 
     /// Serialize GeneKeysChart to JSON value.
@@ -246,15 +232,20 @@ impl GeneKeysEngine {
     /// nulls that field for every active key, which is what this payload did
     /// until the level was wired through.
     fn serialize_chart(chart: &GeneKeysChart, consciousness_level: u8) -> Value {
-        // Enrich active keys with full Gene Key data
+        // Include available framework records; record presence is not completeness.
         let enriched_keys: Vec<Value> = chart
             .active_keys
             .iter()
             .map(|ak| {
                 let mut key_data = json!({
                     "key_number": ak.key_number,
-                    "line": ak.line,
+                    "line": (1..=6).contains(&ak.line).then_some(ak.line),
                     "source": format!("{:?}", ak.source),
+                    "meaning_source_quality": if ak.gene_key_data.is_some() {
+                        "unverified_incomplete"
+                    } else {
+                        "unavailable"
+                    },
                 });
 
                 if let Some(gk) = &ak.gene_key_data {
@@ -278,8 +269,25 @@ impl GeneKeysEngine {
                 "radiance": [chart.activation_sequence.radiance.0, chart.activation_sequence.radiance.1],
                 "purpose": [chart.activation_sequence.purpose.0, chart.activation_sequence.purpose.1],
             },
+            "activation_sequence_semantics": "legacy_gate_pair_relationships_not_canonical_spheres",
+            "activation_spheres": chart.activation_spheres(),
+            "line_provenance": if chart.active_keys.iter().all(|key| (1..=6).contains(&key.line)) {
+                "preserved_human_design_activations"
+            } else {
+                "unavailable_gate_only_input"
+            },
             "active_keys": enriched_keys,
+            "meaning_source_quality": {
+                "status": "unverified_incomplete",
+                "source": "bundled_gene_keys_framework_records",
+                "note": "Bundled records include generic templates and unverified labels/descriptions; a complete authorized verified wisdom dataset has not been supplied."
+            },
             "frequency_assessments": frequency_assessments,
+            "frequency_assessment_context": {
+                "basis": "configured_service_level",
+                "measurement_status": "not_measured",
+                "note": "Suggested frequency is a configured reflection lens, not a measured user consciousness or frequency. Framework records may be incomplete."
+            },
         })
     }
 }
@@ -317,15 +325,7 @@ impl ConsciousnessEngine for GeneKeysEngine {
 
             // Call HD engine to get HD chart
             let hd_output = hd_engine.calculate(input.clone()).await?;
-            let (personality_sun, personality_earth, design_sun, design_earth) =
-                Self::extract_hd_gates_from_hd_result(&hd_output.result)?;
-
-            Self::create_chart_from_gates(
-                personality_sun,
-                personality_earth,
-                design_sun,
-                design_earth,
-            )?
+            Self::create_chart_from_hd_result(&hd_output.result)?
         } else if input.options.contains_key("hd_gates") {
             // Mode 2: Extract gates from options
             let (ps, pe, ds, de) = Self::extract_hd_gates_from_options(&input.options)?;
@@ -438,16 +438,17 @@ impl ConsciousnessEngine for GeneKeysEngine {
         if let Some(birth_data) = &input.birth_data {
             // Mode 1: birth_data cache key
             format!(
-                "gk:{}:{}:{:.4}:{:.4}",
+                "gk:v2:birth:{}:{}:{}:{:.4}:{:.4}",
                 birth_data.date,
                 birth_data.time.as_ref().unwrap_or(&"00:00".to_string()),
+                birth_data.timezone,
                 birth_data.latitude,
                 birth_data.longitude
             )
         } else if input.options.contains_key("hd_gates") {
             // Mode 2: hd_gates cache key
             if let Ok((ps, pe, ds, de)) = Self::extract_hd_gates_from_options(&input.options) {
-                format!("gk:gates:{}:{}:{}:{}", ps, pe, ds, de)
+                format!("gk:v2:gates:{}:{}:{}:{}", ps, pe, ds, de)
             } else {
                 format!("gk:invalid:{}", Utc::now().timestamp())
             }
@@ -588,7 +589,7 @@ mod tests {
         let input = create_test_input_with_gates();
 
         let key = engine.cache_key(&input);
-        assert!(key.starts_with("gk:gates:"));
+        assert!(key.starts_with("gk:v2:gates:"));
         assert!(key.contains("17:18:45:26"));
     }
 
@@ -750,5 +751,114 @@ mod tests {
         let result = engine.calculate(input).await;
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("requires either"));
+    }
+
+    // Synthetic adapter fixture, not an astronomical reference chart.
+    fn distinct_line_hd_fixture() -> Value {
+        json!({
+            "personality_activations": {
+                "sun": {"gate": 17, "line": 1, "longitude": 120.5},
+                "earth": {"gate": 18, "line": 2, "longitude": 300.5}
+            },
+            "design_activations": {
+                "sun": {"gate": 45, "line": 4, "longitude": 45.3},
+                "earth": {"gate": 26, "line": 6, "longitude": 225.3}
+            }
+        })
+    }
+
+    #[test]
+    fn test_hd_fixture_preserves_four_lines_and_canonical_sources() {
+        let chart =
+            GeneKeysEngine::create_chart_from_hd_result(&distinct_line_hd_fixture()).unwrap();
+        let output = GeneKeysEngine::serialize_chart(&chart, 3);
+        for (sphere, index, gate, line, source) in [
+            ("lifes_work", 0, 17, 1, "PersonalitySun"),
+            ("evolution", 1, 18, 2, "PersonalityEarth"),
+            ("radiance", 2, 45, 4, "DesignSun"),
+            ("purpose", 3, 26, 6, "DesignEarth"),
+        ] {
+            assert_eq!(output["active_keys"][index]["key_number"], gate);
+            assert_eq!(output["active_keys"][index]["line"], line);
+            assert_eq!(output["active_keys"][index]["source"], source);
+            assert_eq!(
+                output["activation_spheres"][sphere],
+                json!({"key_number":gate,"line":line,"source":source})
+            );
+        }
+        assert_eq!(
+            output["activation_sequence"],
+            json!({"lifes_work":[17,18],"evolution":[45,26],"radiance":[17,45],"purpose":[18,26]})
+        );
+        assert_eq!(
+            output["activation_sequence_semantics"],
+            "legacy_gate_pair_relationships_not_canonical_spheres"
+        );
+    }
+
+    #[test]
+    fn test_hd_birth_result_requires_valid_gate_line_and_source_blocks() {
+        for value in [
+            Value::Null,
+            json!(0),
+            json!(7),
+            json!(3.5),
+            json!(-1),
+            json!("3"),
+        ] {
+            let mut fixture = distinct_line_hd_fixture();
+            fixture["personality_activations"]["sun"]["line"] = value;
+            assert!(GeneKeysEngine::create_chart_from_hd_result(&fixture).is_err());
+        }
+        for value in [
+            json!(0),
+            json!(65),
+            json!(273),
+            json!(17.5),
+            json!(-1),
+            json!("17"),
+        ] {
+            let mut fixture = distinct_line_hd_fixture();
+            fixture["design_activations"]["earth"]["gate"] = value;
+            assert!(GeneKeysEngine::create_chart_from_hd_result(&fixture).is_err());
+        }
+        let mut fixture = distinct_line_hd_fixture();
+        fixture["design_activations"]["earth"]
+            .as_object_mut()
+            .unwrap()
+            .remove("line");
+        assert!(GeneKeysEngine::create_chart_from_hd_result(&fixture).is_err());
+        for block in ["personality_activations", "design_activations"] {
+            let mut fixture = distinct_line_hd_fixture();
+            fixture.as_object_mut().unwrap().remove(block);
+            assert!(GeneKeysEngine::create_chart_from_hd_result(&fixture).is_err());
+        }
+    }
+
+    #[test]
+    fn test_gate_options_reject_overflow_before_narrowing() {
+        let mut input = create_test_input_with_gates();
+        input.options.get_mut("hd_gates").unwrap()["personality_sun"] = json!(273);
+        assert!(GeneKeysEngine::extract_hd_gates_from_options(&input.options).is_err());
+    }
+
+    #[test]
+    fn test_birth_cache_uses_semantic_namespace_and_timezone() {
+        let engine = GeneKeysEngine::new();
+        let mut input = create_test_input_with_gates();
+        input.birth_data = Some(noesis_core::BirthData {
+            name: Some("Test Reader".to_string()),
+            date: "1990-01-01".to_string(),
+            time: Some("12:00".to_string()),
+            latitude: 12.9716,
+            longitude: 77.5946,
+            timezone: "Asia/Kolkata".to_string(),
+        });
+        let india = engine.cache_key(&input);
+        input.birth_data.as_mut().unwrap().timezone = "UTC".to_string();
+        let utc = engine.cache_key(&input);
+        assert!(india.starts_with("gk:v2:birth:"));
+        assert!(india.contains("Asia/Kolkata"));
+        assert_ne!(india, utc);
     }
 }
