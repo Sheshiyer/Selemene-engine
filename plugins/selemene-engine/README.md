@@ -1,21 +1,43 @@
-# Selemene Engine — public submission source
+# Selemene Engine — private plugin
 
-Draft version 0.1.0. This directory is not a submission-ready bundle. Its seven-tool skill and listing depend on the actual deployed, verified MCP server. No endpoint is fabricated and no `mcp.json` is present until deployment verification supplies one.
+Version 0.2.0 ports guided onboarding and the staged Selemene reading flow into the user's current ChatGPT conversation. The hosted service supplies reviewed engine calculations, local symbolic draws, existing framework meanings, and rule-based workflow synthesis. ChatGPT composes explanations, Aletheios/Pichet perspectives, integrated readings, and final prose using the user's active model and applicable ChatGPT limits. The plugin does not call an operator-funded narrative model.
 
-`plugin.json` contains supported listing copy, 5 positive cases, 3 negative cases, release notes and existing brand assets. Unknown publisher, category, URL, commerce, country and recording fields are omitted intentionally. Review cases are **not run**; see `../../docs/plans/chatgpt-plugin/REVIEW-CASES.md`.
+Customers need no personal Selemene account, login, or API key. `mcp.json` connects to the dedicated hosted free service without client credentials. The sponsor API credential is held only on the server and must never be included in this package. Free access is bounded by the service's quota and availability.
 
-## Package checks
+Calculations send supplied personal inputs to the hosted Selemene service, which can retain inputs and results under a shared service/admin account and update that account's profile, history, usage or XP. The skills disclose this before execution. This creates no personal linked account or private account history.
 
-Run `python3 plugins/selemene-engine/scripts/create-package.py --check` from the repository root. This is an offline fail-closed local readiness checker, not the target portal validator. It reports all missing evidence and exits nonzero until preparation is complete. It does not fetch remote URLs, authenticate, upload, submit or attest.
+## Included workflow
 
-Once a real endpoint is verified, write portable `mcp.json` with `$schema` `https://agent-plugins.org/schemas/1.0.0/mcp.schema.json` and one `mcpServers.selemene` entry containing `type: streamable-http` and the actual HTTPS `url`. Do not add bearer headers, credentials, `.app.json` or app bindings to the upload.
+- `selemene-onboarding` introduces the service, discovers actual available engines/workflows, and helps choose a focus, language, depth, and necessary inputs.
+- `selemene-reading` preflights the selected request, runs explicitly requested calculations, and composes a factual, source-qualified symbolic reading in ChatGPT.
+- `skills/selemene-reading/references/host-reading-flow.md` supplies the staged method: intake, factual source map, separate system explanations, Aletheios, Pichet, and integrated synthesis.
 
-Provide an external JSON receipt via `--evidence /absolute/path/submission-evidence.json`. It must contain `manifest_sha256` matching the final manifest plus `checks` entries with nonempty `value`, `verified_at` and `evidence` strings. Required keys: `endpoint` (value = MCP URL), all four listing URL field names (value = their manifest URL), `demo_recording_url` (value = verified video URL), `developerName` (value = verified identity), `category` (value = supported dashboard category), `publication.countries` (value = JSON encoding of the explicitly chosen country array), `review.commerce` (value = JSON encoding of the actual declaration), `protocol_contract_tests` (value = `passed`), `tool_annotations` (value = `passed`), `icon_visual_inspection` (value = `passed`). The evidence text identifies the receipt or observation, not a claim inferred from a successful HTTP status. Never put credentials into that file or the package.
+When exposed by the connected service, `selemene_vedic_chart` supplies a separate natal D1/D9 chart source for integrated Kundali prose. It is not a `vedic-kundali` engine or the advanced local supplement. Only returned chart fields can support the reading; unsupported yogas, dignities, strength, Atmakaraka, or combustion conclusions are not invented.
 
-A candidate ZIP does not require cases to have already run against an uploaded submission version. After upload and final connection, run the same checker with `--submission-check`; that additionally requires a `connected_review_cases` receipt with value `passed` identifying the saved version and real runs. This prevents a circular dependency between creating the first ZIP and testing its saved portal version.
+Brief readings and long detailed reports are supported. Requested files can be created through available host-native document/file tools and must be verified. The original hosted witness generator, judge/corpus verification, certified export pipeline, media analysis, account administration, and paid generation are not invoked. Missing facts, unavailable engines, and partial workflows remain explicit.
 
-Then use `--output /absolute/path/selemene-engine-0.1.0.zip` with `--evidence` to create the public upload in a separate archive. Only the portable manifest, verified MCP configuration, skill and assets are included. The checker inspects archive inventory and metadata; readiness does not establish portal authentication, developer/domain verification, secure reviewer access or legal attestations. Those remain separate final setup steps.
+## Private export
 
-## Existing icon provenance
+From the repository root, validate the portable package:
 
-`assets/icon.png` is a transparent 512px square rasterization of the repository's existing `docs/architecture/selemene-atlas/public/assets/tryambakam-sigil.svg` from the original checkout. Its geometry and bronze color are preserved, with a centered square canvas. No new logo is generated. Verify legibility on light/dark backgrounds and at small sizes before recording icon evidence.
+```sh
+python3 -B plugins/selemene-engine/scripts/create-private-package.py --check
+```
+
+Create a new archive outside this source directory:
+
+```sh
+python3 -B plugins/selemene-engine/scripts/create-private-package.py --output /absolute/output/selemene-engine-0.2.0.zip
+```
+
+The private builder checks format, skill frontmatter, contained icon assets, the fixed credential-free MCP connection, secret patterns, archive inventory, symlinks, and output safety. It refuses to overwrite a release. It bundles only the portable manifest, MCP configuration, skills/references, and assets under one `selemene-engine/` directory; development scripts, dependencies, environment files, and credentials are excluded.
+
+Private export requires no public listing attestations or legal metadata. A successful local export establishes package validity; deployed service execution, installation, and connected-host behavior require separate verification. Saving through Plugin Creator creates a private plugin and does not publish a public listing.
+
+## Public submission remains separate
+
+`scripts/create-package.py` retains the existing public submission evidence gate. Public packaging still requires the final listing, publisher/category/policy information, country and commerce choices, recording, and matching verification receipts. It fails closed until those requirements are supplied. `--submission-check` additionally requires executed cases for the saved submission version. The private builder neither changes nor satisfies that gate.
+
+## Brand asset
+
+`assets/icon.png` preserves the existing transparent 512px bronze Tryambakam sigil rasterized from the repository's original SVG. Its bytes are unchanged by this release.

@@ -116,7 +116,9 @@ export async function callSelemene(
       headers,
       body: bodyText,
       signal: controller.signal,
-      redirect: "error",
+      // Workers accepts only manual/follow. Manual keeps X-API-Key on the
+      // fixed first request; the explicit 3xx refusal below prevents forwarding.
+      redirect: "manual",
     });
   } catch (err) {
     clearTimeout(timeoutHandle);
@@ -135,6 +137,11 @@ export async function callSelemene(
   // response body read below. readBounded respects the same AbortSignal.
 
   const status = response.status;
+  if (status >= 300 && status < 400) {
+    clearTimeout(timeoutHandle);
+    void response.body?.cancel().catch(() => {});
+    return { kind: "unavailable", status, sanitized: "upstream redirect refused" };
+  }
   // Enforce response bound before parsing. The AbortSignal from the controller
   // (which the timeout armed) is still active during this read.
   const raw = await readBounded(response, controller.signal);

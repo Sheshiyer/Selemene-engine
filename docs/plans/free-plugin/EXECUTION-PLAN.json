@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-07",
+  "purpose": "Free Selemene calculation tools with interpretation and synthesis in host ChatGPT",
+  "endpoint": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+  "credential_storage": "Cloudflare Worker SELEMENE_API_KEY secret; never in plugin",
+  "persistence": "User explicitly accepts shared service/admin account inputs, results, profile, history, usage and XP effects",
+  "implementation_worktree": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
+  "workers": {
+    "package": "plugin_package",
+    "reading_reference": "backend_contract",
+    "mcp_worker": "ops_contract"
+  },
+  "host_stages": [
+    "onboard",
+    "calculate",
+    "fact map",
+    "per-engine interpretation",
+    "Aletheios structure",
+    "Pichet exploration",
+    "reader-facing synthesis"
+  ],
+  "backend_inference_calls": 0,
+  "publication_scope": "create private plugin; public directory publication not claimed",
+  "acceptance_ids": "ISC-239..270",
+  "status": "private-plugin-saved-and-free-service-live",
+  "evidence": [
+    "deployment-receipt.json",
+    "live-smoke.json",
+    "package-receipt.json",
+    "plugin-receipt.json",
+    "runtime-compatibility.json"
+  ]
+}

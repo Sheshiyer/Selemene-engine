@@ -1,0 +1,763 @@
+{
+  "observed_at": "2026-10-07T18:06:34.749Z",
+  "endpoint": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+  "checks": [
+    {
+      "name": "SDK initialize and initialized notification",
+      "status": "pass",
+      "detail": "Connected with no customer authentication headers."
+    },
+    {
+      "name": "Noauth tool discovery",
+      "status": "pass",
+      "detail": [
+        "selemene_list_engines",
+        "selemene_engine_info",
+        "selemene_prepare_reading",
+        "selemene_calculate",
+        "selemene_list_workflows",
+        "selemene_workflow_info",
+        "selemene_run_workflow",
+        "selemene_vedic_chart"
+      ]
+    },
+    {
+      "name": "Live reviewed engine catalog",
+      "status": "pass",
+      "detail": {
+        "engines": [
+          {
+            "engine_id": "numerology",
+            "title": "Numerology",
+            "summary": "Numerological analysis derived from name and date of birth.",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          },
+          {
+            "engine_id": "human-design",
+            "title": "Human Design",
+            "summary": "Human Design chart requiring exact birth date, time, and location.",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          },
+          {
+            "engine_id": "gene-keys",
+            "title": "Gene Keys",
+            "summary": "Gene Keys profile composed over Human Design; requires birth data with exact time.",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          },
+          {
+            "engine_id": "vimshottari",
+            "title": "Vimshottari Dasha",
+            "summary": "Vedic dasha periods derived from a natal chart. Requires birth data with exact time.",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          },
+          {
+            "engine_id": "panchanga",
+            "title": "Panchanga",
+            "summary": "Vedic almanac. Natal mode requires full birth_data with exact time and empty parameters.",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          },
+          {
+            "engine_id": "vedic-clock",
+            "title": "Vedic Clock",
+            "summary": "Time-of-day energetic mapping. Requires explicit timezone (IANA or offset minutes).",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          },
+          {
+            "engine_id": "biorhythm",
+            "title": "Biorhythm",
+            "summary": "Classical biorhythm curves. Requires birth data and explicit current_time.",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          },
+          {
+            "engine_id": "transits",
+            "title": "Transits",
+            "summary": "Current planetary transits against natal chart. Requires birth data with exact time.",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          },
+          {
+            "engine_id": "enneagram",
+            "title": "Enneagram",
+            "summary": "Enneagram type via 45-answer inventory (1–5) or known type (1–9). Never question-based.",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          },
+          {
+            "engine_id": "tarot",
+            "title": "Tarot",
+            "summary": "Symbolic tarot reflection with spread options.",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          },
+          {
+            "engine_id": "i-ching",
+            "title": "I Ching",
+            "summary": "I Ching hexagram reflection with divination method options.",
+            "catalog_present": true,
+            "readiness_source": "unknown",
+            "capability": null,
+            "side_effects": [
+              "persists a reading row bound to the authenticated user",
+              "logs a usage event and may increment the free-tier monthly counter",
+              "awards experience points and may auto-promote the consciousness level",
+              "may populate the user's stored profile from birth_data on first use"
+            ],
+            "warnings": []
+          }
+        ],
+        "capabilities_source": "unknown",
+        "note": "Catalog membership does not imply operational readiness. Use selemene_engine_info for per-engine requirements.",
+        "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls."
+      }
+    },
+    {
+      "name": "Incomplete-input preflight",
+      "status": "pass",
+      "detail": {
+        "engine_id": "numerology",
+        "valid": false,
+        "errors": [],
+        "missing": [
+          "birth_data.name",
+          "birth_data.latitude",
+          "birth_data.longitude",
+          "birth_data.timezone"
+        ],
+        "can_calculate": false,
+        "reviewed_schema": {
+          "requires_birth_data": true,
+          "requires_exact_time": false,
+          "requires_current_time": false
+        },
+        "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+        "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+      }
+    },
+    {
+      "name": "Denied biofield",
+      "status": "pass",
+      "detail": {
+        "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+        "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+      }
+    },
+    {
+      "name": "Denied face-reading",
+      "status": "pass",
+      "detail": {
+        "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+        "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+      }
+    },
+    {
+      "name": "Denied sigil-forge",
+      "status": "pass",
+      "detail": {
+        "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+        "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+      }
+    },
+    {
+      "name": "Denied admin",
+      "status": "pass",
+      "detail": {
+        "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+        "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+      }
+    },
+    {
+      "name": "Privilege injection denied",
+      "status": "pass",
+      "detail": "Caller consciousness_level rejected."
+    },
+    {
+      "name": "Complete synthetic preflight",
+      "status": "pass",
+      "detail": {
+        "engine_id": "numerology",
+        "valid": true,
+        "errors": [],
+        "missing": [],
+        "can_calculate": true,
+        "reviewed_schema": {
+          "requires_birth_data": true,
+          "requires_exact_time": false,
+          "requires_current_time": false
+        },
+        "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+        "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+      }
+    },
+    {
+      "name": "Synthetic numerology calculation",
+      "status": "pass",
+      "detail": {
+        "engine_id": "numerology",
+        "side_effects": [
+          "persists a reading row bound to the authenticated user",
+          "logs a usage event and may increment the free-tier monthly counter",
+          "awards experience points and may auto-promote the consciousness level",
+          "may populate the user's stored profile from birth_data on first use"
+        ],
+        "persistence_status": "not_confirmed",
+        "disclosure": "Persistence is async best-effort; status is not confirmed until a subsequent query.",
+        "result": {
+          "engine_id": "numerology",
+          "result": {
+            "birthday": {
+              "is_master": false,
+              "meaning": "Leadership, independence, pioneering",
+              "reduction_chain": [
+                1
+              ],
+              "value": 1
+            },
+            "chaldean_name": {
+              "is_master": false,
+              "meaning": "Analysis, wisdom, introspection",
+              "reduction_chain": [
+                88,
+                16,
+                7
+              ],
+              "value": 7
+            },
+            "expression": {
+              "is_master": false,
+              "meaning": "Power, abundance, achievement",
+              "reduction_chain": [
+                116,
+                8
+              ],
+              "value": 8
+            },
+            "life_path": {
+              "is_master": false,
+              "meaning": "Creativity, expression, joy",
+              "reduction_chain": [
+                3
+              ],
+              "value": 3
+            },
+            "personality": {
+              "is_master": false,
+              "meaning": "Leadership, independence, pioneering",
+              "reduction_chain": [
+                73,
+                10,
+                1
+              ],
+              "value": 1
+            },
+            "soul_urge": {
+              "is_master": false,
+              "meaning": "Analysis, wisdom, introspection",
+              "reduction_chain": [
+                43,
+                7
+              ],
+              "value": 7
+            }
+          },
+          "witness_prompt": "Your Life Path 3 speaks of creative expression. Notice: is the joy you share a reflection of inner joy, or a mask over silence?",
+          "metadata": {
+            "calculation_time_ms": 2.322564,
+            "backend": "native-rust",
+            "precision_achieved": "exact",
+            "cached": false,
+            "timestamp": "2026-10-07T18:06:33.416397016Z",
+            "engine_version": "3.3.1"
+          },
+          "contract_version": "v1",
+          "envelope_version": "1",
+          "witness_prompts": [
+            {
+              "prompt": "Your Life Path 3 speaks of creative expression. Notice: is the joy you share a reflection of inner joy, or a mask over silence?",
+              "themes": []
+            }
+          ],
+          "calculated_at": "2026-10-07T18:06:33.416397016+00:00",
+          "processing_time_ms": 2.322564
+        },
+        "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.",
+        "shared_storage_disclosure": "Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history."
+      }
+    },
+    {
+      "name": "Synthetic Vedic D1/D9 calculation",
+      "status": "pass",
+      "detail": {
+        "chart_kind": "vedic-d1-d9",
+        "result": {
+          "d1": {
+            "ascendant": {
+              "sign": "pisces",
+              "degree": 18.11796970099033,
+              "nakshatra": "Revati",
+              "pada": 1
+            },
+            "ayanamsa": 23.7103391211499,
+            "house_system": "whole_sign",
+            "houses": [
+              {
+                "number": 1,
+                "sign": "pisces",
+                "cusp": 330,
+                "degree": 0,
+                "house_type": "dharma",
+                "is_kendra": true,
+                "is_panapara": false,
+                "is_apoklima": false
+              },
+              {
+                "number": 2,
+                "sign": "aries",
+                "cusp": 0,
+                "degree": 0,
+                "house_type": "artha",
+                "is_kendra": false,
+                "is_panapara": true,
+                "is_apoklima": false
+              },
+              {
+                "number": 3,
+                "sign": "taurus",
+                "cusp": 30,
+                "degree": 0,
+                "house_type": "kama",
+                "is_kendra": false,
+                "is_panapara": false,
+                "is_apoklima": true
+              },
+              {
+                "number": 4,
+                "sign": "gemini",
+                "cusp": 60,
+                "degree": 0,
+                "house_type": "moksha",
+                "is_kendra": true,
+                "is_panapara": false,
+                "is_apoklima": false
+              },
+              {
+                "number": 5,
+                "sign": "cancer",
+                "cusp": 90,
+                "degree": 0,
+                "house_type": "dharma",
+                "is_kendra": false,
+                "is_panapara": true,
+                "is_apoklima": false
+              },
+              {
+                "number": 6,
+                "sign": "leo",
+                "cusp": 120,
+                "degree": 0,
+                "house_type": "artha",
+                "is_kendra": false,
+                "is_panapara": false,
+                "is_apoklima": true
+              },
+              {
+                "number": 7,
+                "sign": "virgo",
+                "cusp": 150,
+                "degree": 0,
+                "house_type": "kama",
+                "is_kendra": true,
+                "is_panapara": false,
+                "is_apoklima": false
+              },
+              {
+                "number": 8,
+                "sign": "libra",
+                "cusp": 180,
+                "degree": 0,
+                "house_type": "moksha",
+                "is_kendra": false,
+                "is_panapara": true,
+                "is_apoklima": false
+              },
+              {
+                "number": 9,
+                "sign": "scorpio",
+                "cusp": 210,
+                "degree": 0,
+                "house_type": "dharma",
+                "is_kendra": false,
+                "is_panapara": false,
+                "is_apoklima": true
+              },
+              {
+                "number": 10,
+                "sign": "sagittarius",
+                "cusp": 240,
+                "degree": 0,
+                "house_type": "artha",
+                "is_kendra": true,
+                "is_panapara": false,
+                "is_apoklima": false
+              },
+              {
+                "number": 11,
+                "sign": "capricorn",
+                "cusp": 270,
+                "degree": 0,
+                "house_type": "kama",
+                "is_kendra": false,
+                "is_panapara": true,
+                "is_apoklima": false
+              },
+              {
+                "number": 12,
+                "sign": "aquarius",
+                "cusp": 300,
+                "degree": 0,
+                "house_type": "moksha",
+                "is_kendra": false,
+                "is_panapara": false,
+                "is_apoklima": true
+              }
+            ],
+            "moon": {
+              "sign": "aquarius",
+              "degree": 9.557348549794824,
+              "nakshatra": "Shatabhisha",
+              "pada": 1,
+              "rashi_lord": "Saturn"
+            },
+            "native": {
+              "birth_date": "1990-01-01",
+              "birth_time": "12:00:00",
+              "latitude": 0,
+              "longitude": 0,
+              "timezone": 0
+            },
+            "notes": [
+              "Native computation via Swiss Ephemeris (Lahiri ayanamsa, whole-sign houses)"
+            ],
+            "planets": [
+              {
+                "name": "Sun",
+                "longitude": 257.1039163246052,
+                "sign": "sagittarius",
+                "degree": 17.103916324605223,
+                "minutes": 6,
+                "house": 10,
+                "is_retrograde": false,
+                "nakshatra": "Purva Ashadha",
+                "pada": 2,
+                "speed": 1.0194731047713608,
+                "latitude": 0.00001198568251736384
+              },
+              {
+                "name": "Moon",
+                "longitude": 309.5573485497948,
+                "sign": "aquarius",
+                "degree": 9.557348549794824,
+                "minutes": 33,
+                "house": 12,
+                "is_retrograde": false,
+                "nakshatra": "Shatabhisha",
+                "pada": 1,
+                "speed": 13.470100876603471,
+                "latitude": 1.470689509033714
+              },
+              {
+                "name": "Mars",
+                "longitude": 226.28974747716532,
+                "sign": "scorpio",
+                "degree": 16.28974747716532,
+                "minutes": 17,
+                "house": 9,
+                "is_retrograde": false,
+                "nakshatra": "Anuradha",
+                "pada": 4,
+                "speed": 0.7037567092002174,
+                "latitude": -0.03293101657334668
+              },
+              {
+                "name": "Mercury",
+                "longitude": 271.9624654154452,
+                "sign": "capricorn",
+                "degree": 1.9624654154451946,
+                "minutes": 57,
+                "house": 11,
+                "is_retrograde": true,
+                "nakshatra": "Uttara Ashadha",
+                "pada": 2,
+                "speed": -0.29457231088395075,
+                "latitude": 0.6303053479296999
+              },
+              {
+                "name": "Jupiter",
+                "longitude": 71.43838649813797,
+                "sign": "gemini",
+                "degree": 11.438386498137973,
+                "minutes": 26,
+                "house": 4,
+                "is_retrograde": true,
+                "nakshatra": "Ardra",
+                "pada": 2,
+                "speed": -0.1344807787059025,
+                "latitude": -0.11696028211234831
+              },
+              {
+                "name": "Venus",
+                "longitude": 282.51149435225125,
+                "sign": "capricorn",
+                "degree": 12.511494352251248,
+                "minutes": 30,
+                "house": 11,
+                "is_retrograde": true,
+                "nakshatra": "Shravana",
+                "pada": 1,
+                "speed": -0.13028679463746684,
+                "latitude": 1.9011918260338596
+              },
+              {
+                "name": "Saturn",
+                "longitude": 261.94718297430865,
+                "sign": "sagittarius",
+                "degree": 21.947182974308646,
+                "minutes": 56,
+                "house": 10,
+                "is_retrograde": false,
+                "nakshatra": "Purva Ashadha",
+                "pada": 3,
+                "speed": 0.11827134300635227,
+                "latitude": 0.2933007711611973
+              },
+              {
+                "name": "Rahu",
+                "longitude": 293.15833325496357,
+                "sign": "capricorn",
+                "degree": 23.158333254963566,
+                "minutes": 9,
+                "house": 11,
+                "is_retrograde": false,
+                "nakshatra": "Shravana",
+                "pada": 4,
+                "speed": 0.023355952547634895,
+                "latitude": 0
+              },
+              {
+                "name": "Ketu",
+                "longitude": 113.15833325496357,
+                "sign": "cancer",
+                "degree": 23.158333254963566,
+                "minutes": 9,
+                "house": 5,
+                "is_retrograde": true,
+                "nakshatra": "Ashlesha",
+                "pada": 2,
+                "speed": -0.023355952547634895,
+                "latitude": 0
+              }
+            ],
+            "special_points": {
+              "lagna": 348.11796970099033,
+              "midheaven": null,
+              "part_of_fortune": 40.57140192617993
+            }
+          },
+          "d9": {
+            "d9_lagna": "taurus",
+            "navamsa_positions": [
+              {
+                "planet": "Sun",
+                "sign": "taurus",
+                "degree": 3.9352469214469967,
+                "is_vargottama": false
+              },
+              {
+                "planet": "Moon",
+                "sign": "libra",
+                "degree": 26.016136948153413,
+                "is_vargottama": false
+              },
+              {
+                "planet": "Mars",
+                "sign": "sagittarius",
+                "degree": 26.60772729448788,
+                "is_vargottama": false
+              },
+              {
+                "planet": "Mercury",
+                "sign": "aries",
+                "degree": 17.66218873900675,
+                "is_vargottama": false
+              },
+              {
+                "planet": "Jupiter",
+                "sign": "pisces",
+                "degree": 12.945478483241754,
+                "is_vargottama": false
+              },
+              {
+                "planet": "Venus",
+                "sign": "cancer",
+                "degree": 22.603449170261225,
+                "is_vargottama": false
+              },
+              {
+                "planet": "Saturn",
+                "sign": "gemini",
+                "degree": 17.524646768777806,
+                "is_vargottama": false
+              },
+              {
+                "planet": "Rahu",
+                "sign": "libra",
+                "degree": 28.424999294672084,
+                "is_vargottama": false
+              },
+              {
+                "planet": "Ketu",
+                "sign": "libra",
+                "degree": 28.424999294672084,
+                "is_vargottama": false
+              }
+            ],
+            "source": {
+              "birth_date": "1990-01-01",
+              "birth_time": "12:00:00",
+              "latitude": 0,
+              "longitude": 0,
+              "timezone": 0
+            },
+            "vargottama": []
+          }
+        },
+        "calculation_method": "Swiss Ephemeris planetary positions, approximate linear Lahiri ayanamsa, whole-sign houses",
+        "limitations": {
+          "unavailable_fields": [
+            "combustion",
+            "dignities",
+            "yogas",
+            "atmakaraka",
+            "darakaraka"
+          ],
+          "ayanamsa_precision": "The chart handler uses an approximate linear Lahiri formula (23.85 + Julian centuries since J2000 * 1.3968 degrees), rather than a separately verified sidereal ayanamsa implementation.",
+          "note": "This D1/D9 bundle is not the richer local vedic-kundali report supplement."
+        },
+        "persistence_status": "not_persisted_by_chart_handler",
+        "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls."
+      }
+    },
+    {
+      "name": "Reviewed workflows",
+      "status": "pass",
+      "detail": {
+        "workflows": [
+          {
+            "workflow_id": "decision-support",
+            "safe_engine_ids": [
+              "tarot",
+              "i-ching",
+              "human-design",
+              "enneagram",
+              "gene-keys"
+            ],
+            "description": "Multi-engine decision support combining tarot, I Ching, human design, enneagram, and gene keys."
+          }
+        ],
+        "note": "Only workflows whose engine composition is fully within the reviewed non-media allowlist are exposed. Unknown or unreviewed workflows are denied.",
+        "interpretation_policy": "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls."
+      }
+    },
+    {
+      "name": "Original OAuth Worker preserved",
+      "status": "pass",
+      "detail": "Unauthenticated HTTP401."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "observed_at": "2026-10-07T18:16:03.136752+00:00",
+  "worker": "selemene-free-mcp",
+  "version_id": "78262f06-054a-49ac-8f48-dccc507c1814",
+  "origin": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev",
+  "mcp_endpoint": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+  "secret_names": [
+    "SELEMENE_API_KEY",
+    "RATE_LIMIT_SALT"
+  ],
+  "secret_values_disclosed": false,
+  "key_origin": "operator Claude environment; transferred privately over stdin",
+  "host_narration": "current ChatGPT model and applicable user ChatGPT limits",
+  "connector_hosted_inference_calls": 0,
+  "storage": "shared administrator account, explicitly accepted by operator",
+  "verification": {
+    "new_worker_tests": 77,
+    "original_oauth_tests": 18,
+    "package_tests": 13,
+    "live_checks": 14,
+    "typecheck": "pass",
+    "deployment_dry_run": "pass",
+    "production_dependency_audit": "zero reported vulnerabilities"
+  },
+  "old_oauth_worker": "unauthenticated HTTP401; not redeployed",
+  "source_hashes": {
+    "workers/selemene-free-mcp/src/sanitize.ts": "803b5a443100c614e95d86a00c48a5e48b370531f52a040cb00205f3a069c7b3",
+    "workers/selemene-free-mcp/src/mcp.ts": "c5cae96963426a488b77d7c07796e17bcb52588b0dc3b32cfba520f0d48f5e8c",
+    "workers/selemene-free-mcp/src/rate-limiter.ts": "4337bd97bceba0633c3bbc519b40aa5b80f597b9642615d05a323549a9ad8604",
+    "workers/selemene-free-mcp/src/vedic-chart.ts": "5531041aa63b6d693cf7baacfca0339cb1b39154cc3b5b7bfbd212f3a8b62e5f",
+    "workers/selemene-free-mcp/src/index.ts": "224cd1fe245ec03bfcd02188c13ed24374faa5e1ab4804f20546b3d46f3b062d",
+    "workers/selemene-free-mcp/src/env.ts": "e562728b0fa231aa59772912d4e5543ed7d943b4d4ccace641a7346833fcf43a",
+    "workers/selemene-free-mcp/test/protocol.test.ts": "5063b6bd4acddbd9f22be223b34397fdac01b012cbbafe20e30e7436027f578a",
+    "workers/selemene-free-mcp/test/helpers.ts": "00fe7c5c44816b8deeb072ed5f9942607ec06470cd23c9439cdbc5a22e0e06a8",
+    "workers/selemene-free-mcp/test/sanitize.test.ts": "569f7487e39fb6b966eec2032e7402d03e6d687d92386dd595e231bbdc2c7783",
+    "workers/selemene-free-mcp/test/rate-limiter.test.ts": "5e797f0c3f00f6348a4399259e6c11b157427ce497edf56e17214c9c49cc7375",
+    "workers/selemene-free-mcp/test/vedic-chart.test.ts": "f3c24877c99937f586be1aacbf2b9b3e1ff3f72d7638ce5f6ba23dfed5976664",
+    "workers/selemene-free-mcp/test/workerd-upstream.test.js": "1f480c693ba7b6e3229353946fa12402ebfe8536aaa1e94a54d7a502ec441257",
+    "workers/selemene-mcp/src/upstream.ts": "e384352c9dcc3c31b9b08be51c55fc97fcce5daa19f45e56c683749492d75f2d",
+    "workers/selemene-free-mcp/wrangler.jsonc": "a3e84c7ca79efabcd3cb4224262565c416279c2ecc37d738f7237a0b2ec4ed99",
+    "workers/selemene-free-mcp/package-lock.json": "428bae8373faaec6eac752987117b114d0b8d51ce9253afbb9cd9d255a8706d5"
+  },
+  "checkpoint_source_hashes": {
+    "workers/selemene-free-mcp/src/sanitize.ts": "e432a21bcae0517d9df5bbb5bc66bc9a133d0f2b58a4136e6c431d6b9856d190",
+    "workers/selemene-free-mcp/src/mcp.ts": "c5cae96963426a488b77d7c07796e17bcb52588b0dc3b32cfba520f0d48f5e8c",
+    "workers/selemene-free-mcp/src/rate-limiter.ts": "ee1ec5cf6b68eb833a1fa103bdf15cf40b6aedb462968c06c6b6c9255c472ad9",
+    "workers/selemene-free-mcp/src/vedic-chart.ts": "5531041aa63b6d693cf7baacfca0339cb1b39154cc3b5b7bfbd212f3a8b62e5f",
+    "workers/selemene-free-mcp/src/index.ts": "ad384823e1e617125b797c2929208def391743c6f9e92be415a3c2b8cdaa8943",
+    "workers/selemene-free-mcp/src/env.ts": "df5406df38ad5e6703ff9bc980658c4a16bbd0b748b2eea317d17b607ca9c152",
+    "workers/selemene-free-mcp/test/protocol.test.ts": "5063b6bd4acddbd9f22be223b34397fdac01b012cbbafe20e30e7436027f578a",
+    "workers/selemene-free-mcp/test/helpers.ts": "4be99efdbf5b4ea6ec9d5e5c8a4f2317edf6e841422fbb4bc068ad72c22736eb",
+    "workers/selemene-free-mcp/test/sanitize.test.ts": "dbadc23e352156a70aef24d537bc3c8983048f046eaf97ba818ee9d29575054b",
+    "workers/selemene-free-mcp/test/rate-limiter.test.ts": "9bd26b61e884a4c85f52b1682ce2d0a98d75fa7f6de3382745321fccd9a9f2be",
+    "workers/selemene-free-mcp/test/vedic-chart.test.ts": "f3c24877c99937f586be1aacbf2b9b3e1ff3f72d7638ce5f6ba23dfed5976664",
+    "workers/selemene-free-mcp/test/workerd-upstream.test.js": "1f480c693ba7b6e3229353946fa12402ebfe8536aaa1e94a54d7a502ec441257",
+    "workers/selemene-mcp/src/upstream.ts": "e384352c9dcc3c31b9b08be51c55fc97fcce5daa19f45e56c683749492d75f2d",
+    "workers/selemene-free-mcp/wrangler.jsonc": "e83db586c1f5938eb774b3709cf5b7d1230ddccb55a16ca718c30c60eb2a282b",
+    "workers/selemene-free-mcp/package-lock.json": "428bae8373faaec6eac752987117b114d0b8d51ce9253afbb9cd9d255a8706d5"
+  },
+  "checkpoint_change": "Removed surplus EOF blank lines only after deployment; deployed source_hashes retained for provenance."
+}

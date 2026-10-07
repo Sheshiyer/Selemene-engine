@@ -1,8 +1,9 @@
 {
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "selemene": {
       "type": "streamable-http",
-      "url": "https://selemene-mcp.sheshnarayan-iyer.workers.dev/mcp"
+      "url": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp"
     }
   }
 }

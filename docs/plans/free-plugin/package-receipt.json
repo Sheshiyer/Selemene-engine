@@ -1,0 +1,14 @@
+{
+  "archive": "/Users/sheshnarayaniyer/.codex/artifacts/selemene-engine-0.2.0-20261007-final.zip",
+  "sha256": "048d787d9f8b91350178019eb95aeab2dc5485698b36e83ce8d0400281250051",
+  "members": [
+    "selemene-engine/assets/icon.png",
+    "selemene-engine/mcp.json",
+    "selemene-engine/plugin.json",
+    "selemene-engine/skills/selemene-onboarding/SKILL.md",
+    "selemene-engine/skills/selemene-reading/SKILL.md",
+    "selemene-engine/skills/selemene-reading/references/host-reading-flow.md"
+  ],
+  "exact_service_credential_absent": true,
+  "crc_error": null
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "selemene-free-mcp",
+  "account_id": "9d9d23b27f32e70ae3afb6a1aa2c0f10",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-08-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "PUBLIC_ORIGIN": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev",
+    "SELEMENE_API_ORIGIN": "https://selemene-engine-production.up.railway.app"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "FREE_RATE_LIMITER",
+        "class_name": "FreeRateLimiter"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "FreeRateLimiter"
+      ]
+    }
+  ],
+  "observability": {
+    "enabled": false
+  }
+}

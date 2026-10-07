@@ -1,0 +1,26 @@
+{
+  "observed_at": "2026-10-07T18:16:01.765Z",
+  "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+  "release_id": "pluginrel_6ac68a646a3481918caccb45c95ad63f",
+  "version": "0.2.0",
+  "scope": "USER",
+  "discoverability": "PRIVATE",
+  "plugin_url": "https://chatgpt.com/plugins/plugins_6ac68a62e61081918179487264135f28",
+  "saved_release_read_back": true,
+  "matched_text_members": [
+    "mcp.json",
+    "skills/selemene-onboarding/SKILL.md",
+    "skills/selemene-reading/SKILL.md",
+    "skills/selemene-reading/references/host-reading-flow.md"
+  ],
+  "manifest_original_fields_preserved": true,
+  "manifest_normalization": "Platform adds authenticated creator author and developerName.",
+  "generated_mcp": {
+    "url": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+    "credential_headers": false
+  },
+  "icon_inventory_size": 53339,
+  "owned_archive_download": "HTTP403; saved text files and metadata verified through connector, binary readback not claimed",
+  "real_host_reading": "not yet verified",
+  "public_marketplace": "not submitted or published"
+}

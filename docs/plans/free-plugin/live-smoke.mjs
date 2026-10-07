@@ -1,0 +1,53 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+const require = createRequire(new URL('../../../workers/selemene-free-mcp/package.json', import.meta.url));
+const {Client} = await import(pathToFileURL(require.resolve('@modelcontextprotocol/sdk/client/index.js')));
+const {StreamableHTTPClientTransport} = await import(pathToFileURL(require.resolve('@modelcontextprotocol/sdk/client/streamableHttp.js')));
+const endpoint = 'https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp';
+const checks = [];
+const record = (name, detail) => checks.push({name, status:'pass', detail});
+const parsed = (r) => r.structuredContent ?? JSON.parse(r.content.find(x=>x.type==='text').text);
+const client = new Client({name:'selemene-free-live-verification',version:'0.1.0'});
+try {
+ await client.connect(new StreamableHTTPClientTransport(new URL(endpoint)));
+ record('SDK initialize and initialized notification','Connected with no customer authentication headers.');
+ const listed = await client.listTools();
+ const names = listed.tools.map(t=>t.name);
+ for (const tool of listed.tools) assert.deepEqual(tool._meta?.securitySchemes ?? tool.securitySchemes,[{type:'noauth'}]);
+ record('Noauth tool discovery',names);
+ const catalogue = await client.callTool({name:'selemene_list_engines',arguments:{}});
+ assert.ok(!catalogue.isError); record('Live reviewed engine catalog',parsed(catalogue));
+ const missing = await client.callTool({name:'selemene_prepare_reading',arguments:{engine_id:'numerology',birth_data:{date:'1990-01-01'}}});
+ assert.ok(!missing.isError); assert.equal(parsed(missing).can_calculate,false);
+ record('Incomplete-input preflight',parsed(missing));
+ for (const engine_id of ['biofield','face-reading','sigil-forge','admin']) {
+  const denied = await client.callTool({name:'selemene_calculate',arguments:{engine_id}});
+  assert.equal(denied.isError,true); record('Denied '+engine_id,parsed(denied));
+ }
+ const privilege = await client.callTool({name:'selemene_calculate',arguments:{engine_id:'numerology',consciousness_level:5}});
+ assert.equal(privilege.isError,true); record('Privilege injection denied','Caller consciousness_level rejected.');
+ const fixture = {engine_id:'numerology',birth_data:{name:'Plugin Synthetic Fixture',date:'1990-01-01',time:'12:00',latitude:0,longitude:0,timezone:'Etc/UTC'}};
+ const prepared = await client.callTool({name:'selemene_prepare_reading',arguments:fixture});
+ assert.ok(!prepared.isError); assert.equal(parsed(prepared).can_calculate,true);
+ record('Complete synthetic preflight',parsed(prepared));
+ const calculation = await client.callTool({name:'selemene_calculate',arguments:fixture});
+ assert.ok(!calculation.isError,JSON.stringify(parsed(calculation)));
+ const output = parsed(calculation); assert.equal(output.engine_id,'numerology'); assert.ok(output.result);
+ record('Synthetic numerology calculation',output);
+ const chart = await client.callTool({name:'selemene_vedic_chart',arguments:{birth_data:fixture.birth_data}});
+ assert.ok(!chart.isError,JSON.stringify(parsed(chart)));
+ const natal = parsed(chart); assert.equal(natal.chart_kind,'vedic-d1-d9');
+ assert.equal(natal.result.d1.planets.length,9); assert.equal(natal.result.d1.houses.length,12);
+ assert.equal(natal.result.d9.navamsa_positions.length,9);
+ assert.ok(natal.result.d1.planets.every(p=>!('is_combust' in p)));
+ record('Synthetic Vedic D1/D9 calculation',natal);
+ const workflow = await client.callTool({name:'selemene_list_workflows',arguments:{}});
+ assert.ok(!workflow.isError);record('Reviewed workflows',parsed(workflow));
+ const old = await fetch('https://selemene-mcp.sheshnarayan-iyer.workers.dev/mcp');
+ assert.equal(old.status,401);record('Original OAuth Worker preserved','Unauthenticated HTTP401.');
+} finally {await client.close();}
+const evidence={observed_at:new Date().toISOString(),endpoint,checks};
+await fs.writeFile(new URL('./live-smoke.json',import.meta.url),JSON.stringify(evidence,null,2)+'\n');
+console.log(JSON.stringify({status:'pass',checks:checks.length,tools:checks.find(x=>x.name==='Noauth tool discovery').detail,evidence:'docs/plans/free-plugin/live-smoke.json'}));

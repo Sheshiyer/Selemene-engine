@@ -1,0 +1,18 @@
+{
+  "observed_at": "2026-10-07T18:03:43.755376+00:00",
+  "runtime": "actual workerd via Miniflare convertV4MiniflareOptions",
+  "compatibility_date": "2025-08-01",
+  "probe_endpoint": "https://selemene-engine-production.up.railway.app/health",
+  "authentication": "none",
+  "checks": [
+    {
+      "redirect": "error",
+      "outcome": "TypeError: invalid redirect value; follow or manual required"
+    },
+    {
+      "redirect": "manual",
+      "status": 200
+    }
+  ],
+  "resolution": "manual redirect mode with explicit 3xx refusal; no redirect is followed"
+}

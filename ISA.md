@@ -4,7 +4,7 @@ task: "P6 Wave 2 performance, recovery, runtime status, and accessible depth"
 effort: E3
 effort_source: classifier
 phase: complete
-progress: 170/170
+progress: 202/202
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
 updated: 2026-07-19T03:05:00+05:30
@@ -289,6 +289,41 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-162: Full tests, typecheck, production build, and browser journeys pass at desktop, narrow, recovery, and reduced-motion states (probe: repository and browser gates).
 - [x] ISC-163: Anti: Wave 2 introduces no raw media, credentials, unrestricted renderer fetch, or Electron-boundary regression (probe: source, bundle, and trust-boundary scans).
 
+### Free ChatGPT plugin — 2026-10-07
+
+- [x] ISC-239: Free plugin archive contains no service credential.
+- [x] ISC-240: Free MCP is deployed separately from the OAuth Worker.
+- [x] ISC-241: Free MCP initializes without a customer login.
+- [x] ISC-242: Free MCP advertises noauth security schemes.
+- [x] ISC-243: Engine discovery returns only reviewed nonmedia engines.
+- [x] ISC-244: Engine info uses only a reviewed engine identifier.
+- [x] ISC-245: Input preparation never performs a calculation.
+- [x] ISC-246: Calculation rejects caller-supplied privilege fields.
+- [x] ISC-247: Workflow discovery filters exact reviewed compositions.
+- [x] ISC-248: Workflow info rejects unknown or changed compositions.
+- [x] ISC-249: Workflow execution preserves missing-engine disclosure.
+- [x] ISC-250: Only fixed Selemene HTTPS upstream routes are reachable.
+- [x] ISC-251: The service key is stored only in a Worker secret.
+- [x] ISC-252: Server-side service identity never appears in tool outputs.
+- [x] ISC-253: Nested credential-bearing output fields are removed.
+- [x] ISC-254: Upstream failures produce sanitized errors.
+- [x] ISC-255: Requests exceeding 32 KiB are rejected.
+- [x] ISC-256: Upstream responses are bounded to 256 KiB.
+- [x] ISC-257: Durable Object rate limits persist across Worker restarts.
+- [x] ISC-258: Global sponsored calculation budget is enforced atomically.
+- [x] ISC-259: Anonymous callers cannot invoke billing/admin/history/media tools.
+- [x] ISC-260: Batch and notification calculation requests are denied.
+- [x] ISC-261: Calculation persistence is disclosed as shared service storage.
+- [x] ISC-262: ChatGPT performs interpretation and narrative synthesis.
+- [x] ISC-263: Free reading tools do not invoke hosted inference endpoints.
+- [x] ISC-264: Onboarding selects subject, language, depth and available inputs.
+- [x] ISC-265: Host reading flow preserves fact-to-interpretation traceability.
+- [x] ISC-266: Host reading flow preserves Aletheios and Pichet perspectives.
+- [x] ISC-267: Single-engine synthetic live reading returns real calculation output.
+- [x] ISC-268: Private plugin is saved in the user account.
+- [x] ISC-269: Saved plugin files match the reviewed package version.
+- [x] ISC-270: Existing OAuth Worker and unrelated witness WIP remain preserved.
+
 ## Test Strategy
 
 | isc | type | check | threshold | tool |
@@ -340,6 +375,9 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 | P6Wave2Gate | Verify performance, recovery, runtime status, accessibility, trust boundaries, and responsive browser journeys | ISC-162..163 | ReadingRecoveryState, GatewayStatusSurface, AccessibleDepthFallback | false |
 
 ## Decisions
+
+- 2026-10-07: User authorized a free plugin backed by the Claude environment Selemene service key; clarified shared admin persistence is acceptable. All interpretation and narrative belong to the user's ChatGPT session. Deploy a separate bounded anonymous MCP Worker, preserve OAuth and Rust production, keep the service credential server-side, and create a private plugin without claiming public directory publication.
+
 
 - 2026-09-08: Continuation planning is governed by the recovered Phase 1–7 roadmap; Phase 4 starts with the Tarot pilot, while state, distribution, deployment, and promotion remain downstream gates.
 - 2026-09-08: Tarot semantic truth is constrained to a deterministic local fixture because the current engine has no generated, provider, sidecar, or fallback path; unavailable behavior must not be inferred from `fallback_used: false`.
@@ -508,3 +546,5 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
   repository and current billing/distribution boundary.
 - Root README and release templates now point to the external-release
   candidate checklist and distinguish public contract from runtime records.
+
+- 2026-10-07: ISC-239..270 verified for the free private plugin: separate Worker 78262f06-054a-49ac-8f48-dccc507c1814; 77 Worker, 18 existing OAuth, 13 package tests; 14 anonymous live checks. Private plugin plugins_6ac68a62e61081918179487264135f28 release pluginrel_6ac68a646a3481918caccb45c95ad63f saved and read back. ChatGPT narration is the implemented host policy; a reading in an installed real ChatGPT host and public marketplace publication are not claimed. Evidence: isolated worktree docs/plans/free-plugin/. Existing witness acceptance queue remains unchanged.
