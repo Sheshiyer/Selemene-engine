@@ -1,13 +1,13 @@
 ---
 project: Selemene-engine
-task: "Reader-facing witness contract repair and eight bilingual deliveries"
+task: "Free Selemene plugin public publication"
 effort: E4
 effort_source: continuity-restore
-phase: execute
-progress: 188/234
+phase: verify
+progress: 239/288
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-09-30T13:19:00Z
+updated: 2026-10-07T20:17:31.318289+00:00
 ---
 
 ## Problem
@@ -337,9 +337,9 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-211: The representative chapter passes reference-depth and natural-reading review (probe: comparative chapter review).
 - [ ] ISC-212: Anti: technical tests, Jev verdicts, or successful rendering alone never set product acceptance (probe: acceptance-state test).
 - [ ] ISC-213: Anti: bulk report generation cannot start before ISC-205 through ISC-211 pass (probe: generation gate test).
-- [ ] ISC-214: Triad review partitions the oversized payload into bounded, semantically complete units (probe: partition manifest test).
-- [ ] ISC-215: Conservative triad aggregation retains every subject fact and every partition blocker (probe: aggregation completeness test).
-- [ ] ISC-216: Triad aggregate verdict binds every partition receipt and the original full-payload hash (probe: aggregate receipt test).
+- [x] ISC-214: Triad review partitions the oversized payload into bounded, semantically complete units (probe: partition manifest test).
+- [x] ISC-215: Conservative triad aggregation retains every subject fact and every partition blocker (probe: aggregation completeness test).
+- [x] ISC-216: Triad aggregate verdict binds every partition receipt and the original full-payload hash (probe: aggregate receipt test).
 - [ ] ISC-217: Gary English is product-accepted under the corrected contract (probe: deliverable receipt).
 - [ ] ISC-218: Gary French is product-accepted under the corrected contract (probe: deliverable receipt).
 - [ ] ISC-219: Mohan English is product-accepted under the corrected contract (probe: deliverable receipt).
@@ -351,13 +351,77 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [ ] ISC-225: All eight final DOCX files open and contain their accepted chapter set (probe: DOCX structural audit).
 - [ ] ISC-226: All eight final PDF files preserve the accepted DOCX text and chapter order (probe: text-unit parity audit).
 - [ ] ISC-227: Every page of all sixteen final artifacts passes visual inspection without clipping or broken tables (probe: rendered-page review).
-- [ ] ISC-228: English and French pairs preserve subject facts, dates, section coverage, and interpretive meaning (probe: bilingual parity audit).
-- [ ] ISC-229: The recorded Rao-house, dasha-duration, end-date, birth-confidence, and unsupported-ranking corrections survive every final report (probe: correction regression audit).
-- [ ] ISC-230: Product acceptance remains false until all eight report receipts and all DOCX/PDF gates pass (probe: report-set state test).
+- [x] ISC-228: English and French pairs preserve subject facts, dates, section coverage, and interpretive meaning (probe: bilingual parity audit).
+- [x] ISC-229: The recorded Rao-house, dasha-duration, end-date, birth-confidence, and unsupported-ranking corrections survive every final report (probe: correction regression audit).
+- [x] ISC-230: Product acceptance remains false until all eight report receipts and all DOCX/PDF gates pass (probe: report-set state test).
 - [ ] ISC-231: Anti: no stopped leaking generation process is resumed or reused as an accepted run (probe: process and provenance audit).
 - [ ] ISC-232: Existing dirty work and immutable receipts remain byte-preserved outside explicitly edited contract files (probe: before/after hash inventory).
-- [ ] ISC-233: Anti: this work performs no Cloudflare corpus mutation, deployment, merge, push, or release activation (probe: command and remote-state audit).
-- [ ] ISC-234: Anti: unsupported medical, biological, deterministic psychological, or predictive claims are absent from public readings (probe: sensitive-claim audit).
+- [x] ISC-233: Anti: this work performs no Cloudflare corpus mutation, deployment, merge, push, or release activation (probe: command and remote-state audit).
+- [x] ISC-234: Anti: unsupported medical, biological, deterministic psychological, or predictive claims are absent from public readings (probe: sensitive-claim audit).
+
+### Witness Alchemist method continuation
+
+- [x] ISC-235: Each report opens with readable system lenses and the method for convergence and contradictions (probe: opening-method content review).
+- [x] ISC-236: Each integrated reading distinguishes symbolic tension from factual disagreement and carries grounded contours into later chapters (probe: contour audit).
+- [x] ISC-237: Triad evidence maps preserve per-person engine and field ownership (probe: subject-binding tests).
+- [x] ISC-238: Public prose rejects raw chart field identifiers and evidence-confidence inventories (probe: adversarial reader-boundary tests).
+
+### Free ChatGPT plugin — 2026-10-07
+
+- [x] ISC-239: Free plugin archive contains no service credential.
+- [x] ISC-240: Free MCP is deployed separately from the OAuth Worker.
+- [x] ISC-241: Free MCP initializes without a customer login.
+- [x] ISC-242: Free MCP advertises noauth security schemes.
+- [x] ISC-243: Engine discovery returns only reviewed nonmedia engines.
+- [x] ISC-244: Engine info uses only a reviewed engine identifier.
+- [x] ISC-245: Input preparation never performs a calculation.
+- [x] ISC-246: Calculation rejects caller-supplied privilege fields.
+- [x] ISC-247: Workflow discovery filters exact reviewed compositions.
+- [x] ISC-248: Workflow info rejects unknown or changed compositions.
+- [x] ISC-249: Workflow execution preserves missing-engine disclosure.
+- [x] ISC-250: Only fixed Selemene HTTPS upstream routes are reachable.
+- [x] ISC-251: The service key is stored only in a Worker secret.
+- [x] ISC-252: Server-side service identity never appears in tool outputs.
+- [x] ISC-253: Nested credential-bearing output fields are removed.
+- [x] ISC-254: Upstream failures produce sanitized errors.
+- [x] ISC-255: Requests exceeding 32 KiB are rejected.
+- [x] ISC-256: Upstream responses are bounded to 256 KiB.
+- [x] ISC-257: Durable Object rate limits persist across Worker restarts.
+- [x] ISC-258: Global sponsored calculation budget is enforced atomically.
+- [x] ISC-259: Anonymous callers cannot invoke billing/admin/history/media tools.
+- [x] ISC-260: Batch and notification calculation requests are denied.
+- [x] ISC-261: Calculation persistence is disclosed as shared service storage.
+- [x] ISC-262: ChatGPT performs interpretation and narrative synthesis.
+- [x] ISC-263: Free reading tools do not invoke hosted inference endpoints.
+- [x] ISC-264: Onboarding selects subject, language, depth and available inputs.
+- [x] ISC-265: Host reading flow preserves fact-to-interpretation traceability.
+- [x] ISC-266: Host reading flow preserves Aletheios and Pichet perspectives.
+- [x] ISC-267: Single-engine synthetic live reading returns real calculation output.
+- [x] ISC-268: Private plugin is saved in the user account.
+- [x] ISC-269: Saved plugin files match the reviewed package version.
+- [x] ISC-270: Existing OAuth Worker and unrelated witness WIP remain preserved.
+
+### Public Selemene plugin continuation — 2026-10-07
+
+- [x] ISC-271: Current saved plugin identity, version and private scope are verified.
+- [x] ISC-272: Installed connector returns real catalog and preflight results.
+- [ ] ISC-273: User confirms the intended verified publisher and countries.
+- [ ] ISC-274: Published privacy policy covers actual free shared-service storage.
+- [ ] ISC-275: Published terms and support identify the selected publisher and contact.
+- [x] ISC-276: Five positive and three negative review cases cover all eight tools.
+- [x] ISC-277: Current host produces a reading from a real synthetic calculation.
+- [ ] ISC-278: Reviewer-accessible demo recording shows the actual host flow.
+- [ ] ISC-279: Public ZIP contains verified listing, review and publication fields.
+- [ ] ISC-280: Saved portal draft imports the intended package and MCP connection.
+- [ ] ISC-281: Authorized submission completes all required scans and attestations.
+- [ ] ISC-282: Approved release is publicly published with verified targeting.
+- [ ] ISC-283: Anti: no credential or unverified policy claim enters the public upload.
+- [ ] ISC-284: Anti: private plugin identity and unrelated witness WIP are preserved.
+
+- [x] ISC-285: Public I Ching casting and textual sources are verified end to end.
+- [ ] ISC-286: Public Gene Keys activation lines and meanings are verified end to end.
+- [x] ISC-286.1: Installed Gene Keys canonical spheres match actual Human Design gates, lines and sources.
+- [x] ISC-286.2: Staged reading instructions explicitly preserve incomplete meanings and source limits.
 
 ## Test Strategy
 
@@ -437,7 +501,12 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 
 <!-- arch-assets:end -->
 
+| PublicSelemenePlugin | Complete public listing, policy, demo and portal release gates for the existing free plugin | ISC-271..284 | FreeChatGPTPlugin | true |
+
 ## Decisions
+
+- 2026-10-07: User authorized a free plugin backed by the Claude environment Selemene service key; clarified shared admin persistence is acceptable. All interpretation and narrative belong to the user's ChatGPT session. Deploy a separate bounded anonymous MCP Worker, preserve OAuth and Rust production, keep the service credential server-side, and create a private plugin without claiming public directory publication.
+
 
 - 2026-09-30 11:44 +0200: refined: Prior technical verification is historical evidence only; no report is product-accepted under the corrected reader-facing contract.
 - 2026-09-30 11:44 +0200: The recovered matrix is the existing legacy seven-stage flow: immutable engine facts, per-engine micro-readings, Aletheios structural witness, Pichet embodied witness, and public symbolic synthesis, governed by the 16-engine lexicon and Kosha routing.
@@ -497,6 +566,16 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 - 2026-07-18: Final independent boundary review returned `GO`, and browser Gate 4 returned `PASS` after measured Sigil/Face layout and Biofield consent-control corrections.
 
 - 2026-09-30 00:55: refined: User confirms witness dyad and grounding infrastructure are both required. Twelve generated sections and Jev shadow judgments alone do not establish reference-depth or architecture acceptance. Preserve existing dirty pipeline edits; repair in place with compatible opt-in behavior.
+
+- 2026-10-04: refined: User resumed all eight bilingual deliveries and requires first-half system/approach explanation and grounded contradictions as meaningful contours. Preserve unrelated ISA sections and IDs.
+- 2026-10-04: Reader-facing pilot readback refuted prior zero-leakage claim: raw hd_type/nakshatra_name fields and evidence-confidence inventory remain; tighten production boundary before generation.
+- 2026-10-04: Forge unavailable because its mandatory startup context is missing; bounded direct worker handles triad gate without nested Codex subprocess.
+
+- 2026-10-07: refined: User explicitly authorized public publication of the existing Selemene Engine plugin. Preserve private identity and prepare a separate public upload; publication requires actual publisher, policies, demo, connected review checks and authorized attestations. Existing witness queue remains separate.
+
+- 2026-10-07: refined: Continue correcting the affected engines and source datasets without narrowing the intended public reading scope. Fix I Ching casting/mapping and Gene Keys birth-derived lines at ingestion; keep full source and deployed acceptance unproven until verified.
+
+- 2026-10-07 refined: Publication retains the full reviewed engine scope. I Ching cast mapping and Gene Keys birth lines are being corrected in the isolated worktree, with source provenance and live deployment checks required before their public criteria close. Two routed code attempts produced invalid or incomplete output and were rejected; bounded corrective work and actual compiler tests continue.
 
 ## Changelog
 
@@ -625,3 +704,34 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 - Original audit wrappers used canonicalJSON base hash; new opening.audit-raw-bound.json and part1.audit-raw-bound.json bindexactreceiptfilebytes andlinkpreservedoldwrappers. Modelresponses/inputhashesunchanged. Manifest editorial-prefix.manifest.json now references raw-bound wrappers.
 - ACTIVE LIVE PROCESS session34695, newrun `reports-reference/runs/sheshnarayan-en-2026-09-30T01-41-24-265Z`, command run-reference-report.mts --combo noesis-build --editorial-prefix priorrun/editorial-prefix.manifest.json. FreshCF19/35, openingandPartIreused, PartIIbothvoicescompletedwithactualreturnedmodelclaude-opus-4-7; synthesisunderway. Poll thishandlebeforeanyrestart. ReusedPartIlogoutcome=failed is ORIGINAL preservedauditfailure, notcurrentgenerationtermination. No fullfinalacceptance yet.
 - Remaining finalacceptance work: provenance-aware verifier must validate originalrawgeneration hashes separately from effective editorial output/review hashes, preserve generation-time prior-version edges (PartI used originalopening) and require whole-documentcoherence onfinaleditedtext. Current strict verifier intentionally blocks editorial mismatches; do not rewrite rawreceipts or silently relabel Jev. Fullpilot/render/bilingual/triad stillpending.
+
+- ISC-214: Deterministic actual-input probe — all eight saved triad section contexts partition below60,000characters; max59,973. Live service tokenizer acceptance remains pending.
+- ISC-215: Actual-input coverage probe — all eight retain every complete source record and every complete framework passage per record partition; injected failures remain non-passing.
+- ISC-216: Hash probe — original/partition/wire-body hashes and byte counts recompute exactly in all eight deterministic receipts.
+- ISC-237: Subject-binding tests — repeated engine IDs across partners preserve subject+engine+field identity and detect source value mutation.
+- ISC-238: Adversarial scan — historical pilot now fails nine private-field/audit-language violations; focused boundary suite25tests passes.
+
+### Native GPT delivery evidence — 4 October 2026
+
+Eight complete EN/FR report manuscripts are packaged with eight DOCX and eight PDF exports in `tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/`. `INDEX.md` links all formats; `delivery-manifest.json` binds SHA-256 values and review paths; the ZIP contains only the 24 reports, index, and manifest. All eight export audits pass twelve-chapter ordering and word-token preservation, including explicitly recorded table-wrap reconstruction. All 312 PDF pages were visually inspected, with dense tables inspected at page resolution. DOCX visual scope is LibreOffice conversion rather than direct Microsoft Word inspection.
+
+ISC-225–227 remain unchecked in their original product-accepted wording: the native editorial/export checks are complete, but live Jev review and original-route acceptance remain pending. Eight complete chapter request sets are prepared; the latest check reports `keyAvailable:false`, `execute:false`. No live Jev verdict or fresh Cloudflare read is claimed. ISC-228/229/234/235/236 evidence is the current source-bound independent bilingual reviews plus coordinator full-reading and final-export reviews under `native-final/reviews/`. Product acceptance remains false.
+
+### NotebookLM Arc-authenticated execution — 4 October 2026
+
+Arc cookie import succeeded in the principal terminal; live CLI auth check passed. Eight separate notebooks received sixteen curated report/policy sources. The adapter preserves exact source hashes and explicit language per generation; it does not bypass the historical factory gate or claim that the original factory ran. The old generic nakshatra drift rule misclassifies valid full-planetary readings, so the reviewed native report route supplies its own clearly recorded adaptation.
+
+NotebookLM generation requests were attempted once per planned artifact; most returned rate-limit errors and left remote pending placeholders. Recovery enumerates remote artifacts before downloads or any retry. Current evidence and local downloads are in `notebooklm/recovery-state.json`; derivative approval remains separate from the report-set gates. Gary study guide accurately retained main source coordinates but introduced unsupported glossary/synthesis assertions; thirteen local corrections are preserved in a separately reviewed copy with its own SHA-256. Original download remains immutable. No live Jev or full multimedia completion is claimed.
+
+- 2026-10-07: ISC-239..270 verified for the free private plugin: separate Worker 78262f06-054a-49ac-8f48-dccc507c1814; 77 Worker, 18 existing OAuth, 13 package tests; 14 anonymous live checks. Private plugin plugins_6ac68a62e61081918179487264135f28 release pluginrel_6ac68a646a3481918caccb45c95ad63f saved and read back. ChatGPT narration is the implemented host policy; a reading in an installed real ChatGPT host and public marketplace publication are not claimed. Evidence: isolated worktree docs/plans/free-plugin/. Existing witness acceptance queue remains unchanged.
+
+- ISC-271: metadata probe — saved plugin version 0.2.0, USER scope, PRIVATE discoverability, release pluginrel_6ac68a646a3481918caccb45c95ad63f.
+- ISC-272: installed connector probe — catalog contains 11 reviewed engines; incomplete numerology preflight requires name, coordinates and timezone; complete fixture returns can_calculate true.
+
+- ISC-276: staged manifest probe — exactly five positive and three negative cases cover all eight installed tools; execution status remains separate.
+- ISC-277: installed host rehearsal — native-rust numerology 3.3.1 returned life path 3, expression 7 and soul urge 7; current ChatGPT host composed synthetic-numerology-reading.md from those actual results.
+
+- ISC-285: Local62TS tests and typecheck pass; original-source64judgment/image dataset reproduces byte-identically. Exact-sourceTS deployment98d5b4f9-4834-4e7d-a81c-1a30e6806059 is SUCCESS. Actual installed I Ching tool returns algorithm1.1.0, cast50 with changing line1 to14, matching line patterns and exact source passages/pages; individual changing-line texts remain explicitly unavailable. See installed-iching-after-repair.json and ts-deployment-packet.json.
+
+- ISC-286.1: Actual installed connector comparison after Rust deployment04d7fea4 SUCCESS preserves Life’s Work38.2, Evolution39.2, Radiance48.4 and Purpose21.4 with correct Sun/Earth sources. Actual decision-support returns all five engines partial=false and the same verified coordinates. Complete meaning-source verification remains open under ISC-286. See installed-gene-keys-after-repair.json and installed-workflow-after-repair.json.
+- ISC-286.2: Staged reading SKILL/reference source read and focused independent audit confirm canonical activation_spheres, unavailable/null lines, unverified_incomplete meaning limits, not_measured lens, I Ching source/page boundaries and host synthesis when service synthesis is null. These are instruction-file checks, not exact public case/demo execution.
