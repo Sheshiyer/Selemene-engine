@@ -29,3 +29,6 @@ docs/
 .vscode/
 .idea/
 *.iml
+
+# Preserve the dependency versions used by frozen production installs.
+!bun.lock
