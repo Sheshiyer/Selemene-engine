@@ -75,5 +75,32 @@
     "personal_portal": "Plugin not found in this organization; original private record preserved"
   },
   "proof_image": "portal-draft-upload-2026-10-08.jpg",
-  "proof_sha256": "54aca6256a9c6784d9f794fab1c619eae571ec442d5ed87a1e873612d09fcf76"
+  "proof_sha256": "54aca6256a9c6784d9f794fab1c619eae571ec442d5ed87a1e873612d09fcf76",
+  "listing_reupload": {
+    "observed_at": "2026-10-08T16:07:53.311342+00:00",
+    "archive": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine/docs/plans/free-plugin/publication/archives/selemene-engine-0.2.4-listing-draft-2026-10-08.zip",
+    "sha256": "aa7f238ea3a19f5b0fba7e67b30c78546ee53ff364b881007b7483fd730b510b",
+    "manifest_sha256": "45c0f8b43efaff4ffc1710ba6ce432f0d556e8f16645b7609f7fc30721279c29",
+    "same_plugin_id": true,
+    "same_draft_version_id": true,
+    "same_version": "0.2.4",
+    "metadata_checks": "No Issues",
+    "skill_checks": {
+      "selemene-onboarding": "Checks passed",
+      "selemene-reading": "Checks passed"
+    },
+    "mcp_url_preserved": true,
+    "domain_challenge_preserved": true,
+    "attestations_completed": false,
+    "cases": {
+      "positive_count_imported": 5,
+      "negative_count_imported": 3,
+      "forms_complete": true,
+      "exact_saved_version_execution": "Not run"
+    },
+    "country_portal_display": "All supported countries (default displayed; user has not explicitly selected targeting; Save details not pressed)",
+    "supporting_content_blocker": "No video walkthrough URL provided. Add a video walkthrough URL to extensions.com.openai.review.demo_recording_url in plugin.json, then upload your plugin ZIP again before submitting for review.",
+    "submission_dialog": "Incomplete review information; Submit disabled; all six attestations unchecked",
+    "proof_image": "portal-listing-validated-2026-10-08.jpg"
+  }
 }

@@ -10,6 +10,7 @@
   "workers_dev": true,
   "preview_urls": false,
   "vars": {
+    "OPENAI_APPS_CHALLENGE_TOKEN": "g-qlttQk8VtKF9IFArmjG-CkCEZPzWYXgBCoDKzNMS8",
     "PUBLIC_ORIGIN": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev",
     "SELEMENE_API_ORIGIN": "https://selemene-engine-production.up.railway.app"
   },

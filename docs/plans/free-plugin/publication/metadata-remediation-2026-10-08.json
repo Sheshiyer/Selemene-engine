@@ -1,0 +1,43 @@
+{
+  "recorded_at": "2026-10-08T16:03:59.379550+00:00",
+  "scope": "Listing-only source revision; no archive, upload, submission or readiness claim.",
+  "portal_flags_reported_by_parent": [
+    "Remove pricing, subscription offers, and temporary promotions from the description.",
+    "We couldn\u2019t confirm the selected category. Review the category and make sure the listing clearly explains the plugin\u2019s main purpose."
+  ],
+  "manifest": "plugin.json",
+  "name": "selemene-engine",
+  "version": "0.2.4",
+  "manifest_sha256_before": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
+  "manifest_sha256_after": "45c0f8b43efaff4ffc1710ba6ce432f0d556e8f16645b7609f7fc30721279c29",
+  "changed_fields": [
+    "/description",
+    "/extensions/com.openai/interface/shortDescription",
+    "/extensions/com.openai/interface/longDescription",
+    "/extensions/com.openai/interface/defaultPrompt/0"
+  ],
+  "summary": [
+    "Removed Free/free wording from root description, subtitle and first starter prompt.",
+    "Clarified symbolic reflection and self-inquiry in the long description; retained model, source and storage boundaries.",
+    "Reworded service quotas without pricing and replaced paid generation with provider generation."
+  ],
+  "category": {
+    "value": "Other",
+    "changed": false,
+    "portal_recheck": "pending; no better supported category established in this lane"
+  },
+  "checks": {
+    "json": "passed",
+    "only_requested_listing_values_changed": true,
+    "short_description_length": 28,
+    "long_description_length": 1578,
+    "default_prompt_lengths": [
+      64,
+      61,
+      71
+    ],
+    "pricing_promotional_terms_in_revised_listing": "absent",
+    "name_version_identity_policies_review_commerce_and_publication_fields": "preserved"
+  },
+  "portal_revalidation": "not run"
+}

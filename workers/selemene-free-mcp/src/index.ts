@@ -6,6 +6,16 @@ export { FreeRateLimiter } from "./rate-limiter.js";
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    if (url.pathname === "/.well-known/openai-apps-challenge") {
+      if (request.method !== "GET") return new Response(null, {
+        status: 405, headers: { Allow: "GET", "cache-control": "no-store" },
+      });
+      const token = typeof env.OPENAI_APPS_CHALLENGE_TOKEN === "string" ? env.OPENAI_APPS_CHALLENGE_TOKEN.trim() : "";
+      if (!token) return new Response(null, { status: 404, headers: { "cache-control": "no-store" } });
+      return new Response(token, { headers: {
+        "content-type": "text/plain; charset=utf-8", "cache-control": "no-store",
+      } });
+    }
     if (url.pathname !== "/mcp" && url.pathname !== "/health") return new Response(null, { status: 404 });
     if (url.pathname === "/health" && request.method !== "GET") return new Response(null, { status: 405, headers: { Allow: "GET" } });
     if (url.pathname === "/mcp" && request.method !== "POST") return new Response(null, { status: 405, headers: { Allow: "POST" } });

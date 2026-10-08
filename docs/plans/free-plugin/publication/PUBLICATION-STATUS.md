@@ -8,6 +8,8 @@ The user explicitly requested Computer upload and review submission. The submiss
 
 Computer upload succeeded in Personal under the selected verified individual. The saved UI imports package name, version, publisher, Other category, both skills and all four listing URLs. It reports **Draft, Not submitted, Not published, Configuration incomplete**. Initial validation requests removing pricing language, clarifying category/purpose, and completing review information. Skills were still checking at the initial read. Root will inspect the actual MCP and review requirements next; all eight saved-public tests remain Not run. The original private ChatGPT USER record is inaccessible through Personal portal management and remains preserved on its original identity.
 
+After a narrow listing-only correction, reupload to the same draft succeeded. Current metadata reports **No Issues**, and both skills report **Checks passed**. The corrected six-file archive SHA-256 is `aa7f238ea3a19f5b0fba7e67b30c78546ee53ff364b881007b7483fd730b510b`; manifest `45c0f8b4`. Publisher, category, URLs, cases, version, skills and MCP endpoint remain preserved. Review information imports five positive and three negative complete forms, release notes and a displayed All supported countries default; that display is not an explicit user targeting choice. Supporting content explicitly requires a real demo URL in the ZIP before submission. No Save details or attestation was completed. MCP domain setup is in progress with the preserved generated ownership challenge.
+
 [Draft receipt](requested-draft-upload-2026-10-08.json) and [portal screenshot](portal-draft-upload-2026-10-08.jpg) bind this state to the inspected archive. Earlier paragraphs and receipts describing no draft are historical observations, superseded for current portal state by this section. No country targeting, video, attestation, review submission or publication is inferred from upload success.
 
 ## Current public stage and existing private release
@@ -20,7 +22,7 @@ The portable staging root is `public-package/selemene-engine/`, currently versio
 | Current private release | `pluginrel_6ac779e2df3c8191821ce4e791d16a96`, version `0.2.4` |
 | Private development connection | App-only binding `asdk_app_6ac77118e9688191818c84d5bff853bc`; raw MCP configurations removed |
 | Private cloud readback | Seven files read back; all three manifest/app semantic matches and all three instruction-byte matches pass; private author and USER/PRIVATE sharing preserved |
-| Portable public manifest snapshot | Version `0.2.4`, SHA-256 `cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45` |
+| Current portable and saved public manifest | Version `0.2.4`, SHA-256 `45c0f8b43efaff4ffc1710ba6ce432f0d556e8f16645b7609f7fc30721279c29`; listing-only reupload retained draft identity |
 | Free MCP endpoint | `https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp` |
 | Portable public inventory | Six portable files; no `.app.json`, private app binding, credential, or environment file; inspected draft ZIP stored outside this inventory |
 | Declared review cases | Five positive and three negative; final public/submission cases remain **Not run** |

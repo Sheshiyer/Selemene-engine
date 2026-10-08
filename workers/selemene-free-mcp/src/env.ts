@@ -3,6 +3,7 @@ import type { ValidatedEnv } from "../../selemene-mcp/src/env.js";
 export const PUBLIC_ORIGIN = "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev";
 const UPSTREAMS = new Set(["https://selemene-engine-production.up.railway.app", "https://selemene.tryambakam.space"]);
 export interface Env {
+  OPENAI_APPS_CHALLENGE_TOKEN?: string;
   PUBLIC_ORIGIN: string;
   SELEMENE_API_ORIGIN: string;
   SELEMENE_API_KEY: string;

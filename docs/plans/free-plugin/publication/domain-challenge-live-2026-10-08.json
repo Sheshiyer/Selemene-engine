@@ -1,0 +1,39 @@
+{
+  "schema": "selemene.ownership-route.v1",
+  "observed_at": "2026-10-08T16:09:13.636246+00:00",
+  "worker": "selemene-free-mcp",
+  "account_id": "9d9d23b27f32e70ae3afb6a1aa2c0f10",
+  "auth_profile": "9d9d",
+  "previous_version": "78262f06-054a-49ac-8f48-dccc507c1814",
+  "deployed_version": "9a711b10-e904-4601-8793-f48df7f1d0be",
+  "change": "Public ownership challenge route and public var only; existing MCP/health/auth/limiter body preserved",
+  "checks": [
+    {
+      "route": "/.well-known/openai-apps-challenge",
+      "http_status": 200,
+      "content_type": "text/plain; charset=utf-8",
+      "cache_control": "no-store",
+      "redirect": false,
+      "body_sha256": "1a27b06db5892228f5d01d6c45de888d67dfc85aeaf49e063523987cbf202e2a",
+      "expected_exact_body": true
+    },
+    {
+      "route": "/health",
+      "http_status": 200,
+      "content_type": "application/json",
+      "cache_control": "no-store",
+      "redirect": false,
+      "body_sha256": "205ba672a929cee83ef6f3a1e4d50d34ab8ab5bc18ea41fe61268020ae9373a4",
+      "expected_exact_body": null
+    }
+  ],
+  "local_verification": {
+    "focused_route_tests_passed": 12,
+    "typecheck": "pass",
+    "wrangler_dry_run": "pass"
+  },
+  "portal_domain_verification": "pending",
+  "secret_updates": "none",
+  "oauth_worker_changes": "none",
+  "quota_or_upstream_calls_for_challenge": "none by focused local test"
+}
