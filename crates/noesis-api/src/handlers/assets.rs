@@ -96,7 +96,9 @@ pub struct AssetGenerateRequest {
     /// Prefer `subjects[]` + `report_level` for L0-L5 and multi-subject flows.
     pub birth_data: Option<noesis_core::BirthData>,
     pub mode: String,
+    /// Legacy compatibility field; ignored. Access uses the authenticated user phase.
     #[serde(default)]
+    #[allow(dead_code)]
     pub consciousness_level: u8,
     #[allow(dead_code)]
     pub options: Option<Value>,
@@ -157,7 +159,9 @@ pub async fn generate(
     Extension(user): Extension<AuthUser>,
     Json(req): Json<AssetGenerateRequest>,
 ) -> Result<Json<AssetGenerateResponse>, (StatusCode, Json<crate::error_mapper::ErrorResponse>)> {
-    let consciousness_level = req.consciousness_level.max(user.consciousness_level);
+    // Engine authorization must come only from the authenticated identity.
+    // The legacy request field remains accepted but cannot raise or lower access.
+    let consciousness_level = user.consciousness_level;
     let now = Utc::now();
 
     // Derive effective subjects: prefer req.subjects when provided and non-empty,

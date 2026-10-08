@@ -1,57 +1,144 @@
-//! Gene Keys Wisdom Data Loader
-//!
-//! Loads the 64 Gene Keys archetypes with full shadow/gift/siddhi descriptions.
-//! Preserves archetypal depth - NO TEXT SUMMARIZATION.
+//! Verified public Gene Keys labels and their factual source boundaries.
+//! Full author meanings are unavailable; historical archetypes are not a fallback.
 
 use crate::models::{GeneKey, GeneKeysData};
+use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
-/// Static reference to all 64 Gene Keys wisdom data
-static GENE_KEYS: OnceLock<HashMap<u8, GeneKey>> = OnceLock::new();
+const PUBLIC_LABELS_JSON: &str =
+    include_str!("../../../data/gene-keys/verified-public-labels.json");
 
-/// Get reference to all Gene Keys wisdom data
-pub fn gene_keys() -> &'static HashMap<u8, GeneKey> {
-    GENE_KEYS.get_or_init(|| load_gene_keys().expect("Failed to load Gene Keys wisdom data"))
+struct PublicLabels {
+    keys: HashMap<u8, GeneKey>,
+    sources: HashMap<u8, Value>,
+    metadata: Value,
 }
 
-/// Get a specific Gene Key by number (1-64)
+static PUBLIC_LABELS: OnceLock<PublicLabels> = OnceLock::new();
+
+fn public_labels() -> &'static PublicLabels {
+    PUBLIC_LABELS.get_or_init(|| {
+        load_public_labels(PUBLIC_LABELS_JSON).expect("Invalid Gene Keys public-label source data")
+    })
+}
+
+pub fn gene_keys() -> &'static HashMap<u8, GeneKey> {
+    &public_labels().keys
+}
+
 pub fn get_gene_key(number: u8) -> Option<&'static GeneKey> {
     gene_keys().get(&number)
 }
 
-/// Load Gene Keys from embedded JSON file
-fn load_gene_keys() -> Result<HashMap<u8, GeneKey>, Box<dyn std::error::Error>> {
-    // Embedded JSON data at compile time
-    const ARCHETYPES_JSON: &str = include_str!("../../../data/gene-keys/archetypes.json");
+pub fn get_gene_key_provenance(number: u8) -> Option<&'static Value> {
+    public_labels().sources.get(&number)
+}
 
-    let data: GeneKeysData = serde_json::from_str(ARCHETYPES_JSON)?;
+pub fn meaning_source_quality() -> Value {
+    let metadata = &public_labels().metadata;
+    json!({
+        "status": "verified_public_labels_only",
+        "source": "official_per_key_public_headings",
+        "data_version": metadata["data_version"],
+        "labels": metadata["label_status"],
+        "descriptions": metadata["description_status"],
+        "name": metadata["name_status"],
+        "programming_partners": metadata["programming_partner_source"],
+        "reflection_prompts": metadata["reflection_prompts_status"],
+        "full_wisdom": "unavailable",
+        "rights": metadata["rights"],
+        "note": "Short public labels are verified. Author meanings, biological correspondences and chapter titles are unavailable. Reflection questions are Selemene's own, not author text or a measured user state."
+    })
+}
 
-    // Convert string keys to u8 keys
-    let mut gene_keys_map = HashMap::new();
+/// Exact half-wheel opposition, using the same gate mapping as HD calculations.
+fn opposition_partner(number: u8) -> Option<u8> {
+    (0..64).find_map(|position| {
+        let longitude = f64::from(position) * 360.0 / 64.0;
+        (engine_human_design::longitude_to_gate(longitude) == number)
+            .then(|| engine_human_design::longitude_to_gate(longitude + 180.0))
+    })
+}
 
-    for (key_str, mut gene_key) in data.gene_keys {
-        let key_num = key_str.parse::<u8>()?;
-
-        // Ensure number field matches key
-        gene_key.number = key_num;
-
-        gene_keys_map.insert(key_num, gene_key);
+fn load_public_labels(raw: &str) -> Result<PublicLabels, Box<dyn std::error::Error>> {
+    let document: Value = serde_json::from_str(raw)?;
+    let data: GeneKeysData = serde_json::from_value(document.clone())?;
+    if data.gene_keys_info.total_keys != 64 || data.gene_keys.len() != 64 {
+        return Err("Expected exactly 64 Gene Keys public-label records".into());
     }
-
-    // Validate we have all 64 keys
-    if gene_keys_map.len() != 64 {
-        return Err(format!("Expected 64 Gene Keys, found {}", gene_keys_map.len()).into());
+    let metadata = document["metadata"].clone();
+    if metadata["data_version"].as_str().is_none_or(str::is_empty)
+        || metadata["label_status"] != "verified_official_public_heading"
+        || metadata["description_status"] != "unavailable_authorized_meanings_not_supplied"
+    {
+        return Err("Missing or unsupported public-label source metadata".into());
     }
-
-    // Validate key numbers 1-64 are present
-    for i in 1..=64 {
-        if !gene_keys_map.contains_key(&i) {
-            return Err(format!("Missing Gene Key {}", i).into());
+    let mut keys = HashMap::new();
+    let mut sources = HashMap::new();
+    for (id, key) in data.gene_keys {
+        let number = id.parse::<u8>()?;
+        if !(1..=64).contains(&number) || id != number.to_string() || key.number != number {
+            return Err(format!("Gene Key {id}: noncanonical ID or mismatched number").into());
+        }
+        if [&key.shadow, &key.gift, &key.siddhi]
+            .iter()
+            .any(|label| label.trim().is_empty())
+        {
+            return Err(format!("Gene Key {id}: blank public label").into());
+        }
+        if key.name != format!("Gene Key {number}")
+            || !key.shadow_description.is_empty()
+            || !key.gift_description.is_empty()
+            || !key.siddhi_description.is_empty()
+            || key.codon.is_some()
+            || key.amino_acid.is_some()
+            || key.physiology.is_some()
+            || key.life_theme.is_some()
+        {
+            return Err(
+                format!("Gene Key {id}: unsupported author meaning or biological field").into(),
+            );
+        }
+        if key.programming_partner != opposition_partner(number) {
+            return Err(
+                format!("Gene Key {id}: partner is not exact Rave Mandala opposition").into(),
+            );
+        }
+        let source = document["gene_keys"][&id]["provenance"].clone();
+        let expected_url = format!("https://genekeys.com/gene-key-{number}/");
+        let hash = source["source_response_sha256"]
+            .as_str()
+            .unwrap_or_default();
+        if source["url"] != expected_url
+            || source["status"] != 200
+            || hash.len() != 64
+            || !hash
+                .bytes()
+                .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
+            || source["retrieved_at"].as_str().is_none_or(str::is_empty)
+        {
+            return Err(format!("Gene Key {id}: missing or mismatched primary provenance").into());
+        }
+        keys.insert(number, key);
+        sources.insert(number, source);
+    }
+    for number in 1..=64 {
+        let key = keys
+            .get(&number)
+            .ok_or_else(|| format!("Missing Gene Key {number}"))?;
+        let partner = key.programming_partner.unwrap();
+        if partner == number
+            || keys.get(&partner).and_then(|p| p.programming_partner) != Some(number)
+        {
+            return Err(format!("Gene Key {number}: nonreciprocal partner").into());
         }
     }
-
-    Ok(gene_keys_map)
+    Ok(PublicLabels {
+        keys,
+        sources,
+        metadata,
+    })
 }
 
 #[cfg(test)]
@@ -59,73 +146,44 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_load_all_gene_keys() {
-        let keys = gene_keys();
-        assert_eq!(keys.len(), 64, "Should have exactly 64 Gene Keys");
-    }
-
-    #[test]
-    fn test_gene_key_structure() {
-        let key_1 = get_gene_key(1).expect("Gene Key 1 should exist");
-
-        assert_eq!(key_1.number, 1);
-        assert_eq!(key_1.shadow, "Entropy");
-        assert_eq!(key_1.gift, "Freshness");
-        assert_eq!(key_1.siddhi, "Beauty");
-
-        // Verify descriptions are NOT empty (archetypal depth preserved)
-        assert!(!key_1.shadow_description.is_empty());
-        assert!(!key_1.gift_description.is_empty());
-        assert!(!key_1.siddhi_description.is_empty());
-
-        // Verify descriptions have substance (not just placeholders)
-        assert!(
-            key_1.shadow_description.len() > 50,
-            "Shadow description too short - archetypal depth not preserved"
-        );
-    }
-
-    #[test]
-    fn test_programming_partners() {
-        let key_1 = get_gene_key(1).expect("Gene Key 1 should exist");
-        assert_eq!(key_1.programming_partner, Some(33));
-
-        let key_17 = get_gene_key(17).expect("Gene Key 17 should exist");
-        assert_eq!(key_17.programming_partner, Some(49));
-    }
-
-    #[test]
-    fn test_all_keys_present() {
-        for i in 1..=64 {
-            let key = get_gene_key(i);
-            assert!(key.is_some(), "Gene Key {} should be present", i);
+    fn all_labels_present_with_unavailable_author_prose() {
+        assert_eq!(gene_keys().len(), 64);
+        for number in 1..=64 {
+            let key = get_gene_key(number).unwrap();
+            assert_eq!(key.number, number);
+            assert!(!key.shadow.is_empty() && !key.gift.is_empty() && !key.siddhi.is_empty());
+            assert!(
+                key.shadow_description.is_empty()
+                    && key.gift_description.is_empty()
+                    && key.siddhi_description.is_empty()
+            );
+            assert!(key.physiology.is_none() && key.codon.is_none() && key.amino_acid.is_none());
         }
+        assert_eq!(meaning_source_quality()["full_wisdom"], "unavailable");
     }
 
     #[test]
-    fn test_archetypal_depth_preservation() {
-        // Spot check several keys for full descriptions
-        let test_keys = [1, 17, 33, 47, 64];
-
-        for &key_num in &test_keys {
-            let key =
-                get_gene_key(key_num).unwrap_or_else(|| panic!("Gene Key {} missing", key_num));
-
-            // Descriptions should be substantial (typical: 100-500 words)
+    fn rejects_missing_ids_numbers_sources_and_unverified_fields() {
+        let original: Value = serde_json::from_str(PUBLIC_LABELS_JSON).unwrap();
+        for mutation in 0..7 {
+            let mut bad = original.clone();
+            match mutation {
+                0 => {
+                    bad["gene_keys"].as_object_mut().unwrap().remove("64");
+                }
+                1 => bad["gene_keys"]["1"]["number"] = json!(2),
+                2 => bad["gene_keys"]["1"]["shadow"] = json!(" "),
+                3 => bad["gene_keys"]["1"]["programming_partner"] = json!(33),
+                4 => {
+                    bad["gene_keys"]["1"]["provenance"]["url"] =
+                        json!("https://genekeys.com/gene-key-2/")
+                }
+                5 => bad["gene_keys"]["1"]["physiology"] = json!("Physiology 1"),
+                _ => bad["gene_keys"]["1"]["shadow_description"] = json!("Unverified meaning"),
+            }
             assert!(
-                key.shadow_description.len() > 50,
-                "Gene Key {} shadow too short",
-                key_num
-            );
-            assert!(
-                key.gift_description.len() > 50,
-                "Gene Key {} gift too short",
-                key_num
-            );
-            assert!(
-                key.siddhi_description.len() > 50,
-                "Gene Key {} siddhi too short",
-                key_num
+                load_public_labels(&bad.to_string()).is_err(),
+                "mutation {mutation}"
             );
         }
     }

@@ -1,0 +1,3232 @@
+{
+  "schemaVersion": 1,
+  "preparedOn": "2026-10-07",
+  "source": {
+    "title": "The Sacred Books of China, Part II: The Yi King",
+    "translator": "James Legge",
+    "year": 1882,
+    "edition": "Oxford, Clarendon Press; Sacred Books of the East, volume XVI",
+    "url": "https://archive.org/details/sacredbooksofchi16conf",
+    "scanContributor": "Princeton Theological Seminary Library",
+    "transcriptionStatus": "scan_reviewed_normalized_transcription"
+  },
+  "sourceFiles": [
+    {
+      "url": "https://archive.org/download/sacredbooksofchi16conf/sacredbooksofchi16conf_djvu.xml",
+      "sha256": "3e9823f65f22f7679277128649fcc4d1ef53ccf97954d8cb3691e57841022f5b"
+    },
+    {
+      "url": "https://archive.org/download/sacredbooksofchi16conf/sacredbooksofchi16conf_scandata.xml",
+      "sha256": "f3951fa3da2df98af408d2495d867c125cdd287ef7195210c340d8d13ef16ea3"
+    },
+    {
+      "url": "https://archive.org/download/sacredbooksofchi16conf/sacredbooksofchi16conf.pdf",
+      "sha256": "216991696663472339e90f1a64aad45998fbe9de711885ab00744572475896c6"
+    }
+  ],
+  "coverage": {
+    "ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64
+    ],
+    "judgments": 64,
+    "greatSymbolismImages": 64,
+    "movingLineTexts": 0,
+    "unresolvedSemanticOcrIssuesFound": 0,
+    "independentSecondProofread": false
+  },
+  "normalizations": [
+    "Whitespace collapsed; print end-line word splits joined.",
+    "Roman section markers and editorial headings excluded.",
+    "Historical transliteration tone marks/italic consonant typography normalized to ASCII; the z-shaped consonant is rendered Z.",
+    "English wording, archaic grammar and source punctuation retained; no modern paraphrases added."
+  ],
+  "records": [
+    {
+      "number": 1,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "KM  en  (represents)  what  is  great  and  originating,\npenetrating,  advantageous,  correct  and  firm.",
+          "normalizedOcrBeforeCorrections": "KM en (represents) what is great and originating, penetrating, advantageous, correct and firm.",
+          "reviewedText": "Khien (represents) what is great and originating, penetrating, advantageous, correct and firm.",
+          "sourceSpans": [
+            {
+              "printedPage": 57,
+              "pdfPage": 91,
+              "archiveLeaf": 91,
+              "paragraphIndex": 4,
+              "lineStart": 1,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n91/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "KM en",
+              "transcribed": "Khien",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "1.  Heaven,  in  its  motion,  (gives  the  idea  of)\nstrength.  The  superior  man,  in  accordance  with\nthis,  nerves  himself  to  ceaseless  activity.",
+          "normalizedOcrBeforeCorrections": "Heaven, in its motion, (gives the idea of) strength. The superior man, in accordance with this, nerves himself to ceaseless activity.",
+          "reviewedText": "Heaven, in its motion, (gives the idea of) strength. The superior man, in accordance with this, nerves himself to ceaseless activity.",
+          "sourceSpans": [
+            {
+              "printedPage": 267,
+              "pdfPage": 301,
+              "archiveLeaf": 301,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n301/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 2,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Khwan  (represents)  what  is  great  and  originating,\npenetrating,  advantageous,  correct  and  having  the\nfirmness  of  a  mare.     When  the  superior  man  (here\nintended)  has  to  make  any  movement,  if  he  take  the\ninitiative,  he  will  go  astray ;  if  he  follow,  he  will  find\nhis  (proper)  lord.  The  advantageousness  will  be\nseen  in  his  getting  friends  in  the  south-west,  and\nlosing  friends  in  the  north-east.  If  he  rest  in  cor-\nrectness and  firmness,  there  will  be  good  fortune.",
+          "normalizedOcrBeforeCorrections": "Khwan (represents) what is great and originating, penetrating, advantageous, correct and having the firmness of a mare. When the superior man (here intended) has to make any movement, if he take the initiative, he will go astray ; if he follow, he will find his (proper) lord. The advantageousness will be seen in his getting friends in the south-west, and losing friends in the north-east. If he rest in correctness and firmness, there will be good fortune.",
+          "reviewedText": "Khwan (represents) what is great and originating, penetrating, advantageous, correct and having the firmness of a mare. When the superior man (here intended) has to make any movement, if he take the initiative, he will go astray ; if he follow, he will find his (proper) lord. The advantageousness will be seen in his getting friends in the south-west, and losing friends in the north-east. If he rest in correctness and firmness, there will be good fortune.",
+          "sourceSpans": [
+            {
+              "printedPage": 59,
+              "pdfPage": 93,
+              "archiveLeaf": 93,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n93/mode/1up"
+            },
+            {
+              "printedPage": 60,
+              "pdfPage": 94,
+              "archiveLeaf": 94,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n94/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "II.  The  (capacity  and  sustaining)  power  of  the\nearth  is  what  is  denoted  by  Khwan.  The  superior\nman,  in  accordance  with  this,  with  his  large  virtue\nsupports  (men  and)  things.",
+          "normalizedOcrBeforeCorrections": "The (capacity and sustaining) power of the earth is what is denoted by Khwan. The superior man, in accordance with this, with his large virtue supports (men and) things.",
+          "reviewedText": "The (capacity and sustaining) power of the earth is what is denoted by Khwan. The superior man, in accordance with this, with his large virtue supports (men and) things.",
+          "sourceSpans": [
+            {
+              "printedPage": 268,
+              "pdfPage": 302,
+              "archiveLeaf": 302,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n302/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 3,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Kun  (indicates  that  in  the  case  which  it  pre-\nsupposes) there  will  be  great  progress  and  success,\nand  the  advantage  will  come  from  being  correct  and\nfirm.  (But)  any  movement  in  advance  should  not\nbe  (lightly)  undertaken.  There  will  be  advantage\nin  appointing  feudal  princes.",
+          "normalizedOcrBeforeCorrections": "Kun (indicates that in the case which it presupposes) there will be great progress and success, and the advantage will come from being correct and firm. (But) any movement in advance should not be (lightly) undertaken. There will be advantage in appointing feudal princes.",
+          "reviewedText": "Kun (indicates that in the case which it presupposes) there will be great progress and success, and the advantage will come from being correct and firm. (But) any movement in advance should not be (lightly) undertaken. There will be advantage in appointing feudal princes.",
+          "sourceSpans": [
+            {
+              "printedPage": 62,
+              "pdfPage": 96,
+              "archiveLeaf": 96,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n96/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "III.  (The  trigram  representing)  clouds  and  (that\nrepresenting)  thunder  form  A\"un.  The  superior\nman,  in  accordance  with  this,  (adjusts  his  measures\nof  government)  as  in  sorting  the  threads  of  the  warp\nand  woof.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) clouds and (that representing) thunder form A\"un. The superior man, in accordance with this, (adjusts his measures of government) as in sorting the threads of the warp and woof.",
+          "reviewedText": "(The trigram representing) clouds and (that representing) thunder form Kun. The superior man, in accordance with this, (adjusts his measures of government) as in sorting the threads of the warp and woof.",
+          "sourceSpans": [
+            {
+              "printedPage": 270,
+              "pdfPage": 304,
+              "archiveLeaf": 304,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n304/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "A\"un",
+              "transcribed": "Kun",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 4,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Mang  (indicates  that  in  the  case  which  it  pre-\nsupposes) there  will  be  progress  and  success.  I  do\nnot  (go  and)  seek  the  youthful  and  inexperienced,\nbut  he  comes  and  seeks  me.  When  he  shows  (the\nsincerity  that  marks)  the  first  recourse  to  divination,\nI  instruct  him.  If  he  apply  a  second  and  third  time,\nthat  is  troublesome ;  and  I  do  not  instruct  the\ntroublesome.  There  will  be  advantage  in  being  firm\nand  correct.",
+          "normalizedOcrBeforeCorrections": "Mang (indicates that in the case which it presupposes) there will be progress and success. I do not (go and) seek the youthful and inexperienced, but he comes and seeks me. When he shows (the sincerity that marks) the first recourse to divination, I instruct him. If he apply a second and third time, that is troublesome ; and I do not instruct the troublesome. There will be advantage in being firm and correct.",
+          "reviewedText": "Mang (indicates that in the case which it presupposes) there will be progress and success. I do not (go and) seek the youthful and inexperienced, but he comes and seeks me. When he shows (the sincerity that marks) the first recourse to divination, I instruct him. If he apply a second and third time, that is troublesome ; and I do not instruct the troublesome. There will be advantage in being firm and correct.",
+          "sourceSpans": [
+            {
+              "printedPage": 64,
+              "pdfPage": 98,
+              "archiveLeaf": 98,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n98/mode/1up"
+            },
+            {
+              "printedPage": 65,
+              "pdfPage": 99,
+              "archiveLeaf": 99,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n99/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "IV.  (The  trigram  representing)  a  mountain,  and\nbeneath  it  that  for  a  spring  issuing  forth  form  Mang.\nThe  superior  man,  in  accordance  with  this,  strives\nto  be  resolute  in  his  conduct  and  nourishes  his\nvirtue.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a mountain, and beneath it that for a spring issuing forth form Mang. The superior man, in accordance with this, strives to be resolute in his conduct and nourishes his virtue.",
+          "reviewedText": "(The trigram representing) a mountain, and beneath it that for a spring issuing forth form Mang. The superior man, in accordance with this, strives to be resolute in his conduct and nourishes his virtue.",
+          "sourceSpans": [
+            {
+              "printedPage": 271,
+              "pdfPage": 305,
+              "archiveLeaf": 305,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n305/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 5,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Hsu  intimates  that,  with  the  sincerity  which  is\ndeclared  in  it,  there  will  be  brilliant  success.  With\nfirmness  there  will  be  good  fortune ;  and  it  will  be\nadvantageous  to  cross  the  great  stream.",
+          "normalizedOcrBeforeCorrections": "Hsu intimates that, with the sincerity which is declared in it, there will be brilliant success. With firmness there will be good fortune ; and it will be advantageous to cross the great stream.",
+          "reviewedText": "Hsu intimates that, with the sincerity which is declared in it, there will be brilliant success. With firmness there will be good fortune ; and it will be advantageous to cross the great stream.",
+          "sourceSpans": [
+            {
+              "printedPage": 67,
+              "pdfPage": 101,
+              "archiveLeaf": 101,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n101/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "V.  (The  trigram  for)  clouds  ascending  over  that\nfor  the  sky  forms  Hsu.  The  superior  man,  in\naccordance  with  this,  eats  and  drinks,  feasts  and\nenjoys  himself  (as  if  there  were  nothing  else  to\nemploy  him).",
+          "normalizedOcrBeforeCorrections": "(The trigram for) clouds ascending over that for the sky forms Hsu. The superior man, in accordance with this, eats and drinks, feasts and enjoys himself (as if there were nothing else to employ him).",
+          "reviewedText": "(The trigram for) clouds ascending over that for the sky forms Hsu. The superior man, in accordance with this, eats and drinks, feasts and enjoys himself (as if there were nothing else to employ him).",
+          "sourceSpans": [
+            {
+              "printedPage": 272,
+              "pdfPage": 306,
+              "archiveLeaf": 306,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n306/mode/1up"
+            },
+            {
+              "printedPage": 273,
+              "pdfPage": 307,
+              "archiveLeaf": 307,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n307/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 6,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Sung  intimates  how,  though  there  is  sincerity  in\none's  contention,  he  will  yet  meet  with  opposition\nand  obstruction ;  but  if  he  cherish  an  apprehensive\ncaution,  there  will  be  good  fortune,  while,  if  he  must\nprosecute  the  contention  to  the  (bitter)  end,  there\nwill  be  evil.  It  will  be  advantageous  to  see  the\ngreat  man ;  it  will  not  be  advantageous  to  cross  the\ngreat  stream.",
+          "normalizedOcrBeforeCorrections": "Sung intimates how, though there is sincerity in one's contention, he will yet meet with opposition and obstruction ; but if he cherish an apprehensive caution, there will be good fortune, while, if he must prosecute the contention to the (bitter) end, there will be evil. It will be advantageous to see the great man ; it will not be advantageous to cross the great stream.",
+          "reviewedText": "Sung intimates how, though there is sincerity in one's contention, he will yet meet with opposition and obstruction ; but if he cherish an apprehensive caution, there will be good fortune, while, if he must prosecute the contention to the (bitter) end, there will be evil. It will be advantageous to see the great man ; it will not be advantageous to cross the great stream.",
+          "sourceSpans": [
+            {
+              "printedPage": 69,
+              "pdfPage": 103,
+              "archiveLeaf": 103,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n103/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "VI.  (The  trigram  representing)  heaven  and  (that\nrepresenting)  water,  moving  away  from  each  other,\nform  Sung.  The  superior  man,  in  accordance  with\nthis,  in  the  transaction  of  affairs  takes  good  counsel\nabout  his  first  steps.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) heaven and (that representing) water, moving away from each other, form Sung. The superior man, in accordance with this, in the transaction of affairs takes good counsel about his first steps.",
+          "reviewedText": "(The trigram representing) heaven and (that representing) water, moving away from each other, form Sung. The superior man, in accordance with this, in the transaction of affairs takes good counsel about his first steps.",
+          "sourceSpans": [
+            {
+              "printedPage": 274,
+              "pdfPage": 308,
+              "archiveLeaf": 308,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n308/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 7,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Sze  indicates  how,  in  the  case  which  it  supposes,\nwith  firmness  and  correctness,  and  (a  leader  of)  age\nand  experience,  there  will  be  good  fortune  and  no\nerror.",
+          "normalizedOcrBeforeCorrections": "Sze indicates how, in the case which it supposes, with firmness and correctness, and (a leader of) age and experience, there will be good fortune and no error.",
+          "reviewedText": "Sze indicates how, in the case which it supposes, with firmness and correctness, and (a leader of) age and experience, there will be good fortune and no error.",
+          "sourceSpans": [
+            {
+              "printedPage": 71,
+              "pdfPage": 105,
+              "archiveLeaf": 105,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n105/mode/1up"
+            },
+            {
+              "printedPage": 72,
+              "pdfPage": 106,
+              "archiveLeaf": 106,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n106/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "VII.  (The  trigram  representing)  the  earth  and  in\nthe  midst  of  it  that  representing  water,  form  Sze.\nThe  superior  man,  in  accordance  with  this,  nourishes\nand  educates  the  people,  and  collects  (from  among\nthem)  the  multitudes  (of  the  hosts).",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) the earth and in the midst of it that representing water, form Sze. The superior man, in accordance with this, nourishes and educates the people, and collects (from among them) the multitudes (of the hosts).",
+          "reviewedText": "(The trigram representing) the earth and in the midst of it that representing water, form Sze. The superior man, in accordance with this, nourishes and educates the people, and collects (from among them) the multitudes (of the hosts).",
+          "sourceSpans": [
+            {
+              "printedPage": 275,
+              "pdfPage": 309,
+              "archiveLeaf": 309,
+              "paragraphIndex": 5,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n309/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 8,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Pi  indicates  that  (under  the  conditions  which  it\nsupposes)  there  is  good  fortune.  But  let  (the  prin-\ncipal party  intended  in  it)  re-examine  himself,  (as  if)\nby  divination,  whether  his  virtue  be  great,  uninter-\nmitting,  and  firm.  If  it  be  so,  there  will  be  no\nerror.  Those  who  have  not  rest  will  then  come  to\nhim ;  and  with  those  who  are  (too)  late  in  coming  it\nwill  be  ill.",
+          "normalizedOcrBeforeCorrections": "Pi indicates that (under the conditions which it supposes) there is good fortune. But let (the principal party intended in it) re-examine himself, (as if) by divination, whether his virtue be great, unintermitting, and firm. If it be so, there will be no error. Those who have not rest will then come to him ; and with those who are (too) late in coming it will be ill.",
+          "reviewedText": "Pi indicates that (under the conditions which it supposes) there is good fortune. But let (the principal party intended in it) re-examine himself, (as if) by divination, whether his virtue be great, unintermitting, and firm. If it be so, there will be no error. Those who have not rest will then come to him ; and with those who are (too) late in coming it will be ill.",
+          "sourceSpans": [
+            {
+              "printedPage": 73,
+              "pdfPage": 107,
+              "archiveLeaf": 107,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n107/mode/1up"
+            },
+            {
+              "printedPage": 74,
+              "pdfPage": 108,
+              "archiveLeaf": 108,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n108/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "VIII.  (The  trigram  representing)  the  earth,  and\nover  it  (that  representing)  water,  form  Pi.  The\nancient  kings,  in  accordance  with  this,  established\nthe  various  states  and  maintained  an  affectionate\nrelation  to  their  princes.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) the earth, and over it (that representing) water, form Pi. The ancient kings, in accordance with this, established the various states and maintained an affectionate relation to their princes.",
+          "reviewedText": "(The trigram representing) the earth, and over it (that representing) water, form Pi. The ancient kings, in accordance with this, established the various states and maintained an affectionate relation to their princes.",
+          "sourceSpans": [
+            {
+              "printedPage": 277,
+              "pdfPage": 311,
+              "archiveLeaf": 311,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n311/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 9,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Hsiao  Kkii  indicates  that  (under  its  conditions)\nthere  will  be  progress  and  success.  (We  see)  dense\nclouds,  but  no  rain  coming  from  our  borders  in  the\nwest.",
+          "normalizedOcrBeforeCorrections": "Hsiao Kkii indicates that (under its conditions) there will be progress and success. (We see) dense clouds, but no rain coming from our borders in the west.",
+          "reviewedText": "Hsiao Khu indicates that (under its conditions) there will be progress and success. (We see) dense clouds, but no rain coming from our borders in the west.",
+          "sourceSpans": [
+            {
+              "printedPage": 76,
+              "pdfPage": 110,
+              "archiveLeaf": 110,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n110/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Kkii",
+              "transcribed": "Khu",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "IX.  (The  trigram  representing)  the  sky,  and  that\nrepresenting  wind  moving  above  it,  form  Hsiao\nAV211.  The  superior  man,  in  accordance  with  this,\nadorns  the  outward  manifestation  of  his  virtue.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) the sky, and that representing wind moving above it, form Hsiao AV211. The superior man, in accordance with this, adorns the outward manifestation of his virtue.",
+          "reviewedText": "(The trigram representing) the sky, and that representing wind moving above it, form Hsiao Khu. The superior man, in accordance with this, adorns the outward manifestation of his virtue.",
+          "sourceSpans": [
+            {
+              "printedPage": 278,
+              "pdfPage": 312,
+              "archiveLeaf": 312,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n312/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "AV211",
+              "transcribed": "Khu",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 10,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "(Li  suggests  the  idea  of)  one  treading  on  the  tail\nof  a  tiger,  which  does  not  bite  him.  There  will  be\nprogress  and  success.",
+          "normalizedOcrBeforeCorrections": "(Li suggests the idea of) one treading on the tail of a tiger, which does not bite him. There will be progress and success.",
+          "reviewedText": "(Li suggests the idea of) one treading on the tail of a tiger, which does not bite him. There will be progress and success.",
+          "sourceSpans": [
+            {
+              "printedPage": 78,
+              "pdfPage": 112,
+              "archiveLeaf": 112,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n112/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "X.  (The  trigram  representing)  the  sky  above,  and\nbelow  it  (that  representing  the  waters  of)  a  marsh,\nform  Li.  The  superior  man,  in  accordance  with\nthis,  discriminates  between  high  and  low,  and  gives\nsettlement  to  the  aims  of  the  people.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) the sky above, and below it (that representing the waters of) a marsh, form Li. The superior man, in accordance with this, discriminates between high and low, and gives settlement to the aims of the people.",
+          "reviewedText": "(The trigram representing) the sky above, and below it (that representing the waters of) a marsh, form Li. The superior man, in accordance with this, discriminates between high and low, and gives settlement to the aims of the people.",
+          "sourceSpans": [
+            {
+              "printedPage": 280,
+              "pdfPage": 314,
+              "archiveLeaf": 314,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n314/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 11,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "In  Thai  (we  see)  the  little  gone  and  the  great\ncome.  (It  indicates  that)  there  will  be  good  fortune,\nwith  progress  and  success.",
+          "normalizedOcrBeforeCorrections": "In Thai (we see) the little gone and the great come. (It indicates that) there will be good fortune, with progress and success.",
+          "reviewedText": "In Thai (we see) the little gone and the great come. (It indicates that) there will be good fortune, with progress and success.",
+          "sourceSpans": [
+            {
+              "printedPage": 81,
+              "pdfPage": 115,
+              "archiveLeaf": 115,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n115/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XI.  (The  trigrams  for)  heaven  and  earth  in  com-\nmunication together  form  Thai.  The  (sage)  sove-\nreign, in  harmony  with  this,  fashions  and  completes\n(his  regulations)  after  the  courses  of  heaven  and\nearth,  and  assists  the  application  of  the  adaptations\nfurnished  by  them, — in  order  to  benefit  the  people.",
+          "normalizedOcrBeforeCorrections": "(The trigrams for) heaven and earth in communication together form Thai. The (sage) sovereign, in harmony with this, fashions and completes (his regulations) after the courses of heaven and earth, and assists the application of the adaptations furnished by them, — in order to benefit the people.",
+          "reviewedText": "(The trigrams for) heaven and earth in communication together form Thai. The (sage) sovereign, in harmony with this, fashions and completes (his regulations) after the courses of heaven and earth, and assists the application of the adaptations furnished by them, — in order to benefit the people.",
+          "sourceSpans": [
+            {
+              "printedPage": 281,
+              "pdfPage": 315,
+              "archiveLeaf": 315,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n315/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 12,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "In  Pht  there  is  the  want  of  good  understanding\nbetween  the  (different  classes  of)  men,  and  its  in-\ndication   is   unfavourable    to    the    firm    and    correct\ncourse  of  the  superior  man.  We  see  in  it  the  great\ngone  and  the  little  come.",
+          "normalizedOcrBeforeCorrections": "In Pht there is the want of good understanding between the (different classes of) men, and its indication is unfavourable to the firm and correct course of the superior man. We see in it the great gone and the little come.",
+          "reviewedText": "In Phi there is the want of good understanding between the (different classes of) men, and its indication is unfavourable to the firm and correct course of the superior man. We see in it the great gone and the little come.",
+          "sourceSpans": [
+            {
+              "printedPage": 83,
+              "pdfPage": 117,
+              "archiveLeaf": 117,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n117/mode/1up"
+            },
+            {
+              "printedPage": 84,
+              "pdfPage": 118,
+              "archiveLeaf": 118,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n118/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Pht",
+              "transcribed": "Phi",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XII.  (The  trigrams  of)  heaven  and  earth,  not  in\nintercommunication,  form  Phi.  The  superior  man,\nin  accordance  with  this,  restrains  (the  manifestation)\nof)  his  virtue,  and  avoids  the  calamities  (that  threaten\nhim).  There  is  no  opportunity  of  conferring  on  him\nthe  glory  of  emolument.",
+          "normalizedOcrBeforeCorrections": "(The trigrams of) heaven and earth, not in intercommunication, form Phi. The superior man, in accordance with this, restrains (the manifestation) of) his virtue, and avoids the calamities (that threaten him). There is no opportunity of conferring on him the glory of emolument.",
+          "reviewedText": "(The trigrams of) heaven and earth, not in intercommunication, form Phi. The superior man, in accordance with this, restrains (the manifestation) of his virtue, and avoids the calamities (that threaten him). There is no opportunity of conferring on him the glory of emolument.",
+          "sourceSpans": [
+            {
+              "printedPage": 282,
+              "pdfPage": 316,
+              "archiveLeaf": 316,
+              "paragraphIndex": 4,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n316/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "(the manifestation) of)",
+              "transcribed": "(the manifestation) of",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 13,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Thung  Zan  (or  'Union  of  men')  appears  here  (as\nwe  find  it)  in  the  (remote  districts  of  the)  country,\nindicating  progress  and  success.  It  will  be  advan-\ntageous to  cross  the  great  stream.  It  will  be  ad-\nvantagfeous  to  maintain  the  firm  correctness  of  the\nsuperior  man.",
+          "normalizedOcrBeforeCorrections": "Thung Zan (or 'Union of men') appears here (as we find it) in the (remote districts of the) country, indicating progress and success. It will be advantageous to cross the great stream. It will be advantagfeous to maintain the firm correctness of the superior man.",
+          "reviewedText": "Thung Zan (or 'Union of men') appears here (as we find it) in the (remote districts of the) country, indicating progress and success. It will be advantageous to cross the great stream. It will be advantageous to maintain the firm correctness of the superior man.",
+          "sourceSpans": [
+            {
+              "printedPage": 86,
+              "pdfPage": 120,
+              "archiveLeaf": 120,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n120/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "advantagfeous",
+              "transcribed": "advantageous",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XIII.  (The  trigrams  for)  heaven  and  fire  form\nThung  Zan.  The  superior  man,  in  accordance  with\nthis),  distinguishes  things  according  to  their  kinds\nand  classes.",
+          "normalizedOcrBeforeCorrections": "(The trigrams for) heaven and fire form Thung Zan. The superior man, in accordance with this), distinguishes things according to their kinds and classes.",
+          "reviewedText": "(The trigrams for) heaven and fire form Thung Zan. The superior man, in accordance with this), distinguishes things according to their kinds and classes.",
+          "sourceSpans": [
+            {
+              "printedPage": 284,
+              "pdfPage": 318,
+              "archiveLeaf": 318,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n318/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 14,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Ta  Yu  indicates  that,  (under  the  circumstances\nwhich  it  implies),  there  will  be  great  progress  and\nsuccess.",
+          "normalizedOcrBeforeCorrections": "Ta Yu indicates that, (under the circumstances which it implies), there will be great progress and success.",
+          "reviewedText": "Ta Yu indicates that, (under the circumstances which it implies), there will be great progress and success.",
+          "sourceSpans": [
+            {
+              "printedPage": 88,
+              "pdfPage": 122,
+              "archiveLeaf": 122,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n122/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XIV.  (The  trigram  for)  heaven  and  (that  of)\nfire  above  it  form  Ta  Yd.  The  superior  man,  in\naccordance  with  this,  represses  what  is  evil  and\ngives  distinction  to  what  is  good,  in  sympathy  with\nthe  excellent  Heaven-conferred  (nature).",
+          "normalizedOcrBeforeCorrections": "(The trigram for) heaven and (that of) fire above it form Ta Yd. The superior man, in accordance with this, represses what is evil and gives distinction to what is good, in sympathy with the excellent Heaven-conferred (nature).",
+          "reviewedText": "(The trigram for) heaven and (that of) fire above it form Ta Yu. The superior man, in accordance with this, represses what is evil and gives distinction to what is good, in sympathy with the excellent Heaven-conferred (nature).",
+          "sourceSpans": [
+            {
+              "printedPage": 285,
+              "pdfPage": 319,
+              "archiveLeaf": 319,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n319/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Ta Yd",
+              "transcribed": "Ta Yu",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 15,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "K/t  ien  indicates  progress  and  success.  The  su-\nperior man,  (being  humble  as  it  implies),  will  have\na  (good)  issue  (to  his  undertakings).",
+          "normalizedOcrBeforeCorrections": "K/t ien indicates progress and success. The superior man, (being humble as it implies), will have a (good) issue (to his undertakings).",
+          "reviewedText": "Khien indicates progress and success. The superior man, (being humble as it implies), will have a (good) issue (to his undertakings).",
+          "sourceSpans": [
+            {
+              "printedPage": 89,
+              "pdfPage": 123,
+              "archiveLeaf": 123,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n123/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "K/t ien",
+              "transcribed": "Khien",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XV.  (The  trigram  for)  the  earth  and  (that  of)\na  mountain  in  the  midst  of  it  form  Kk\\er\\.  The\nsuperior  man,  in  accordance  with  this,  diminishes\nwhat  is  excessive  (in  himself),  and  increases  where\nthere  is  any  defect,  bringing  about  an  equality,  ac-\ncordine  to  the  nature  of  the  case,  in  his  treatment\n(of  himself  and  others).",
+          "normalizedOcrBeforeCorrections": "(The trigram for) the earth and (that of) a mountain in the midst of it form Kk\\er\\. The superior man, in accordance with this, diminishes what is excessive (in himself), and increases where there is any defect, bringing about an equality, accordine to the nature of the case, in his treatment (of himself and others).",
+          "reviewedText": "(The trigram for) the earth and (that of) a mountain in the midst of it form Khien. The superior man, in accordance with this, diminishes what is excessive (in himself), and increases where there is any defect, bringing about an equality, according to the nature of the case, in his treatment (of himself and others).",
+          "sourceSpans": [
+            {
+              "printedPage": 286,
+              "pdfPage": 320,
+              "archiveLeaf": 320,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n320/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Kk\\er\\",
+              "transcribed": "Khien",
+              "basis": "Visually checked against original printed source at listed pages."
+            },
+            {
+              "ocr": "accordine",
+              "transcribed": "according",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 16,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Yii  indicates  that,  (in  the  state  which  it  implies),\nfeudal  princes  may  be  set  up,  and  the  hosts  put  in\nmotion,  with  advantage.",
+          "normalizedOcrBeforeCorrections": "Yii indicates that, (in the state which it implies), feudal princes may be set up, and the hosts put in motion, with advantage.",
+          "reviewedText": "Yu indicates that, (in the state which it implies), feudal princes may be set up, and the hosts put in motion, with advantage.",
+          "sourceSpans": [
+            {
+              "printedPage": 91,
+              "pdfPage": 125,
+              "archiveLeaf": 125,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n125/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Yii",
+              "transcribed": "Yu",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XVI.  (The  trigrams  for)  the  earth  and  thunder\nissuing  from  it  with  its  crashing  noise  form  Yu.\nThe  ancient  kings,  in  accordance  with  this,  com-\nposed their  music  and  did  honour  to  virtue,  pre-\nsenting   it    especially   and    most    grandly   to    God,\nwhen   they  associated   with    Him    (at    the   service)\ntheir  highest  ancestor  and  their  father.",
+          "normalizedOcrBeforeCorrections": "(The trigrams for) the earth and thunder issuing from it with its crashing noise form Yu. The ancient kings, in accordance with this, composed their music and did honour to virtue, presenting it especially and most grandly to God, when they associated with Him (at the service) their highest ancestor and their father.",
+          "reviewedText": "(The trigrams for) the earth and thunder issuing from it with its crashing noise form Yu. The ancient kings, in accordance with this, composed their music and did honour to virtue, presenting it especially and most grandly to God, when they associated with Him (at the service) their highest ancestor and their father.",
+          "sourceSpans": [
+            {
+              "printedPage": 287,
+              "pdfPage": 321,
+              "archiveLeaf": 321,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n321/mode/1up"
+            },
+            {
+              "printedPage": 288,
+              "pdfPage": 322,
+              "archiveLeaf": 322,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n322/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 17,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Sui  indicates  that  (under  its  conditions)  there  will\nbe  great  progress  and  success.  But  it  will  be  advan-\ntageous to  be  firm  and  correct.  There  will  (then)\nbe  no  error.",
+          "normalizedOcrBeforeCorrections": "Sui indicates that (under its conditions) there will be great progress and success. But it will be advantageous to be firm and correct. There will (then) be no error.",
+          "reviewedText": "Sui indicates that (under its conditions) there will be great progress and success. But it will be advantageous to be firm and correct. There will (then) be no error.",
+          "sourceSpans": [
+            {
+              "printedPage": 93,
+              "pdfPage": 127,
+              "archiveLeaf": 127,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n127/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XVII.  (The  trig-ram  for  the  waters  of)  a  marsh\nand  (that  for)  thunder  (hidden)  in  the  midst  of  it\nform  Sui.  The  superior  man  in  accordance  with\nthis,  when  it  is  getting  towards  dark,  enters  (his\nhouse)  and  rests.",
+          "normalizedOcrBeforeCorrections": "(The trig-ram for the waters of) a marsh and (that for) thunder (hidden) in the midst of it form Sui. The superior man in accordance with this, when it is getting towards dark, enters (his house) and rests.",
+          "reviewedText": "(The trigram for the waters of) a marsh and (that for) thunder (hidden) in the midst of it form Sui. The superior man in accordance with this, when it is getting towards dark, enters (his house) and rests.",
+          "sourceSpans": [
+            {
+              "printedPage": 289,
+              "pdfPage": 323,
+              "archiveLeaf": 323,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n323/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "trig-ram",
+              "transcribed": "trigram",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 18,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Ku  indicates  great  progress  and  success  (to  him\nwho  deals  properly  with  the  condition  represented\nby  it).  There  will  be  advantage  in  (efforts  like  that\nof)  crossing  the  great  stream.  (He  should  weigh\nwell,  however,  the  events  of)  three  days  before  the\nturning  point,  and  those  (to  be  done)  three  days\nafter  it.",
+          "normalizedOcrBeforeCorrections": "Ku indicates great progress and success (to him who deals properly with the condition represented by it). There will be advantage in (efforts like that of) crossing the great stream. (He should weigh well, however, the events of) three days before the turning point, and those (to be done) three days after it.",
+          "reviewedText": "Ku indicates great progress and success (to him who deals properly with the condition represented by it). There will be advantage in (efforts like that of) crossing the great stream. (He should weigh well, however, the events of) three days before the turning point, and those (to be done) three days after it.",
+          "sourceSpans": [
+            {
+              "printedPage": 95,
+              "pdfPage": 129,
+              "archiveLeaf": 129,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n129/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XVIII.  (The  trigram  for)  a  mountain,  and  below\nit  that  for  wind,  form  Ku.  The  superior  man,  in\naccordance  with  this,  (addresses  himself  to)  help  the\npeople  and  nourish  his  own  virtue.",
+          "normalizedOcrBeforeCorrections": "(The trigram for) a mountain, and below it that for wind, form Ku. The superior man, in accordance with this, (addresses himself to) help the people and nourish his own virtue.",
+          "reviewedText": "(The trigram for) a mountain, and below it that for wind, form Ku. The superior man, in accordance with this, (addresses himself to) help the people and nourish his own virtue.",
+          "sourceSpans": [
+            {
+              "printedPage": 290,
+              "pdfPage": 324,
+              "archiveLeaf": 324,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n324/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 19,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Lin  (indicates  that  under  the  conditions  supposed\nin  it)  there  will  be  great  progress  and  success,  while\nit  will  be  advantageous  to  be  firmly  correct.  In  the\neighth  month  there  will  be  evil.",
+          "normalizedOcrBeforeCorrections": "Lin (indicates that under the conditions supposed in it) there will be great progress and success, while it will be advantageous to be firmly correct. In the eighth month there will be evil.",
+          "reviewedText": "Lin (indicates that under the conditions supposed in it) there will be great progress and success, while it will be advantageous to be firmly correct. In the eighth month there will be evil.",
+          "sourceSpans": [
+            {
+              "printedPage": 97,
+              "pdfPage": 131,
+              "archiveLeaf": 131,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n131/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XIX.  (The  trigram  for)  the  waters  of  a  marsh\nand  that  for  the  earth  above  it  form  Lin.  The\nsuperior  man,  in  accordance  with  this,  has  his  pur-\nposes of  instruction  that  are  inexhaustible,  and\nnourishes  and  supports  the  people  without  limit.",
+          "normalizedOcrBeforeCorrections": "(The trigram for) the waters of a marsh and that for the earth above it form Lin. The superior man, in accordance with this, has his purposes of instruction that are inexhaustible, and nourishes and supports the people without limit.",
+          "reviewedText": "(The trigram for) the waters of a marsh and that for the earth above it form Lin. The superior man, in accordance with this, has his purposes of instruction that are inexhaustible, and nourishes and supports the people without limit.",
+          "sourceSpans": [
+            {
+              "printedPage": 291,
+              "pdfPage": 325,
+              "archiveLeaf": 325,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n325/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 20,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Kwan  shows  (how  he  whom  it  represents  should\nbe  like)  the  worshipper  who  has  washed  his  hands,\nbut  not  (yet)  presented  his  offerings ; — with  sincerity\nand  an  appearance  of  dignity  (commanding  reverent\nregard).",
+          "normalizedOcrBeforeCorrections": "Kwan shows (how he whom it represents should be like) the worshipper who has washed his hands, but not (yet) presented his offerings ; — with sincerity and an appearance of dignity (commanding reverent regard).",
+          "reviewedText": "Kwan shows (how he whom it represents should be like) the worshipper who has washed his hands, but not (yet) presented his offerings ; — with sincerity and an appearance of dignity (commanding reverent regard).",
+          "sourceSpans": [
+            {
+              "printedPage": 99,
+              "pdfPage": 133,
+              "archiveLeaf": 133,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n133/mode/1up"
+            },
+            {
+              "printedPage": 100,
+              "pdfPage": 134,
+              "archiveLeaf": 134,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n134/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XX.  (The  trigram  representing)  the  earth,  and\nthat  for  wind  moving  above  it,  form  Kwan.  The\nancient  kings,  in  accordance  with  this,  examined  the\n(different)  regions  (of  the  kingdom),  to  see  the  (ways\nof  the)  people,  and  set  forth  their  instructions.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) the earth, and that for wind moving above it, form Kwan. The ancient kings, in accordance with this, examined the (different) regions (of the kingdom), to see the (ways of the) people, and set forth their instructions.",
+          "reviewedText": "(The trigram representing) the earth, and that for wind moving above it, form Kwan. The ancient kings, in accordance with this, examined the (different) regions (of the kingdom), to see the (ways of the) people, and set forth their instructions.",
+          "sourceSpans": [
+            {
+              "printedPage": 292,
+              "pdfPage": 326,
+              "archiveLeaf": 326,
+              "paragraphIndex": 4,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n326/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 21,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Shih  Ho  indicates  successful  progress  (in  the  con-\ndition of  things  which  it  supposes).  It  will  be\nadvantageous  to  use  legal  constraints.",
+          "normalizedOcrBeforeCorrections": "Shih Ho indicates successful progress (in the condition of things which it supposes). It will be advantageous to use legal constraints.",
+          "reviewedText": "Shih Ho indicates successful progress (in the condition of things which it supposes). It will be advantageous to use legal constraints.",
+          "sourceSpans": [
+            {
+              "printedPage": 101,
+              "pdfPage": 135,
+              "archiveLeaf": 135,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n135/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXI.  (The  trigrams  representing)  thunder  and\nlightning  form  Shih  Ho.  The  ancient  kings,  in\naccordance  with  this,  framed  their  penalties  with\nintelligence,  and  promulgated  their  laws.",
+          "normalizedOcrBeforeCorrections": "(The trigrams representing) thunder and lightning form Shih Ho. The ancient kings, in accordance with this, framed their penalties with intelligence, and promulgated their laws.",
+          "reviewedText": "(The trigrams representing) thunder and lightning form Shih Ho. The ancient kings, in accordance with this, framed their penalties with intelligence, and promulgated their laws.",
+          "sourceSpans": [
+            {
+              "printedPage": 293,
+              "pdfPage": 327,
+              "archiveLeaf": 327,
+              "paragraphIndex": 6,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n327/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 22,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Pi  indicates  that  there  should  be  free  course  (in\nwhat  it  denotes).  There  will  be  little  advantage\n(however)  if  it  be  allowed  to  advance  (and  take\nthe  lead).",
+          "normalizedOcrBeforeCorrections": "Pi indicates that there should be free course (in what it denotes). There will be little advantage (however) if it be allowed to advance (and take the lead).",
+          "reviewedText": "Pi indicates that there should be free course (in what it denotes). There will be little advantage (however) if it be allowed to advance (and take the lead).",
+          "sourceSpans": [
+            {
+              "printedPage": 103,
+              "pdfPage": 137,
+              "archiveLeaf": 137,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n137/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXII.  (The  trigram  representing)  a  mountain\nand  that  for  fire  under  it  form  Pi.  The  superior\nman,  in  accordance  with  this,  throws  a  brilliancy\naround  his  various  processes  of  government,  but\ndoes  not  dare  (in  a  similar  way)  to  decide  cases  of\ncriminal  litigation.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a mountain and that for fire under it form Pi. The superior man, in accordance with this, throws a brilliancy around his various processes of government, but does not dare (in a similar way) to decide cases of criminal litigation.",
+          "reviewedText": "(The trigram representing) a mountain and that for fire under it form Pi. The superior man, in accordance with this, throws a brilliancy around his various processes of government, but does not dare (in a similar way) to decide cases of criminal litigation.",
+          "sourceSpans": [
+            {
+              "printedPage": 294,
+              "pdfPage": 328,
+              "archiveLeaf": 328,
+              "paragraphIndex": 6,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n328/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 23,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Po  indicates  that  (in  the  state  which  it  symbolises)\nit  will  not  be  advantageous  to  make  a  movement  in\nany  direction  whatever.",
+          "normalizedOcrBeforeCorrections": "Po indicates that (in the state which it symbolises) it will not be advantageous to make a movement in any direction whatever.",
+          "reviewedText": "Po indicates that (in the state which it symbolises) it will not be advantageous to make a movement in any direction whatever.",
+          "sourceSpans": [
+            {
+              "printedPage": 105,
+              "pdfPage": 139,
+              "archiveLeaf": 139,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n139/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXIII.  (The  trigrams  representing)  the  earth,\nand  (above  it)  that  for  a  mountain,  which  adheres\nto  the  earth,  form  Po.  Superiors,  in  accordance\nwith  this,  seek  to  strengthen  those  below  them,  to\nsecure  the  peace  and  stability  of  their  own  position.",
+          "normalizedOcrBeforeCorrections": "(The trigrams representing) the earth, and (above it) that for a mountain, which adheres to the earth, form Po. Superiors, in accordance with this, seek to strengthen those below them, to secure the peace and stability of their own position.",
+          "reviewedText": "(The trigrams representing) the earth, and (above it) that for a mountain, which adheres to the earth, form Po. Superiors, in accordance with this, seek to strengthen those below them, to secure the peace and stability of their own position.",
+          "sourceSpans": [
+            {
+              "printedPage": 296,
+              "pdfPage": 330,
+              "archiveLeaf": 330,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n330/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 24,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Fu  indicates  that  there  will  be  free  course  and\nprogress  (in  what  it  denotes).  (The  subject  of  it)\nfinds    no    one    to    distress    him    in    his    exits    and\nentrances ;  friends  come  to  him,  and  no  error  is\ncommitted.  He  will  return  and  repeat  his  (proper)\ncourse.  In  seven  days  comes  his  return.  There  will\nbe  advantage  in  whatever  direction  movement  is\nmade.",
+          "normalizedOcrBeforeCorrections": "Fu indicates that there will be free course and progress (in what it denotes). (The subject of it) finds no one to distress him in his exits and entrances ; friends come to him, and no error is committed. He will return and repeat his (proper) course. In seven days comes his return. There will be advantage in whatever direction movement is made.",
+          "reviewedText": "Fu indicates that there will be free course and progress (in what it denotes). (The subject of it) finds no one to distress him in his exits and entrances ; friends come to him, and no error is committed. He will return and repeat his (proper) course. In seven days comes his return. There will be advantage in whatever direction movement is made.",
+          "sourceSpans": [
+            {
+              "printedPage": 107,
+              "pdfPage": 141,
+              "archiveLeaf": 141,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n141/mode/1up"
+            },
+            {
+              "printedPage": 108,
+              "pdfPage": 142,
+              "archiveLeaf": 142,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n142/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXIV.  (The  trigram  representing)  the  earth\nand  that  for  thunder  in  the  midst  of  it  form  Fu.\nThe  ancient  kings,  in  accordance  with  this,  on  the\nday  of  the  (winter)  solstice,  shut  the  gates  of  the\npasses  (from  one  state  to  another),  so  that  the\ntravelling  merchants  could  not  (then)  pursue  their\njourneys,  nor  the  princes  go  on  with  the  inspection\nof  their  states.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) the earth and that for thunder in the midst of it form Fu. The ancient kings, in accordance with this, on the day of the (winter) solstice, shut the gates of the passes (from one state to another), so that the travelling merchants could not (then) pursue their journeys, nor the princes go on with the inspection of their states.",
+          "reviewedText": "(The trigram representing) the earth and that for thunder in the midst of it form Fu. The ancient kings, in accordance with this, on the day of the (winter) solstice, shut the gates of the passes (from one state to another), so that the travelling merchants could not (then) pursue their journeys, nor the princes go on with the inspection of their states.",
+          "sourceSpans": [
+            {
+              "printedPage": 297,
+              "pdfPage": 331,
+              "archiveLeaf": 331,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n331/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 25,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Wu  Wang  indicates  great  progress  and  success,\nwhile  there  will   be    advantage   in  being  firm    and\ncorrect.  If  (its  subject  and  his  action)  be  not\ncorrect,  he  will  fall  into  errors,  and  it  will  not  be\nadvantageous  for  him  to  move  in  any  direction.",
+          "normalizedOcrBeforeCorrections": "Wu Wang indicates great progress and success, while there will be advantage in being firm and correct. If (its subject and his action) be not correct, he will fall into errors, and it will not be advantageous for him to move in any direction.",
+          "reviewedText": "Wu Wang indicates great progress and success, while there will be advantage in being firm and correct. If (its subject and his action) be not correct, he will fall into errors, and it will not be advantageous for him to move in any direction.",
+          "sourceSpans": [
+            {
+              "printedPage": 109,
+              "pdfPage": 143,
+              "archiveLeaf": 143,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n143/mode/1up"
+            },
+            {
+              "printedPage": 110,
+              "pdfPage": 144,
+              "archiveLeaf": 144,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n144/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXV.  The  thunder  rolls  all  under  the  sky,  and\nto  (every)thing  there  is  given  (its  nature),  free  from\nall  insincerity.  The  ancient  kings,  in  accordance  with\nthis,  (made  their  regulations)  in  complete  accordance\nwith  the  seasons,  thereby  nourishing  all  things.",
+          "normalizedOcrBeforeCorrections": "The thunder rolls all under the sky, and to (every)thing there is given (its nature), free from all insincerity. The ancient kings, in accordance with this, (made their regulations) in complete accordance with the seasons, thereby nourishing all things.",
+          "reviewedText": "The thunder rolls all under the sky, and to (every)thing there is given (its nature), free from all insincerity. The ancient kings, in accordance with this, (made their regulations) in complete accordance with the seasons, thereby nourishing all things.",
+          "sourceSpans": [
+            {
+              "printedPage": 299,
+              "pdfPage": 333,
+              "archiveLeaf": 333,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n333/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 26,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Under  the  conditions  of  Ta  Khii  it  will  be  advan-\ntageous to  be  firm  and  correct.  (If  its  subject  do\nnot  seek  to)  enjoy  his  revenues  in  his  own  family\n(without  taking  service  at  court),  there  will  be  good\nfortune.  It  will  be  advantageous  for  him  to  cross\nthe  great  stream.",
+          "normalizedOcrBeforeCorrections": "Under the conditions of Ta Khii it will be advantageous to be firm and correct. (If its subject do not seek to) enjoy his revenues in his own family (without taking service at court), there will be good fortune. It will be advantageous for him to cross the great stream.",
+          "reviewedText": "Under the conditions of Ta Khu it will be advantageous to be firm and correct. (If its subject do not seek to) enjoy his revenues in his own family (without taking service at court), there will be good fortune. It will be advantageous for him to cross the great stream.",
+          "sourceSpans": [
+            {
+              "printedPage": 112,
+              "pdfPage": 146,
+              "archiveLeaf": 146,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n146/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Ta Khii",
+              "transcribed": "Ta Khu",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XXVI.  (The  trigram  representing)  a  mountain,\nand  in  the  midst  of  it  that  (representing)  heaven,\nform  Ta  Khu..  The  superior  man,  in  accordance\nwith  this,  stores  largely  in  his  memory  the  words  and\ndeeds  of  former  men,  to  subserve  the  accumulation\nof  his  virtue.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a mountain, and in the midst of it that (representing) heaven, form Ta Khu.. The superior man, in accordance with this, stores largely in his memory the words and deeds of former men, to subserve the accumulation of his virtue.",
+          "reviewedText": "(The trigram representing) a mountain, and in the midst of it that (representing) heaven, form Ta Khu. The superior man, in accordance with this, stores largely in his memory the words and deeds of former men, to subserve the accumulation of his virtue.",
+          "sourceSpans": [
+            {
+              "printedPage": 300,
+              "pdfPage": 334,
+              "archiveLeaf": 334,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n334/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Ta Khu..",
+              "transcribed": "Ta Khu.",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 27,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "1  indicates  that  with  firm  correctness  there  will  be\ngood  fortune  (in  what  is  denoted  by  it).  We  must\nlook  at  what  we  are  seeking  to  nourish,  and  by  the\nexercise  of  our  thoughts  seek  for  the  proper  aliment.",
+          "normalizedOcrBeforeCorrections": "1 indicates that with firm correctness there will be good fortune (in what is denoted by it). We must look at what we are seeking to nourish, and by the exercise of our thoughts seek for the proper aliment.",
+          "reviewedText": "I indicates that with firm correctness there will be good fortune (in what is denoted by it). We must look at what we are seeking to nourish, and by the exercise of our thoughts seek for the proper aliment.",
+          "sourceSpans": [
+            {
+              "printedPage": 114,
+              "pdfPage": 148,
+              "archiveLeaf": 148,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n148/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "1 indicates",
+              "transcribed": "I indicates",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XXVII.  (The  trigram  representing)  a  mountain\nand  under  it  that  for  thunder  form  I.  The  superior\nman,  in  accordance  with  this,  (enjoins)  watchfulness\nover  our  words,  and  the  temperate  regulation  of  our\neating  and  drinking.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a mountain and under it that for thunder form I. The superior man, in accordance with this, (enjoins) watchfulness over our words, and the temperate regulation of our eating and drinking.",
+          "reviewedText": "(The trigram representing) a mountain and under it that for thunder form I. The superior man, in accordance with this, (enjoins) watchfulness over our words, and the temperate regulation of our eating and drinking.",
+          "sourceSpans": [
+            {
+              "printedPage": 301,
+              "pdfPage": 335,
+              "archiveLeaf": 335,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n335/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 28,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Ta  Kwo  suggests  to  us  a  beam  that  is  weak.\nThere  will  be  advantage  in  moving  (under  its  con-\nditions) in  any  direction  whatever;  there  will  be\nsuccess.",
+          "normalizedOcrBeforeCorrections": "Ta Kwo suggests to us a beam that is weak. There will be advantage in moving (under its conditions) in any direction whatever; there will be success.",
+          "reviewedText": "Ta Kwo suggests to us a beam that is weak. There will be advantage in moving (under its conditions) in any direction whatever; there will be success.",
+          "sourceSpans": [
+            {
+              "printedPage": 116,
+              "pdfPage": 150,
+              "archiveLeaf": 150,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n150/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXVIII.  (The  trigram  representing)  trees  hid-\nden beneath  that  for  the  waters  of  a  marsh  forms  T  a.\nKwo.  The  superior  man,  in  accordance  with  this,\nstands  up  alone  and  has  no  fear,  and  keeps  retired\nfrom  the  world  without  regret.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) trees hidden beneath that for the waters of a marsh forms T a. Kwo. The superior man, in accordance with this, stands up alone and has no fear, and keeps retired from the world without regret.",
+          "reviewedText": "(The trigram representing) trees hidden beneath that for the waters of a marsh forms Ta Kwo. The superior man, in accordance with this, stands up alone and has no fear, and keeps retired from the world without regret.",
+          "sourceSpans": [
+            {
+              "printedPage": 302,
+              "pdfPage": 336,
+              "archiveLeaf": 336,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n336/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "T a. Kwo",
+              "transcribed": "Ta Kwo",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 29,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Khan,  here  repeated,  shows  the  possession  of\nsincerity,  through  which  the  mind  is  penetrating.\nAction  (in  accordance  with  this)  will  be  of  high\nvalue.",
+          "normalizedOcrBeforeCorrections": "Khan, here repeated, shows the possession of sincerity, through which the mind is penetrating. Action (in accordance with this) will be of high value.",
+          "reviewedText": "Khan, here repeated, shows the possession of sincerity, through which the mind is penetrating. Action (in accordance with this) will be of high value.",
+          "sourceSpans": [
+            {
+              "printedPage": 118,
+              "pdfPage": 152,
+              "archiveLeaf": 152,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n152/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXIX.  (The  representation  of)  water  flowing  on\ncontinuously  forms  the  repeated  Khan.  The  supe-\nrior man,  in  accordance  with  this,  maintains  con-\nstantly the  virtue  (of  his  heart)  and  (the  integrity  of)\nhis  conduct,  and  practises  the  business  of  instruction.",
+          "normalizedOcrBeforeCorrections": "(The representation of) water flowing on continuously forms the repeated Khan. The superior man, in accordance with this, maintains constantly the virtue (of his heart) and (the integrity of) his conduct, and practises the business of instruction.",
+          "reviewedText": "(The representation of) water flowing on continuously forms the repeated Khan. The superior man, in accordance with this, maintains constantly the virtue (of his heart) and (the integrity of) his conduct, and practises the business of instruction.",
+          "sourceSpans": [
+            {
+              "printedPage": 303,
+              "pdfPage": 337,
+              "archiveLeaf": 337,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n337/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 30,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Li  indicates  that,  (in  regard  to  what  it  denotes),\nit  will  be  advantageous  to  be  firm  and  correct,  and\nthat   thus  there  will    be   free    course    and    success.\nLet  (its  subject)  also  nourish  (a  docility  like  that  of)\nthe  cow,  and  there  will  be  good  fortune.",
+          "normalizedOcrBeforeCorrections": "Li indicates that, (in regard to what it denotes), it will be advantageous to be firm and correct, and that thus there will be free course and success. Let (its subject) also nourish (a docility like that of) the cow, and there will be good fortune.",
+          "reviewedText": "Li indicates that, (in regard to what it denotes), it will be advantageous to be firm and correct, and that thus there will be free course and success. Let (its subject) also nourish (a docility like that of) the cow, and there will be good fortune.",
+          "sourceSpans": [
+            {
+              "printedPage": 120,
+              "pdfPage": 154,
+              "archiveLeaf": 154,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n154/mode/1up"
+            },
+            {
+              "printedPage": 121,
+              "pdfPage": 155,
+              "archiveLeaf": 155,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n155/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXX.  (The  trigram  for)  brightness,  repeated,\nforms  Li.  The  great  man,  in  accordance  with  this,\ncultivates  more  and  more  his  brilliant  (virtue),  and\ndiffuses  its  brightness  over  the  four  quarters  (of  the\nland).",
+          "normalizedOcrBeforeCorrections": "(The trigram for) brightness, repeated, forms Li. The great man, in accordance with this, cultivates more and more his brilliant (virtue), and diffuses its brightness over the four quarters (of the land).",
+          "reviewedText": "(The trigram for) brightness, repeated, forms Li. The great man, in accordance with this, cultivates more and more his brilliant (virtue), and diffuses its brightness over the four quarters (of the land).",
+          "sourceSpans": [
+            {
+              "printedPage": 304,
+              "pdfPage": 338,
+              "archiveLeaf": 338,
+              "paragraphIndex": 4,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n338/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 31,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Hsien  indicates  that,  (on  the  fulfilment  of  the\nconditions  implied  in  it),  there  will  be  free  course\nand  success.  Its  advantageousness  will  depend  on\nthe  being  firm  and  correct,  (as)  in  marrying  a  young\nlady.     There  will  be  good  fortune.",
+          "normalizedOcrBeforeCorrections": "Hsien indicates that, (on the fulfilment of the conditions implied in it), there will be free course and success. Its advantageousness will depend on the being firm and correct, (as) in marrying a young lady. There will be good fortune.",
+          "reviewedText": "Hsien indicates that, (on the fulfilment of the conditions implied in it), there will be free course and success. Its advantageousness will depend on the being firm and correct, (as) in marrying a young lady. There will be good fortune.",
+          "sourceSpans": [
+            {
+              "printedPage": 123,
+              "pdfPage": 157,
+              "archiveLeaf": 157,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n157/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXXI.  (The  trigram  representing)  a  mountain\nand  above  it  that  for  (the  waters  of)  a  marsh  form\nHsien.  The  superior  man,  in  accordance  with  this,\nkeeps  his  mind  free  from  pre-occupation,  and  open\nto  receive  (the  influences  of)  others.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a mountain and above it that for (the waters of) a marsh form Hsien. The superior man, in accordance with this, keeps his mind free from pre-occupation, and open to receive (the influences of) others.",
+          "reviewedText": "(The trigram representing) a mountain and above it that for (the waters of) a marsh form Hsien. The superior man, in accordance with this, keeps his mind free from pre-occupation, and open to receive (the influences of) others.",
+          "sourceSpans": [
+            {
+              "printedPage": 305,
+              "pdfPage": 339,
+              "archiveLeaf": 339,
+              "paragraphIndex": 4,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n339/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 32,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Hang  indicates  successful  progress  and  no  error\n(in  what  it  denotes).  But  the  advantage  will  come\nfrom  being  firm  and  correct ;  and  movement  in  any\ndirection  whatever  will  be  advantageous.",
+          "normalizedOcrBeforeCorrections": "Hang indicates successful progress and no error (in what it denotes). But the advantage will come from being firm and correct ; and movement in any direction whatever will be advantageous.",
+          "reviewedText": "Hang indicates successful progress and no error (in what it denotes). But the advantage will come from being firm and correct ; and movement in any direction whatever will be advantageous.",
+          "sourceSpans": [
+            {
+              "printedPage": 125,
+              "pdfPage": 159,
+              "archiveLeaf": 159,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n159/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXXII.  (The  trigram  representing)  thunder\nand  that  for  wind  form  Hang.  The  superior  man,\nin  accordance  with  this,  stands  firm,  and  does  not\nchange  his  method  (of  operation).",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) thunder and that for wind form Hang. The superior man, in accordance with this, stands firm, and does not change his method (of operation).",
+          "reviewedText": "(The trigram representing) thunder and that for wind form Hang. The superior man, in accordance with this, stands firm, and does not change his method (of operation).",
+          "sourceSpans": [
+            {
+              "printedPage": 307,
+              "pdfPage": 341,
+              "archiveLeaf": 341,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n341/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 33,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Thun  indicates  successful  progress  (in  its  circum-\nstances). To  a  small  extent  it  will  (still)  be  advan-\ntageous to  be  firm  and  correct.",
+          "normalizedOcrBeforeCorrections": "Thun indicates successful progress (in its circumstances). To a small extent it will (still) be advantageous to be firm and correct.",
+          "reviewedText": "Thun indicates successful progress (in its circumstances). To a small extent it will (still) be advantageous to be firm and correct.",
+          "sourceSpans": [
+            {
+              "printedPage": 127,
+              "pdfPage": 161,
+              "archiveLeaf": 161,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n161/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XXXIII.  (The  trigram  representing)  the  sky\nand  below  it  that  for  a  mountain  form  Thun.  The\nsuperior  man,  in  accordance  with  this,  keeps  small\nmen  at  a  distance,  not  by  showing  that  he  hates\nthem,  but  by  his  own  dignified  gravity.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) the sky and below it that for a mountain form Thun. The superior man, in accordance with this, keeps small men at a distance, not by showing that he hates them, but by his own dignified gravity.",
+          "reviewedText": "(The trigram representing) the sky and below it that for a mountain form Thun. The superior man, in accordance with this, keeps small men at a distance, not by showing that he hates them, but by his own dignified gravity.",
+          "sourceSpans": [
+            {
+              "printedPage": 308,
+              "pdfPage": 342,
+              "archiveLeaf": 342,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n342/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 34,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Ti  Awang  indicates  that  (under  the  conditions\nwhich  it  symbolises)  it  will  be  advantageous  to  be\nfirm  and  correct.",
+          "normalizedOcrBeforeCorrections": "Ti Awang indicates that (under the conditions which it symbolises) it will be advantageous to be firm and correct.",
+          "reviewedText": "Ta Kwang indicates that (under the conditions which it symbolises) it will be advantageous to be firm and correct.",
+          "sourceSpans": [
+            {
+              "printedPage": 129,
+              "pdfPage": 163,
+              "archiveLeaf": 163,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n163/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Ti Awang",
+              "transcribed": "Ta Kwang",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XXXIV.  (The  trigram  representing)  heaven\nand  above  it  that  for  thunder  form  Ta  Tsfwang.\nThe  superior  man,  in  accordance  with  this,  does  not\ntake  a  step  which  is  not  according  to  propriety.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) heaven and above it that for thunder form Ta Tsfwang. The superior man, in accordance with this, does not take a step which is not according to propriety.",
+          "reviewedText": "(The trigram representing) heaven and above it that for thunder form Ta Kwang. The superior man, in accordance with this, does not take a step which is not according to propriety.",
+          "sourceSpans": [
+            {
+              "printedPage": 309,
+              "pdfPage": 343,
+              "archiveLeaf": 343,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n343/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Ta Tsfwang",
+              "transcribed": "Ta Kwang",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 35,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "In  3in  we  see  a  prince  who  secures  the  tranquil-\nlity (of  the  people)  presented  on  that  account  with\nnumerous  horses  (by  the  king),  and  three  times  in\na  day  received  at  interviews.",
+          "normalizedOcrBeforeCorrections": "In 3in we see a prince who secures the tranquillity (of the people) presented on that account with numerous horses (by the king), and three times in a day received at interviews.",
+          "reviewedText": "In Zin we see a prince who secures the tranquillity (of the people) presented on that account with numerous horses (by the king), and three times in a day received at interviews.",
+          "sourceSpans": [
+            {
+              "printedPage": 131,
+              "pdfPage": 165,
+              "archiveLeaf": 165,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n165/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "3in",
+              "transcribed": "Zin",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XXXV.  (The  trigram  representing)  the  earth\nand  that  for  the  bright  (sun)  coming  forth  above  it\nform  3in-  The  superior  man,  according  to  this,\ngives  himself  to  make  more  brilliant  his  bright\nvirtue.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) the earth and that for the bright (sun) coming forth above it form 3in- The superior man, according to this, gives himself to make more brilliant his bright virtue.",
+          "reviewedText": "(The trigram representing) the earth and that for the bright (sun) coming forth above it form Zin. The superior man, according to this, gives himself to make more brilliant his bright virtue.",
+          "sourceSpans": [
+            {
+              "printedPage": 310,
+              "pdfPage": 344,
+              "archiveLeaf": 344,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n344/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "3in-",
+              "transcribed": "Zin.",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 36,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Mi  no-  1  indicates  that  (in  the  circumstances  which\nit   denotes)  it  will  be   advantageous   to   realise  the\ndifficulty  (of  the   position),  and   maintain  firm  cor-\nrectness.",
+          "normalizedOcrBeforeCorrections": "Mi no- 1 indicates that (in the circumstances which it denotes) it will be advantageous to realise the difficulty (of the position), and maintain firm correctness.",
+          "reviewedText": "Ming I indicates that (in the circumstances which it denotes) it will be advantageous to realise the difficulty (of the position), and maintain firm correctness.",
+          "sourceSpans": [
+            {
+              "printedPage": 134,
+              "pdfPage": 168,
+              "archiveLeaf": 168,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n168/mode/1up"
+            },
+            {
+              "printedPage": 135,
+              "pdfPage": 169,
+              "archiveLeaf": 169,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n169/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Mi no- 1",
+              "transcribed": "Ming I",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XXXVI.  (The  trigram  representing)  the  earth\nand  that  for  the  bright  (sun)  entering  within  it  form\nMing  1.  The  superior  man,  in  accordance  with\nthis,  conducts  his  management  of  men  ;  —  he  shows\nhis  intelligence  by  keeping  it  obscured.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) the earth and that for the bright (sun) entering within it form Ming 1. The superior man, in accordance with this, conducts his management of men ; — he shows his intelligence by keeping it obscured.",
+          "reviewedText": "(The trigram representing) the earth and that for the bright (sun) entering within it form Ming I. The superior man, in accordance with this, conducts his management of men ; — he shows his intelligence by keeping it obscured.",
+          "sourceSpans": [
+            {
+              "printedPage": 311,
+              "pdfPage": 345,
+              "archiveLeaf": 345,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n345/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Ming 1",
+              "transcribed": "Ming I",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 37,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "For  (the  realisation  of  what  is  taught  in)  A'ia\nZan,  (or  for  the  regulation  of  the  family),  what  is\nmost   advantageous    is   that  the  wife   be   firm   and\ncorrect.",
+          "normalizedOcrBeforeCorrections": "For (the realisation of what is taught in) A'ia Zan, (or for the regulation of the family), what is most advantageous is that the wife be firm and correct.",
+          "reviewedText": "For (the realisation of what is taught in) Kia Zan, (or for the regulation of the family), what is most advantageous is that the wife be firm and correct.",
+          "sourceSpans": [
+            {
+              "printedPage": 136,
+              "pdfPage": 170,
+              "archiveLeaf": 170,
+              "paragraphIndex": 4,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n170/mode/1up"
+            },
+            {
+              "printedPage": 137,
+              "pdfPage": 171,
+              "archiveLeaf": 171,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n171/mode/1up"
+            },
+            {
+              "printedPage": 137,
+              "pdfPage": 171,
+              "archiveLeaf": 171,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n171/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "A'ia Zan",
+              "transcribed": "Kia Zan",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XXXVII.  (The  trigram  representing)  fire,  and\nthat  for  wind  coming  forth  from  it,  form  Afia.  Zan.\nThe  superior  man,  in  accordance  with  this,  orders  his\nwords  according  to  (the  truth  of)  things,  and  his\nconduct  so  that  it  is  uniformly  consistent.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) fire, and that for wind coming forth from it, form Afia. Zan. The superior man, in accordance with this, orders his words according to (the truth of) things, and his conduct so that it is uniformly consistent.",
+          "reviewedText": "(The trigram representing) fire, and that for wind coming forth from it, form Kia Zan. The superior man, in accordance with this, orders his words according to (the truth of) things, and his conduct so that it is uniformly consistent.",
+          "sourceSpans": [
+            {
+              "printedPage": 312,
+              "pdfPage": 346,
+              "archiveLeaf": 346,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n346/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Afia. Zan",
+              "transcribed": "Kia Zan",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 38,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Khwei  indicates  that,  (notwithstanding  the  con-\ndition of  things  which  it  denotes),  in  small  matters\nthere  will  (still)  be  good  success.",
+          "normalizedOcrBeforeCorrections": "Khwei indicates that, (notwithstanding the condition of things which it denotes), in small matters there will (still) be good success.",
+          "reviewedText": "Khwei indicates that, (notwithstanding the condition of things which it denotes), in small matters there will (still) be good success.",
+          "sourceSpans": [
+            {
+              "printedPage": 139,
+              "pdfPage": 173,
+              "archiveLeaf": 173,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n173/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "X  X  XV  III.  (The  trigram  representing)  fire  above,\nand  that  for  (the  waters  of)  a  marsh  below,  form\nKhwei.  The  superior  man,  in  accordance  with\nthis,  where  there  is  a  general  agreement,  yet  admits\ndiversity.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) fire above, and that for (the waters of) a marsh below, form Khwei. The superior man, in accordance with this, where there is a general agreement, yet admits diversity.",
+          "reviewedText": "(The trigram representing) fire above, and that for (the waters of) a marsh below, form Khwei. The superior man, in accordance with this, where there is a general agreement, yet admits diversity.",
+          "sourceSpans": [
+            {
+              "printedPage": 314,
+              "pdfPage": 348,
+              "archiveLeaf": 348,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n348/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 39,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "In  (the  state  indicated  by)  A^ien  advantage  will\nbe  found  in  the  south-west,  and  the  contrary  in  the\nnorth-east.     It  will  be  advantageous  (also)  to  meet\nwith  the  great  man.     (In  these  circumstances),  with\nfirmness  and  correctness,  there  will  be  good  fortune.",
+          "normalizedOcrBeforeCorrections": "In (the state indicated by) A^ien advantage will be found in the south-west, and the contrary in the north-east. It will be advantageous (also) to meet with the great man. (In these circumstances), with firmness and correctness, there will be good fortune.",
+          "reviewedText": "In (the state indicated by) Kien advantage will be found in the south-west, and the contrary in the north-east. It will be advantageous (also) to meet with the great man. (In these circumstances), with firmness and correctness, there will be good fortune.",
+          "sourceSpans": [
+            {
+              "printedPage": 141,
+              "pdfPage": 175,
+              "archiveLeaf": 175,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n175/mode/1up"
+            },
+            {
+              "printedPage": 142,
+              "pdfPage": 176,
+              "archiveLeaf": 176,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n176/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "A^ien",
+              "transcribed": "Kien",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XXXIX.  (The  trigram  representing)  a  mountain,\nand  above  it  that  for  water,  form  A^ien.  The  supe-\nrior man,  in  accordance  with  this,  turns  round  (and\nexamines)  himself,  and  cultivates  his  virtue.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a mountain, and above it that for water, form A^ien. The superior man, in accordance with this, turns round (and examines) himself, and cultivates his virtue.",
+          "reviewedText": "(The trigram representing) a mountain, and above it that for water, form Kien. The superior man, in accordance with this, turns round (and examines) himself, and cultivates his virtue.",
+          "sourceSpans": [
+            {
+              "printedPage": 315,
+              "pdfPage": 349,
+              "archiveLeaf": 349,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n349/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "A^ien",
+              "transcribed": "Kien",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 40,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "In  (the  state  indicated  by)  A\"ieh  advantage  will\nbe  found  in  the  south-west.  If  no  (further)  opera-\ntions be  called  for,  there  will  be  good  fortune  in\ncoming  back  (to  the  old  conditions).  If  some  opera-\ntions be  called  for,  there  will  be  good  fortune  in  the\nearly  conducting  of  them.",
+          "normalizedOcrBeforeCorrections": "In (the state indicated by) A\"ieh advantage will be found in the south-west. If no (further) operations be called for, there will be good fortune in coming back (to the old conditions). If some operations be called for, there will be good fortune in the early conducting of them.",
+          "reviewedText": "In (the state indicated by) Kieh advantage will be found in the south-west. If no (further) operations be called for, there will be good fortune in coming back (to the old conditions). If some operations be called for, there will be good fortune in the early conducting of them.",
+          "sourceSpans": [
+            {
+              "printedPage": 144,
+              "pdfPage": 178,
+              "archiveLeaf": 178,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n178/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "A\"ieh",
+              "transcribed": "Kieh",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XL.  (The  trigram  representing)  thunder  and  that\nfor  rain,  with  these  phenomena  in  a  state  of  mani-\nfestation, form  K\\ eh.  The  superior  man,  in  accord-\nance with  this,  forgives  errors,  and  deals  gently  with\ncrimes.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) thunder and that for rain, with these phenomena in a state of manifestation, form K\\ eh. The superior man, in accordance with this, forgives errors, and deals gently with crimes.",
+          "reviewedText": "(The trigram representing) thunder and that for rain, with these phenomena in a state of manifestation, form Kieh. The superior man, in accordance with this, forgives errors, and deals gently with crimes.",
+          "sourceSpans": [
+            {
+              "printedPage": 316,
+              "pdfPage": 350,
+              "archiveLeaf": 350,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n350/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "K\\ eh",
+              "transcribed": "Kieh",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 41,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "In  (what  is  denoted  by)  Sun,  if  there  be  sincerity\n(in  him  who  employs  it),  there  will  be  great  good\nfortune  : — freedom  from  error  ;  firmness  and  correct-\nness that  can  be  maintained  ;  and  advantage  in  every\nmovement  that  shall  be  made.  In  what  shall  this\n(sincerity  in  the  exercise  of  Sun)  be  employed?\n(Even)  in  sacrifice  two  baskets  of  grain,  (though  there\nbe  nothing  else),  may  be  presented.",
+          "normalizedOcrBeforeCorrections": "In (what is denoted by) Sun, if there be sincerity (in him who employs it), there will be great good fortune : — freedom from error ; firmness and correctness that can be maintained ; and advantage in every movement that shall be made. In what shall this (sincerity in the exercise of Sun) be employed? (Even) in sacrifice two baskets of grain, (though there be nothing else), may be presented.",
+          "reviewedText": "In (what is denoted by) Sun, if there be sincerity (in him who employs it), there will be great good fortune : — freedom from error ; firmness and correctness that can be maintained ; and advantage in every movement that shall be made. In what shall this (sincerity in the exercise of Sun) be employed? (Even) in sacrifice two baskets of grain, (though there be nothing else), may be presented.",
+          "sourceSpans": [
+            {
+              "printedPage": 146,
+              "pdfPage": 180,
+              "archiveLeaf": 180,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n180/mode/1up"
+            },
+            {
+              "printedPage": 147,
+              "pdfPage": 181,
+              "archiveLeaf": 181,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n181/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XLI.  (The  trigram  representing)  a  mountain  and\nbeneath  it  that  for  the  waters  of  a  marsh  form  Sun.\nThe  superior  man,  in  accordance  with  this,  restrains\nhis  wrath  and  represses  his  desires.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a mountain and beneath it that for the waters of a marsh form Sun. The superior man, in accordance with this, restrains his wrath and represses his desires.",
+          "reviewedText": "(The trigram representing) a mountain and beneath it that for the waters of a marsh form Sun. The superior man, in accordance with this, restrains his wrath and represses his desires.",
+          "sourceSpans": [
+            {
+              "printedPage": 317,
+              "pdfPage": 351,
+              "archiveLeaf": 351,
+              "paragraphIndex": 4,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n351/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 42,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Yi  indicates  that  (in  the  state  which  it  denotes)\nthere  will  be  advantage  in  every  movement  which\nshall  be  undertaken,  that  it  will  be  advantageous\n(even)  to  cross  the  great  stream.",
+          "normalizedOcrBeforeCorrections": "Yi indicates that (in the state which it denotes) there will be advantage in every movement which shall be undertaken, that it will be advantageous (even) to cross the great stream.",
+          "reviewedText": "Yi indicates that (in the state which it denotes) there will be advantage in every movement which shall be undertaken, that it will be advantageous (even) to cross the great stream.",
+          "sourceSpans": [
+            {
+              "printedPage": 149,
+              "pdfPage": 183,
+              "archiveLeaf": 183,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n183/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XLII.  (The  trigram  representing)  wind  and  that\nfor  thunder  form  Yl.  The  superior  man,  in  accord-\nance with  this,  when  he  sees  what  is  good,  moves\ntowards  it ;  and  when  he  sees  his  errors,  he  turns\nfrom  them.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) wind and that for thunder form Yl. The superior man, in accordance with this, when he sees what is good, moves towards it ; and when he sees his errors, he turns from them.",
+          "reviewedText": "(The trigram representing) wind and that for thunder form Yi. The superior man, in accordance with this, when he sees what is good, moves towards it ; and when he sees his errors, he turns from them.",
+          "sourceSpans": [
+            {
+              "printedPage": 319,
+              "pdfPage": 353,
+              "archiveLeaf": 353,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n353/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Yl.",
+              "transcribed": "Yi.",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 43,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Kwai  requires  (in  him  who  would  fulfil  its  mean-\ning) the  exhibition  (of  the  culprit's  guilt)  in  the  royal\ncourt,  and  a   sincere  and  earnest  appeal   (for   sym-\npathy  and  support),  with  a  consciousness  of  the  peril\n(involved  in  cutting  off  the  criminal).  He  should\n(also)  make  announcement  in  his  own  city,  and  show\nthat  it  will  not  be  well  to  have  recourse  at  once  to\narms.  (In  this  way)  there  will  be  advantage  in\nwhatever  he  shall  go  forward  to.",
+          "normalizedOcrBeforeCorrections": "Kwai requires (in him who would fulfil its meaning) the exhibition (of the culprit's guilt) in the royal court, and a sincere and earnest appeal (for sympathy and support), with a consciousness of the peril (involved in cutting off the criminal). He should (also) make announcement in his own city, and show that it will not be well to have recourse at once to arms. (In this way) there will be advantage in whatever he shall go forward to.",
+          "reviewedText": "Kwai requires (in him who would fulfil its meaning) the exhibition (of the culprit's guilt) in the royal court, and a sincere and earnest appeal (for sympathy and support), with a consciousness of the peril (involved in cutting off the criminal). He should (also) make announcement in his own city, and show that it will not be well to have recourse at once to arms. (In this way) there will be advantage in whatever he shall go forward to.",
+          "sourceSpans": [
+            {
+              "printedPage": 151,
+              "pdfPage": 185,
+              "archiveLeaf": 185,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n185/mode/1up"
+            },
+            {
+              "printedPage": 152,
+              "pdfPage": 186,
+              "archiveLeaf": 186,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n186/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XLIII.  (The  trigram  representing)  heaven  and\nthat  for  the  waters  of  a  marsh  mounting  above  it\nform  Kwai.  The  superior  man,  in  accordance  with\nthis,  bestows  emolument  on  those  below  him,  and\ndislikes  allowing  his  gifts  to  accumulate  (undis-\npensed).",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) heaven and that for the waters of a marsh mounting above it form Kwai. The superior man, in accordance with this, bestows emolument on those below him, and dislikes allowing his gifts to accumulate (undispensed).",
+          "reviewedText": "(The trigram representing) heaven and that for the waters of a marsh mounting above it form Kwai. The superior man, in accordance with this, bestows emolument on those below him, and dislikes allowing his gifts to accumulate (undispensed).",
+          "sourceSpans": [
+            {
+              "printedPage": 320,
+              "pdfPage": 354,
+              "archiveLeaf": 354,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n354/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 44,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Kau  shows  a  female  who  is  bold  and  strong.  It\nwill  not  be  good  to  marry  (such)  a  female.",
+          "normalizedOcrBeforeCorrections": "Kau shows a female who is bold and strong. It will not be good to marry (such) a female.",
+          "reviewedText": "Kau shows a female who is bold and strong. It will not be good to marry (such) a female.",
+          "sourceSpans": [
+            {
+              "printedPage": 154,
+              "pdfPage": 188,
+              "archiveLeaf": 188,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n188/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XLIV.  (The  trigram  representing)  wind  and  that\nfor  the  sky  above  it  form  Kau.  The  sovereign,\nin  accordance  with  this,  delivers  his  charges,  and\npromulgates  his  announcements  throughout  the  four\nquarters  (of  the  kingdom).",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) wind and that for the sky above it form Kau. The sovereign, in accordance with this, delivers his charges, and promulgates his announcements throughout the four quarters (of the kingdom).",
+          "reviewedText": "(The trigram representing) wind and that for the sky above it form Kau. The sovereign, in accordance with this, delivers his charges, and promulgates his announcements throughout the four quarters (of the kingdom).",
+          "sourceSpans": [
+            {
+              "printedPage": 321,
+              "pdfPage": 355,
+              "archiveLeaf": 355,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n355/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 45,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "In  (the  state  denoted  by)  3hui,  the  king  will\nrepair  to  his   ancestral  temple.      It  will   be   advan-\ntageous  (also)  to  meet  with  the  great  man  ;  and  then\nthere  will  be  progress  and  success,  though  the  advan-\ntage must  come  through  firm  correctness.  The\nuse  of  great  victims  will  conduce  to  good  fortune  ;\nand  in  whatever  direction  movement  is  made,  it  will\nbe  advantageous.",
+          "normalizedOcrBeforeCorrections": "In (the state denoted by) 3hui, the king will repair to his ancestral temple. It will be advantageous (also) to meet with the great man ; and then there will be progress and success, though the advantage must come through firm correctness. The use of great victims will conduce to good fortune ; and in whatever direction movement is made, it will be advantageous.",
+          "reviewedText": "In (the state denoted by) Zhui, the king will repair to his ancestral temple. It will be advantageous (also) to meet with the great man ; and then there will be progress and success, though the advantage must come through firm correctness. The use of great victims will conduce to good fortune ; and in whatever direction movement is made, it will be advantageous.",
+          "sourceSpans": [
+            {
+              "printedPage": 156,
+              "pdfPage": 190,
+              "archiveLeaf": 190,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n190/mode/1up"
+            },
+            {
+              "printedPage": 157,
+              "pdfPage": 191,
+              "archiveLeaf": 191,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n191/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "3hui",
+              "transcribed": "Zhui",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XLV.  (The  trigram  representing  the)  earth  and\nthat  for  the  waters  of  a  marsh  raised  above  it  form\n3hui.  The  superior  man,  in  accordance  with  this,\nhas  his  weapons  of  war  put  in  good  repair,  to  be\nprepared  against  unforeseen  contingencies.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing the) earth and that for the waters of a marsh raised above it form 3hui. The superior man, in accordance with this, has his weapons of war put in good repair, to be prepared against unforeseen contingencies.",
+          "reviewedText": "(The trigram representing the) earth and that for the waters of a marsh raised above it form Zhui. The superior man, in accordance with this, has his weapons of war put in good repair, to be prepared against unforeseen contingencies.",
+          "sourceSpans": [
+            {
+              "printedPage": 323,
+              "pdfPage": 357,
+              "archiveLeaf": 357,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n357/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "3hui",
+              "transcribed": "Zhui",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 46,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Shang  indicates  that  (under  its  conditions)  there\nwill   be   great   progress    and   success.     Seeking  by\n(the  qualities  implied  in  it)  to  meet  with  the  great\nman,  its  subject  need  have  no  anxiety.  Advance  to\nthe  south  will  be  fortunate.",
+          "normalizedOcrBeforeCorrections": "Shang indicates that (under its conditions) there will be great progress and success. Seeking by (the qualities implied in it) to meet with the great man, its subject need have no anxiety. Advance to the south will be fortunate.",
+          "reviewedText": "Shang indicates that (under its conditions) there will be great progress and success. Seeking by (the qualities implied in it) to meet with the great man, its subject need have no anxiety. Advance to the south will be fortunate.",
+          "sourceSpans": [
+            {
+              "printedPage": 159,
+              "pdfPage": 193,
+              "archiveLeaf": 193,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n193/mode/1up"
+            },
+            {
+              "printedPage": 160,
+              "pdfPage": 194,
+              "archiveLeaf": 194,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n194/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XLVI.  (The  trigram  representing)  wood  and  that\nfor  the  earth  with  the  wood  growing  in  the  midst\nof  it  form  Shang.  The  superior  man,  in  accord-\nance with  this,  pays  careful  attention  to  his  virtue,\nand  accumulates  the  small  developments  of  it  till  it\nis  high  and  great.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) wood and that for the earth with the wood growing in the midst of it form Shang. The superior man, in accordance with this, pays careful attention to his virtue, and accumulates the small developments of it till it is high and great.",
+          "reviewedText": "(The trigram representing) wood and that for the earth with the wood growing in the midst of it form Shang. The superior man, in accordance with this, pays careful attention to his virtue, and accumulates the small developments of it till it is high and great.",
+          "sourceSpans": [
+            {
+              "printedPage": 324,
+              "pdfPage": 358,
+              "archiveLeaf": 358,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n358/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 47,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "In  (the  condition  denoted  by)  Khwan  there  may\n(yet  be)  progress  and  success.     For  the   firm  and\ncorrect,  the  (really)  great  man,  there  will  be  good\nfortune.  He  will  fall  into  no  error.  If  he  make\nspeeches,  his  words  cannot  be  made  good.",
+          "normalizedOcrBeforeCorrections": "In (the condition denoted by) Khwan there may (yet be) progress and success. For the firm and correct, the (really) great man, there will be good fortune. He will fall into no error. If he make speeches, his words cannot be made good.",
+          "reviewedText": "In (the condition denoted by) Khwan there may (yet be) progress and success. For the firm and correct, the (really) great man, there will be good fortune. He will fall into no error. If he make speeches, his words cannot be made good.",
+          "sourceSpans": [
+            {
+              "printedPage": 161,
+              "pdfPage": 195,
+              "archiveLeaf": 195,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n195/mode/1up"
+            },
+            {
+              "printedPage": 162,
+              "pdfPage": 196,
+              "archiveLeaf": 196,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n196/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XLVII.  (The  trigram  representing)  a  marsh,\nand  (below  it  that  for  a  defile,  which  has  drained\nthe  other  dry  so  that  there  is)  no  water  in  it,  form\nKhwan.  The  superior  man,  in  accordance  with\nthis,  will  sacrifice  his  life  in  order  to  carry  out  his\npurpose.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a marsh, and (below it that for a defile, which has drained the other dry so that there is) no water in it, form Khwan. The superior man, in accordance with this, will sacrifice his life in order to carry out his purpose.",
+          "reviewedText": "(The trigram representing) a marsh, and (below it that for a defile, which has drained the other dry so that there is) no water in it, form Khwan. The superior man, in accordance with this, will sacrifice his life in order to carry out his purpose.",
+          "sourceSpans": [
+            {
+              "printedPage": 325,
+              "pdfPage": 359,
+              "archiveLeaf": 359,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n359/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 48,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "(Looking  at)  3ing,  (we  think  of)  how  (the  site  of)\na  town  may  be  changed,  while  (the  fashion  of)  its\nwells  undergoes  no  change.  (The  water  of  a  well)\nnever  disappears  and  never  receives  (any  great)  in-\ncrease, and  those  who  come  and  those  who  go  can\ndraw  and  enjoy  the  benefit.  If  (the  drawing)  have\nnearly  been  accomplished,  but,  before  the  rope  has\nquite  reached  the  water,  the  bucket  is  broken,  this\nis  evil.",
+          "normalizedOcrBeforeCorrections": "(Looking at) 3ing, (we think of) how (the site of) a town may be changed, while (the fashion of) its wells undergoes no change. (The water of a well) never disappears and never receives (any great) increase, and those who come and those who go can draw and enjoy the benefit. If (the drawing) have nearly been accomplished, but, before the rope has quite reached the water, the bucket is broken, this is evil.",
+          "reviewedText": "(Looking at) Zing, (we think of) how (the site of) a town may be changed, while (the fashion of) its wells undergoes no change. (The water of a well) never disappears and never receives (any great) increase, and those who come and those who go can draw and enjoy the benefit. If (the drawing) have nearly been accomplished, but, before the rope has quite reached the water, the bucket is broken, this is evil.",
+          "sourceSpans": [
+            {
+              "printedPage": 164,
+              "pdfPage": 198,
+              "archiveLeaf": 198,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n198/mode/1up"
+            },
+            {
+              "printedPage": 165,
+              "pdfPage": 199,
+              "archiveLeaf": 199,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n199/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "3ing",
+              "transcribed": "Zing",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "XLVIII.  (The  trigram  representing)  wood  and\nabove  it  that  for  water  form  3ing.  The  superior\nman,  in  accordance  with  this,  comforts  the  people,\nand  stimulates  them  to  mutual  helpfulness.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) wood and above it that for water form 3ing. The superior man, in accordance with this, comforts the people, and stimulates them to mutual helpfulness.",
+          "reviewedText": "(The trigram representing) wood and above it that for water form Zing. The superior man, in accordance with this, comforts the people, and stimulates them to mutual helpfulness.",
+          "sourceSpans": [
+            {
+              "printedPage": 327,
+              "pdfPage": 361,
+              "archiveLeaf": 361,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n361/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "3ing",
+              "transcribed": "Zing",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 49,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "(What  takes  place  as  indicated  by)  Ko  is  believed\nin  only  after  it  has  been  accomplished.  There  will\nbe  great  progress  and  success.  Advantage  will  come\nfrom  being  firm  and  correct.  (In  that  case)  occasion\nfor  repentance  will  disappear.",
+          "normalizedOcrBeforeCorrections": "(What takes place as indicated by) Ko is believed in only after it has been accomplished. There will be great progress and success. Advantage will come from being firm and correct. (In that case) occasion for repentance will disappear.",
+          "reviewedText": "(What takes place as indicated by) Ko is believed in only after it has been accomplished. There will be great progress and success. Advantage will come from being firm and correct. (In that case) occasion for repentance will disappear.",
+          "sourceSpans": [
+            {
+              "printedPage": 167,
+              "pdfPage": 201,
+              "archiveLeaf": 201,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n201/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "XLIX.  (The  trigram  representing  the  waters  of)\na  marsh  and  that  for  fire  in  the  midst  of  them  form\nKo.  The  superior  man,  in  accordance  with  this,\nregulates  his  (astronomical)  calculations,  and  makes\nclear  the  seasons  and  times.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing the waters of) a marsh and that for fire in the midst of them form Ko. The superior man, in accordance with this, regulates his (astronomical) calculations, and makes clear the seasons and times.",
+          "reviewedText": "(The trigram representing the waters of) a marsh and that for fire in the midst of them form Ko. The superior man, in accordance with this, regulates his (astronomical) calculations, and makes clear the seasons and times.",
+          "sourceSpans": [
+            {
+              "printedPage": 328,
+              "pdfPage": 362,
+              "archiveLeaf": 362,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n362/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 50,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Ting  gives  the  intimation  of  great  progress  and\nsuccess.",
+          "normalizedOcrBeforeCorrections": "Ting gives the intimation of great progress and success.",
+          "reviewedText": "Ting gives the intimation of great progress and success.",
+          "sourceSpans": [
+            {
+              "printedPage": 169,
+              "pdfPage": 203,
+              "archiveLeaf": 203,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n203/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "L.  (The  trigram  representing)  wood  and  above\nit  that  for  fire  form  Ting.  The  superior  man,  in\naccordance  with  this,  keeps  his  every  position  correct,\nand  maintains  secure  the  appointment  (of  Heaven).",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) wood and above it that for fire form Ting. The superior man, in accordance with this, keeps his every position correct, and maintains secure the appointment (of Heaven).",
+          "reviewedText": "(The trigram representing) wood and above it that for fire form Ting. The superior man, in accordance with this, keeps his every position correct, and maintains secure the appointment (of Heaven).",
+          "sourceSpans": [
+            {
+              "printedPage": 329,
+              "pdfPage": 363,
+              "archiveLeaf": 363,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n363/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 51,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "A'an  gives  the  intimation  of  ease  and  develop-\nment. When  (the  time  of)  movement  (which  it\nindicates)  comes,  (the  subject  of  the  hexagram)  will\nbe  found  looking  out  with   apprehension,  and   yet\nsmiling  and  talking  cheerfully.  When  the  move-\nment (like  a  crash  of  thunder)  terrifies  all  within\na  hundred  li,  he  will  be  (like  the  sincere  worshipper)\nwho  is  not  (startled  into)  letting  go  his  ladle  and\n(cup  of)  sacrificial  spirits.",
+          "normalizedOcrBeforeCorrections": "A'an gives the intimation of ease and development. When (the time of) movement (which it indicates) comes, (the subject of the hexagram) will be found looking out with apprehension, and yet smiling and talking cheerfully. When the movement (like a crash of thunder) terrifies all within a hundred li, he will be (like the sincere worshipper) who is not (startled into) letting go his ladle and (cup of) sacrificial spirits.",
+          "reviewedText": "Kan gives the intimation of ease and development. When (the time of) movement (which it indicates) comes, (the subject of the hexagram) will be found looking out with apprehension, and yet smiling and talking cheerfully. When the movement (like a crash of thunder) terrifies all within a hundred li, he will be (like the sincere worshipper) who is not (startled into) letting go his ladle and (cup of) sacrificial spirits.",
+          "sourceSpans": [
+            {
+              "printedPage": 172,
+              "pdfPage": 206,
+              "archiveLeaf": 206,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n206/mode/1up"
+            },
+            {
+              "printedPage": 173,
+              "pdfPage": 207,
+              "archiveLeaf": 207,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n207/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "A'an",
+              "transcribed": "Kan",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "LI.  (The  trigram  representing)  thunder,  being  re-\npeated, forms  A'an.  The  superior  man,  in  accordance\nwith  this,  is  fearful  and  apprehensive,  cultivates  (his\nvirtue),  and  examines  (his  faults).",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) thunder, being repeated, forms A'an. The superior man, in accordance with this, is fearful and apprehensive, cultivates (his virtue), and examines (his faults).",
+          "reviewedText": "(The trigram representing) thunder, being repeated, forms Kan. The superior man, in accordance with this, is fearful and apprehensive, cultivates (his virtue), and examines (his faults).",
+          "sourceSpans": [
+            {
+              "printedPage": 330,
+              "pdfPage": 364,
+              "archiveLeaf": 364,
+              "paragraphIndex": 5,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n364/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "A'an",
+              "transcribed": "Kan",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 52,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "When  one's  resting  is  like  that  of  the  back,  and\nhe  loses  all  consciousness   of  self;   when   he  walks\nin  his  courtyard,  and  does  not  see  any  (of  the  per-\nsons) in  it, — there  will  be  no  error.",
+          "normalizedOcrBeforeCorrections": "When one's resting is like that of the back, and he loses all consciousness of self; when he walks in his courtyard, and does not see any (of the persons) in it, — there will be no error.",
+          "reviewedText": "When one's resting is like that of the back, and he loses all consciousness of self; when he walks in his courtyard, and does not see any (of the persons) in it, — there will be no error.",
+          "sourceSpans": [
+            {
+              "printedPage": 175,
+              "pdfPage": 209,
+              "archiveLeaf": 209,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n209/mode/1up"
+            },
+            {
+              "printedPage": 176,
+              "pdfPage": 210,
+              "archiveLeaf": 210,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n210/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "LI  I.  (Two  trigrams  representing)  a  mountain,  one\nover  the  other,  form  Kan.     The  superior  man,  in\naccordance  with   this,  does  not  go   in   his  thoughts\nbeyond  the  (duties  of  the)  position  in  which  he  is.",
+          "normalizedOcrBeforeCorrections": "(Two trigrams representing) a mountain, one over the other, form Kan. The superior man, in accordance with this, does not go in his thoughts beyond the (duties of the) position in which he is.",
+          "reviewedText": "(Two trigrams representing) a mountain, one over the other, form Kan. The superior man, in accordance with this, does not go in his thoughts beyond the (duties of the) position in which he is.",
+          "sourceSpans": [
+            {
+              "printedPage": 331,
+              "pdfPage": 365,
+              "archiveLeaf": 365,
+              "paragraphIndex": 9,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n365/mode/1up"
+            },
+            {
+              "printedPage": 332,
+              "pdfPage": 366,
+              "archiveLeaf": 366,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n366/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 53,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Kien  suggests  to  us  the  marriage  of  a  young\nlady,  and  the  good  fortune  (attending  it).  There\nwill  be  advantage  in  being  firm  and  correct.",
+          "normalizedOcrBeforeCorrections": "Kien suggests to us the marriage of a young lady, and the good fortune (attending it). There will be advantage in being firm and correct.",
+          "reviewedText": "Kien suggests to us the marriage of a young lady, and the good fortune (attending it). There will be advantage in being firm and correct.",
+          "sourceSpans": [
+            {
+              "printedPage": 178,
+              "pdfPage": 212,
+              "archiveLeaf": 212,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n212/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "LI  1 1.  (The  trigram  representing)  a  mountain  and\nabove  it  that  for  a  tree  form  Kien.  The  superior\nman,  in  accordance  with  this,  attains  to  and  main-\ntains his  extraordinary  virtue,  and  makes  the  man-\nners of  the  people  good.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a mountain and above it that for a tree form Kien. The superior man, in accordance with this, attains to and maintains his extraordinary virtue, and makes the manners of the people good.",
+          "reviewedText": "(The trigram representing) a mountain and above it that for a tree form Kien. The superior man, in accordance with this, attains to and maintains his extraordinary virtue, and makes the manners of the people good.",
+          "sourceSpans": [
+            {
+              "printedPage": 333,
+              "pdfPage": 367,
+              "archiveLeaf": 367,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n367/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 54,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Kwei  Mei   indicates  that  (under  the  conditions\nwhich  it  denotes)  action  will  be  evil,  and  in  no  wise\nadvantageous.",
+          "normalizedOcrBeforeCorrections": "Kwei Mei indicates that (under the conditions which it denotes) action will be evil, and in no wise advantageous.",
+          "reviewedText": "Kwei Mei indicates that (under the conditions which it denotes) action will be evil, and in no wise advantageous.",
+          "sourceSpans": [
+            {
+              "printedPage": 180,
+              "pdfPage": 214,
+              "archiveLeaf": 214,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n214/mode/1up"
+            },
+            {
+              "printedPage": 180,
+              "pdfPage": 214,
+              "archiveLeaf": 214,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n214/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "LIV.  (The  trigram  representing  the  waters  of)  a\nmarsh  and  over  it  that  for  thunder  form  Kwei  Mei.\nThe  superior  man,  in  accordance  with  this,  having\nregard  to  the  far-distant  end,  knows  the  mischief\n(that  may  be  done  at  the  beginning).",
+          "normalizedOcrBeforeCorrections": "(The trigram representing the waters of) a marsh and over it that for thunder form Kwei Mei. The superior man, in accordance with this, having regard to the far-distant end, knows the mischief (that may be done at the beginning).",
+          "reviewedText": "(The trigram representing the waters of) a marsh and over it that for thunder form Kwei Mei. The superior man, in accordance with this, having regard to the far-distant end, knows the mischief (that may be done at the beginning).",
+          "sourceSpans": [
+            {
+              "printedPage": 334,
+              "pdfPage": 368,
+              "archiveLeaf": 368,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n368/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 55,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Fang  intimates  progress  and  development.  When\na  king  has  reached  the  point  (which  the  name  denotes)\nthere  is  no  occasion  to  be  anxious  (through  fear  of\na  change).     Let  him  be  as  the  sun  at  noon.",
+          "normalizedOcrBeforeCorrections": "Fang intimates progress and development. When a king has reached the point (which the name denotes) there is no occasion to be anxious (through fear of a change). Let him be as the sun at noon.",
+          "reviewedText": "Fang intimates progress and development. When a king has reached the point (which the name denotes) there is no occasion to be anxious (through fear of a change). Let him be as the sun at noon.",
+          "sourceSpans": [
+            {
+              "printedPage": 183,
+              "pdfPage": 217,
+              "archiveLeaf": 217,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n217/mode/1up"
+            },
+            {
+              "printedPage": 184,
+              "pdfPage": 218,
+              "archiveLeaf": 218,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n218/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "LV.  (The  trigrams  representing)  thunder  and\nlightning  combine  to  form  Fang.  The  superior\nman,  in  accordance  with  this,  decides  cases  of  liti-\ngation, and  apportions  punishments  with  exactness.",
+          "normalizedOcrBeforeCorrections": "(The trigrams representing) thunder and lightning combine to form Fang. The superior man, in accordance with this, decides cases of litigation, and apportions punishments with exactness.",
+          "reviewedText": "(The trigrams representing) thunder and lightning combine to form Fang. The superior man, in accordance with this, decides cases of litigation, and apportions punishments with exactness.",
+          "sourceSpans": [
+            {
+              "printedPage": 335,
+              "pdfPage": 369,
+              "archiveLeaf": 369,
+              "paragraphIndex": 6,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n369/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 56,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Lii  intimates  that  (in  the  condition  which  it\ndenotes)  there  may  be  some  little  attainment  and\nprogress.  If  the  stranger  or  traveller  be  firm  and\ncorrect  as  he  ought  to  be,  there  will  be  good  fortune.",
+          "normalizedOcrBeforeCorrections": "Lii intimates that (in the condition which it denotes) there may be some little attainment and progress. If the stranger or traveller be firm and correct as he ought to be, there will be good fortune.",
+          "reviewedText": "Lu intimates that (in the condition which it denotes) there may be some little attainment and progress. If the stranger or traveller be firm and correct as he ought to be, there will be good fortune.",
+          "sourceSpans": [
+            {
+              "printedPage": 187,
+              "pdfPage": 221,
+              "archiveLeaf": 221,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n221/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Lii",
+              "transcribed": "Lu",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "LVI.  (The  trigram  representing)  a  mountain  and\nabove  it  that  for  fire  form  Lii.  The  superior  man,\nin  accordance  with  this,  exerts  his  wisdom  and\ncaution  in  the  use  of  punishments  and  not  allowing\nlitigations  to  continue.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a mountain and above it that for fire form Lii. The superior man, in accordance with this, exerts his wisdom and caution in the use of punishments and not allowing litigations to continue.",
+          "reviewedText": "(The trigram representing) a mountain and above it that for fire form Lu. The superior man, in accordance with this, exerts his wisdom and caution in the use of punishments and not allowing litigations to continue.",
+          "sourceSpans": [
+            {
+              "printedPage": 337,
+              "pdfPage": 371,
+              "archiveLeaf": 371,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n371/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Lii",
+              "transcribed": "Lu",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 57,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Sun  intimates  that  (under  the  conditions  which\nit  denotes)  there  will  be  some  little  attainment  and\nprogress.     There  will   be  advantage   in   movement\nonward  in  whatever  direction.      It  will  be  advanta-\ngeous (also)  to  see  the  great  man.",
+          "normalizedOcrBeforeCorrections": "Sun intimates that (under the conditions which it denotes) there will be some little attainment and progress. There will be advantage in movement onward in whatever direction. It will be advantageous (also) to see the great man.",
+          "reviewedText": "Sun intimates that (under the conditions which it denotes) there will be some little attainment and progress. There will be advantage in movement onward in whatever direction. It will be advantageous (also) to see the great man.",
+          "sourceSpans": [
+            {
+              "printedPage": 189,
+              "pdfPage": 223,
+              "archiveLeaf": 223,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n223/mode/1up"
+            },
+            {
+              "printedPage": 190,
+              "pdfPage": 224,
+              "archiveLeaf": 224,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n224/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "LVII.  (Two  trigrams  representing)  wind,  follow-\ning each  other,  form  Sun.  The  superior  man,  in\naccordance  with  this,  reiterates  his  orders,  and  secures\nthe  practice  of  his  affairs.",
+          "normalizedOcrBeforeCorrections": "(Two trigrams representing) wind, following each other, form Sun. The superior man, in accordance with this, reiterates his orders, and secures the practice of his affairs.",
+          "reviewedText": "(Two trigrams representing) wind, following each other, form Sun. The superior man, in accordance with this, reiterates his orders, and secures the practice of his affairs.",
+          "sourceSpans": [
+            {
+              "printedPage": 338,
+              "pdfPage": 372,
+              "archiveLeaf": 372,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n372/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 58,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Tui  intimates  that  (under  its  conditions)  there\nwill  be  progress  and  attainment.  (But)  it  will  be\nadvantageous  to  be  firm  and  correct.",
+          "normalizedOcrBeforeCorrections": "Tui intimates that (under its conditions) there will be progress and attainment. (But) it will be advantageous to be firm and correct.",
+          "reviewedText": "Tui intimates that (under its conditions) there will be progress and attainment. (But) it will be advantageous to be firm and correct.",
+          "sourceSpans": [
+            {
+              "printedPage": 192,
+              "pdfPage": 226,
+              "archiveLeaf": 226,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n226/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "LVIII.  (Two  symbols  representing)  the  waters\nof  a  marsh,  one  over  the  other,  form  Tui.  The\nsuperior  man,  in  accordance  with  this,  (encourages)\nthe  conversation  of  friends  and  (the  stimulus  of)\ntheir  (common)  practice.",
+          "normalizedOcrBeforeCorrections": "(Two symbols representing) the waters of a marsh, one over the other, form Tui. The superior man, in accordance with this, (encourages) the conversation of friends and (the stimulus of) their (common) practice.",
+          "reviewedText": "(Two symbols representing) the waters of a marsh, one over the other, form Tui. The superior man, in accordance with this, (encourages) the conversation of friends and (the stimulus of) their (common) practice.",
+          "sourceSpans": [
+            {
+              "printedPage": 340,
+              "pdfPage": 374,
+              "archiveLeaf": 374,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n374/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 59,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Hwan  intimates  that  (under  its  conditions)  there\nwill  be  progress  and  success.  The  king  goes  to\nhis  ancestral  temple ;  and  it  will  be  advantageous  to\ncross  the  great  stream.     It  will  be  advantageous  to\nbe  firm  and  correct.",
+          "normalizedOcrBeforeCorrections": "Hwan intimates that (under its conditions) there will be progress and success. The king goes to his ancestral temple ; and it will be advantageous to cross the great stream. It will be advantageous to be firm and correct.",
+          "reviewedText": "Hwan intimates that (under its conditions) there will be progress and success. The king goes to his ancestral temple ; and it will be advantageous to cross the great stream. It will be advantageous to be firm and correct.",
+          "sourceSpans": [
+            {
+              "printedPage": 194,
+              "pdfPage": 228,
+              "archiveLeaf": 228,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n228/mode/1up"
+            },
+            {
+              "printedPage": 195,
+              "pdfPage": 229,
+              "archiveLeaf": 229,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n229/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "LIX.  (The  trigram  representing)  water  and  that\nfor  wind  moving  above  the  water  form  Hwan.\nThe  ancient  kings,  in  accordance  with  this,  presented\nofferings  to  God  and  established  the  ancestral  temple.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) water and that for wind moving above the water form Hwan. The ancient kings, in accordance with this, presented offerings to God and established the ancestral temple.",
+          "reviewedText": "(The trigram representing) water and that for wind moving above the water form Hwan. The ancient kings, in accordance with this, presented offerings to God and established the ancestral temple.",
+          "sourceSpans": [
+            {
+              "printedPage": 341,
+              "pdfPage": 375,
+              "archiveLeaf": 375,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n375/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 60,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "A^ieh  intimates  that  (under  its  conditions)  there\nwill  be  progress  and  attainment.  (But)  if  the  regu-\nlations (which  it  prescribes)  be  severe  and  difficult,\nthey  cannot  be  permanent.",
+          "normalizedOcrBeforeCorrections": "A^ieh intimates that (under its conditions) there will be progress and attainment. (But) if the regulations (which it prescribes) be severe and difficult, they cannot be permanent.",
+          "reviewedText": "Kieh intimates that (under its conditions) there will be progress and attainment. (But) if the regulations (which it prescribes) be severe and difficult, they cannot be permanent.",
+          "sourceSpans": [
+            {
+              "printedPage": 197,
+              "pdfPage": 231,
+              "archiveLeaf": 231,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n231/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "A^ieh",
+              "transcribed": "Kieh",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "LX.  (The  trigram  representing)  a  lake,  and  above\nit  that  for  water,  form  A'ieh.  The  superior  man,\nin  accordance  with  this,  constructs  his  (methods  of)\nnumbering  and  measurement,  and  discusses  (points\nof)  virtue  and  conduct.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a lake, and above it that for water, form A'ieh. The superior man, in accordance with this, constructs his (methods of) numbering and measurement, and discusses (points of) virtue and conduct.",
+          "reviewedText": "(The trigram representing) a lake, and above it that for water, form Kieh. The superior man, in accordance with this, constructs his (methods of) numbering and measurement, and discusses (points of) virtue and conduct.",
+          "sourceSpans": [
+            {
+              "printedPage": 342,
+              "pdfPage": 376,
+              "archiveLeaf": 376,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n376/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "A'ieh",
+              "transcribed": "Kieh",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 61,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Kur\\g  Fu  (moves  even)  pigs  and  fish,  and  leads\nto  good  fortune.  There  will  be  advantage  in  cross-\ning  the  great  stream.     There  will  be  advantage  in\nbeing  firm  and  correct.",
+          "normalizedOcrBeforeCorrections": "Kur\\g Fu (moves even) pigs and fish, and leads to good fortune. There will be advantage in crossing the great stream. There will be advantage in being firm and correct.",
+          "reviewedText": "Kung Fu (moves even) pigs and fish, and leads to good fortune. There will be advantage in crossing the great stream. There will be advantage in being firm and correct.",
+          "sourceSpans": [
+            {
+              "printedPage": 199,
+              "pdfPage": 233,
+              "archiveLeaf": 233,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": 2,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n233/mode/1up"
+            },
+            {
+              "printedPage": 200,
+              "pdfPage": 234,
+              "archiveLeaf": 234,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n234/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Kur\\g",
+              "transcribed": "Kung",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "LXI.  (The  trigram  representing  the  waters  of)\na  marsh  and  that  for  wind  above  it  form  A^ung  FCi.\nThe  superior  man,  in  accordance  with  this,  deli-\nberates about  cases  of  litigation  and  delays  (the\ninfliction  of)  death.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing the waters of) a marsh and that for wind above it form A^ung FCi. The superior man, in accordance with this, deliberates about cases of litigation and delays (the infliction of) death.",
+          "reviewedText": "(The trigram representing the waters of) a marsh and that for wind above it form Kung Fu. The superior man, in accordance with this, deliberates about cases of litigation and delays (the infliction of) death.",
+          "sourceSpans": [
+            {
+              "printedPage": 343,
+              "pdfPage": 377,
+              "archiveLeaf": 377,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n377/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "A^ung FCi",
+              "transcribed": "Kung Fu",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 62,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Hsiao  Kwo  indicates  that  (in  the  circumstances\nwhich  it  implies)  there  will  be  progress  and  attain-\nment.  But  it  will  be  advantageous  to  be  firm  and\ncorrect.  (What  the  name  denotes)  may  be  done  in\nsmall  affairs,  but  not  in  great  affairs.  (It  is  like)  the\nnotes  that  come  down  from  a  bird  on  the  wing ; — to\ndescend  is  better  than  to  ascend.  There  will  (in\nthis  way)  be  great  good  fortune.",
+          "normalizedOcrBeforeCorrections": "Hsiao Kwo indicates that (in the circumstances which it implies) there will be progress and attainment. But it will be advantageous to be firm and correct. (What the name denotes) may be done in small affairs, but not in great affairs. (It is like) the notes that come down from a bird on the wing ; — to descend is better than to ascend. There will (in this way) be great good fortune.",
+          "reviewedText": "Hsiao Kwo indicates that (in the circumstances which it implies) there will be progress and attainment. But it will be advantageous to be firm and correct. (What the name denotes) may be done in small affairs, but not in great affairs. (It is like) the notes that come down from a bird on the wing ; — to descend is better than to ascend. There will (in this way) be great good fortune.",
+          "sourceSpans": [
+            {
+              "printedPage": 201,
+              "pdfPage": 235,
+              "archiveLeaf": 235,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n235/mode/1up"
+            },
+            {
+              "printedPage": 202,
+              "pdfPage": 236,
+              "archiveLeaf": 236,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n236/mode/1up"
+            }
+          ],
+          "corrections": []
+        },
+        "image": {
+          "rawOcr": "LXII.  (The  trigram  representing)  a  hill  and  that\nfor  thunder  above  it  form  Hsiao  Kwo.  The\nsuperior  man,  in  accordance  with  this,  in  his  conduct\nexceeds  in  humility,  in  mourning  exceeds  in  sorrow,\nand  in  his  expenditure  exceeds  in  economy.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) a hill and that for thunder above it form Hsiao Kwo. The superior man, in accordance with this, in his conduct exceeds in humility, in mourning exceeds in sorrow, and in his expenditure exceeds in economy.",
+          "reviewedText": "(The trigram representing) a hill and that for thunder above it form Hsiao Kwo. The superior man, in accordance with this, in his conduct exceeds in humility, in mourning exceeds in sorrow, and in his expenditure exceeds in economy.",
+          "sourceSpans": [
+            {
+              "printedPage": 344,
+              "pdfPage": 378,
+              "archiveLeaf": 378,
+              "paragraphIndex": 4,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n378/mode/1up"
+            }
+          ],
+          "corrections": []
+        }
+      }
+    },
+    {
+      "number": 63,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "K\\  3 1  intimates  progress  and  success  in  small\nmatters.     There  will  be    advantage    in  being  firm\nand  correct.     There  has  been  good  fortune  in  the\nbeginning ;  there  may  be  disorder  in  the  end.",
+          "normalizedOcrBeforeCorrections": "K\\ 3 1 intimates progress and success in small matters. There will be advantage in being firm and correct. There has been good fortune in the beginning ; there may be disorder in the end.",
+          "reviewedText": "Ki Zi intimates progress and success in small matters. There will be advantage in being firm and correct. There has been good fortune in the beginning ; there may be disorder in the end.",
+          "sourceSpans": [
+            {
+              "printedPage": 204,
+              "pdfPage": 238,
+              "archiveLeaf": 238,
+              "paragraphIndex": 3,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n238/mode/1up"
+            },
+            {
+              "printedPage": 205,
+              "pdfPage": 239,
+              "archiveLeaf": 239,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n239/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "K\\ 3 1",
+              "transcribed": "Ki Zi",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "LX1II.  (The  trigram  representing)  fire  and  that\nfor   water    above   it    form    K\\    3i.      The    superior\nman,   in   accordance  with  this,  thinks  of  evil  (that\nmay  come),  and  beforehand  guards  against  it.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) fire and that for water above it form K\\ 3i. The superior man, in accordance with this, thinks of evil (that may come), and beforehand guards against it.",
+          "reviewedText": "(The trigram representing) fire and that for water above it form Ki Zi. The superior man, in accordance with this, thinks of evil (that may come), and beforehand guards against it.",
+          "sourceSpans": [
+            {
+              "printedPage": 345,
+              "pdfPage": 379,
+              "archiveLeaf": 379,
+              "paragraphIndex": 7,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n379/mode/1up"
+            },
+            {
+              "printedPage": 346,
+              "pdfPage": 380,
+              "archiveLeaf": 380,
+              "paragraphIndex": 1,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n380/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "K\\ 3i",
+              "transcribed": "Ki Zi",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "number": 64,
+      "transcriptionStatus": "scan_reviewed_normalized_transcription",
+      "fields": {
+        "judgment": {
+          "rawOcr": "Wei  31  intimates  progress  and  success  (in  the  cir-\ncumstances which  it  implies).  (We  see)  a  young\nfox  that  has  nearly  crossed  (the  stream),  when  its\ntail  gets  immersed.  There  will  be  no  advantage  in\nany  way.",
+          "normalizedOcrBeforeCorrections": "Wei 31 intimates progress and success (in the circumstances which it implies). (We see) a young fox that has nearly crossed (the stream), when its tail gets immersed. There will be no advantage in any way.",
+          "reviewedText": "Wei Zi intimates progress and success (in the circumstances which it implies). (We see) a young fox that has nearly crossed (the stream), when its tail gets immersed. There will be no advantage in any way.",
+          "sourceSpans": [
+            {
+              "printedPage": 207,
+              "pdfPage": 241,
+              "archiveLeaf": 241,
+              "paragraphIndex": 2,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n241/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Wei 31",
+              "transcribed": "Wei Zi",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        },
+        "image": {
+          "rawOcr": "LXIV.  (The  trigram  representing)  water  and\nthat  for  fire  above  it  form  Wei  3i.  The  superior\nman,  in  accordance  with  this,  carefully  discriminates\namong  (the  qualities  of)  things,  and  the  (different)\npositions  they  (naturally)  occupy.",
+          "normalizedOcrBeforeCorrections": "(The trigram representing) water and that for fire above it form Wei 3i. The superior man, in accordance with this, carefully discriminates among (the qualities of) things, and the (different) positions they (naturally) occupy.",
+          "reviewedText": "(The trigram representing) water and that for fire above it form Wei Zi. The superior man, in accordance with this, carefully discriminates among (the qualities of) things, and the (different) positions they (naturally) occupy.",
+          "sourceSpans": [
+            {
+              "printedPage": 346,
+              "pdfPage": 380,
+              "archiveLeaf": 380,
+              "paragraphIndex": 9,
+              "lineStart": null,
+              "lineEndExclusive": null,
+              "url": "https://archive.org/details/sacredbooksofchi16conf/page/n380/mode/1up"
+            }
+          ],
+          "corrections": [
+            {
+              "ocr": "Wei 3i",
+              "transcribed": "Wei Zi",
+              "basis": "Visually checked against original printed source at listed pages."
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "datasetSha256": "2842d9fa558a1a96f3dbb2a9aed2d47a6952aca1aa0ec5aed6914194fc38529b"
+}

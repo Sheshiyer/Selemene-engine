@@ -1,0 +1,1980 @@
+{
+  "gene_keys_info": {
+    "name": "Gene Keys public label index",
+    "description": "Verified short public spectrum labels and source coordinates; authorized full meanings are unavailable.",
+    "total_keys": 64,
+    "source": "https://genekeys.com/living-library/; exact per-key page provenance retained",
+    "sequences": [
+      "Activation"
+    ]
+  },
+  "metadata": {
+    "dataset_id": "selemene-gene-keys-public-labels",
+    "data_version": "2026-10-08.1",
+    "label_status": "verified_official_public_heading",
+    "description_status": "unavailable_authorized_meanings_not_supplied",
+    "name_status": "numeric_identifier_not_author_chapter_title",
+    "coordinate_status": "human_design_gate_line_source_and_derived_opposition",
+    "programming_partner_source": {
+      "kind": "derived_rave_mandala_opposition",
+      "offset_positions": 32,
+      "source_path": "crates/engine-human-design/src/gate_sequence.rs",
+      "source_sha256": "417d7f8c7687c4832189ab533eddf4e712f8743e787ca569e6fb678f1bb434aa",
+      "public_page_agreements": 62,
+      "public_page_conflicts": [
+        {
+          "number": 6,
+          "official_page_partner": 2,
+          "rave_mandala_opposite": 36
+        },
+        {
+          "number": 8,
+          "official_page_partner": 8,
+          "rave_mandala_opposite": 14
+        }
+      ]
+    },
+    "reflection_prompts_status": "selemene_original_runtime_questions_not_author_text",
+    "full_wisdom_status": "unavailable",
+    "rights": {
+      "status": "no_open_licence_or_written_permission_established",
+      "scope": "short public terminology and numerical coordinates only; no copyrighted passages, course materials or images included",
+      "official_terms_url": "https://genekeys.com/terms-and-conditions/",
+      "official_corpus_licence_claimed": false
+    },
+    "unavailable_fields": [
+      "author_chapter_title",
+      "full_shadow_meaning",
+      "full_gift_meaning",
+      "full_siddhi_meaning",
+      "codon",
+      "amino_acid",
+      "physiology",
+      "author_life_theme",
+      "Venus_sequence",
+      "Pearl_sequence"
+    ]
+  },
+  "gene_keys": {
+    "1": {
+      "number": 1,
+      "name": "Gene Key 1",
+      "shadow": "Entropy",
+      "gift": "Freshness",
+      "siddhi": "Beauty",
+      "programming_partner": 2,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Entropy",
+        "Freshness",
+        "Beauty"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-1/",
+        "final_url": "https://genekeys.com/gene-key-1/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:16.015431+00:00",
+        "source_response_sha256": "ac204602dd1a354906bcbc4dbd6e04ee39ae19d0a9777290db4b905bd3888367",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 2,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "2": {
+      "number": 2,
+      "name": "Gene Key 2",
+      "shadow": "Dislocation",
+      "gift": "Orientation",
+      "siddhi": "Unity",
+      "programming_partner": 1,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Dislocation",
+        "Orientation",
+        "Unity"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-2/",
+        "final_url": "https://genekeys.com/gene-key-2/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:16.040194+00:00",
+        "source_response_sha256": "9c66609d2aa2f9fb553303df7c5de1d02394c20be3d901e9a6711960743b8be1",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 1,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "3": {
+      "number": 3,
+      "name": "Gene Key 3",
+      "shadow": "Chaos",
+      "gift": "Innovation",
+      "siddhi": "Innocence",
+      "programming_partner": 50,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Chaos",
+        "Innovation",
+        "Innocence"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-3/",
+        "final_url": "https://genekeys.com/gene-key-3/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:16.039171+00:00",
+        "source_response_sha256": "2d09a80b4d960f2ebd5a47fbe0d982a31c2fdf688c0988a2053b78bcb0f53439",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 50,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "4": {
+      "number": 4,
+      "name": "Gene Key 4",
+      "shadow": "Intolerance",
+      "gift": "Understanding",
+      "siddhi": "Forgiveness",
+      "programming_partner": 49,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Intolerance",
+        "Understanding",
+        "Forgiveness"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-4/",
+        "final_url": "https://genekeys.com/gene-key-4/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:16.003201+00:00",
+        "source_response_sha256": "b4faf2a097ebc5167984735dcd94b24ab4179126ed27f1fce5f14fbfc1570da2",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 49,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "5": {
+      "number": 5,
+      "name": "Gene Key 5",
+      "shadow": "Impatience",
+      "gift": "Patience",
+      "siddhi": "Timelessness",
+      "programming_partner": 35,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Impatience",
+        "Patience",
+        "Timelessness"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-5/",
+        "final_url": "https://genekeys.com/gene-key-5/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:17.739617+00:00",
+        "source_response_sha256": "b85b29b09dcf69cde2a0a21cebc9d7336d416a85b45c1570d622e8fd33e3f1b3",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 35,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "6": {
+      "number": 6,
+      "name": "Gene Key 6",
+      "shadow": "Conflict",
+      "gift": "Diplomacy",
+      "siddhi": "Peace",
+      "programming_partner": 36,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Conflict",
+        "Diplomacy",
+        "Peace"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-6/",
+        "final_url": "https://genekeys.com/gene-key-6/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:17.712267+00:00",
+        "source_response_sha256": "b80e27bd5075d027bd11eb5ecff44e1d14de9ce6820a490dee3d5e7288732809",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 2,
+        "programming_partner_status": "official_page_link_conflict_resolved_by_opposition"
+      }
+    },
+    "7": {
+      "number": 7,
+      "name": "Gene Key 7",
+      "shadow": "Division",
+      "gift": "Guidance",
+      "siddhi": "Virtue",
+      "programming_partner": 13,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Division",
+        "Guidance",
+        "Virtue"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-7/",
+        "final_url": "https://genekeys.com/gene-key-7/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:17.799816+00:00",
+        "source_response_sha256": "e5383301dfd1e9517b43c79c923637da0154a8427b3bd93191142838fb73d395",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 13,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "8": {
+      "number": 8,
+      "name": "Gene Key 8",
+      "shadow": "Mediocrity",
+      "gift": "Style",
+      "siddhi": "Exquisiteness",
+      "programming_partner": 14,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Mediocrity",
+        "Style",
+        "Exquisiteness"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-8/",
+        "final_url": "https://genekeys.com/gene-key-8/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:17.782099+00:00",
+        "source_response_sha256": "82bf98c5a2b1bc56dac7005f90600808953491e79e53a82ca66fdb02e38e625b",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 8,
+        "programming_partner_status": "official_page_link_conflict_resolved_by_opposition"
+      }
+    },
+    "9": {
+      "number": 9,
+      "name": "Gene Key 9",
+      "shadow": "Inertia",
+      "gift": "Determination",
+      "siddhi": "Invincibility",
+      "programming_partner": 16,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Inertia",
+        "Determination",
+        "Invincibility"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-9/",
+        "final_url": "https://genekeys.com/gene-key-9/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:19.430200+00:00",
+        "source_response_sha256": "4784e73f01a83d546397828d601b0a1df0f536a05ea02165cdab0c91e1d98a8c",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 16,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "10": {
+      "number": 10,
+      "name": "Gene Key 10",
+      "shadow": "Self Obsession",
+      "gift": "Naturalness",
+      "siddhi": "Being",
+      "programming_partner": 15,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Self Obsession",
+        "Naturalness",
+        "Being"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-10/",
+        "final_url": "https://genekeys.com/gene-key-10/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:19.554006+00:00",
+        "source_response_sha256": "ca6663036f4e0b532a549843e2caf7eda0326ed0c6509208a123398020ac5fae",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 15,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "11": {
+      "number": 11,
+      "name": "Gene Key 11",
+      "shadow": "Obscurity",
+      "gift": "Idealism",
+      "siddhi": "Light",
+      "programming_partner": 12,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Obscurity",
+        "Idealism",
+        "Light"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-11/",
+        "final_url": "https://genekeys.com/gene-key-11/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:19.542036+00:00",
+        "source_response_sha256": "fd2c8e188fb7a005d4a40bd7e79e843591a3a53f74051aded4297f2275c1597f",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 12,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "12": {
+      "number": 12,
+      "name": "Gene Key 12",
+      "shadow": "Vanity",
+      "gift": "Discrimination",
+      "siddhi": "Purity",
+      "programming_partner": 11,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Vanity",
+        "Discrimination",
+        "Purity"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-12/",
+        "final_url": "https://genekeys.com/gene-key-12/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:19.636921+00:00",
+        "source_response_sha256": "eb2c65337800581e3e326fa1cbf1d8d25bbf4c18e51a14fb833b11910769e5f5",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 11,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "13": {
+      "number": 13,
+      "name": "Gene Key 13",
+      "shadow": "Discord",
+      "gift": "Discernment",
+      "siddhi": "Empathy",
+      "programming_partner": 7,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Discord",
+        "Discernment",
+        "Empathy"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-13/",
+        "final_url": "https://genekeys.com/gene-key-13/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:21.272628+00:00",
+        "source_response_sha256": "3ed20fa4ae4f5853226b74718792b466e737944ab412057011a53cb0e493f2d5",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 7,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "14": {
+      "number": 14,
+      "name": "Gene Key 14",
+      "shadow": "Compromise",
+      "gift": "Competence",
+      "siddhi": "Bounteousness",
+      "programming_partner": 8,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Compromise",
+        "Competence",
+        "Bounteousness"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-14/",
+        "final_url": "https://genekeys.com/gene-key-14/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:21.510335+00:00",
+        "source_response_sha256": "5e15516f07857f3e45c2b217b5e8ca312b21f7fcd7a634a2a1da3e29a31e44be",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 8,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "15": {
+      "number": 15,
+      "name": "Gene Key 15",
+      "shadow": "Dullness",
+      "gift": "Magnetism",
+      "siddhi": "Florescence",
+      "programming_partner": 10,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Dullness",
+        "Magnetism",
+        "Florescence"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-15/",
+        "final_url": "https://genekeys.com/gene-key-15/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:21.500299+00:00",
+        "source_response_sha256": "c30d1fb60ee8b871204f36a88f8ede5d720dacd9cc22f2144fcbe29f31f010a6",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 10,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "16": {
+      "number": 16,
+      "name": "Gene Key 16",
+      "shadow": "Indifference",
+      "gift": "Versatility",
+      "siddhi": "Mastery",
+      "programming_partner": 9,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Indifference",
+        "Versatility",
+        "Mastery"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-16/",
+        "final_url": "https://genekeys.com/gene-key-16/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:21.325378+00:00",
+        "source_response_sha256": "574f8c20fc902c2f9ece95480dfc320417775851eb95910c86e602fcfe792e5a",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 9,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "17": {
+      "number": 17,
+      "name": "Gene Key 17",
+      "shadow": "Opinion",
+      "gift": "Far-sightedness",
+      "siddhi": "Omniscience",
+      "programming_partner": 18,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Opinion",
+        "Far-sightedness",
+        "Omniscience"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-17/",
+        "final_url": "https://genekeys.com/gene-key-17/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:23.039632+00:00",
+        "source_response_sha256": "41b255172d347243484460e3f8d910b1fae578b698665ba3962f8d81d80c6dd9",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 18,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "18": {
+      "number": 18,
+      "name": "Gene Key 18",
+      "shadow": "Judgment",
+      "gift": "Integrity",
+      "siddhi": "Perfection",
+      "programming_partner": 17,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Judgment",
+        "Integrity",
+        "Perfection"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-18/",
+        "final_url": "https://genekeys.com/gene-key-18/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:23.336004+00:00",
+        "source_response_sha256": "1d50cff20322cd0110a83db4facb3baaa7a685062bea04e449826d81198e242a",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 17,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "19": {
+      "number": 19,
+      "name": "Gene Key 19",
+      "shadow": "Co-dependence",
+      "gift": "Sensitivity",
+      "siddhi": "Sacrifice",
+      "programming_partner": 33,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Co-dependence",
+        "Sensitivity",
+        "Sacrifice"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-19/",
+        "final_url": "https://genekeys.com/gene-key-19/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:23.353301+00:00",
+        "source_response_sha256": "992bf4ae2577d297cd176bf0ba22313642fd2db075e36500f4b947947b8428ae",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 33,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "20": {
+      "number": 20,
+      "name": "Gene Key 20",
+      "shadow": "Superficiality",
+      "gift": "Self Assurance",
+      "siddhi": "Presence",
+      "programming_partner": 34,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Superficiality",
+        "Self Assurance",
+        "Presence"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-20/",
+        "final_url": "https://genekeys.com/gene-key-20/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:23.407172+00:00",
+        "source_response_sha256": "5314473f3316978b5fe5b860fb7e2293838eaaeba59e058ac97be4dbaefb5767",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 34,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "21": {
+      "number": 21,
+      "name": "Gene Key 21",
+      "shadow": "Control",
+      "gift": "Authority",
+      "siddhi": "Valor",
+      "programming_partner": 48,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Control",
+        "Authority",
+        "Valor"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-21/",
+        "final_url": "https://genekeys.com/gene-key-21/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:24.823387+00:00",
+        "source_response_sha256": "92598ed40157713a524d465e95f77fb8c6cb65547e78b0918f75cff8caca0340",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 48,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "22": {
+      "number": 22,
+      "name": "Gene Key 22",
+      "shadow": "Dishonor",
+      "gift": "Graciousness",
+      "siddhi": "Grace",
+      "programming_partner": 47,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Dishonor",
+        "Graciousness",
+        "Grace"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-22/",
+        "final_url": "https://genekeys.com/gene-key-22/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:25.114760+00:00",
+        "source_response_sha256": "a64df0ba919b440eea76272eb2ec8642336063c90a4c1cfb3b393a09d35bd9b1",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 47,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "23": {
+      "number": 23,
+      "name": "Gene Key 23",
+      "shadow": "Complexity",
+      "gift": "Simplicity",
+      "siddhi": "Quintessence",
+      "programming_partner": 43,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Complexity",
+        "Simplicity",
+        "Quintessence"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-23/",
+        "final_url": "https://genekeys.com/gene-key-23/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:25.149944+00:00",
+        "source_response_sha256": "911983355953b393b35c98e211ae93043b385b2826c33f2c3bbff6930a780d7c",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 43,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "24": {
+      "number": 24,
+      "name": "Gene Key 24",
+      "shadow": "Addiction",
+      "gift": "Invention",
+      "siddhi": "Silence",
+      "programming_partner": 44,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Addiction",
+        "Invention",
+        "Silence"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-24/",
+        "final_url": "https://genekeys.com/gene-key-24/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:25.318536+00:00",
+        "source_response_sha256": "802533917ffa4c412d6c7b217017b730a4dedcdc110121618fbd2c103b6e8733",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 44,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "25": {
+      "number": 25,
+      "name": "Gene Key 25",
+      "shadow": "Constriction",
+      "gift": "Acceptance",
+      "siddhi": "Universal Love",
+      "programming_partner": 46,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Constriction",
+        "Acceptance",
+        "Universal Love"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-25/",
+        "final_url": "https://genekeys.com/gene-key-25/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:26.621523+00:00",
+        "source_response_sha256": "22e1e576d8eeebfd331349dd184882cbf334fb05b0118e74570de5bd8a2fb22f",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 46,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "26": {
+      "number": 26,
+      "name": "Gene Key 26",
+      "shadow": "Pride",
+      "gift": "Artfulness",
+      "siddhi": "Invisibility",
+      "programming_partner": 45,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Pride",
+        "Artfulness",
+        "Invisibility"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-26/",
+        "final_url": "https://genekeys.com/gene-key-26/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:26.876347+00:00",
+        "source_response_sha256": "5f9e6512f1476da383003aca5e0f08d862afa74af901c35ffdf907d43226b359",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 45,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "27": {
+      "number": 27,
+      "name": "Gene Key 27",
+      "shadow": "Selfishness",
+      "gift": "Altruism",
+      "siddhi": "Selflessness",
+      "programming_partner": 28,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Selfishness",
+        "Altruism",
+        "Selflessness"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-27/",
+        "final_url": "https://genekeys.com/gene-key-27/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:26.888422+00:00",
+        "source_response_sha256": "37b82bafed46b458fd0f2aee8e0d770b6e70599491ea6d292ceab6c14e6038ee",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 28,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "28": {
+      "number": 28,
+      "name": "Gene Key 28",
+      "shadow": "Purposelessness",
+      "gift": "Totality",
+      "siddhi": "Immortality",
+      "programming_partner": 27,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Purposelessness",
+        "Totality",
+        "Immortality"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-28/",
+        "final_url": "https://genekeys.com/gene-key-28/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:27.129581+00:00",
+        "source_response_sha256": "bd83f33d93f787b6e5fabb392415e28bb5f5aba7f817ce2bc4257141b32b3612",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 27,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "29": {
+      "number": 29,
+      "name": "Gene Key 29",
+      "shadow": "Half-Heartedness",
+      "gift": "Commitment",
+      "siddhi": "Devotion",
+      "programming_partner": 30,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Half-Heartedness",
+        "Commitment",
+        "Devotion"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-29/",
+        "final_url": "https://genekeys.com/gene-key-29/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:28.318958+00:00",
+        "source_response_sha256": "cf3e0a9337e8da0c3d2933fd48ab56e38e34b04ac7b764fb9e7f963c3d9bb8c5",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 30,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "30": {
+      "number": 30,
+      "name": "Gene Key 30",
+      "shadow": "Desire",
+      "gift": "Lightness",
+      "siddhi": "Rapture",
+      "programming_partner": 29,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Desire",
+        "Lightness",
+        "Rapture"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-30/",
+        "final_url": "https://genekeys.com/gene-key-30/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:28.586467+00:00",
+        "source_response_sha256": "a2d35e21e635ecd92ead79a2d49a655fe1b7f8fd9d260dcefac817718d80af57",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 29,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "31": {
+      "number": 31,
+      "name": "Gene Key 31",
+      "shadow": "Arrogance",
+      "gift": "Leadership",
+      "siddhi": "Humility",
+      "programming_partner": 41,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Arrogance",
+        "Leadership",
+        "Humility"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-31/",
+        "final_url": "https://genekeys.com/gene-key-31/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:28.650763+00:00",
+        "source_response_sha256": "b1eb835410e8732234f689f01c8f1ce6731a0b1b6a84c34f4eecd7c45616a452",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 41,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "32": {
+      "number": 32,
+      "name": "Gene Key 32",
+      "shadow": "Failure",
+      "gift": "Preservation",
+      "siddhi": "Veneration",
+      "programming_partner": 42,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Failure",
+        "Preservation",
+        "Veneration"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-32/",
+        "final_url": "https://genekeys.com/gene-key-32/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:28.867795+00:00",
+        "source_response_sha256": "87d61c2a8f5d457f5be7cd29af0d8c9ae0f6f60e6d2634a5772d09a9dcb2b794",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 42,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "33": {
+      "number": 33,
+      "name": "Gene Key 33",
+      "shadow": "Forgetting",
+      "gift": "Mindfulness",
+      "siddhi": "Revelation",
+      "programming_partner": 19,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Forgetting",
+        "Mindfulness",
+        "Revelation"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-33/",
+        "final_url": "https://genekeys.com/gene-key-33/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:30.130912+00:00",
+        "source_response_sha256": "3109013484daa39088e86fe407bee211a6fb650ff9516bd10eaae7ad9bb7fdfe",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 19,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "34": {
+      "number": 34,
+      "name": "Gene Key 34",
+      "shadow": "Force",
+      "gift": "Strength",
+      "siddhi": "Majesty",
+      "programming_partner": 20,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Force",
+        "Strength",
+        "Majesty"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-34/",
+        "final_url": "https://genekeys.com/gene-key-34/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:30.329807+00:00",
+        "source_response_sha256": "816faaacbce096b620d3596e846e4257580a4678626d5680b4883918c9bf6b33",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 20,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "35": {
+      "number": 35,
+      "name": "Gene Key 35",
+      "shadow": "Hunger",
+      "gift": "Adventure",
+      "siddhi": "Boundlessness",
+      "programming_partner": 5,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Hunger",
+        "Adventure",
+        "Boundlessness"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-35/",
+        "final_url": "https://genekeys.com/gene-key-35/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:30.333747+00:00",
+        "source_response_sha256": "ca76f42ade3c4c3192c05d52e6a063a893413bb6e50dde208246527c3b726ce0",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 5,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "36": {
+      "number": 36,
+      "name": "Gene Key 36",
+      "shadow": "Turbulence",
+      "gift": "Humanity",
+      "siddhi": "Compassion",
+      "programming_partner": 6,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Turbulence",
+        "Humanity",
+        "Compassion"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-36/",
+        "final_url": "https://genekeys.com/gene-key-36/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:30.701246+00:00",
+        "source_response_sha256": "e693735ca0a1791e7340897a899e524bb442d725478832b62b565e0cd90de772",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 6,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "37": {
+      "number": 37,
+      "name": "Gene Key 37",
+      "shadow": "Weakness",
+      "gift": "Equality",
+      "siddhi": "Tenderness",
+      "programming_partner": 40,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Weakness",
+        "Equality",
+        "Tenderness"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-37/",
+        "final_url": "https://genekeys.com/gene-key-37/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:31.866869+00:00",
+        "source_response_sha256": "a170285f2997295fc2dc1629e674bd6d7156d1ffdfcf19dd67760058a0b60569",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 40,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "38": {
+      "number": 38,
+      "name": "Gene Key 38",
+      "shadow": "Struggle",
+      "gift": "Perseverance",
+      "siddhi": "Honor",
+      "programming_partner": 39,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Struggle",
+        "Perseverance",
+        "Honor"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-38/",
+        "final_url": "https://genekeys.com/gene-key-38/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:32.000975+00:00",
+        "source_response_sha256": "2726b001b7145ba0832febb0ed1ce057f6d45ce1d4ad002f679f18e5857aa79d",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 39,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "39": {
+      "number": 39,
+      "name": "Gene Key 39",
+      "shadow": "Provocation",
+      "gift": "Dynamism",
+      "siddhi": "Liberation",
+      "programming_partner": 38,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Provocation",
+        "Dynamism",
+        "Liberation"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-39/",
+        "final_url": "https://genekeys.com/gene-key-39/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:31.999710+00:00",
+        "source_response_sha256": "004173c200b54d9406c45d632037c899206f2a335bf2de02a988f083f25f6bd2",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 38,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "40": {
+      "number": 40,
+      "name": "Gene Key 40",
+      "shadow": "Exhaustion",
+      "gift": "Resolve",
+      "siddhi": "Divine Will",
+      "programming_partner": 37,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Exhaustion",
+        "Resolve",
+        "Divine Will"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-40/",
+        "final_url": "https://genekeys.com/gene-key-40/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:32.410203+00:00",
+        "source_response_sha256": "c09cf338ef7668457b514bcd7073a62171910931dbf4092cb159fa4b1c644623",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 37,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "41": {
+      "number": 41,
+      "name": "Gene Key 41",
+      "shadow": "Fantasy",
+      "gift": "Anticipation",
+      "siddhi": "Emanation",
+      "programming_partner": 31,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Fantasy",
+        "Anticipation",
+        "Emanation"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-41/",
+        "final_url": "https://genekeys.com/gene-key-41/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:33.707602+00:00",
+        "source_response_sha256": "0c55d66be150d383533cad6ec89d4e3d91267f6ec4a009a7a19facf336e34f92",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 31,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "42": {
+      "number": 42,
+      "name": "Gene Key 42",
+      "shadow": "Expectation",
+      "gift": "Detachment",
+      "siddhi": "Celebration",
+      "programming_partner": 32,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Expectation",
+        "Detachment",
+        "Celebration"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-42/",
+        "final_url": "https://genekeys.com/gene-key-42/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:33.849975+00:00",
+        "source_response_sha256": "24dbc473795744acf985b0a8bceb04093c5a5b3768d8b39bdddfa74601984877",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 32,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "43": {
+      "number": 43,
+      "name": "Gene Key 43",
+      "shadow": "Deafness",
+      "gift": "Insight",
+      "siddhi": "Epiphany",
+      "programming_partner": 23,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Deafness",
+        "Insight",
+        "Epiphany"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-43/",
+        "final_url": "https://genekeys.com/gene-key-43/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:33.830020+00:00",
+        "source_response_sha256": "7f860b7bc6cd065a3dfe0b0ab49bfcdffa2d123d21d0a3cbccb3a04fcf4582c1",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 23,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "44": {
+      "number": 44,
+      "name": "Gene Key 44",
+      "shadow": "Interference",
+      "gift": "Teamwork",
+      "siddhi": "Synarchy",
+      "programming_partner": 24,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Interference",
+        "Teamwork",
+        "Synarchy"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-44/",
+        "final_url": "https://genekeys.com/gene-key-44/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:34.107416+00:00",
+        "source_response_sha256": "afab7d8cbf2c45bcfe80d588c269cfb7fc6f18aa4a395c43ee3c7bb1e1aaf758",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 24,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "45": {
+      "number": 45,
+      "name": "Gene Key 45",
+      "shadow": "Dominance",
+      "gift": "Synergy",
+      "siddhi": "Communion",
+      "programming_partner": 26,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Dominance",
+        "Synergy",
+        "Communion"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-45/",
+        "final_url": "https://genekeys.com/gene-key-45/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:35.488308+00:00",
+        "source_response_sha256": "9a878057b616538059f8c8f36bc0e58750bec5ccfc83b2c3a94b59699ab8c43c",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 26,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "46": {
+      "number": 46,
+      "name": "Gene Key 46",
+      "shadow": "Seriousness",
+      "gift": "Delight",
+      "siddhi": "Ecstasy",
+      "programming_partner": 25,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Seriousness",
+        "Delight",
+        "Ecstasy"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-46/",
+        "final_url": "https://genekeys.com/gene-key-46/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:35.557709+00:00",
+        "source_response_sha256": "5b9d99ff41e78fa1f2c70240972b0579c2f5ef4e7e6be600427065cdd59dbcd2",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 25,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "47": {
+      "number": 47,
+      "name": "Gene Key 47",
+      "shadow": "Oppression",
+      "gift": "Transmutation",
+      "siddhi": "Transfiguration",
+      "programming_partner": 22,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Oppression",
+        "Transmutation",
+        "Transfiguration"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-47/",
+        "final_url": "https://genekeys.com/gene-key-47/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:35.620934+00:00",
+        "source_response_sha256": "1512c5f8195c2058b417d2ea99d6ef5bf047f479475619aba7adf19b4440ac95",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 22,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "48": {
+      "number": 48,
+      "name": "Gene Key 48",
+      "shadow": "Inadequacy",
+      "gift": "Resourcefulness",
+      "siddhi": "Wisdom",
+      "programming_partner": 21,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Inadequacy",
+        "Resourcefulness",
+        "Wisdom"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-48/",
+        "final_url": "https://genekeys.com/gene-key-48/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:35.865028+00:00",
+        "source_response_sha256": "0f3e183860044a1ee1bf4621d4c786604f11430affe7ab00810c9d07bcdbb122",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 21,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "49": {
+      "number": 49,
+      "name": "Gene Key 49",
+      "shadow": "Reaction",
+      "gift": "Revolution",
+      "siddhi": "Rebirth",
+      "programming_partner": 4,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Reaction",
+        "Revolution",
+        "Rebirth"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-49/",
+        "final_url": "https://genekeys.com/gene-key-49/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:37.153151+00:00",
+        "source_response_sha256": "2ac72e387c03916b00339fe05468d8ce912d479d9444985fc2f3a848cebf92e0",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 4,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "50": {
+      "number": 50,
+      "name": "Gene Key 50",
+      "shadow": "Corruption",
+      "gift": "Equilibrium",
+      "siddhi": "Harmony",
+      "programming_partner": 3,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Corruption",
+        "Equilibrium",
+        "Harmony"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-50/",
+        "final_url": "https://genekeys.com/gene-key-50/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:37.381688+00:00",
+        "source_response_sha256": "d3a529c2ec33010a598b62249503eba6ff47ac7dfc608cd2e8d112a9feff626f",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 3,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "51": {
+      "number": 51,
+      "name": "Gene Key 51",
+      "shadow": "Agitation",
+      "gift": "Initiative",
+      "siddhi": "Awakening",
+      "programming_partner": 57,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Agitation",
+        "Initiative",
+        "Awakening"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-51/",
+        "final_url": "https://genekeys.com/gene-key-51/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:37.458815+00:00",
+        "source_response_sha256": "4b968df6351b099535932eff60c2426e6400cb0270f59de4719a2c10a3c75f24",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 57,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "52": {
+      "number": 52,
+      "name": "Gene Key 52",
+      "shadow": "Stress",
+      "gift": "Restraint",
+      "siddhi": "Stillness",
+      "programming_partner": 58,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Stress",
+        "Restraint",
+        "Stillness"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-52/",
+        "final_url": "https://genekeys.com/gene-key-52/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:37.599097+00:00",
+        "source_response_sha256": "bba02ea8c382777aff6114959aa35462153f97f39aff433e3b388f0503a140db",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 58,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "53": {
+      "number": 53,
+      "name": "Gene Key 53",
+      "shadow": "Immaturity",
+      "gift": "Expansion",
+      "siddhi": "Superabundance",
+      "programming_partner": 54,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Immaturity",
+        "Expansion",
+        "Superabundance"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-53/",
+        "final_url": "https://genekeys.com/gene-key-53/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:38.940297+00:00",
+        "source_response_sha256": "dab8c1425bec47d4205cc958e3438503e50b4a2bdcab8cb859f6d7bfa711d681",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 54,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "54": {
+      "number": 54,
+      "name": "Gene Key 54",
+      "shadow": "Greed",
+      "gift": "Aspiration",
+      "siddhi": "Ascension",
+      "programming_partner": 53,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Greed",
+        "Aspiration",
+        "Ascension"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-54/",
+        "final_url": "https://genekeys.com/gene-key-54/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:39.150902+00:00",
+        "source_response_sha256": "a86a3440b23f5ff4b88d948d35f7d481020f68238a45816e80a60659b3c68715",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 53,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "55": {
+      "number": 55,
+      "name": "Gene Key 55",
+      "shadow": "Victimisation",
+      "gift": "Freedom",
+      "siddhi": "Freedom",
+      "programming_partner": 59,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Victimisation",
+        "Freedom",
+        "Freedom"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-55/",
+        "final_url": "https://genekeys.com/gene-key-55/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:39.184832+00:00",
+        "source_response_sha256": "5e25afb4181292eddad2c5b1ffa849fdab4976139b8e4753fddfb4e91548c6df",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 59,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "56": {
+      "number": 56,
+      "name": "Gene Key 56",
+      "shadow": "Distraction",
+      "gift": "Enrichment",
+      "siddhi": "Intoxication",
+      "programming_partner": 60,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Distraction",
+        "Enrichment",
+        "Intoxication"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-56/",
+        "final_url": "https://genekeys.com/gene-key-56/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:39.308356+00:00",
+        "source_response_sha256": "0b229930213d6b4ca3a53d4eb664cb49b4b1315b21efacb8093e16e24e1b75ce",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 60,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "57": {
+      "number": 57,
+      "name": "Gene Key 57",
+      "shadow": "Unease",
+      "gift": "Intuition",
+      "siddhi": "Clarity",
+      "programming_partner": 51,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Unease",
+        "Intuition",
+        "Clarity"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-57/",
+        "final_url": "https://genekeys.com/gene-key-57/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:40.618209+00:00",
+        "source_response_sha256": "b611e3b5138acb4e02ce0ebcff5dd1b440a4b60339291d32a4ece5720d732cda",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 51,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "58": {
+      "number": 58,
+      "name": "Gene Key 58",
+      "shadow": "Dissatisfaction",
+      "gift": "Vitality",
+      "siddhi": "Bliss",
+      "programming_partner": 52,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Dissatisfaction",
+        "Vitality",
+        "Bliss"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-58/",
+        "final_url": "https://genekeys.com/gene-key-58/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:40.879330+00:00",
+        "source_response_sha256": "cc947c38801f599a2288eada4871ee5cdebdbf58d97f4da3d785babca52538f7",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 52,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "59": {
+      "number": 59,
+      "name": "Gene Key 59",
+      "shadow": "Dishonesty",
+      "gift": "Intimacy",
+      "siddhi": "Transparency",
+      "programming_partner": 55,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Dishonesty",
+        "Intimacy",
+        "Transparency"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-59/",
+        "final_url": "https://genekeys.com/gene-key-59/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:40.880844+00:00",
+        "source_response_sha256": "a3a0a8f85e12729ee38e8032546f1590bfcb1bed4f3386fcf252c330d3274951",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 55,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "60": {
+      "number": 60,
+      "name": "Gene Key 60",
+      "shadow": "Limitation",
+      "gift": "Realism",
+      "siddhi": "Justice",
+      "programming_partner": 56,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Limitation",
+        "Realism",
+        "Justice"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-60/",
+        "final_url": "https://genekeys.com/gene-key-60/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:41.039685+00:00",
+        "source_response_sha256": "42bcf48de6d8b571cc29bb255cdf938e1fb14ea3c502a11f6fd9788b66957354",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 56,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "61": {
+      "number": 61,
+      "name": "Gene Key 61",
+      "shadow": "Psychosis",
+      "gift": "Inspiration",
+      "siddhi": "Sanctity",
+      "programming_partner": 62,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Psychosis",
+        "Inspiration",
+        "Sanctity"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-61/",
+        "final_url": "https://genekeys.com/gene-key-61/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:42.342938+00:00",
+        "source_response_sha256": "7aef3fd1b064d4474ff61e4f766a7bf3590e83e2e73ed211249e9aa71663ea70",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 62,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "62": {
+      "number": 62,
+      "name": "Gene Key 62",
+      "shadow": "Intellect",
+      "gift": "Precision",
+      "siddhi": "Impeccability",
+      "programming_partner": 61,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Intellect",
+        "Precision",
+        "Impeccability"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-62/",
+        "final_url": "https://genekeys.com/gene-key-62/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:42.613303+00:00",
+        "source_response_sha256": "1d1d0bf1dc728f94560e26acba194236607a1de7e333b431408ed0ddf606b097",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 61,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "63": {
+      "number": 63,
+      "name": "Gene Key 63",
+      "shadow": "Doubt",
+      "gift": "Inquiry",
+      "siddhi": "Truth",
+      "programming_partner": 64,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Doubt",
+        "Inquiry",
+        "Truth"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-63/",
+        "final_url": "https://genekeys.com/gene-key-63/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:42.610070+00:00",
+        "source_response_sha256": "c39c76682390f4b1554c22ff880e7dbe8a87e523d7d26d678908787442d13ca2",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 64,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    },
+    "64": {
+      "number": 64,
+      "name": "Gene Key 64",
+      "shadow": "Confusion",
+      "gift": "Imagination",
+      "siddhi": "Illumination",
+      "programming_partner": 63,
+      "codon": null,
+      "amino_acid": null,
+      "physiology": null,
+      "shadow_description": "",
+      "gift_description": "",
+      "siddhi_description": "",
+      "keywords": [
+        "Confusion",
+        "Imagination",
+        "Illumination"
+      ],
+      "life_theme": null,
+      "provenance": {
+        "url": "https://genekeys.com/gene-key-64/",
+        "final_url": "https://genekeys.com/gene-key-64/",
+        "status": 200,
+        "retrieved_at": "2026-10-08T10:25:42.753351+00:00",
+        "source_response_sha256": "db74bf676b3ce33d4130fdbc40f96dc809f003e870c5e60f4ee8282fb2115449",
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "public_page_partner_coordinate": 63,
+        "programming_partner_status": "confirmed_against_rave_mandala"
+      }
+    }
+  }
+}

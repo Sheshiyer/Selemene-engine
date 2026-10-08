@@ -1,152 +1,49 @@
-//! Consciousness-level adaptive witness prompt generation for Gene Keys
+//! Source-bound Gene Keys witness inquiries.
 //!
-//! Prompts adapt to consciousness levels:
-//! - Level 0-2: Shadow recognition (witnessing unconscious patterns)
-//! - Level 3-4: Gift emergence (conscious expression awareness)
-//! - Level 5-6: Siddhi contemplation (transcendent awareness)
+//! Service configuration chooses a reflection lens, not a measured user state.
+//! Canonical spheres bind to supplied activations; absent lines stay unavailable.
 
-use crate::models::GeneKeysChart;
-use crate::wisdom::get_gene_key;
+use crate::models::{CanonicalActivationSphere, GeneKeysChart};
 
-/// Generate a consciousness-level adaptive witness prompt
-///
-/// # Arguments
-/// * `chart` - Complete Gene Keys chart with activations
-/// * `consciousness_level` - Current consciousness development level (0-6)
-///
-/// # Returns
-/// An inquiry-format question that references specific Gene Keys
+fn describe_sphere(name: &str, sphere: &Option<CanonicalActivationSphere>) -> String {
+    match sphere {
+        Some(activation) => {
+            let line = activation
+                .line
+                .map(|line| format!("line {line}"))
+                .unwrap_or_else(|| "line unavailable (gate-only input)".to_string());
+            format!(
+                "{name}: Gene Key {} {line} ({:?})",
+                activation.key_number, activation.source
+            )
+        }
+        None => format!("{name}: source activation unavailable"),
+    }
+}
+
+/// Generate an inquiry from canonical sphere coordinates.
+/// `consciousness_level` is a configured lens, never an assessment of the user.
+/// This preserves the existing public function signature.
 pub fn generate_witness_prompt(chart: &GeneKeysChart, consciousness_level: u8) -> String {
-    match consciousness_level {
-        0..=2 => generate_shadow_prompt(chart),
-        3..=4 => generate_gift_prompt(chart),
-        5..=6 => generate_siddhi_prompt(chart),
-        _ => generate_gift_prompt(chart), // Default to Gift for out-of-range
-    }
-}
-
-/// Generate Shadow-level prompt (Level 0-2)
-///
-/// Focuses on witnessing unconscious patterns from active Gene Keys.
-/// Emphasizes non-judgmental observation of reactive states.
-fn generate_shadow_prompt(chart: &GeneKeysChart) -> String {
-    let seq = &chart.activation_sequence;
-
-    // Get Life's Work keys (conscious purpose)
-    let lifes_work_sun = get_gene_key(seq.lifes_work.0);
-    let lifes_work_earth = get_gene_key(seq.lifes_work.1);
-
-    // Get Evolution keys (unconscious growth)
-    let evolution_sun = get_gene_key(seq.evolution.0);
-
-    if let (Some(lw_sun), Some(lw_earth), Some(ev_sun)) =
-        (lifes_work_sun, lifes_work_earth, evolution_sun)
-    {
-        format!(
-            "What unconscious patterns drive your sense of purpose? How do the shadows of {} ({}) and {} ({}) shape what you believe you must do? When {} ({}) operates unconsciously, what recurring patterns do you notice in your growth journey?",
-            lw_sun.shadow,
-            seq.lifes_work.0,
-            lw_earth.shadow,
-            seq.lifes_work.1,
-            ev_sun.shadow,
-            seq.evolution.0
-        )
-    } else {
-        // Fallback if keys not found
-        format!(
-            "What unconscious patterns drive your sense of purpose? How do Gene Keys {} and {} shape what you believe you must do?",
-            seq.lifes_work.0,
-            seq.lifes_work.1
-        )
-    }
-}
-
-/// Generate Gift-level prompt (Level 3-4)
-///
-/// Focuses on conscious expression from the 4 Activation Sequences.
-/// Explores how gifts dance together in awareness.
-fn generate_gift_prompt(chart: &GeneKeysChart) -> String {
-    let seq = &chart.activation_sequence;
-
-    // Get Radiance keys (core identity/magnetism)
-    let radiance_pers = get_gene_key(seq.radiance.0);
-    let radiance_design = get_gene_key(seq.radiance.1);
-
-    // Get Purpose keys (higher calling)
-    let purpose_pers = get_gene_key(seq.purpose.0);
-    let purpose_design = get_gene_key(seq.purpose.1);
-
-    if let (Some(rad_p), Some(rad_d), Some(pur_p), Some(pur_d)) =
-        (radiance_pers, radiance_design, purpose_pers, purpose_design)
-    {
-        format!(
-            "How do your conscious gifts {} ({}) and {} ({}) create your core magnetism? When you're most authentic, what happens in the interplay between {} ({}) and {} ({}) as your higher calling reveals itself? What invitation lives in the space between {} becoming {} and {} becoming {}?",
-            rad_p.gift,
-            seq.radiance.0,
-            rad_d.gift,
-            seq.radiance.1,
-            pur_p.gift,
-            seq.purpose.0,
-            pur_d.gift,
-            seq.purpose.1,
-            rad_p.shadow,
-            rad_p.gift,
-            pur_p.shadow,
-            pur_p.gift
-        )
-    } else {
-        // Fallback if keys not found
-        format!(
-            "How do Gene Keys {} and {} shape your core identity? What happens when you witness the gifts of {} and {} emerging in your life?",
-            seq.radiance.0,
-            seq.radiance.1,
-            seq.purpose.0,
-            seq.purpose.1
-        )
-    }
-}
-
-/// Generate Siddhi-level prompt (Level 5-6)
-///
-/// Focuses on transcendent awareness beyond personal purpose.
-/// Invites recognition of the divine expressing through form.
-fn generate_siddhi_prompt(chart: &GeneKeysChart) -> String {
-    let seq = &chart.activation_sequence;
-
-    // Get Purpose keys for highest realization
-    let purpose_pers = get_gene_key(seq.purpose.0);
-    let purpose_design = get_gene_key(seq.purpose.1);
-
-    // Get Life's Work for transcendence integration
-    let lifes_work_sun = get_gene_key(seq.lifes_work.0);
-
-    if let (Some(pur_p), Some(pur_d), Some(lw_sun)) = (purpose_pers, purpose_design, lifes_work_sun)
-    {
-        format!(
-            "Beyond the personal purpose of {} and {}, what transcendent awareness is seeking recognition? When the siddhis of {} (Gene Key {}) and {} (Gene Key {}) dissolve into unity, what remains? How does {} (Gene Key {}) become a doorway to the infinite expressing as the finite?",
-            pur_p.gift,
-            pur_d.gift,
-            pur_p.siddhi,
-            seq.purpose.0,
-            pur_d.siddhi,
-            seq.purpose.1,
-            lw_sun.siddhi,
-            seq.lifes_work.0
-        )
-    } else {
-        // Fallback if keys not found
-        format!(
-            "Beyond your personal purpose, what transcendent awareness is inviting recognition through Gene Keys {} and {}? What seeks to be realized beyond the self?",
-            seq.purpose.0,
-            seq.lifes_work.0
-        )
-    }
+    let (lens, inquiry) = match consciousness_level {
+        0..=2 => ("Shadow recognition", "Which unconscious patterns, if any, do you recognize when reflecting on these symbolic coordinates?"),
+        5..=6 => ("Siddhi contemplation", "What transcendent or beyond-personal perspective, if any, feels useful to contemplate with these symbolic coordinates?"),
+        _ => ("Gift exploration", "Which gifts or authentic actions, if any, are useful to contemplate alongside these symbolic coordinates?"),
+    };
+    let spheres = chart.activation_spheres();
+    format!(
+        "Reflection lens: {lens} (configured service setting; not a measurement of user consciousness or frequency). {}. {}. {}. {}. Public labels are verified; full author meanings are unavailable. These coordinates and Selemene's original questions do not establish a complete author wisdom corpus. {inquiry}",
+        describe_sphere("Life's Work", &spheres.lifes_work),
+        describe_sphere("Evolution", &spheres.evolution),
+        describe_sphere("Radiance", &spheres.radiance),
+        describe_sphere("Purpose", &spheres.purpose),
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::ActivationSequence;
+    use crate::models::{ActivationSequence, ActivationSource, GeneKeyActivation};
 
     fn create_test_chart() -> GeneKeysChart {
         GeneKeysChart {
@@ -156,7 +53,32 @@ mod tests {
                 radiance: (17, 45),
                 purpose: (18, 26),
             },
-            active_keys: vec![],
+            active_keys: vec![
+                GeneKeyActivation {
+                    key_number: 17,
+                    line: 1,
+                    source: ActivationSource::PersonalitySun,
+                    gene_key_data: None,
+                },
+                GeneKeyActivation {
+                    key_number: 18,
+                    line: 2,
+                    source: ActivationSource::PersonalityEarth,
+                    gene_key_data: None,
+                },
+                GeneKeyActivation {
+                    key_number: 45,
+                    line: 4,
+                    source: ActivationSource::DesignSun,
+                    gene_key_data: None,
+                },
+                GeneKeyActivation {
+                    key_number: 26,
+                    line: 6,
+                    source: ActivationSource::DesignEarth,
+                    gene_key_data: None,
+                },
+            ],
         }
     }
 
@@ -281,5 +203,41 @@ mod tests {
                 prompt
             );
         }
+    }
+
+    #[test]
+    fn canonical_witness_uses_each_source_binding() {
+        let prompt = generate_witness_prompt(&create_test_chart(), 3);
+        for expected in [
+            "Life's Work: Gene Key 17 line 1 (PersonalitySun)",
+            "Evolution: Gene Key 18 line 2 (PersonalityEarth)",
+            "Radiance: Gene Key 45 line 4 (DesignSun)",
+            "Purpose: Gene Key 26 line 6 (DesignEarth)",
+        ] {
+            assert!(prompt.contains(expected), "missing {expected}: {prompt}");
+        }
+        assert!(prompt.contains("not a measurement of user consciousness or frequency"));
+        assert!(!prompt.contains("User consciousness level measured"));
+    }
+
+    #[test]
+    fn gate_only_witness_does_not_invent_line() {
+        let mut chart = create_test_chart();
+        for activation in &mut chart.active_keys {
+            activation.line = 0;
+        }
+        let prompt = generate_witness_prompt(&chart, 3);
+        assert_eq!(prompt.matches("line unavailable").count(), 4);
+        assert!(!prompt.contains("line 0"));
+        assert!(!prompt.contains("line 3"));
+    }
+
+    #[test]
+    fn legacy_pairs_alone_do_not_supply_canonical_spheres() {
+        let mut chart = create_test_chart();
+        chart.active_keys.clear();
+        let prompt = generate_witness_prompt(&chart, 3);
+        assert_eq!(prompt.matches("source activation unavailable").count(), 4);
+        assert!(!prompt.contains("Gene Key 17"));
     }
 }

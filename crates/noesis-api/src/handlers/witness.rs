@@ -27,8 +27,9 @@ pub struct WitnessInterpretRequest {
     pub birth_data: Option<BirthData>,
     /// Live biofield composite scores from PIP camera analysis.
     pub live_scores: LiveBiofieldScores,
-    /// User's consciousness level (0–5).
+    /// Legacy compatibility field; ignored. Access uses the authenticated user phase.
     #[serde(default)]
+    #[allow(dead_code)]
     pub consciousness_level: u8,
     /// Optional display name for personalised language.
     pub user_name: Option<String>,
@@ -75,7 +76,9 @@ pub async fn interpret(
 ) -> Result<Json<WitnessInterpretResponse>, (StatusCode, Json<crate::error_mapper::ErrorResponse>)>
 {
     let now = Utc::now();
-    let consciousness_level = req.consciousness_level.max(user.consciousness_level);
+    // Engine authorization must come only from the authenticated identity.
+    // The legacy request field remains accepted but cannot raise or lower access.
+    let consciousness_level = user.consciousness_level;
     let user_name = req.user_name;
     let start = Instant::now();
 

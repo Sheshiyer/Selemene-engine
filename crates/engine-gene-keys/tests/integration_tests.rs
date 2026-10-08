@@ -214,8 +214,8 @@ async fn test_frequency_assessment_shadow_level() {
             "Shadow name should be present"
         );
         assert!(
-            !assessment.shadow_description.is_empty(),
-            "Shadow description should preserve archetypal depth"
+            assessment.shadow_description.is_empty(),
+            "Unavailable author meaning must not be replaced with a template"
         );
     }
 }
@@ -235,8 +235,8 @@ async fn test_frequency_assessment_gift_level() {
         );
         assert!(!assessment.gift.is_empty(), "Gift name should be present");
         assert!(
-            !assessment.gift_description.is_empty(),
-            "Gift description should preserve archetypal depth"
+            assessment.gift_description.is_empty(),
+            "Unavailable author meaning must not be replaced with a template"
         );
     }
 }
@@ -259,8 +259,8 @@ async fn test_frequency_assessment_siddhi_level() {
             "Siddhi name should be present"
         );
         assert!(
-            !assessment.siddhi_description.is_empty(),
-            "Siddhi description should preserve archetypal depth"
+            assessment.siddhi_description.is_empty(),
+            "Unavailable author meaning must not be replaced with a template"
         );
         // Verify recognition prompts exist at all 3 levels
         assert!(!assessment.recognition_prompts.shadow.is_empty());

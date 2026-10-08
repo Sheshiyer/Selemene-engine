@@ -2375,12 +2375,7 @@ fn nakshatra_and_pada(sidereal: f64) -> (&'static str, u8) {
 /// Navamsa (D9) sign index [0,11] from D1 sign index and degree within that sign.
 fn navamsa_sign_idx(d1_sign: usize, degree_in_sign: f64) -> usize {
     let nav_num = (degree_in_sign / (30.0 / 9.0)) as usize; // 0..8
-    let base = match d1_sign % 3 {
-        0 => 0, // movable → starts at Aries
-        1 => 4, // fixed   → starts at Leo
-        _ => 8, // dual    → starts at Sagittarius
-    };
-    (base + nav_num) % 12
+    (9 * d1_sign + nav_num) % 12
 }
 
 /// Build a JSON D1 (Rashi) chart from Swiss Ephemeris tropical planet positions.
@@ -4638,5 +4633,99 @@ mod p4_contract_tests {
             ]
         );
         assert_eq!(value["status"], "ok");
+    }
+}
+
+#[cfg(test)]
+mod vedic_chart_math_tests {
+    use super::*;
+
+    #[test]
+    fn navamsa_all_signs_and_subdivisions_match_traditional_mapping() {
+        // Independent zero-based sign table: fire starts Aries, earth Capricorn,
+        // air Libra, and water Cancer, then each subdivision advances one sign.
+        let expected = [
+            [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            [9, 10, 11, 0, 1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10, 11, 0, 1, 2],
+            [3, 4, 5, 6, 7, 8, 9, 10, 11],
+            [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            [9, 10, 11, 0, 1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10, 11, 0, 1, 2],
+            [3, 4, 5, 6, 7, 8, 9, 10, 11],
+            [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            [9, 10, 11, 0, 1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10, 11, 0, 1, 2],
+            [3, 4, 5, 6, 7, 8, 9, 10, 11],
+        ];
+
+        for (sign, subdivisions) in expected.iter().enumerate() {
+            for (subdivision, &expected_sign) in subdivisions.iter().enumerate() {
+                let degree = (subdivision as f64 + 0.5) * (30.0 / 9.0);
+                assert_eq!(
+                    navamsa_sign_idx(sign, degree),
+                    expected_sign,
+                    "D1 sign {sign}, subdivision {subdivision}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn navamsa_preserves_opposition_in_every_subdivision() {
+        for sign in 0..12 {
+            for subdivision in 0..9 {
+                let degree = (subdivision as f64 + 0.5) * (30.0 / 9.0);
+                let first = navamsa_sign_idx(sign, degree);
+                let opposite = navamsa_sign_idx((sign + 6) % 12, degree);
+                assert_eq!(
+                    opposite,
+                    (first + 6) % 12,
+                    "D1 sign {sign}, subdivision {subdivision}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn d9_chart_preserves_nodes_and_vargottama_records() {
+        let birth = ResolvedBirthDetails {
+            year: 2000,
+            month: 1,
+            day: 1,
+            hour: 12,
+            minute: 0,
+            second: 0,
+            latitude: 0.0,
+            longitude: 0.0,
+            timezone_offset_hours: 0.0,
+        };
+        let d1 = serde_json::json!({
+            "native": {"fixture": "synthetic-chart"},
+            "ascendant": {"sign": "cancer", "degree": 0.0},
+            "planets": [
+                {"name": "Sun", "sign": "cancer", "degree": 1.0},
+                {"name": "Moon", "sign": "taurus", "degree": 1.0},
+                {"name": "Rahu", "sign": "capricorn", "degree": 23.0},
+                {"name": "Ketu", "sign": "cancer", "degree": 23.0}
+            ]
+        });
+
+        let d9 = build_d9_chart(&birth, &d1);
+        let positions = d9["navamsa_positions"].as_array().unwrap();
+        assert_eq!(d9["d9_lagna"], "cancer");
+        assert_eq!(d9["source"], d1["native"]);
+        assert_eq!(positions[0]["sign"], "cancer");
+        assert_eq!(positions[0]["degree"], 9.0);
+        assert_eq!(positions[0]["is_vargottama"], true);
+        assert_eq!(positions[1]["sign"], "capricorn");
+        assert_eq!(positions[1]["is_vargottama"], false);
+        assert_eq!(positions[2]["sign"], "cancer");
+        assert_eq!(positions[3]["sign"], "capricorn");
+        let rahu_degree = positions[2]["degree"].as_f64().unwrap();
+        let ketu_degree = positions[3]["degree"].as_f64().unwrap();
+        assert!((rahu_degree - 27.0).abs() < 1e-12);
+        assert_eq!(rahu_degree, ketu_degree);
+        assert_eq!(d9["vargottama"], serde_json::json!(["Sun"]));
     }
 }

@@ -21,13 +21,13 @@ pub struct GeneKey {
     /// Siddhi frequency - transcendent realization
     pub siddhi: String,
 
-    /// Full shadow description (preserved archetypal depth)
+    /// Author meaning; empty when no authorized source has been supplied.
     pub shadow_description: String,
 
-    /// Full gift description (preserved archetypal depth)
+    /// Author meaning; empty when no authorized source has been supplied.
     pub gift_description: String,
 
-    /// Full siddhi description (preserved archetypal depth)
+    /// Author meaning; empty when no authorized source has been supplied.
     pub siddhi_description: String,
 
     /// Programming partner gate (opposite in wheel)
@@ -54,11 +54,12 @@ pub struct GeneKey {
 pub struct GeneKeyActivation {
     /// Gene Key number (1-64, maps 1:1 to HD gate)
     pub key_number: u8,
-    /// Line number (1-6)
+    /// HD line (1-6), or internal sentinel 0 when gate-only input has no line.
+    /// EngineOutput exposes an unavailable line as JSON null.
     pub line: u8,
     /// Source of activation (Personality Sun, Design Earth, etc.)
     pub source: ActivationSource,
-    /// Reference to full Gene Key data
+    /// Bundled framework record; presence does not establish verified completeness.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub gene_key_data: Option<GeneKey>,
 }
@@ -137,16 +138,19 @@ impl ActivationSource {
     }
 }
 
-/// Four Core Activation Sequences
+/// Legacy gate-pair relationships retained for API compatibility.
+///
+/// These pairs are not the canonical four single-sphere Activation Sequence.
+/// Use `GeneKeysChart::activation_spheres` for canonical source bindings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActivationSequence {
-    /// Life's Work: Personality Sun + Personality Earth (conscious purpose)
+    /// Legacy pair: Personality Sun + Personality Earth.
     pub lifes_work: (u8, u8),
-    /// Evolution: Design Sun + Design Earth (unconscious growth)
+    /// Legacy pair: Design Sun + Design Earth.
     pub evolution: (u8, u8),
-    /// Radiance: Personality Sun + Design Sun (core identity/magnetism)
+    /// Legacy pair: Personality Sun + Design Sun.
     pub radiance: (u8, u8),
-    /// Purpose: Personality Earth + Design Earth (higher calling)
+    /// Legacy pair: Personality Earth + Design Earth.
     pub purpose: (u8, u8),
 }
 
@@ -167,10 +171,10 @@ impl ActivationSequence {
     }
 }
 
-/// Complete Gene Keys chart output
+/// Core Gene Keys activation chart; this does not certify wisdom completeness.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GeneKeysChart {
-    /// The four primary activation sequences
+    /// Legacy gate-pair relationships; use activation_spheres() for canonical spheres.
     pub activation_sequence: ActivationSequence,
 
     /// All active Gene Keys from HD gates
@@ -225,6 +229,51 @@ impl ActivationSource {
             (Planet::Uranus, true) => Self::DesignUranus,
             (Planet::Neptune, true) => Self::DesignNeptune,
             (Planet::Pluto, true) => Self::DesignPluto,
+        }
+    }
+}
+
+/// A canonical sphere bound to one Human Design activation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CanonicalActivationSphere {
+    pub key_number: u8,
+    /// Preserved HD line, or null when no line was supplied/calculated.
+    pub line: Option<u8>,
+    pub source: ActivationSource,
+}
+
+/// The four single spheres; unavailable source activations remain null.
+///
+/// Source mapping follows the public Gene Keys planet/sphere contract:
+/// https://genekeys.com/docs/what-planets-does-each-sphere-of-the-golden-path-profile-correlate-to/
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CanonicalActivationSpheres {
+    pub lifes_work: Option<CanonicalActivationSphere>,
+    pub evolution: Option<CanonicalActivationSphere>,
+    pub radiance: Option<CanonicalActivationSphere>,
+    pub purpose: Option<CanonicalActivationSphere>,
+}
+
+impl GeneKeysChart {
+    /// Bind spheres by activation source, never by legacy pair positions.
+    pub fn activation_spheres(&self) -> CanonicalActivationSpheres {
+        let sphere = |source: ActivationSource| {
+            self.active_keys
+                .iter()
+                .find(|activation| activation.source == source)
+                .map(|activation| CanonicalActivationSphere {
+                    key_number: activation.key_number,
+                    line: (1..=6)
+                        .contains(&activation.line)
+                        .then_some(activation.line),
+                    source: activation.source.clone(),
+                })
+        };
+        CanonicalActivationSpheres {
+            lifes_work: sphere(ActivationSource::PersonalitySun),
+            evolution: sphere(ActivationSource::PersonalityEarth),
+            radiance: sphere(ActivationSource::DesignSun),
+            purpose: sphere(ActivationSource::DesignEarth),
         }
     }
 }
