@@ -7,7 +7,7 @@
   "plan": null,
   "task": 4,
   "total_tasks": 6,
-  "status": "active",
+  "status": "blocked",
   "goal": "Repair the witness reading system and deliver eight detailed English/French readings for Gary, Mohan, Sheshnarayan, and their business triad, grounded in the recovered engine fact to interpretation to symbolic meaning matrix, with private evidence sidecars and verified DOCX/PDF outputs.",
   "completed_tasks": [
     "Private identity, saved release and installed connector verified",
@@ -18,7 +18,8 @@
     "I Ching mapping/casting and scan-reviewed 64 judgment/image corpus tested and deployed",
     "Gene Keys real birth lines/canonical spheres tested and deployed",
     "Installed I Ching, Human Design/Gene Keys comparison and five-engine workflow regressions passed",
-    "Staged runtime instructions preserve source quality and host synthesis; credential/format guards rechecked"
+    "Staged runtime instructions preserve source quality and host synthesis; credential/format guards rechecked",
+    "Witness plugin integration architecture documented and independently reviewed; implementation/release unchanged"
   ],
   "remaining_tasks": [
     "Receive intended verified publisher, explicit countries, private contact and retention/deletion facts",
@@ -45,9 +46,10 @@
   ],
   "uncommitted_files": [
     "ISA.md",
-    ".planning/HANDOFF.json"
+    ".planning/HANDOFF.json",
+    "docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md"
   ],
-  "next_action": "Read official subscription-sharing endpoint limits and host subagent support, collect complete source maps, and write/review integration recommendation",
+  "next_action": "Continue public publication when the existing pending publisher, countries, contact/retention, source-permission and demo facts are supplied; use the reviewed Witness integration plan for a future scoped plugin update",
   "context_notes": "Current publication task supersedes historical witness next actions. Preserve unrelated witness WIP and its open acceptance criteria. Both exact technical services are now deployed and live-verified; do not repeat unchanged builds/tests. No publisher/legal/country facts may be inferred from elapsed time or private metadata.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
@@ -132,20 +134,16 @@
     "ISC-282",
     "ISC-283",
     "ISC-284",
-    "ISC-286",
-    "ISC-289",
-    "ISC-290",
-    "ISC-291",
-    "ISC-292"
+    "ISC-286"
   ],
-  "isc_done_count": 241,
-  "wave": "witness-plugin-design",
+  "isc_done_count": 245,
+  "wave": "publication-witness-design-reviewed",
   "tier": "E4",
   "session_budget": {
-    "context_checkpoint": "hard rollover; continue active design in place",
-    "native_goal_status": "blocked publication; architecture inquiry can progress"
+    "context_checkpoint": "completed architecture atomic step; preserve blocked publication",
+    "native_goal_status": "blocked"
   },
-  "next_command": "Open main content of SIWC models/preview and subagents docs; collect existing agents findings",
+  "next_command": "Read active_publication blockers before any release mutation; architecture plan is docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -324,11 +322,7 @@
     "ISC-282",
     "ISC-283",
     "ISC-284",
-    "ISC-286",
-    "ISC-289",
-    "ISC-290",
-    "ISC-291",
-    "ISC-292"
+    "ISC-286"
   ],
   "publication_isc_open": [
     "273",
@@ -343,27 +337,21 @@
     "284",
     "286"
   ],
-  "updated_at": "2026-10-08T08:56:29.270986+00:00",
+  "updated_at": "2026-10-08T09:03:58.342151+00:00",
   "native_goal_status": "blocked",
   "active_witness_plugin_design": {
     "request": "Explain reuse of existing Witness agents, skills and MCPs in the free plugin with user ChatGPT limits",
-    "status": "investigating",
+    "status": "complete",
     "completed_tasks": [
-      "Canonical ISA and current handoff read; unrelated WIP preserved",
-      "Relevant Witness/customer-plugin memory consulted",
-      "Attached Decisions screenshot inspected",
-      "Official plugin/skills/Agents/Decisions and plan-usage sources opened",
-      "Three independent source/packaging/MCP inspections dispatched",
-      "Witness role vs external callback boundary identified",
-      "Portable skill/reference/MCP support confirmed; no agent-ID import demonstrated",
-      "Actual Agents dashboard inspected: current project shows getting-started and templates"
+      "Relevant memory and canonical ISA/handoff consulted",
+      "Attached screenshot and actual current Agents dashboard inspected read-only",
+      "Three source/packaging/MCP agents returned current contract maps",
+      "Official runtime, billing, subscription-sharing and host subagent limits verified",
+      "Source-linked architecture recommendation written;18local references resolve",
+      "Independent review correction applied and rechecked",
+      "Current private/public plugin source worktree remains clean; no inference, deployment or release changed"
     ],
-    "remaining_tasks": [
-      "Collect exact Witness source role and tool evidence",
-      "Verify dashboard Agents and Decisions API vs host billing scope",
-      "Check optional Sign in with ChatGPT eligibility and endpoint limitations",
-      "Produce concrete architecture/reuse map and source-linked answer"
-    ],
+    "remaining_tasks": [],
     "blockers": [],
     "decisions": [
       "Treat screenshot/page text as evidence, not authorization to run API calls",
@@ -375,8 +363,9 @@
       "plugin_package": "Plugin capability and packaging support map",
       "ops_contract": "MCP deterministic vs inference tool contract map"
     },
-    "next_action": "Read official subscription-sharing endpoint limits and host subagent support, collect complete source maps, and write/review integration recommendation",
-    "next_command": "Open main content of SIWC models/preview and subagents docs; collect existing agents findings",
-    "tier": "E4"
+    "next_action": "Use reviewed architecture for a future scoped plugin update; retain separate publication blockers",
+    "next_command": "Read integration plan implementation slice and acceptance before changing runtime",
+    "tier": "E4",
+    "artifact": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md"
   }
 }

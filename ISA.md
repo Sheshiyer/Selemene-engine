@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E4
 effort_source: continuity-restore
 phase: verify
-progress: 241/294
+progress: 245/294
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T08:56:29.270986+00:00
+updated: 2026-10-08T09:03:58.342151+00:00
 ---
 
 ## Problem
@@ -613,10 +613,10 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 
 - [x] ISC-287: Concrete Witness role contracts and external model runners are distinguished using current source evidence.
 - [x] ISC-288: Current plugin skill, reference and MCP packaging support is verified without assuming dashboard agent import.
-- [ ] ISC-289: Agents/Decisions billing and optional Sign in with ChatGPT endpoint limits are verified from official current documentation.
-- [ ] ISC-290: A source-linked reuse architecture specifies host execution, deterministic tools, evidence boundaries and mode limitations.
-- [ ] ISC-291: An independent review checks the recommendation for unsupported runtime, source-quality and usage claims.
-- [ ] ISC-292: The investigation preserves existing package/runtime identities and unrelated Witness WIP.
+- [x] ISC-289: Agents/Decisions billing and optional Sign in with ChatGPT endpoint limits are verified from official current documentation.
+- [x] ISC-290: A source-linked reuse architecture specifies host execution, deterministic tools, evidence boundaries and mode limitations.
+- [x] ISC-291: An independent review checks the recommendation for unsupported runtime, source-quality and usage claims.
+- [x] ISC-292: The investigation preserves existing package/runtime identities and unrelated Witness WIP.
 
 ## Verification
 
@@ -744,3 +744,20 @@ NotebookLM generation requests were attempted once per planned artifact; most re
 
 - ISC-286.1: Actual installed connector comparison after Rust deployment04d7fea4 SUCCESS preserves Life’s Work38.2, Evolution39.2, Radiance48.4 and Purpose21.4 with correct Sun/Earth sources. Actual decision-support returns all five engines partial=false and the same verified coordinates. Complete meaning-source verification remains open under ISC-286. See installed-gene-keys-after-repair.json and installed-workflow-after-repair.json.
 - ISC-286.2: Staged reading SKILL/reference source read and focused independent audit confirm canonical activation_spheres, unavailable/null lines, unverified_incomplete meaning limits, not_measured lens, I Ching source/page boundaries and host synthesis when service synthesis is null. These are instruction-file checks, not exact public case/demo execution.
+
+
+### Witness plugin integration design verification (2026-10-08)
+
+- ISC-287: Independent Witness source map distinguishes reusable persona/mode/evidence contracts from experimental dyad and external LLM runners; the sibling runtime is retired. Source links are in docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md.
+- ISC-288: Package inspection confirms existing host writing stages, skill/reference packaging and eight tool-only MCP operations. No portable dashboard agent-ID import/dispatch mechanism is established.
+- ISC-289: Official current Agents pricing, Decisions API, native subagents and Sign in with ChatGPT documentation opened. External plan sharing is an eligible user-authorized Responses flow, with distinct local/OSS vs remotely hosted eligibility and preview limitations. No inference call or authorization scope was changed.
+- ISC-290: Written integration recommendation specifies fixed facts, coherent prose, source gaps, native subscription-authenticated host execution, optional subagent capability branch and separate evidence record. Proposed helpers/OAuth/runtime changes are explicitly unimplemented.
+- ISC-291: Independent source review applied ContextSearch, ISA, FirstPrinciples, SystemsThinking, RootCauseAnalysis and ReReadCheck. Its Codex billing qualification was applied and rechecked; no remaining material findings. Ops synthetic pure-function probes found old QA failure-field, empty-record and current-schema grounding gaps, recorded as repair prerequisites.
+- ISC-292: Private/public package worktree remains clean at d070ae1b22b490c45d9c2a9050e231870b5d6291. Only scoped architecture document and ledger/handoff changed in the original checkout; existing Witness WIP, runtime, release identity and public publication queue remain preserved. All18local source links resolve to existing lines.
+
+### Witness integration learning (2026-10-08)
+
+- conjectured: Existing dashboard agents, Witness runners and validation wrappers might transfer directly into the free plugin.
+- refuted_by: Portable package/tool contracts expose no dashboard agent dispatcher; existing runners invoke external models; pure QA probes demonstrate failure-field and empty-evidence acceptance gaps. Official docs also distinguish native subscription hosts from API/gateway billing and provide a separately eligible OAuth Responses route.
+- learned: Reuse generic Witness instructions and evidence/mode contracts in the host, preserve deterministic calculation boundaries, and test any new runtime/billing/QA integration independently.
+- criterion_now: ISC-287..292 close the architecture investigation only; full mode parity, helper tools, OAuth admission and public publication retain their separate acceptance requirements.
