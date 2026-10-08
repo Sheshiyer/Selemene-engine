@@ -1,13 +1,13 @@
 {
   "version": "2",
-  "timestamp": "2026-10-08T13:06:49.000079+00:00",
+  "timestamp": "2026-10-08T13:15:07.704149+00:00",
   "phase": "build",
   "phase_name": "Free Selemene public publication preparation",
   "phase_dir": null,
   "plan": null,
   "task": null,
   "total_tasks": null,
-  "status": "in_progress",
+  "status": "blocked",
   "goal": "Publish existing free Selemene plugin through verified public review and approval gates",
   "completed_tasks": [
     "Private identity, saved release and installed connector verified",
@@ -70,7 +70,7 @@
     "ISA.md",
     ".planning/HANDOFF.json"
   ],
-  "next_action": "Await the already queued explicit country-targeting answer and real recorder-start/save/playback/reviewer-accessible demo evidence. Then bind those verified facts to the unchanged v0.2.4 public candidate, build and inspect its final ZIP, import/connect/test all eight exact saved-public cases, complete required developer attestations/scans, submit for review and publish only an approved release. Preserve completed repaired host/deployment evidence; no unchanged retry, capture probe, build or calculation is needed.",
+  "next_action": "On user resume, obtain the already queued explicit country choice and real saved/playable/reviewer-accessible recording. Bind verified facts to the preserved v0.2.4 public candidate, build/inspect the final ZIP, upload/connect/test all eight exact saved-public cases, complete required developer attestations/scans, submit for review, then publish an approved release. Do not repeat completed preparation or infer factual answers.",
   "context_notes": "Both tracked-main services run verified corrected images; repaired P4/P5 and negative/own-profile development reports completed. No final public ZIP/upload/saved-public cases/review/approval/publication exists. Countries and real recording facts remain unanswered. No repeated preparation or unchanged capture probes are needed.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
@@ -164,7 +164,7 @@
     "rollover_at": 167960,
     "used_at_handoff": 225906
   },
-  "next_command": "Continue only when new country or real recording facts arrive; do not repeat existing questions or completed preparation.",
+  "next_command": "Resume only on new country/recording facts or a user-requested capture method; preserve current private/source/runtime evidence.",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -206,7 +206,7 @@
     "goal": "Publish existing free Selemene plugin through verified public review and approval gates",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
     "branch": "codex/selemene-free-plugin",
-    "status": "in_progress",
+    "status": "blocked",
     "completed_tasks": [
       "Private identity, saved release and installed connector verified",
       "Public staging copy and policy drafts prepared; private source preserved",
@@ -261,8 +261,8 @@
       "2026-10-08 user selected verified personal publisher and authorized website/data updates and own-profile candidate demo"
     ],
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
-    "next_action": "Await the already queued explicit country-targeting answer and real recorder-start/save/playback/reviewer-accessible demo evidence. Then bind those verified facts to the unchanged v0.2.4 public candidate, build and inspect its final ZIP, import/connect/test all eight exact saved-public cases, complete required developer attestations/scans, submit for review and publish only an approved release. Preserve completed repaired host/deployment evidence; no unchanged retry, capture probe, build or calculation is needed.",
-    "next_command": "Continue only when new country or real recording facts arrive; do not repeat existing questions or completed preparation.",
+    "next_action": "On user resume, obtain the already queued explicit country choice and real saved/playable/reviewer-accessible recording. Bind verified facts to the preserved v0.2.4 public candidate, build/inspect the final ZIP, upload/connect/test all eight exact saved-public cases, complete required developer attestations/scans, submit for review, then publish an approved release. Do not repeat completed preparation or infer factual answers.",
+    "next_command": "Resume only on new country/recording facts or a user-requested capture method; preserve current private/source/runtime evidence.",
     "uncommitted_files": [],
     "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md",
     "isc_open": [
@@ -285,7 +285,7 @@
     "checkpoint_workspace_clean": true,
     "source_workers": {
       "backend_contract": "complete: exact tracked-main commit/images/health receipt",
-      "ops_contract": "complete: independent scoped closure GO; minor historical labels applied and verified by root",
+      "ops_contract": "complete: independent impasse/three-turn recurrence audit GO; no remaining independent preparation",
       "source_review": "complete: meaningful focused math/auth tests"
     },
     "technical_deployments": {
@@ -306,22 +306,32 @@
     },
     "public_state": "not_uploaded_not_submitted_not_approved_not_published",
     "stage_manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
-    "blocked_at": "2026-10-07T20:18:40.712367+00:00",
-    "blocking_audit": "Historical prior run: Fresh resumed threshold met across turns1-3. Required factual answers/source and final candidate/demo evidence remain absent; independent preparation exhausted. Native update_goal returned blocked.",
+    "blocked_at": "2026-10-08T13:15:07.704149+00:00",
+    "blocking_audit": "Fresh resumed turns1-3 each retain country/demo blockers. Earlier source/deployment and host recovery progress are preserved; current independent preparation is exhausted. Root inspected both prior checkpoints, unchanged current manifest and current Personal portal; independent ops audit agrees. update_goal returned blocked.",
     "resume_audit": {
-      "resumed_goal_turns": 2,
-      "current_goal_turn_classification": "progress",
+      "resumed_goal_turns": 3,
+      "current_goal_turn_classification": "no_progress",
       "same_required_facts_missing": true,
-      "meaningful_progress": "One bounded fresh exact P4 retry completed naturally; verified all-five-engine reflection closes ISC296. Country/recording requirements remain unresolved.",
-      "blocked_threshold_reached": false
+      "meaningful_progress": "None possible without explicit country choice and actual saved/playable/reviewer-accessible demo. Prior two turns made verified source/deployment and host progress.",
+      "blocked_threshold_reached": true
     },
     "worktree_head": "c5c1c4e3f18f25c4ea9e28f7e3fdac6257a45de5",
     "resumed_blocked_audit": {
-      "turn": 2,
-      "classification": "progress",
+      "turn": 3,
+      "classification": "no_progress",
       "same_blocking_condition": true,
-      "progress": "Completed bounded private P4 recovery and closed technical host acceptance. Required country and real demo evidence remain absent.",
-      "blocked_threshold_reached": false
+      "progress": "No new publication facts supplied; no independent preparation action remains.",
+      "blocked_threshold_reached": true,
+      "evidence_commits": [
+        "a212bbd4",
+        "6c58d1db"
+      ],
+      "current_checks": [
+        "Current manifest hash unchanged with countries absent and demo URL null",
+        "Current Personal portal has no Selemene draft",
+        "No new factual answers in current continuation"
+      ],
+      "native_status_returned": "blocked"
     },
     "source_limitations": [
       "Gene Keys full author meanings/biological correspondences and corpus permission unavailable; bounded verified public labels only; parent ISC-286 open",
@@ -354,11 +364,11 @@
     "repair_branch": "codex/selemene-public-calculations",
     "source_repair_pr": "https://github.com/Sheshiyer/Selemene-engine/pull/1494",
     "repair_source": "89da83fc9f74cfd256f39308ce48e2cbe349193a",
-    "native_goal_status": "active",
+    "native_goal_status": "blocked",
     "source_repair_pr_state": "MERGED",
     "source_repair_merge": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
-    "updated_at": "2026-10-08T13:06:49.000079+00:00",
-    "updated": "2026-10-08T13:06:49.000079+00:00",
+    "updated_at": "2026-10-08T13:15:07.704149+00:00",
+    "updated": "2026-10-08T13:15:07.704149+00:00",
     "current_host_acceptance": {
       "isc_296": "closed_observable_development_scope",
       "p4_url": "https://chatgpt.com/c/6ac79316-87e8-83ed-9ec8-3783b706a5f0",
@@ -367,7 +377,8 @@
       "p5_state": "response_complete_observed",
       "raw_arguments_exact_calls_runtime_file_reads": "unexposed",
       "final_saved_public_cases": "all_eight_Not_run"
-    }
+    },
+    "historical_prior_blocked_at": "2026-10-07T20:18:40.712367+00:00"
   },
   "publication_owned_main_files": [
     "ISA.md",
@@ -448,8 +459,8 @@
     "ISC-295",
     "ISC-296"
   ],
-  "updated_at": "2026-10-08T13:06:49.000079+00:00",
-  "native_goal_status": "active_fresh_get_goal_verified",
+  "updated_at": "2026-10-08T13:15:07.704149+00:00",
+  "native_goal_status": "blocked_returned_by_update_goal",
   "active_witness_plugin_design": {
     "request": "Explain reuse of existing Witness agents, skills and MCPs in the free plugin with user ChatGPT limits",
     "status": "complete",
@@ -479,7 +490,7 @@
     "tier": "E4",
     "artifact": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md"
   },
-  "updated": "2026-10-08T13:06:49.000079+00:00",
+  "updated": "2026-10-08T13:15:07.704149+00:00",
   "historical_witness_goal": "Repair the witness reading system and deliver eight detailed English/French readings for Gary, Mohan, Sheshnarayan, and their business triad, grounded in the recovered engine fact to interpretation to symbolic meaning matrix, with private evidence sidecars and verified DOCX/PDF outputs.",
   "recording_question": "Already queued recorder-start question remains pending; do not infer recording from elapsed time or screenshots",
   "country_question": "Already queued explicit targeting question remains pending; do not infer All countries from the preselected option"

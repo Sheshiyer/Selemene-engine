@@ -7,7 +7,7 @@ phase: build
 progress: 256/304
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T13:02:51.059036+00:00
+updated: 2026-10-08T13:15:07.704149+00:00
 ---
 
 ## Problem
@@ -518,6 +518,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 
 ## Decisions
 
+- 2026-10-08T13:15:07.704149+00:00 refined: Resumed turns1-3 retain the same explicit-country and real-reviewer-video gaps. Preserve verified source/deployment and P4/P5 progress from turns1/2. Current manifest still omits countries/demo URL, current Personal portal has no Selemene draft, and independent audit finds no remaining preparation before those facts. Native update_goal returned blocked; public submission/publication remains unachieved. Resume on factual answers or an explicit new capture method, without repeating completed tests or existing questions.
+
 - 2026-10-08 13:02: refined: One fresh bounded P4 private v0.2.4 retry completes naturally after 2m18s. Its all-five-engine reflection preserves coherent48→47 casting, sourced judgment/image pages, absent changing-line passages and incomplete Gene Keys meanings. Close ISC-296 with the prior completed corrected P5 and ten installed chart checks; preserve both original failed cases and the earlier stalled P4. No final saved-public case is promoted. Explicit country targeting and real recorded/playable/reviewer-accessible video remain required facts.
 
 - 2026-10-08 12:44: refined: Both tracked-main services now run images identical to the corrected verified deployments. Close I Ching casting/judgment-image source acceptance in its explicitly bounded scope; unavailable moving-line passages remain unavailable. The repaired P4 host terminal stalls after full coherent prose and a Stop attempt does not establish termination, so ISC-296 remains open and no final saved-public case is promoted.
@@ -665,6 +667,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
   criterion now: ISC-278.1 verifies actual own-profile host execution; ISC-278 remains open until a real accessible recording is verified
 
 ## Verification
+
+- Publication blocked audit: current staged manifest cb4966fc remains v0.2.4 with countries absent and demo_recording_url null; Personal portal table shows no Selemene draft. Prior canonical checkpoints a212bbd4 and6c58d1db preserve the same country/video blockers across resumed turns1/2; current turn3 supplies no factual answer. Independent ops audit confirms no remaining independent preparation. update_goal returns blocked, while ISC296 remains closed and all final saved-public cases remain Not run.
 
 - ISC-296: actual browser/DOM probe — private v0.2.4 chat c/6ac79316-87e8-83ed-9ec8-3783b706a5f0 completes naturally after2m18s; Response complete, Copy, Share and no Stop observed. Exact staged P4 prompt matches. Cast[8,7,9,6,7,8] maps48→47, changing3/4; four returned judgment/image page references match committed Legge1882 dataset. All five results, canonical GeneKeys38.2/39.2/48.4/21.4, source gaps, null service synthesis, host Aletheios/Pichet/integration and unconfirmed persistence are explicit. Prior repaired Hindi P5 complete and installed ten chart checks satisfy the remaining scope. Expanded trace exposes integration entries but not exact tool names, raw arguments/results, call count or runtime file reads. Separate recovered-p4-host-2026-10-08.json preserves this outcome and all eight final public cases Not run.
 
