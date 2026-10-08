@@ -18,7 +18,7 @@ use std::time::Instant;
 use crate::{
     frequency::assess_frequencies,
     models::{ActivationSequence, ActivationSource, GeneKeyActivation, GeneKeysChart},
-    wisdom::get_gene_key,
+    wisdom::{get_gene_key, get_gene_key_provenance, meaning_source_quality},
     witness::generate_witness_prompt,
 };
 
@@ -232,7 +232,7 @@ impl GeneKeysEngine {
     /// nulls that field for every active key, which is what this payload did
     /// until the level was wired through.
     fn serialize_chart(chart: &GeneKeysChart, consciousness_level: u8) -> Value {
-        // Include available framework records; record presence is not completeness.
+        // Verified short labels are separate from unavailable author meanings.
         let enriched_keys: Vec<Value> = chart
             .active_keys
             .iter()
@@ -242,7 +242,7 @@ impl GeneKeysEngine {
                     "line": (1..=6).contains(&ak.line).then_some(ak.line),
                     "source": format!("{:?}", ak.source),
                     "meaning_source_quality": if ak.gene_key_data.is_some() {
-                        "unverified_incomplete"
+                        "verified_public_labels_only"
                     } else {
                         "unavailable"
                     },
@@ -253,6 +253,10 @@ impl GeneKeysEngine {
                     key_data["shadow"] = json!(gk.shadow);
                     key_data["gift"] = json!(gk.gift);
                     key_data["siddhi"] = json!(gk.siddhi);
+                    key_data["programming_partner"] = json!(gk.programming_partner);
+                    key_data["source_provenance"] = json!(get_gene_key_provenance(ak.key_number));
+                    key_data["name_status"] = json!("numeric_identifier_not_author_chapter_title");
+                    key_data["full_meanings_status"] = json!("unavailable");
                 }
 
                 key_data
@@ -260,7 +264,21 @@ impl GeneKeysEngine {
             .collect();
 
         // Calculate frequency assessments
-        let frequency_assessments = assess_frequencies(chart, Some(consciousness_level));
+        let frequency_assessments: Vec<Value> =
+            assess_frequencies(chart, Some(consciousness_level))
+                .into_iter()
+                .map(|assessment| {
+                    let number = assessment.gene_key;
+                    let mut value = json!(assessment);
+                    value["meaning_source_quality"] = json!("verified_public_labels_only");
+                    value["description_status"] =
+                        json!("unavailable_authorized_meanings_not_supplied");
+                    value["source_provenance"] = json!(get_gene_key_provenance(number));
+                    value["recognition_prompts_source"] =
+                        json!("selemene_original_questions_not_author_text");
+                    value
+                })
+                .collect();
 
         json!({
             "activation_sequence": {
@@ -277,16 +295,12 @@ impl GeneKeysEngine {
                 "unavailable_gate_only_input"
             },
             "active_keys": enriched_keys,
-            "meaning_source_quality": {
-                "status": "unverified_incomplete",
-                "source": "bundled_gene_keys_framework_records",
-                "note": "Bundled records include generic templates and unverified labels/descriptions; a complete authorized verified wisdom dataset has not been supplied."
-            },
+            "meaning_source_quality": meaning_source_quality(),
             "frequency_assessments": frequency_assessments,
             "frequency_assessment_context": {
                 "basis": "configured_service_level",
                 "measurement_status": "not_measured",
-                "note": "Suggested frequency is a configured reflection lens, not a measured user consciousness or frequency. Framework records may be incomplete."
+                "note": "Suggested frequency is a configured reflection lens, not a measured user consciousness or frequency. Public labels are verified; author meanings are unavailable."
             },
         })
     }
@@ -435,7 +449,7 @@ impl ConsciousnessEngine for GeneKeysEngine {
     }
 
     fn cache_key(&self, input: &EngineInput) -> String {
-        if let Some(birth_data) = &input.birth_data {
+        let coordinate_key = if let Some(birth_data) = &input.birth_data {
             // Mode 1: birth_data cache key
             format!(
                 "gk:v2:birth:{}:{}:{}:{:.4}:{:.4}",
@@ -454,7 +468,14 @@ impl ConsciousnessEngine for GeneKeysEngine {
             }
         } else {
             format!("gk:invalid:{}", Utc::now().timestamp())
-        }
+        };
+        let source = meaning_source_quality();
+        format!(
+            "{coordinate_key}:labels:{}",
+            source["data_version"]
+                .as_str()
+                .expect("validated public-label data version")
+        )
     }
     fn as_any(&self) -> &dyn std::any::Any {
         self
@@ -591,6 +612,7 @@ mod tests {
         let key = engine.cache_key(&input);
         assert!(key.starts_with("gk:v2:gates:"));
         assert!(key.contains("17:18:45:26"));
+        assert!(key.ends_with(":labels:2026-10-08.1"));
     }
 
     #[tokio::test]

@@ -32,7 +32,7 @@ pub fn generate_witness_prompt(chart: &GeneKeysChart, consciousness_level: u8) -
     };
     let spheres = chart.activation_spheres();
     format!(
-        "Reflection lens: {lens} (configured service setting; not a measurement of user consciousness or frequency). {}. {}. {}. {}. Framework records may be incomplete; these coordinates do not establish a complete wisdom reading. {inquiry}",
+        "Reflection lens: {lens} (configured service setting; not a measurement of user consciousness or frequency). {}. {}. {}. {}. Public labels are verified; full author meanings are unavailable. These coordinates and Selemene's original questions do not establish a complete author wisdom corpus. {inquiry}",
         describe_sphere("Life's Work", &spheres.lifes_work),
         describe_sphere("Evolution", &spheres.evolution),
         describe_sphere("Radiance", &spheres.radiance),

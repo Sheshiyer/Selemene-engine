@@ -75,7 +75,7 @@ async fn birth_calculate_preserves_each_hd_gate_line_and_canonical_binding() {
     );
     assert_eq!(
         output.result["meaning_source_quality"]["status"],
-        "unverified_incomplete"
+        "verified_public_labels_only"
     );
     assert_eq!(
         output.result["frequency_assessment_context"]["measurement_status"],
@@ -102,7 +102,7 @@ async fn gate_only_calculate_preserves_legacy_arrays_with_unavailable_lines() {
     );
     for key in output.result["active_keys"].as_array().unwrap() {
         assert!(key["line"].is_null());
-        assert_eq!(key["meaning_source_quality"], "unverified_incomplete");
+        assert_eq!(key["meaning_source_quality"], "verified_public_labels_only");
     }
     for sphere in ["lifes_work", "evolution", "radiance", "purpose"] {
         assert!(output.result["activation_spheres"][sphere]["line"].is_null());

@@ -21,13 +21,13 @@ pub struct GeneKey {
     /// Siddhi frequency - transcendent realization
     pub siddhi: String,
 
-    /// Full shadow description (preserved archetypal depth)
+    /// Author meaning; empty when no authorized source has been supplied.
     pub shadow_description: String,
 
-    /// Full gift description (preserved archetypal depth)
+    /// Author meaning; empty when no authorized source has been supplied.
     pub gift_description: String,
 
-    /// Full siddhi description (preserved archetypal depth)
+    /// Author meaning; empty when no authorized source has been supplied.
     pub siddhi_description: String,
 
     /// Programming partner gate (opposite in wheel)

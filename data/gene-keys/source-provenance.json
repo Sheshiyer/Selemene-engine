@@ -1,0 +1,1082 @@
+{
+  "schema": "selemene.gene-keys.source-audit.v1",
+  "audited_at": "2026-10-08T10:30:40.024693+00:00",
+  "dataset_path": "data/gene-keys/verified-public-labels.json",
+  "dataset_sha256": "a6a4761ae31ab8ac25fe996209a7e6ca4cc01637dfeddd3ca11fb924f57c42af",
+  "source_scope": {
+    "dataset_id": "selemene-gene-keys-public-labels",
+    "data_version": "2026-10-08.1",
+    "label_status": "verified_official_public_heading",
+    "description_status": "unavailable_authorized_meanings_not_supplied",
+    "name_status": "numeric_identifier_not_author_chapter_title",
+    "coordinate_status": "human_design_gate_line_source_and_derived_opposition",
+    "programming_partner_source": {
+      "kind": "derived_rave_mandala_opposition",
+      "offset_positions": 32,
+      "source_path": "crates/engine-human-design/src/gate_sequence.rs",
+      "source_sha256": "417d7f8c7687c4832189ab533eddf4e712f8743e787ca569e6fb678f1bb434aa",
+      "public_page_agreements": 62,
+      "public_page_conflicts": [
+        {
+          "number": 6,
+          "official_page_partner": 2,
+          "rave_mandala_opposite": 36
+        },
+        {
+          "number": 8,
+          "official_page_partner": 8,
+          "rave_mandala_opposite": 14
+        }
+      ]
+    },
+    "reflection_prompts_status": "selemene_original_runtime_questions_not_author_text",
+    "full_wisdom_status": "unavailable",
+    "rights": {
+      "status": "no_open_licence_or_written_permission_established",
+      "scope": "short public terminology and numerical coordinates only; no copyrighted passages, course materials or images included",
+      "official_terms_url": "https://genekeys.com/terms-and-conditions/",
+      "official_corpus_licence_claimed": false
+    },
+    "unavailable_fields": [
+      "author_chapter_title",
+      "full_shadow_meaning",
+      "full_gift_meaning",
+      "full_siddhi_meaning",
+      "codon",
+      "amino_acid",
+      "physiology",
+      "author_life_theme",
+      "Venus_sequence",
+      "Pearl_sequence"
+    ]
+  },
+  "legacy_source": {
+    "path": "data/gene-keys/archetypes.json",
+    "sha256": "13742fc905c425940e9b9e854762d09335da88b77f08b2ce6c3d6eda6ae0b8fd",
+    "reported_source": "Gene Keys synthesis by Richard Rudd",
+    "source_record_provenance_missing": 64,
+    "licence_record": "data/wisdom-docs/WISDOM-DATA-INDEX.md:491 declares Proprietary; no separate authorization provided",
+    "placeholder_physiology_records": 64,
+    "repeated_description_records": 58,
+    "repeated_life_theme_records": 58,
+    "incorrect_public_label_fields": 96,
+    "incorrect_opposition_partner_records": 64,
+    "runtime_status": "historical_file_retained_not_used_by_new_loader"
+  },
+  "factual_research_index_sha256": "926202c51dbab9094e572c2879a006e2790e7a74eff1ee5e0df23aa067386fa5",
+  "legacy_discrepancies": [
+    {
+      "number": 1,
+      "fields": {
+        "programming_partner": {
+          "local": 33,
+          "official": 2
+        }
+      }
+    },
+    {
+      "number": 2,
+      "fields": {
+        "programming_partner": {
+          "local": 34,
+          "official": 1
+        }
+      }
+    },
+    {
+      "number": 3,
+      "fields": {
+        "programming_partner": {
+          "local": 35,
+          "official": 50
+        }
+      }
+    },
+    {
+      "number": 4,
+      "fields": {
+        "programming_partner": {
+          "local": 36,
+          "official": 49
+        }
+      }
+    },
+    {
+      "number": 5,
+      "fields": {
+        "programming_partner": {
+          "local": 37,
+          "official": 35
+        }
+      }
+    },
+    {
+      "number": 6,
+      "fields": {
+        "programming_partner": {
+          "local": 38,
+          "official": 2
+        }
+      }
+    },
+    {
+      "number": 7,
+      "fields": {
+        "gift": {
+          "local": "Virtue",
+          "official": "Guidance"
+        },
+        "programming_partner": {
+          "local": 39,
+          "official": 13
+        }
+      }
+    },
+    {
+      "number": 8,
+      "fields": {
+        "programming_partner": {
+          "local": 40,
+          "official": 8
+        }
+      }
+    },
+    {
+      "number": 9,
+      "fields": {
+        "programming_partner": {
+          "local": 41,
+          "official": 16
+        }
+      }
+    },
+    {
+      "number": 10,
+      "fields": {
+        "shadow": {
+          "local": "Self-Obsession",
+          "official": "Self Obsession"
+        },
+        "programming_partner": {
+          "local": 42,
+          "official": 15
+        }
+      }
+    },
+    {
+      "number": 11,
+      "fields": {
+        "programming_partner": {
+          "local": 43,
+          "official": 12
+        }
+      }
+    },
+    {
+      "number": 12,
+      "fields": {
+        "programming_partner": {
+          "local": 44,
+          "official": 11
+        }
+      }
+    },
+    {
+      "number": 13,
+      "fields": {
+        "gift": {
+          "local": "Concord",
+          "official": "Discernment"
+        },
+        "siddhi": {
+          "local": "Compassion",
+          "official": "Empathy"
+        },
+        "programming_partner": {
+          "local": 45,
+          "official": 7
+        }
+      }
+    },
+    {
+      "number": 14,
+      "fields": {
+        "siddhi": {
+          "local": "Bodhicitta",
+          "official": "Bounteousness"
+        },
+        "programming_partner": {
+          "local": 46,
+          "official": 8
+        }
+      }
+    },
+    {
+      "number": 15,
+      "fields": {
+        "siddhi": {
+          "local": "Magnetism",
+          "official": "Florescence"
+        },
+        "programming_partner": {
+          "local": 47,
+          "official": 10
+        }
+      }
+    },
+    {
+      "number": 16,
+      "fields": {
+        "siddhi": {
+          "local": "Versatility",
+          "official": "Mastery"
+        },
+        "programming_partner": {
+          "local": 48,
+          "official": 9
+        }
+      }
+    },
+    {
+      "number": 17,
+      "fields": {
+        "gift": {
+          "local": "Far-Sightedness",
+          "official": "Far-sightedness"
+        },
+        "programming_partner": {
+          "local": 49,
+          "official": 18
+        }
+      }
+    },
+    {
+      "number": 18,
+      "fields": {
+        "shadow": {
+          "local": "Correction",
+          "official": "Judgment"
+        },
+        "programming_partner": {
+          "local": 50,
+          "official": 17
+        }
+      }
+    },
+    {
+      "number": 19,
+      "fields": {
+        "shadow": {
+          "local": "Need",
+          "official": "Co-dependence"
+        },
+        "programming_partner": {
+          "local": 51,
+          "official": 33
+        }
+      }
+    },
+    {
+      "number": 20,
+      "fields": {
+        "gift": {
+          "local": "Self-Assurance",
+          "official": "Self Assurance"
+        },
+        "programming_partner": {
+          "local": 52,
+          "official": 34
+        }
+      }
+    },
+    {
+      "number": 21,
+      "fields": {
+        "programming_partner": {
+          "local": 53,
+          "official": 48
+        }
+      }
+    },
+    {
+      "number": 22,
+      "fields": {
+        "gift": {
+          "local": "Grace",
+          "official": "Graciousness"
+        },
+        "programming_partner": {
+          "local": 54,
+          "official": 47
+        }
+      }
+    },
+    {
+      "number": 23,
+      "fields": {
+        "siddhi": {
+          "local": "Simplicity",
+          "official": "Quintessence"
+        },
+        "programming_partner": {
+          "local": 55,
+          "official": 43
+        }
+      }
+    },
+    {
+      "number": 24,
+      "fields": {
+        "gift": {
+          "local": "Returning",
+          "official": "Invention"
+        },
+        "siddhi": {
+          "local": "Return",
+          "official": "Silence"
+        },
+        "programming_partner": {
+          "local": 56,
+          "official": 44
+        }
+      }
+    },
+    {
+      "number": 25,
+      "fields": {
+        "siddhi": {
+          "local": "Acceptance",
+          "official": "Universal Love"
+        },
+        "programming_partner": {
+          "local": 57,
+          "official": 46
+        }
+      }
+    },
+    {
+      "number": 26,
+      "fields": {
+        "shadow": {
+          "local": "Exhaustion",
+          "official": "Pride"
+        },
+        "gift": {
+          "local": "Artlessness",
+          "official": "Artfulness"
+        },
+        "programming_partner": {
+          "local": 58,
+          "official": 45
+        }
+      }
+    },
+    {
+      "number": 27,
+      "fields": {
+        "gift": {
+          "local": "Selflessness",
+          "official": "Altruism"
+        },
+        "programming_partner": {
+          "local": 59,
+          "official": 28
+        }
+      }
+    },
+    {
+      "number": 28,
+      "fields": {
+        "siddhi": {
+          "local": "Totality",
+          "official": "Immortality"
+        },
+        "programming_partner": {
+          "local": 60,
+          "official": 27
+        }
+      }
+    },
+    {
+      "number": 29,
+      "fields": {
+        "gift": {
+          "local": "Perseverance",
+          "official": "Commitment"
+        },
+        "siddhi": {
+          "local": "Perseverance",
+          "official": "Devotion"
+        },
+        "programming_partner": {
+          "local": 61,
+          "official": 30
+        }
+      }
+    },
+    {
+      "number": 30,
+      "fields": {
+        "programming_partner": {
+          "local": 62,
+          "official": 29
+        }
+      }
+    },
+    {
+      "number": 31,
+      "fields": {
+        "siddhi": {
+          "local": "Majesty",
+          "official": "Humility"
+        },
+        "programming_partner": {
+          "local": 63,
+          "official": 41
+        }
+      }
+    },
+    {
+      "number": 32,
+      "fields": {
+        "siddhi": {
+          "local": "Preservation",
+          "official": "Veneration"
+        },
+        "programming_partner": {
+          "local": 64,
+          "official": 42
+        }
+      }
+    },
+    {
+      "number": 33,
+      "fields": {
+        "siddhi": {
+          "local": "Mindfulness",
+          "official": "Revelation"
+        },
+        "programming_partner": {
+          "local": 1,
+          "official": 19
+        }
+      }
+    },
+    {
+      "number": 34,
+      "fields": {
+        "shadow": {
+          "local": "Rage",
+          "official": "Force"
+        },
+        "gift": {
+          "local": "Power",
+          "official": "Strength"
+        },
+        "siddhi": {
+          "local": "Power",
+          "official": "Majesty"
+        },
+        "programming_partner": {
+          "local": 2,
+          "official": 20
+        }
+      }
+    },
+    {
+      "number": 35,
+      "fields": {
+        "shadow": {
+          "local": "Cynicism",
+          "official": "Hunger"
+        },
+        "siddhi": {
+          "local": "Adventure",
+          "official": "Boundlessness"
+        },
+        "programming_partner": {
+          "local": 3,
+          "official": 5
+        }
+      }
+    },
+    {
+      "number": 36,
+      "fields": {
+        "programming_partner": {
+          "local": 4,
+          "official": 6
+        }
+      }
+    },
+    {
+      "number": 37,
+      "fields": {
+        "gift": {
+          "local": "Tenderness",
+          "official": "Equality"
+        },
+        "programming_partner": {
+          "local": 5,
+          "official": 40
+        }
+      }
+    },
+    {
+      "number": 38,
+      "fields": {
+        "shadow": {
+          "local": "Tension",
+          "official": "Struggle"
+        },
+        "siddhi": {
+          "local": "Perseverance",
+          "official": "Honor"
+        },
+        "programming_partner": {
+          "local": 6,
+          "official": 39
+        }
+      }
+    },
+    {
+      "number": 39,
+      "fields": {
+        "gift": {
+          "local": "Provocation",
+          "official": "Dynamism"
+        },
+        "siddhi": {
+          "local": "Provocation",
+          "official": "Liberation"
+        },
+        "programming_partner": {
+          "local": 7,
+          "official": 38
+        }
+      }
+    },
+    {
+      "number": 40,
+      "fields": {
+        "siddhi": {
+          "local": "Resolve",
+          "official": "Divine Will"
+        },
+        "programming_partner": {
+          "local": 8,
+          "official": 37
+        }
+      }
+    },
+    {
+      "number": 41,
+      "fields": {
+        "gift": {
+          "local": "Imagination",
+          "official": "Anticipation"
+        },
+        "siddhi": {
+          "local": "Imagination",
+          "official": "Emanation"
+        },
+        "programming_partner": {
+          "local": 9,
+          "official": 31
+        }
+      }
+    },
+    {
+      "number": 42,
+      "fields": {
+        "gift": {
+          "local": "Expectancy",
+          "official": "Detachment"
+        },
+        "siddhi": {
+          "local": "Expectancy",
+          "official": "Celebration"
+        },
+        "programming_partner": {
+          "local": 10,
+          "official": 32
+        }
+      }
+    },
+    {
+      "number": 43,
+      "fields": {
+        "shadow": {
+          "local": "Interference",
+          "official": "Deafness"
+        },
+        "siddhi": {
+          "local": "Insight",
+          "official": "Epiphany"
+        },
+        "programming_partner": {
+          "local": 11,
+          "official": 23
+        }
+      }
+    },
+    {
+      "number": 44,
+      "fields": {
+        "shadow": {
+          "local": "Distraction",
+          "official": "Interference"
+        },
+        "gift": {
+          "local": "Synergy",
+          "official": "Teamwork"
+        },
+        "siddhi": {
+          "local": "Synergy",
+          "official": "Synarchy"
+        },
+        "programming_partner": {
+          "local": 12,
+          "official": 24
+        }
+      }
+    },
+    {
+      "number": 45,
+      "fields": {
+        "shadow": {
+          "local": "Coercion",
+          "official": "Dominance"
+        },
+        "gift": {
+          "local": "Intervention",
+          "official": "Synergy"
+        },
+        "siddhi": {
+          "local": "Intervention",
+          "official": "Communion"
+        },
+        "programming_partner": {
+          "local": 13,
+          "official": 26
+        }
+      }
+    },
+    {
+      "number": 46,
+      "fields": {
+        "shadow": {
+          "local": "Inadequacy",
+          "official": "Seriousness"
+        },
+        "gift": {
+          "local": "Resourcefulness",
+          "official": "Delight"
+        },
+        "siddhi": {
+          "local": "Resourcefulness",
+          "official": "Ecstasy"
+        },
+        "programming_partner": {
+          "local": 14,
+          "official": 25
+        }
+      }
+    },
+    {
+      "number": 47,
+      "fields": {
+        "siddhi": {
+          "local": "Transmutation",
+          "official": "Transfiguration"
+        },
+        "programming_partner": {
+          "local": 15,
+          "official": 22
+        }
+      }
+    },
+    {
+      "number": 48,
+      "fields": {
+        "shadow": {
+          "local": "Insignificance",
+          "official": "Inadequacy"
+        },
+        "gift": {
+          "local": "Wisdom",
+          "official": "Resourcefulness"
+        },
+        "programming_partner": {
+          "local": 16,
+          "official": 21
+        }
+      }
+    },
+    {
+      "number": 49,
+      "fields": {
+        "gift": {
+          "local": "Restraint",
+          "official": "Revolution"
+        },
+        "siddhi": {
+          "local": "Restraint",
+          "official": "Rebirth"
+        },
+        "programming_partner": {
+          "local": 17,
+          "official": 4
+        }
+      }
+    },
+    {
+      "number": 50,
+      "fields": {
+        "gift": {
+          "local": "Harmony",
+          "official": "Equilibrium"
+        },
+        "programming_partner": {
+          "local": 18,
+          "official": 3
+        }
+      }
+    },
+    {
+      "number": 51,
+      "fields": {
+        "shadow": {
+          "local": "Hysteria",
+          "official": "Agitation"
+        },
+        "gift": {
+          "local": "Shock",
+          "official": "Initiative"
+        },
+        "siddhi": {
+          "local": "Shock",
+          "official": "Awakening"
+        },
+        "programming_partner": {
+          "local": 19,
+          "official": 57
+        }
+      }
+    },
+    {
+      "number": 52,
+      "fields": {
+        "gift": {
+          "local": "Stillness",
+          "official": "Restraint"
+        },
+        "programming_partner": {
+          "local": 20,
+          "official": 58
+        }
+      }
+    },
+    {
+      "number": 53,
+      "fields": {
+        "shadow": {
+          "local": "Inertia",
+          "official": "Immaturity"
+        },
+        "gift": {
+          "local": "Endurance",
+          "official": "Expansion"
+        },
+        "siddhi": {
+          "local": "Endurance",
+          "official": "Superabundance"
+        },
+        "programming_partner": {
+          "local": 21,
+          "official": 54
+        }
+      }
+    },
+    {
+      "number": 54,
+      "fields": {
+        "shadow": {
+          "local": "Bitterness",
+          "official": "Greed"
+        },
+        "gift": {
+          "local": "Intuition",
+          "official": "Aspiration"
+        },
+        "siddhi": {
+          "local": "Transparency",
+          "official": "Ascension"
+        },
+        "programming_partner": {
+          "local": 22,
+          "official": 53
+        }
+      }
+    },
+    {
+      "number": 55,
+      "fields": {
+        "shadow": {
+          "local": "Victimization",
+          "official": "Victimisation"
+        },
+        "gift": {
+          "local": "Penetration",
+          "official": "Freedom"
+        },
+        "siddhi": {
+          "local": "Penetration",
+          "official": "Freedom"
+        },
+        "programming_partner": {
+          "local": 23,
+          "official": 59
+        }
+      }
+    },
+    {
+      "number": 56,
+      "fields": {
+        "shadow": {
+          "local": "Impatience",
+          "official": "Distraction"
+        },
+        "gift": {
+          "local": "Gentleness",
+          "official": "Enrichment"
+        },
+        "siddhi": {
+          "local": "Gentleness",
+          "official": "Intoxication"
+        },
+        "programming_partner": {
+          "local": 24,
+          "official": 60
+        }
+      }
+    },
+    {
+      "number": 57,
+      "fields": {
+        "shadow": {
+          "local": "Confusion",
+          "official": "Unease"
+        },
+        "gift": {
+          "local": "Clarity",
+          "official": "Intuition"
+        },
+        "programming_partner": {
+          "local": 25,
+          "official": 51
+        }
+      }
+    },
+    {
+      "number": 58,
+      "fields": {
+        "shadow": {
+          "local": "Limitation",
+          "official": "Dissatisfaction"
+        },
+        "gift": {
+          "local": "Practicality",
+          "official": "Vitality"
+        },
+        "siddhi": {
+          "local": "Practicality",
+          "official": "Bliss"
+        },
+        "programming_partner": {
+          "local": 26,
+          "official": 52
+        }
+      }
+    },
+    {
+      "number": 59,
+      "fields": {
+        "shadow": {
+          "local": "Doubt",
+          "official": "Dishonesty"
+        },
+        "gift": {
+          "local": "Breakthrough",
+          "official": "Intimacy"
+        },
+        "siddhi": {
+          "local": "Breakthrough",
+          "official": "Transparency"
+        },
+        "programming_partner": {
+          "local": 27,
+          "official": 55
+        }
+      }
+    },
+    {
+      "number": 60,
+      "fields": {
+        "shadow": {
+          "local": "Suspicion",
+          "official": "Limitation"
+        },
+        "gift": {
+          "local": "Service",
+          "official": "Realism"
+        },
+        "siddhi": {
+          "local": "Service",
+          "official": "Justice"
+        },
+        "programming_partner": {
+          "local": 28,
+          "official": 56
+        }
+      }
+    },
+    {
+      "number": 61,
+      "fields": {
+        "shadow": {
+          "local": "Incompetence",
+          "official": "Psychosis"
+        },
+        "gift": {
+          "local": "Enthusiasm",
+          "official": "Inspiration"
+        },
+        "siddhi": {
+          "local": "Enthusiasm",
+          "official": "Sanctity"
+        },
+        "programming_partner": {
+          "local": 29,
+          "official": 62
+        }
+      }
+    },
+    {
+      "number": 62,
+      "fields": {
+        "shadow": {
+          "local": "Stagnation",
+          "official": "Intellect"
+        },
+        "gift": {
+          "local": "Inspiration",
+          "official": "Precision"
+        },
+        "siddhi": {
+          "local": "Inspiration",
+          "official": "Impeccability"
+        },
+        "programming_partner": {
+          "local": 30,
+          "official": 61
+        }
+      }
+    },
+    {
+      "number": 63,
+      "fields": {
+        "shadow": {
+          "local": "Pressure",
+          "official": "Doubt"
+        },
+        "gift": {
+          "local": "Bliss",
+          "official": "Inquiry"
+        },
+        "siddhi": {
+          "local": "Bliss",
+          "official": "Truth"
+        },
+        "programming_partner": {
+          "local": 31,
+          "official": 64
+        }
+      }
+    },
+    {
+      "number": 64,
+      "fields": {
+        "shadow": {
+          "local": "Ignorance",
+          "official": "Confusion"
+        },
+        "gift": {
+          "local": "Synthesis",
+          "official": "Imagination"
+        },
+        "siddhi": {
+          "local": "Synthesis",
+          "official": "Illumination"
+        },
+        "programming_partner": {
+          "local": 32,
+          "official": 63
+        }
+      }
+    }
+  ],
+  "official_partner_link_conflicts": [
+    {
+      "number": 6,
+      "official_page_partner": 2,
+      "rave_mandala_opposite": 36
+    },
+    {
+      "number": 8,
+      "official_page_partner": 8,
+      "rave_mandala_opposite": 14
+    }
+  ],
+  "routing_receipt": {
+    "lane": "noesis-execute",
+    "max_attempts": 1,
+    "seat_fallback": false,
+    "tool_surface": "local",
+    "deadline_seconds": 240,
+    "pid": 90893,
+    "started_at": 1791455229.730408,
+    "terminated_at_deadline": false,
+    "exit_code": 125,
+    "elapsed_seconds": 5.03,
+    "admission": {
+      "pressure": "host_pressure_elevated",
+      "admitted": false,
+      "scope": "prelaunch_pressure_only"
+    },
+    "provider_resolved": false,
+    "accepted_provider_edits": false
+  },
+  "local_integration_basis": "Root authorized bounded deterministic native integration after prelaunch hold; no provider generated descriptions or source text",
+  "remote_update_status": "not_performed; runtime embeds source data at compile time, wisdom DB/R2 loader not found",
+  "verification": {
+    "verified_at": "2026-10-08T10:42:22.868074+00:00",
+    "rustc": "1.99.0 (b940084d7 2026-09-28)",
+    "cargo": "1.99.0 (5f94df478 2026-08-27)",
+    "command": "cargo test -p engine-gene-keys --lib --tests --jobs 1 --offline",
+    "result": "pass",
+    "passed": 78,
+    "failed": 0,
+    "groups": {
+      "unit": 49,
+      "activation_line_regression": 2,
+      "integration": 15,
+      "public_labels_regression": 4,
+      "reference_validation": 8
+    },
+    "scoped_rustfmt": "pass",
+    "git_diff_check": "pass",
+    "clippy": "unavailable: cargo-clippy is not installed in isolated stable toolchain",
+    "new_api_contract": "verified_public_labels_only; author descriptions null; original questions distinctly attributed; configured lens not measured; data-version cache suffix"
+  }
+}

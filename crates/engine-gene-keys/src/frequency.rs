@@ -6,7 +6,24 @@
 
 use crate::models::{GeneKey, GeneKeysChart};
 use crate::wisdom::get_gene_key;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+fn unavailable_description_as_null<S: Serializer>(
+    value: &str,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    if value.is_empty() {
+        serializer.serialize_none()
+    } else {
+        serializer.serialize_str(value)
+    }
+}
+
+fn null_description_as_unavailable<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<String, D::Error> {
+    Ok(Option::<String>::deserialize(deserializer)?.unwrap_or_default())
+}
 
 /// Consciousness frequency level
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -38,13 +55,28 @@ pub struct FrequencyAssessment {
     /// Siddhi name (e.g., "Beauty", "Omniscience")
     pub siddhi: String,
 
-    /// Full shadow description (archetypal depth preserved)
+    /// Author meaning unavailable in the public-label dataset; serialized as null.
+    #[serde(
+        default,
+        serialize_with = "unavailable_description_as_null",
+        deserialize_with = "null_description_as_unavailable"
+    )]
     pub shadow_description: String,
 
-    /// Full gift description (archetypal depth preserved)
+    /// Author meaning unavailable in the public-label dataset; serialized as null.
+    #[serde(
+        default,
+        serialize_with = "unavailable_description_as_null",
+        deserialize_with = "null_description_as_unavailable"
+    )]
     pub gift_description: String,
 
-    /// Full siddhi description (archetypal depth preserved)
+    /// Author meaning unavailable in the public-label dataset; serialized as null.
+    #[serde(
+        default,
+        serialize_with = "unavailable_description_as_null",
+        deserialize_with = "null_description_as_unavailable"
+    )]
     pub siddhi_description: String,
 
     /// Suggested frequency based on consciousness_level (optional)
@@ -241,9 +273,19 @@ mod tests {
 
         assert_eq!(assessments.len(), 2);
         assert!(assessments[0].suggested_frequency.is_none());
-        assert!(!assessments[0].shadow_description.is_empty());
-        assert!(!assessments[0].gift_description.is_empty());
-        assert!(!assessments[0].siddhi_description.is_empty());
+        assert!(assessments[0].shadow_description.is_empty());
+        assert!(assessments[0].gift_description.is_empty());
+        assert!(assessments[0].siddhi_description.is_empty());
+        let serialized = serde_json::to_value(&assessments[0]).unwrap();
+        for field in [
+            "shadow_description",
+            "gift_description",
+            "siddhi_description",
+        ] {
+            assert!(serialized[field].is_null());
+        }
+        let round_trip: FrequencyAssessment = serde_json::from_value(serialized).unwrap();
+        assert!(round_trip.shadow_description.is_empty());
     }
 
     #[test]
