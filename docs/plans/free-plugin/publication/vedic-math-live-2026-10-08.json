@@ -1,0 +1,173 @@
+{
+  "schema": "selemene.publication.vedic-math-live.v1",
+  "recorded_at": "2026-10-08 12:31:39 UTC",
+  "state": "production_build_and_health_passed",
+  "source_commit": "89da83fc9f74cfd256f39308ce48e2cbe349193a",
+  "source_commit_scope": "Exact-source narrow Rust build-context upload; production build/health evidence, without calculation or host-report validation by this lane.",
+  "prepared_packet": {
+    "path": "/tmp/selemene-chart-deployment-packet.json",
+    "context": "/var/folders/zx/_wycnwwx3p1f_4gclpnhr8rm0000gn/T/selemene-chart-89da83fc-eyoczxfm",
+    "files": 621,
+    "git_archive_sha256": "364c7ea85dc9438e8741fc8fd0aac1b2113876fac4c293f281b7aa7e000282a4",
+    "top_level_inputs": [
+      "Cargo.toml",
+      "Cargo.lock",
+      "Dockerfile.prod",
+      ".dockerignore",
+      "railway.toml",
+      "crates",
+      "data",
+      "migrations"
+    ],
+    "production_diff_from_previous_deployed_ebf4368d": [
+      "Cargo.lock",
+      "crates/engine-human-design/src/ephemeris.rs",
+      "crates/noesis-api/src/lib.rs"
+    ],
+    "source_phase_hardening_preserved": true,
+    "source_gk_labels_preserved": true,
+    "source_pull_request": "https://github.com/Sheshiyer/Selemene-engine/pull/1494",
+    "basis": "Parent-prepared source packet, read locally by this monitor; context construction and upload were performed by root.",
+    "original_packet_state": "prepared"
+  },
+  "upload_binding": {
+    "method": "Railway CLI source-context upload performed by root",
+    "source_commit_declaration": "Verified Navamsa and node motion source 89da83fc9f74cfd256f39308ce48e2cbe349193a",
+    "cli_caller": "codex",
+    "basis": "Exact source packet plus source SHA in deployment CLI metadata. The CLI status does not independently return a Git checkout commit.",
+    "provider_reported_git_commit": "not_returned"
+  },
+  "railway": {
+    "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+    "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+    "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+    "service_instance_id": "29abc52f-c575-4e85-b669-661eff77a75d",
+    "deployment_id": "89624097-a5a9-4e4b-85a2-0604d901d04b",
+    "created_at": "2026-10-08T12:23:05.240Z",
+    "status": "SUCCESS",
+    "instances": [
+      {
+        "id": "a5e7d9c8-7e06-4e13-868a-3927b6869323",
+        "status": "RUNNING"
+      }
+    ],
+    "returned_target_ids_match": true,
+    "config_file": "/railway.toml",
+    "root_directory": null,
+    "builder": "DOCKERFILE",
+    "dockerfile_path": "Dockerfile.prod",
+    "runtime": "V2",
+    "reason": "deploy",
+    "container_image": "not_returned_by_inspected_CLI_status",
+    "container_image_digest": "not_returned_by_inspected_CLI_status"
+  },
+  "production_build": {
+    "result": "passed",
+    "basis": "Exact target deployment reached Railway SUCCESS and has a RUNNING instance; configured builder is Dockerfile.prod.",
+    "finite_filtered_build_log_observation": {
+      "checked_at": "2026-10-08T12:29:52.836050+00:00",
+      "command": "finite filtered build logs",
+      "events": [
+        {
+          "event": "image_push",
+          "timestamp": "2026-10-08T12:28:41.703196394Z"
+        },
+        {
+          "event": "healthcheck_started",
+          "timestamp": "2026-10-08T12:28:50.904065290Z"
+        }
+      ],
+      "exit_code": 0,
+      "raw_output_withheld": true
+    }
+  },
+  "health": {
+    "result": "passed",
+    "basis": "Exact target deployment build log records healthcheck_passed, with Railway SUCCESS and RUNNING instance.",
+    "path": "/health/live",
+    "timeout_seconds": 300,
+    "events": [
+      {
+        "event": "healthcheck_started",
+        "timestamp": "2026-10-08T12:28:50.904065290Z"
+      },
+      {
+        "event": "healthcheck_passed",
+        "timestamp": "2026-10-08T12:28:51.196899747Z"
+      }
+    ],
+    "source": "finite health/result-only build logs",
+    "separate_public_http_probe": "not performed by this lane"
+  },
+  "monitor": {
+    "mode": "read_only",
+    "terminal_observed_at": "2026-10-08T12:29:15.983597+00:00",
+    "poll_minimum_interval_seconds": 45,
+    "actual_status_observations": [
+      {
+        "checked_at": "2026-10-08T12:25:46.986380+00:00",
+        "status": "BUILDING",
+        "instances": []
+      },
+      {
+        "checked_at": "2026-10-08T12:27:26.549961+00:00",
+        "status": "BUILDING",
+        "instances": []
+      },
+      {
+        "checked_at": "2026-10-08T12:29:15.983597+00:00",
+        "status": "SUCCESS",
+        "instances": [
+          {
+            "id": "a5e7d9c8-7e06-4e13-868a-3927b6869323",
+            "status": "RUNNING"
+          }
+        ]
+      }
+    ],
+    "status_polling_stopped_after_terminal": true,
+    "log_reads": "Finite explicit-deployment build/deployment logs filtered to health/result events; raw log content withheld.",
+    "finite_filtered_deployment_log_observation": {
+      "checked_at": "2026-10-08T12:29:52.502989+00:00",
+      "command": "finite filtered deployment logs",
+      "events": [],
+      "exit_code": 0,
+      "raw_output_withheld": true
+    },
+    "engine_calls_performed": 0,
+    "configuration_or_target_mutations_performed": 0
+  },
+  "reported_source_verification": {
+    "basis": "Root-reported focused source verification; not rerun by this monitoring lane.",
+    "rust_math_tests": {
+      "passed": 4
+    },
+    "rust_phase_test": {
+      "passed": 1
+    },
+    "typescript_focused_tests": {
+      "passed": 14
+    },
+    "typescript_typecheck": "passed",
+    "local_tests_rerun_by_monitor": false
+  },
+  "rollback": {
+    "previous_deployment_id": "00d91add-f75e-40f9-af9d-ddefa4873fcd",
+    "previous_source_commit": "ebf4368df79ca0ddbf350a891d8d520c70a40af8",
+    "previous_status_at_initial_poll": "SUCCESS",
+    "rollback_performed": false
+  },
+  "scope_limits": [
+    "No engine calculation, mathematical result comparison, or installed host narration was executed by this monitoring lane.",
+    "Source SHA binding relies on the prepared exact-source upload packet and declared CLI metadata, rather than a provider-returned Git commit.",
+    "Production build/health success does not establish final saved-public review cases, demo recording, submission, approval, or marketplace publication.",
+    "Gene Keys source-label and report-phase hardening preservation are parent-prepared packet assertions; no new full-wisdom licensing claim is added.",
+    "No database targets, environment variables, credentials, configuration, source providers, or unrelated services were changed by this lane."
+  ],
+  "guardrails": {
+    "only_written_path": "docs/plans/free-plugin/publication/vedic-math-live-2026-10-08.json",
+    "raw_logs_or_environment_output_stored": false,
+    "secrets_or_personal_report_data_stored": false,
+    "stage_or_commit_performed": false
+  }
+}

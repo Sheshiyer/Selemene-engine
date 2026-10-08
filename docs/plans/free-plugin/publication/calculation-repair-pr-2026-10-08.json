@@ -1,0 +1,62 @@
+{
+  "schema": "selemene.calculation-repair-pr.v1",
+  "verified_at": "2026-10-08T12:37:59.460Z",
+  "pull_request": {
+    "url": "https://github.com/Sheshiyer/Selemene-engine/pull/1494",
+    "state": "MERGED",
+    "source_head": "89da83fc9f74cfd256f39308ce48e2cbe349193a",
+    "merge_commit": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
+    "merged_at": "2026-10-08T12:35:32Z",
+    "match_head_guard": true
+  },
+  "git": {
+    "fetched_origin_main": true,
+    "source_is_ancestor_of_origin_main": true,
+    "source_head_tree_equals_merged_main_tree": true,
+    "worktree_clean": true
+  },
+  "scope": {
+    "ts": "Preserve verified cast/mapping/Legge1882 judgment-image corpus and corrected frozen-lockfile packaging",
+    "gk": "Preserve verified public short labels and actual canonical birth-activation spheres",
+    "auth": "Preserve authenticated-only report-phase authority",
+    "math": "Retain D1 sign in D9 and preserve Ketu/Rahu longitudinal speed"
+  },
+  "tests": {
+    "ts_tests": 14,
+    "ts_assertions": 1914,
+    "ts_typecheck": "PASS",
+    "rust_math_tests": 4,
+    "rust_phase_authority_tests": 1,
+    "rust_phase_authority_mocked_requests": 10,
+    "scope": "Focused local recorded verification; broad suites not rerun",
+    "github_checks": "Vercel success only; not Rust CI"
+  },
+  "review": {
+    "independent_final": "GO at exact source head",
+    "gk_entire_trees_match_previous_deployed": true,
+    "auth_handlers_and_test_match_prior_authority_repair": true,
+    "ts_docker_and_lock_configuration_match_verified_repair": true,
+    "critical_prepared_upload_bytes_match_source_head": true
+  },
+  "deployment_before_merge": {
+    "typescript": {
+      "id": "8b212532-e1ad-4c95-aebc-f724fe2a4155",
+      "source": "3b03bda6288d2df680f6af8ae3456a7a08b188aa",
+      "status": "SUCCESS",
+      "installed_coherence_checks": "8 each standalone/workflow PASS"
+    },
+    "rust": {
+      "id": "89624097-a5a9-4e4b-85a2-0604d901d04b",
+      "source": "89da83fc9f74cfd256f39308ce48e2cbe349193a",
+      "status": "SUCCESS",
+      "installed_math_checks": "10 PASS"
+    }
+  },
+  "tracked_main_auto_deployment": "being separately monitored; source merge alone does not establish new running images",
+  "source_limitations": [
+    "I Ching changing-line passages unavailable; some labels unverified.",
+    "Gene Keys verified public labels only; full author descriptions/biology/licensing remain unavailable.",
+    "Chart ayanamsa remains approximate linear Lahiri."
+  ],
+  "public_plugin_state": "private_v0.2.4; no final public ZIP/upload/submission/approval/publication"
+}

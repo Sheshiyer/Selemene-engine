@@ -1,0 +1,135 @@
+{
+  "schema": "selemene.restored-development-host-rehearsals.v1",
+  "verified_at": "2026-10-08T12:37:07.989Z",
+  "candidate": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "version": "0.2.4",
+    "release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96",
+    "scope": "USER",
+    "discoverability": "PRIVATE",
+    "portable_manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45"
+  },
+  "original_failed_cases_preserved": "additional-development-rehearsals-2026-10-08.json",
+  "cases": [
+    {
+      "id": "P4-restored",
+      "url": "https://chatgpt.com/c/6ac7896f-1d34-83ed-8d86-94508a2501a6",
+      "state": "full_reading_visible_terminal_status_unconfirmed",
+      "prompt": "unchanged exact P4 synthetic decision-support prompt",
+      "trace": {
+        "expanded": true,
+        "integration_group": "Selemene Free Calculations (development)",
+        "visible_workflow_event": "Evaluating Writing Versus Coding Project",
+        "response_complete_observed": false,
+        "stop_button_still_visible": true,
+        "intentional_reload_performed": true,
+        "raw_arguments": "unexposed"
+      },
+      "returned_anchors": {
+        "i_ching": {
+          "cast": [
+            9,
+            6,
+            7,
+            7,
+            7,
+            6
+          ],
+          "primary": 49,
+          "relating": 44,
+          "changing_lines": [
+            1,
+            2,
+            6
+          ],
+          "algorithm_version": "1.1.0",
+          "seed": 778030242,
+          "judgment_image_source": "Legge1882 print pages49:167/328;44:154/321",
+          "changing_line_passages": "unavailable"
+        },
+        "gene_keys": {
+          "spheres": [
+            "38.2",
+            "39.2",
+            "48.4",
+            "21.4"
+          ],
+          "dataset": "2026-10-08.1",
+          "status": "verified_public_labels_only",
+          "lens": "not_measured",
+          "author_descriptions": null
+        },
+        "service_synthesis": null,
+        "persistence": "not_confirmed",
+        "execution_timestamp": "2026-10-08T12:16:28Z",
+        "requested_reference_timestamp": "2026-10-07T12:00:00Z"
+      },
+      "observable_report_checks": {
+        "all_five_engines_present": true,
+        "cast_patterns_consistent": true,
+        "source_gaps_preserved": true,
+        "host_aletheios_pichet_and_integrated_prose": true,
+        "no_recast_claim": true
+      },
+      "acceptance": "Observable content supports repaired calculation/host behavior; terminal completion remains unconfirmed."
+    },
+    {
+      "id": "P5-restored",
+      "url": "https://chatgpt.com/c/6ac78d63-47d8-83eb-8cee-1b1e72ec758f",
+      "state": "response_complete_observed",
+      "prompt": "unchanged exact P5 synthetic Hindi D1/D9 prompt",
+      "trace": {
+        "expanded": true,
+        "visible_integration_entry": "Used Selemene Free Calculations (development) integration",
+        "response_complete_observed": true,
+        "copy_response_visible": true,
+        "stop_button_absent": true,
+        "exact_tool_name": "not_exposed_in_this_trace",
+        "raw_arguments": "unexposed"
+      },
+      "returned_anchors": {
+        "d1_ascendant": "Pisces13.239441614413465",
+        "d9_ascendant": "Libra",
+        "d9_nodes": [
+          "RahuCancer28.380",
+          "KetuCapricorn28.380"
+        ],
+        "both_d1_nodes_retrograde": false,
+        "vargottama": [
+          "Mars",
+          "Mercury"
+        ]
+      },
+      "observable_report_checks": {
+        "corrected_chart_values_preserved": true,
+        "hindi_reading": true,
+        "host_aletheios_pichet_and_integrated_prose": true,
+        "approximate_linear_lahiri_disclosed": true,
+        "missing_advanced_fields_preserved": true,
+        "node_model_unspecified_limit_preserved": true,
+        "chart_handler_not_persisted_and_logs_quotas_disclosed": true
+      },
+      "acceptance": "Passed observable development behavior; exact argument-level/call-name trace unestablished."
+    }
+  ],
+  "final_saved_public_cases": {
+    "P1": "Not run",
+    "P2": "Not run",
+    "P3": "Not run",
+    "P4": "Not run",
+    "P5": "Not run",
+    "N1": "Not run",
+    "N2": "Not run",
+    "N3": "Not run"
+  },
+  "recording": {
+    "saved_file": false,
+    "playback_verified": false,
+    "reviewer_accessible_url": null
+  },
+  "limits": [
+    "Private owner conversation URLs are not public reviewer recording URLs.",
+    "Observable integration trace/prose cannot certify undisclosed raw arguments or runtime instruction-file reads.",
+    "Logical Aletheios/Pichet stages are host writing perspectives, not proof of independent agent dispatch."
+  ]
+}
