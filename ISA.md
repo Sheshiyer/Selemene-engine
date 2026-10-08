@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 246/296
+progress: 248/296
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T10:22:53.088054+00:00
+updated: 2026-10-08T10:58:16.111450+00:00
 ---
 
 ## Problem
@@ -408,8 +408,8 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [ ] ISC-273: User confirms the intended verified publisher and countries.
 - [x] ISC-273.1: User selects the verified personal publisher.
 - [ ] ISC-273.2: User explicitly selects public country targeting.
-- [ ] ISC-274: Published privacy policy covers actual free shared-service storage.
-- [ ] ISC-275: Published terms and support identify the selected publisher and contact.
+- [x] ISC-274: Published privacy policy covers actual free shared-service storage.
+- [x] ISC-275: Published terms and support identify the selected publisher and contact.
 - [x] ISC-276: Five positive and three negative review cases cover all eight tools.
 - [x] ISC-277: Current host produces a reading from a real synthetic calculation.
 - [ ] ISC-278: Reviewer-accessible demo recording shows the actual host flow.
@@ -784,3 +784,11 @@ NotebookLM generation requests were attempted once per planned artifact; most re
 - Native goal update returned blocked. The full public publication objective and prior publication authorization are preserved; no completion, upload, submission, approval or public release is claimed. Resume after the queued factual answers and required evidence become available.
 
 - ISC-273.1: direct user choice — "im am the pusblished personal" selects the verified personal identity observed in the publisher portal; country targeting remains open under ISC-273.2.
+
+### Authorized publication integration evidence (2026-10-08)
+
+- ISC-274..275: Reviewed Selemene home/readings/privacy/terms/support source e8ba4403106a8491c53c4241e1ba58bf7a831e57 built and passed independent desktop/narrow/keyboard browser QA. Exact Vercel deployment dpl_3jy5qvQSjBr6JBQka6ygVaHdYNwF promoted to both domains. Root unauthenticated all10 apex/www requests return HTTP200 at effectivewww URLs with bytes matching reviewed source. Root live IAB home render agrees. Policies identify selected personal publisher/contact and actual shared storage/automatic phase and manual request process without invented retention/erasure guarantees. Durable receipt: isolated docs/plans/free-plugin/publication/website-live-2026-10-08.json.
+- Same private identity plugins_6ac68a62e61081918179487264135f28 now saved USER/PRIVATE v0.2.2 release pluginrel_6ac7760ba6448191a6966f61ee943bd6. The registered noauth development app asdk_app_6ac77118e9688191818c84d5bff853bc points at the existing free Worker. Removed private raw MCP configs to enable supported browser cloud host; prior releases and portable public source retained. Source readback confirms semantic manifest/app match and unchanged skills/icon inventory. Initial app-only update rejected before action due plugin-level cases requiring one bundled MCP; omitted those fields only from private overlay, public5+3cases retained.
+- Actual cloud candidate onboardingP1 completed in ChatGPT c/6ac7763e-158c-83eb-9ac0-301281256fed: direct plugin mention, GPT-6.1Sol Light observed, actual three discovery tool titles,11engines/one decision-support workflow, catalog distinct from readiness, no reading execution. This proves private-cloud development flow, not saved public-portal candidate or recorded own-profile demo.
+- Gene Keys all64 public label triplets independently fetched/confirmed;78 local tests and root noesis-api check passed. Frozen source ebf4368df79ca0ddbf350a891d8d520c70a40af8 contains source-qualified short labels, derived reciprocal partners, unavailable author descriptions as null and unmeasured lens. Exact narrow621-file context uploaded to verified owning Railway service; deployment00d91add-f75e-40f9-af9d-ddefa4873fcd BUILDING at last observation. Full wisdom corpus/licence remains unavailable; ISC-286 remains open.
+- Countries remain a pending explicit question. Video recording/playback/reviewerURL, final public-package/portal cases/scans/legal attestations/review/public publication remain open. QuickTime screen command observed but capture controls not established; browser screencast probe stopped without saved recording.

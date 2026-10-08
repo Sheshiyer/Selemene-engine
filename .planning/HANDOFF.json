@@ -1,6 +1,6 @@
 {
   "version": "2",
-  "timestamp": "2026-10-07T19:32:26.376707+00:00",
+  "timestamp": "2026-10-08T10:58:16.111450+00:00",
   "phase": null,
   "phase_name": "Witness reading corrective execution",
   "phase_dir": null,
@@ -19,21 +19,29 @@
     "Gene Keys real birth lines/canonical spheres tested and deployed",
     "Installed I Ching, Human Design/Gene Keys comparison and five-engine workflow regressions passed",
     "Staged runtime instructions preserve source quality and host synthesis; credential/format guards rechecked",
-    "Witness plugin integration architecture documented and independently reviewed; implementation/release unchanged",
-    "Resumed publication: current portal/private release checked and candidate-aware demo preparation committed4766f7e2"
+    "Fresh saved metadata/release and Personal portal reads confirm private current state and no visible public submission",
+    "Candidate-aware demo walkthrough repaired and independently reviewed",
+    "Current staged manifest/reading hashes recorded; final runtime/recording remain unproven",
+    "Installed recorder capabilities and current native control-access limitation recorded",
+    "Personal publisher selected by user",
+    "Reviewed website e8ba440 promoted exactdeployment dpl_3jy5qvQSjBr6JBQka6ygVaHdYNwF;10publicroute hashes and live IAB agree",
+    "Same private plugin saved cloud v0.2.2 pluginrel_6ac7760ba6448191a6966f61ee943bd6; manifests/app readback verified",
+    "Actual browser ChatGPT private candidate onboardingP1 completed without reading execution",
+    "All64 Gene Keys public labels repaired and independently confirmed;78tests/APIcheck pass; source ebf4368d committed",
+    "Verified621-file Rust context uploaded as00d91add-f75e-40f9-af9d-ddefa4873fcd; runtime still BUILDING"
   ],
   "remaining_tasks": [
-    "Receive explicit country targeting and resolve actual policy/contact facts from source",
-    "Verify and repair all64 Gene Keys source records, then deploy owning runtime and relevant corpus assets",
-    "Publish accurate Selemene website/privacy/terms/support pages",
-    "Save and verify existing-identity candidate instructions, demonstrate actual host flow with authorized own profile, record/play back/host demo",
-    "Assemble final public package and exact manifest evidence",
-    "Upload and test saved portal draft, then human legal attestations, submit review and publish approved release"
+    "Receive explicit country targeting",
+    "Verify Railway deployment and installed source-qualified Gene Keys result",
+    "Update private and portable instructions to deployed source status and check actual host flow with authorized own profile",
+    "Record/play back/host real reviewer demo",
+    "Assemble exact publicZIP and save/test portal draft",
+    "Developer legal attestations, review submission and approved public publication"
   ],
   "blockers": [
-    "Country targeting still pending explicit user choice",
-    "Effective contact/data handling and complete source-quality runtime remain to verify",
-    "Candidate host binding, actual recording and reviewer URL remain to establish"
+    "Country targeting pending user answer",
+    "Recording export/control and reviewerURL not established",
+    "Full licensed Gene Keys wisdom unavailable; bounded labels only"
   ],
   "human_actions_pending": [],
   "decisions": [
@@ -46,9 +54,10 @@
   ],
   "uncommitted_files": [
     "ISA.md",
-    ".planning/HANDOFF.json"
+    ".planning/HANDOFF.json",
+    "isolated publication candidate/public-stage documentation"
   ],
-  "next_action": "Integrate the parallel Gene Keys data, website policy and existing-identity candidate updates; verify each owning runtime before recording the authorized demo and preparing final portal upload",
+  "next_action": "Verify newly uploaded Gene Keys runtime, refresh candidate source boundaries, execute own-profile cloud reading and record demo; then complete exact public portal preparation",
   "context_notes": "Current publication task supersedes historical witness next actions. Preserve unrelated witness WIP and its open acceptance criteria. Both exact technical services are now deployed and live-verified; do not repeat unchanged builds/tests. No publisher/legal/country facts may be inferred from elapsed time or private metadata.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
@@ -125,8 +134,6 @@
     "ISC-232",
     "ISC-273",
     "ISC-273.2",
-    "ISC-274",
-    "ISC-275",
     "ISC-278",
     "ISC-279",
     "ISC-280",
@@ -136,15 +143,15 @@
     "ISC-284",
     "ISC-286"
   ],
-  "isc_done_count": 246,
-  "wave": "publication-authorized-source-policy-candidate",
+  "isc_done_count": 248,
+  "wave": "publication-live-policy-cloud-candidate-runtime",
   "tier": "E3",
   "session_budget": {
     "window": 258400,
-    "rollover_at": 167960,
-    "used_at_handoff": 228788
+    "rollover_at": 180880,
+    "used_at_handoff": 217157
   },
-  "next_command": "Read live backend_contract, ops_contract and source_review findings; inspect their scoped diffs and proceed with verified deployment/candidate update",
+  "next_command": "railway deployment list --project 11eedde4-41e6-4f51-b86b-cf77111cf592 --environment 702b945e-2c66-4d5a-bae1-4c67ea14c3bb --service 48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4 --limit2 --json (bounded IDs/status filter)",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -200,20 +207,26 @@
       "Fresh saved metadata/release and Personal portal reads confirm private current state and no visible public submission",
       "Candidate-aware demo walkthrough repaired and independently reviewed",
       "Current staged manifest/reading hashes recorded; final runtime/recording remain unproven",
-      "Installed recorder capabilities and current native control-access limitation recorded"
+      "Installed recorder capabilities and current native control-access limitation recorded",
+      "Personal publisher selected by user",
+      "Reviewed website e8ba440 promoted exactdeployment dpl_3jy5qvQSjBr6JBQka6ygVaHdYNwF;10publicroute hashes and live IAB agree",
+      "Same private plugin saved cloud v0.2.2 pluginrel_6ac7760ba6448191a6966f61ee943bd6; manifests/app readback verified",
+      "Actual browser ChatGPT private candidate onboardingP1 completed without reading execution",
+      "All64 Gene Keys public labels repaired and independently confirmed;78tests/APIcheck pass; source ebf4368d committed",
+      "Verified621-file Rust context uploaded as00d91add-f75e-40f9-af9d-ddefa4873fcd; runtime still BUILDING"
     ],
     "remaining_tasks": [
-      "Receive explicit country targeting and resolve actual policy/contact facts from source",
-      "Verify and repair all64 Gene Keys source records, then deploy owning runtime and relevant corpus assets",
-      "Publish accurate Selemene website/privacy/terms/support pages",
-      "Save and verify existing-identity candidate instructions, demonstrate actual host flow with authorized own profile, record/play back/host demo",
-      "Assemble final public package and exact manifest evidence",
-      "Upload and test saved portal draft, then human legal attestations, submit review and publish approved release"
+      "Receive explicit country targeting",
+      "Verify Railway deployment and installed source-qualified Gene Keys result",
+      "Update private and portable instructions to deployed source status and check actual host flow with authorized own profile",
+      "Record/play back/host real reviewer demo",
+      "Assemble exact publicZIP and save/test portal draft",
+      "Developer legal attestations, review submission and approved public publication"
     ],
     "blockers": [
-      "Country targeting still pending explicit user choice",
-      "Effective contact/data handling and complete source-quality runtime remain to verify",
-      "Candidate host binding, actual recording and reviewer URL remain to establish"
+      "Country targeting pending user answer",
+      "Recording export/control and reviewerURL not established",
+      "Full licensed Gene Keys wisdom unavailable; bounded labels only"
     ],
     "decisions": [
       "Public publication is authorized; no repeated publication permission request",
@@ -224,7 +237,7 @@
       "2026-10-08 user selected verified personal publisher and authorized website/data updates and own-profile candidate demo"
     ],
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
-    "next_action": "Integrate the parallel Gene Keys data, website policy and existing-identity candidate updates; verify each owning runtime before recording the authorized demo and preparing final portal upload",
+    "next_action": "Verify newly uploaded Gene Keys runtime, refresh candidate source boundaries, execute own-profile cloud reading and record demo; then complete exact public portal preparation",
     "next_command": "Read live backend_contract, ops_contract and source_review findings; inspect their scoped diffs and proceed with verified deployment/candidate update",
     "uncommitted_files": [],
     "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md",
@@ -278,7 +291,12 @@
       "meaningful_progress": "User supplied publisher, source research, website and demo authorization; three parallel concrete implementation lanes dispatched",
       "blocked_threshold_reached": false
     },
-    "worktree_head": "4766f7e2a6b66e6bd49327a241542ec4ae4a46e3"
+    "worktree_head": "4766f7e2a6b66e6bd49327a241542ec4ae4a46e3",
+    "resumed_blocked_audit": {
+      "turn": 1,
+      "classification": "progress",
+      "same_blocking_condition": false
+    }
   },
   "publication_owned_main_files": [
     "ISA.md",
