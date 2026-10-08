@@ -620,3 +620,9 @@ MIT — see [LICENSE](./LICENSE).
 <sub>Reflection is the work. The mirror is just the surface.</sub>
 
 </div>
+
+## Local verification after Actions retirement
+
+GitHub Actions is retired. `.local-jobs/jobs.json` defines explicit local checks with scheduling disabled. Select jobs and provision their dependencies before using a local runner; no scheduler, listener, signing, or publication job is activated by these definitions.
+
+Run `pnpm run gate` for the canonical local gate. `.local-jobs/media-smoke.sh` and `.local-jobs/biofield-smoke.sh` preserve the original smoke commands for manual local execution after sidecar provisioning. The deployment YAML under `tests/scripts/fixtures/retired-workflows/` is an inert historical policy fixture, not an executable deployment job. No cloud deployment or image publication is scheduled.

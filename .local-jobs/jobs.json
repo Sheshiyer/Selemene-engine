@@ -1,0 +1,17 @@
+{
+  "schema": "thoughtseed.local-jobs.v1",
+  "jobs": [
+    {
+      "id": "gate",
+      "argv": [
+        "pnpm",
+        "run",
+        "gate"
+      ],
+      "timeout_seconds": 1800,
+      "enabled": false,
+      "daily": false,
+      "on_change": false
+    }
+  ]
+}
