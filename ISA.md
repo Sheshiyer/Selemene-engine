@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 255/304
+progress: 256/304
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T12:44:12.988819+00:00
+updated: 2026-10-08T13:02:51.059036+00:00
 ---
 
 ## Problem
@@ -434,7 +434,7 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-293: Actual v0.2.4 P4/P5 development rehearsals and calculation defects are recorded with their source/deployment boundaries.
 - [x] ISC-294: D9 preserves all12 D1 signs and node opposition, with meaningful local regression coverage.
 - [x] ISC-295: Ketu preserves Rahu longitudinal speed and consistent retrograde flags.
-- [ ] ISC-296: Fresh installed D1/D9 and actual host P4/P5 rehearsals pass after the corrections are deployed.
+- [x] ISC-296: Fresh installed D1/D9 and actual host P4/P5 rehearsals pass after the corrections are deployed (probe: recovered-p4-host-2026-10-08.json, restored-host-rehearsals-2026-10-08.json and installed-vedic-math-2026-10-08.json; observable development scope, raw arguments unexposed).
 
 ## Test Strategy
 
@@ -517,6 +517,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 | PublicSelemenePlugin | Complete public listing, policy, demo and portal release gates for the existing free plugin | ISC-271..284 | FreeChatGPTPlugin | true |
 
 ## Decisions
+
+- 2026-10-08 13:02: refined: One fresh bounded P4 private v0.2.4 retry completes naturally after 2m18s. Its all-five-engine reflection preserves coherent48→47 casting, sourced judgment/image pages, absent changing-line passages and incomplete Gene Keys meanings. Close ISC-296 with the prior completed corrected P5 and ten installed chart checks; preserve both original failed cases and the earlier stalled P4. No final saved-public case is promoted. Explicit country targeting and real recorded/playable/reviewer-accessible video remain required facts.
 
 - 2026-10-08 12:44: refined: Both tracked-main services now run images identical to the corrected verified deployments. Close I Ching casting/judgment-image source acceptance in its explicitly bounded scope; unavailable moving-line passages remain unavailable. The repaired P4 host terminal stalls after full coherent prose and a Stop attempt does not establish termination, so ISC-296 remains open and no final saved-public case is promoted.
 
@@ -603,6 +605,11 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 
 ## Changelog
 
+- 2026-10-08 | conjectured: the first repaired P4's stalled terminal prevents completed observable combined-reading acceptance.
+  refuted_by: one fresh exact-prompt private v0.2.4 conversation completes naturally, shows Copy/Share and no Stop, and preserves all five anchors and source limits.
+  learned: preserve a stalled attempt and verify a bounded fresh host result without redeploying unchanged corrected images or claiming raw call-level trace.
+  criterion_now: ISC-296 closes for observable development behavior only; all eight final saved-public cases remain Not run and publication gates stay open.
+
 - 2026-10-08 | conjectured: a complete visible report establishes completed host rehearsal.
   refuted_by: repaired P4 retains Stop and disabled Share after full prose, reload and one attempted Stop; no response-complete observation exists.
   learned: correct calculation and rendered content are narrower than host termination.
@@ -659,15 +666,17 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 
 ## Verification
 
+- ISC-296: actual browser/DOM probe — private v0.2.4 chat c/6ac79316-87e8-83ed-9ec8-3783b706a5f0 completes naturally after2m18s; Response complete, Copy, Share and no Stop observed. Exact staged P4 prompt matches. Cast[8,7,9,6,7,8] maps48→47, changing3/4; four returned judgment/image page references match committed Legge1882 dataset. All five results, canonical GeneKeys38.2/39.2/48.4/21.4, source gaps, null service synthesis, host Aletheios/Pichet/integration and unconfirmed persistence are explicit. Prior repaired Hindi P5 complete and installed ten chart checks satisfy the remaining scope. Expanded trace exposes integration entries but not exact tool names, raw arguments/results, call count or runtime file reads. Separate recovered-p4-host-2026-10-08.json preserves this outcome and all eight final public cases Not run.
+
 - ISC-285: Bounded I Ching cast/mapping and all64 Legge1882 judgments/images now have reviewed local source/tests, fresh installed standalone/workflow coherence and durable tracked-main deployment. TS1e269664 and Rust8161b09b both SUCCESS from merge4cadb617, with corrected image digests identical to previously verified manual images and passed healthchecks. Moving-line passages/legacy label limitations remain explicit.
-- Host terminal boundary: P4 full text is coherent, but no Response complete follows reload or one Stop attempt; Stop re-enabled. This is an unresolved host-rehearsal state, not an engine inconsistency. ISC-296 stays open.
+- Historical first restored P4 terminal boundary: full text was coherent, but no Response complete followed reload or one Stop attempt; Stop re-enabled. That attempt remains unconfirmed. The later recovered P4 evidence above closes ISC-296 without rewriting this attempt.
 
 - ISC-285.1: PR1494 MERGED at12:35:32UTC, merge4cadb617; exact-head guard and fetched origin/main ancestry pass. Source tree equals merged main tree. Durable TS source integration is established; source-triggered production images are separately monitored.
-- Fresh corrected P5: Actual private v0.2.4 Hindi chat c/6ac78d63-47d8-83eb-8cee-1b1e72ec758f shows Response complete, correct D9Libra and Cancer/Capricorn nodes, equal nonretrograde flags and Mars/Mercury vargottama. Expanded trace exposes one integration entry but not raw arguments/exact tool name. Repaired P4 full prose is coherent; terminal completion remains unconfirmed. ISC-296 stays open.
+- Historical P5 checkpoint before the recovered P4 retry: Actual private v0.2.4 Hindi chat c/6ac78d63-47d8-83eb-8cee-1b1e72ec758f shows Response complete, correct D9Libra and Cancer/Capricorn nodes, equal nonretrograde flags and Mars/Mercury vargottama. Expanded trace exposes one integration entry but not raw arguments/exact tool name. At that checkpoint the first repaired P4 terminal was unconfirmed and ISC-296 remained open; later recovered P4 evidence above establishes the current closure.
 
 - ISC-285.2: Restored TS deployment 8b212532 SUCCESS from 3b03bda6; fresh installed standalone and decision-support workflow both pass eight casting/source consistency checks at 12:12–12:13 UTC. Algorithm1.1.0 and Legge1882 page provenance are returned. Changing-line passages remain unavailable.
 - ISC-294/295: Reviewed source89da83fc includes all12x9 Navamsa sectors,108 opposed pairs, lagna/degree/vargottama fixtures and same-node-speed regression. Four focused Rust tests pass. TS14 tests/1914 assertions and typecheck pass; report phase-authority test passes ten mocked requests.
-- Current installed chart: Rust deployment89624097 reached SUCCESS at12:29 UTC; one synthetic installed connector request passes all ten mapping/node/persistence/host-inference checks. D9 lagnaLibra, opposed Cancer/Capricorn nodes, equal node speeds, and actual Mars/Mercury vargottama are returned. Completed fresh host P4/P5 proof is still pending.
+- Historical installed chart checkpoint: Rust deployment89624097 reached SUCCESS at12:29 UTC; one synthetic installed connector request passes all ten mapping/node/persistence/host-inference checks. D9 lagnaLibra, opposed Cancer/Capricorn nodes, equal node speeds, and actual Mars/Mercury vargottama are returned. At that observation fresh host P4/P5 proof was pending; completed repaired P5 and recovered P4 evidence above now supersede that pending state.
 
 - ISC-132..137: Production Vite build emitted `index-CYgISPpb.js` at 249,275 raw/79,819 gzip bytes and `DepthGallery-5EhUnFqv.js` at 515,503 raw/129,200 gzip bytes; `npm run check:renderer-budget` proved Three.js is absent from entry and present in the single async depth chunk.
 - ISC-138..147: Focused loader tests prove hash/cache/remote provenance, malformed-hash fallback, 404 not-found, typed failure, safe rejected-IPC conversion, legacy nullable compatibility, and the deferred-promise gate rejects stale completions.

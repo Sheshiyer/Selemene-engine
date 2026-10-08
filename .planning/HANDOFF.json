@@ -1,6 +1,6 @@
 {
   "version": "2",
-  "timestamp": "2026-10-08T12:45:42.215512+00:00",
+  "timestamp": "2026-10-08T13:06:49.000079+00:00",
   "phase": "build",
   "phase_name": "Free Selemene public publication preparation",
   "phase_dir": null,
@@ -40,10 +40,10 @@
     "PR1494 merged with exacthead guard4cadb617; fetchedmain ancestry and identical tree pass",
     "Fresh corrected Hindi P5 host response completes with chart facts/limits preserved",
     "Both tracked-main automatic deployments SUCCESS from4cadb617; identical corrected images and healthchecks verified",
-    "IChing end-to-end bounded cast/judgment-image source acceptance verified"
+    "IChing end-to-end bounded cast/judgment-image source acceptance verified",
+    "One fresh exact P4 retry completes naturally after2m18s; all-five-engine/source-qualified report verified; ISC296 closes for observable development behavior"
   ],
   "remaining_tasks": [
-    "Resolve or verify terminal repaired P4 host completion; do not mark its full visible prose as a completed rehearsal",
     "Receive explicit country targeting",
     "Record/play back/host real reviewer demo",
     "Build inspected final publicZIP after actual videoURL/countries are verified",
@@ -70,8 +70,8 @@
     "ISA.md",
     ".planning/HANDOFF.json"
   ],
-  "next_action": "Preserve verified merged/live calculation repairs and completed Hindi/negative host evidence. Repaired P4 terminal is unconfirmed despite reload and one Stop attempt; pending explicit country targeting and real recorded/playable/reviewer-accessible demo are required before final publicZIP.",
-  "context_notes": "Both tracked-main services are exact-source SUCCESS with identical corrected images. No unchanged build/test/engine rerun is needed. P4 has coherent content but no confirmed host terminal. No public ZIP/upload/review/approval/publication exists. Pending questions remain unanswered; do not infer responses or repeat capture probes.",
+  "next_action": "Await the already queued explicit country-targeting answer and real recorder-start/save/playback/reviewer-accessible demo evidence. Then bind those verified facts to the unchanged v0.2.4 public candidate, build and inspect its final ZIP, import/connect/test all eight exact saved-public cases, complete required developer attestations/scans, submit for review and publish only an approved release. Preserve completed repaired host/deployment evidence; no unchanged retry, capture probe, build or calculation is needed.",
+  "context_notes": "Both tracked-main services run verified corrected images; repaired P4/P5 and negative/own-profile development reports completed. No final public ZIP/upload/saved-public cases/review/approval/publication exists. Countries and real recording facts remain unanswered. No repeated preparation or unchanged capture probes are needed.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
     "manifest": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/delivery-manifest.json",
@@ -154,18 +154,17 @@
     "ISC-282",
     "ISC-283",
     "ISC-284",
-    "ISC-286",
-    "ISC-296"
+    "ISC-286"
   ],
-  "isc_done_count": 255,
-  "wave": "publication-live-main-required-facts",
+  "isc_done_count": 256,
+  "wave": "publication-completed-host-required-facts",
   "tier": "E3",
   "session_budget": {
     "window": 258400,
     "rollover_at": 167960,
-    "used_at_handoff": 218362
+    "used_at_handoff": 225906
   },
-  "next_command": "Read current publication status and final tracked-main/host receipts; proceed only on new recorder/country facts or a justified P4 host recovery.",
+  "next_command": "Continue only when new country or real recording facts arrive; do not repeat existing questions or completed preparation.",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -239,10 +238,10 @@
       "PR1494 merged with exacthead guard4cadb617; fetchedmain ancestry and identical tree pass",
       "Fresh corrected Hindi P5 host response completes with chart facts/limits preserved",
       "Both tracked-main automatic deployments SUCCESS from4cadb617; identical corrected images and healthchecks verified",
-      "IChing end-to-end bounded cast/judgment-image source acceptance verified"
+      "IChing end-to-end bounded cast/judgment-image source acceptance verified",
+      "One fresh exact P4 retry completes naturally after2m18s; all-five-engine/source-qualified report verified; ISC296 closes for observable development behavior"
     ],
     "remaining_tasks": [
-      "Resolve or verify terminal repaired P4 host completion; do not mark its full visible prose as a completed rehearsal",
       "Receive explicit country targeting",
       "Record/play back/host real reviewer demo",
       "Build inspected final publicZIP after actual videoURL/countries are verified",
@@ -262,8 +261,8 @@
       "2026-10-08 user selected verified personal publisher and authorized website/data updates and own-profile candidate demo"
     ],
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
-    "next_action": "Preserve verified merged/live calculation repairs and completed Hindi/negative host evidence. Repaired P4 terminal is unconfirmed despite reload and one Stop attempt; pending explicit country targeting and real recorded/playable/reviewer-accessible demo are required before final publicZIP.",
-    "next_command": "Read current publication status and final tracked-main/host receipts; proceed only on new recorder/country facts or a justified P4 host recovery.",
+    "next_action": "Await the already queued explicit country-targeting answer and real recorder-start/save/playback/reviewer-accessible demo evidence. Then bind those verified facts to the unchanged v0.2.4 public candidate, build and inspect its final ZIP, import/connect/test all eight exact saved-public cases, complete required developer attestations/scans, submit for review and publish only an approved release. Preserve completed repaired host/deployment evidence; no unchanged retry, capture probe, build or calculation is needed.",
+    "next_command": "Continue only when new country or real recording facts arrive; do not repeat existing questions or completed preparation.",
     "uncommitted_files": [],
     "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md",
     "isc_open": [
@@ -276,18 +275,17 @@
       "ISC-282",
       "ISC-283",
       "ISC-284",
-      "ISC-286",
-      "ISC-296"
+      "ISC-286"
     ],
-    "isc_done_count": 23,
-    "wave": "publication-authorized-source-policy-candidate",
+    "isc_done_count": 24,
+    "wave": "publication-completed-host-required-facts",
     "tier": "E3",
     "session_budget": "native goal default budget; user did not request a token budget",
-    "checkpoint_commit": "ba8974b8c21f273ec672f49e7c7a26932b684b86",
+    "checkpoint_commit": "c5c1c4e3f18f25c4ea9e28f7e3fdac6257a45de5",
     "checkpoint_workspace_clean": true,
     "source_workers": {
       "backend_contract": "complete: exact tracked-main commit/images/health receipt",
-      "ops_contract": "complete: bounded status/receipt/ISA/handoff review; checkpoint timestamps refreshed",
+      "ops_contract": "complete: independent scoped closure GO; minor historical labels applied and verified by root",
       "source_review": "complete: meaningful focused math/auth tests"
     },
     "technical_deployments": {
@@ -309,20 +307,21 @@
     "public_state": "not_uploaded_not_submitted_not_approved_not_published",
     "stage_manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
     "blocked_at": "2026-10-07T20:18:40.712367+00:00",
-    "blocking_audit": "Fresh resumed threshold met across turns1-3. Required factual answers/source and final candidate/demo evidence remain absent; independent preparation exhausted. Native update_goal returned blocked.",
+    "blocking_audit": "Historical prior run: Fresh resumed threshold met across turns1-3. Required factual answers/source and final candidate/demo evidence remain absent; independent preparation exhausted. Native update_goal returned blocked.",
     "resume_audit": {
-      "resumed_goal_turns": 1,
+      "resumed_goal_turns": 2,
       "current_goal_turn_classification": "progress",
-      "same_required_facts_missing": false,
-      "meaningful_progress": "User supplied publisher, source research, website and demo authorization; three parallel concrete implementation lanes dispatched",
+      "same_required_facts_missing": true,
+      "meaningful_progress": "One bounded fresh exact P4 retry completed naturally; verified all-five-engine reflection closes ISC296. Country/recording requirements remain unresolved.",
       "blocked_threshold_reached": false
     },
-    "worktree_head": "ba8974b8c21f273ec672f49e7c7a26932b684b86",
+    "worktree_head": "c5c1c4e3f18f25c4ea9e28f7e3fdac6257a45de5",
     "resumed_blocked_audit": {
-      "turn": 1,
+      "turn": 2,
       "classification": "progress",
-      "same_blocking_condition": false,
-      "progress": "Repaired source PR1494 merged and both tracked-main services verified; installed chart/IChing and completed Hindi/negative development behavior recorded."
+      "same_blocking_condition": true,
+      "progress": "Completed bounded private P4 recovery and closed technical host acceptance. Required country and real demo evidence remain absent.",
+      "blocked_threshold_reached": false
     },
     "source_limitations": [
       "Gene Keys full author meanings/biological correspondences and corpus permission unavailable; bounded verified public labels only; parent ISC-286 open",
@@ -358,8 +357,17 @@
     "native_goal_status": "active",
     "source_repair_pr_state": "MERGED",
     "source_repair_merge": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
-    "updated_at": "2026-10-08T12:45:42.215512+00:00",
-    "updated": "2026-10-08T12:45:42.215512+00:00"
+    "updated_at": "2026-10-08T13:06:49.000079+00:00",
+    "updated": "2026-10-08T13:06:49.000079+00:00",
+    "current_host_acceptance": {
+      "isc_296": "closed_observable_development_scope",
+      "p4_url": "https://chatgpt.com/c/6ac79316-87e8-83ed-9ec8-3783b706a5f0",
+      "p4_state": "response_complete_observed_naturally",
+      "p4_receipt": "docs/plans/free-plugin/publication/recovered-p4-host-2026-10-08.json",
+      "p5_state": "response_complete_observed",
+      "raw_arguments_exact_calls_runtime_file_reads": "unexposed",
+      "final_saved_public_cases": "all_eight_Not_run"
+    }
   },
   "publication_owned_main_files": [
     "ISA.md",
@@ -440,7 +448,7 @@
     "ISC-295",
     "ISC-296"
   ],
-  "updated_at": "2026-10-08T12:45:42.215512+00:00",
+  "updated_at": "2026-10-08T13:06:49.000079+00:00",
   "native_goal_status": "active_fresh_get_goal_verified",
   "active_witness_plugin_design": {
     "request": "Explain reuse of existing Witness agents, skills and MCPs in the free plugin with user ChatGPT limits",
@@ -471,7 +479,7 @@
     "tier": "E4",
     "artifact": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md"
   },
-  "updated": "2026-10-08T12:45:42.215512+00:00",
+  "updated": "2026-10-08T13:06:49.000079+00:00",
   "historical_witness_goal": "Repair the witness reading system and deliver eight detailed English/French readings for Gary, Mohan, Sheshnarayan, and their business triad, grounded in the recovered engine fact to interpretation to symbolic meaning matrix, with private evidence sidecars and verified DOCX/PDF outputs.",
   "recording_question": "Already queued recorder-start question remains pending; do not infer recording from elapsed time or screenshots",
   "country_question": "Already queued explicit targeting question remains pending; do not infer All countries from the preselected option"
