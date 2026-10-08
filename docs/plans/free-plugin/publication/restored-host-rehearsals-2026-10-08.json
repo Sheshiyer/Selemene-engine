@@ -1,6 +1,6 @@
 {
   "schema": "selemene.restored-development-host-rehearsals.v1",
-  "verified_at": "2026-10-08T12:37:07.989Z",
+  "verified_at": "2026-10-08T12:44:12.985108+00:00",
   "candidate": {
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
     "version": "0.2.4",
@@ -14,7 +14,7 @@
     {
       "id": "P4-restored",
       "url": "https://chatgpt.com/c/6ac7896f-1d34-83ed-8d86-94508a2501a6",
-      "state": "full_reading_visible_terminal_status_unconfirmed",
+      "state": "full_reading_visible_terminal_unconfirmed_stop_attempt_without_verified_effect",
       "prompt": "unchanged exact P4 synthetic decision-support prompt",
       "trace": {
         "expanded": true,
@@ -23,7 +23,9 @@
         "response_complete_observed": false,
         "stop_button_still_visible": true,
         "intentional_reload_performed": true,
-        "raw_arguments": "unexposed"
+        "raw_arguments": "unexposed",
+        "stop_attempted": true,
+        "stop_attempt_result": "Stop briefly disabled, then returned enabled; no response-complete state established."
       },
       "returned_anchors": {
         "i_ching": {
@@ -71,7 +73,7 @@
         "host_aletheios_pichet_and_integrated_prose": true,
         "no_recast_claim": true
       },
-      "acceptance": "Observable content supports repaired calculation/host behavior; terminal completion remains unconfirmed."
+      "acceptance": "Coherent repaired report content observed, but stalled host terminal state remains unconfirmed; not marked passed."
     },
     {
       "id": "P5-restored",

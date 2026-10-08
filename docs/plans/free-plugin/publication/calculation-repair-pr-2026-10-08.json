@@ -52,7 +52,17 @@
       "installed_math_checks": "10 PASS"
     }
   },
-  "tracked_main_auto_deployment": "being separately monitored; source merge alone does not establish new running images",
+  "tracked_main_auto_deployment": {
+    "state": "both_SUCCESS",
+    "source": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
+    "receipt": "tracked-main-live-2026-10-08.json",
+    "deployments": {
+      "typescript": "1e269664-5089-43fd-9929-9b26ed566d7d",
+      "rust": "8161b09b-4b7e-42ce-899b-28e060d116a3"
+    },
+    "images_equal_verified_corrected_manual_images": true,
+    "healthchecks_pass": true
+  },
   "source_limitations": [
     "I Ching changing-line passages unavailable; some labels unverified.",
     "Gene Keys verified public labels only; full author descriptions/biology/licensing remain unavailable.",

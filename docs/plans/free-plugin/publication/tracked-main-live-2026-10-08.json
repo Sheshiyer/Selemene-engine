@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "receipt_kind": "tracked_main_railway_deployment",
+  "generated_at": "2026-10-08T12:41:49Z",
+  "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+  "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+  "source": {
+    "merge_commit": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
+    "merge_completed_at": "2026-10-08T12:35:32Z",
+    "pull_request": "https://github.com/Sheshiyer/Selemene-engine/pull/1494"
+  },
+  "outcome": "both_tracked_main_deployments_successful",
+  "observation_method": {
+    "provider": "Railway CLI",
+    "deployment_metadata": "Exact service-filtered railway deployment list --json; unrelated rows and unapproved metadata omitted.",
+    "health": "Bounded build logs filtered for healthcheck; only explicit event kinds and timestamps retained.",
+    "deployment_poll_interval_seconds": 199.4,
+    "remote_mutations": false,
+    "engine_calculations": false,
+    "credentials_or_environment_values_collected": false
+  },
+  "services": [
+    {
+      "name": "ts-engines",
+      "service_id": "94419a41-9003-4a31-8bfe-d55b39ca4cb2",
+      "deployment_id": "1e269664-5089-43fd-9929-9b26ed566d7d",
+      "observations": [
+        {
+          "observed_at": "2026-10-08T12:37:03.967515+00:00",
+          "id": "1e269664-5089-43fd-9929-9b26ed566d7d",
+          "status": "BUILDING",
+          "created_at": "2026-10-08T12:35:35.167Z",
+          "metadata": {
+            "branch": "main",
+            "commitHash": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
+            "serviceManifest.build.builder": "DOCKERFILE",
+            "serviceManifest.build.dockerfilePath": "ts-engines/Dockerfile",
+            "serviceManifest.deploy.healthcheckPath": null,
+            "serviceManifest.deploy.healthcheckTimeout": null
+          }
+        },
+        {
+          "observed_at": "2026-10-08T12:40:23.434162+00:00",
+          "id": "1e269664-5089-43fd-9929-9b26ed566d7d",
+          "status": "SUCCESS",
+          "created_at": "2026-10-08T12:35:35.167Z",
+          "metadata": {
+            "branch": "main",
+            "commitHash": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
+            "configFile": "/ts-engines/railway.toml",
+            "fileServiceManifest.build.builder": "NIXPACKS",
+            "fileServiceManifest.build.dockerfilePath": "Dockerfile",
+            "fileServiceManifest.deploy.healthcheckPath": "/health",
+            "fileServiceManifest.deploy.healthcheckTimeout": 60,
+            "imageDigest": "sha256:a38992f92bedac74f2a5da48c7d4b1836e5b89d3a358287526ff5296f5f20f7f",
+            "rootDirectory": "/ts-engines",
+            "serviceManifest.build.builder": "DOCKERFILE",
+            "serviceManifest.build.dockerfilePath": "Dockerfile",
+            "serviceManifest.deploy.healthcheckPath": "/health",
+            "serviceManifest.deploy.healthcheckTimeout": 60
+          }
+        }
+      ],
+      "terminal_status": "SUCCESS",
+      "reported_branch": "main",
+      "reported_commit": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
+      "source_matches_merge": true,
+      "resolved_config": {
+        "root_directory": "/ts-engines",
+        "config_file": "/ts-engines/railway.toml",
+        "effective_builder": "DOCKERFILE",
+        "effective_dockerfile": "Dockerfile",
+        "effective_healthcheck_path": "/health",
+        "effective_healthcheck_timeout_seconds": 60
+      },
+      "image_digest": "sha256:a38992f92bedac74f2a5da48c7d4b1836e5b89d3a358287526ff5296f5f20f7f",
+      "previous_corrected_deployment": {
+        "deployment_id": "8b212532-e1ad-4c95-aebc-f724fe2a4155",
+        "status_at_terminal_probe": "REMOVED",
+        "image_digest": "sha256:a38992f92bedac74f2a5da48c7d4b1836e5b89d3a358287526ff5296f5f20f7f"
+      },
+      "image_matches_previous_corrected_deployment": true,
+      "health_evidence": {
+        "service": "ts-engines",
+        "observed_at": "2026-10-08T12:41:49.405894+00:00",
+        "health_evidence": "explicit_build_log",
+        "events": [
+          {
+            "kind": "healthcheck_started",
+            "timestamp": "2026-10-08T12:37:20.801688779Z"
+          },
+          {
+            "kind": "healthcheck_succeeded",
+            "timestamp": "2026-10-08T12:37:21.104199846Z"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rust-api",
+      "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+      "deployment_id": "8161b09b-4b7e-42ce-899b-28e060d116a3",
+      "observations": [
+        {
+          "observed_at": "2026-10-08T12:37:03.831619+00:00",
+          "id": "8161b09b-4b7e-42ce-899b-28e060d116a3",
+          "status": "BUILDING",
+          "created_at": "2026-10-08T12:35:35.165Z",
+          "metadata": {
+            "branch": "main",
+            "commitHash": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
+            "serviceManifest.build.builder": "DOCKERFILE",
+            "serviceManifest.build.dockerfilePath": "Dockerfile.prod",
+            "serviceManifest.deploy.healthcheckPath": null,
+            "serviceManifest.deploy.healthcheckTimeout": null
+          }
+        },
+        {
+          "observed_at": "2026-10-08T12:40:23.434162+00:00",
+          "id": "8161b09b-4b7e-42ce-899b-28e060d116a3",
+          "status": "SUCCESS",
+          "created_at": "2026-10-08T12:35:35.165Z",
+          "metadata": {
+            "branch": "main",
+            "commitHash": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
+            "configFile": "/railway.toml",
+            "fileServiceManifest.build.builder": "DOCKERFILE",
+            "fileServiceManifest.build.dockerfilePath": "Dockerfile.prod",
+            "fileServiceManifest.deploy.healthcheckPath": "/health/live",
+            "fileServiceManifest.deploy.healthcheckTimeout": 300,
+            "imageDigest": "sha256:d6ffec20e32e55b05bff7fbab5bc1267c4203f27e4664f12f880e8efa4700f4d",
+            "rootDirectory": null,
+            "serviceManifest.build.builder": "DOCKERFILE",
+            "serviceManifest.build.dockerfilePath": "Dockerfile.prod",
+            "serviceManifest.deploy.healthcheckPath": "/health/live",
+            "serviceManifest.deploy.healthcheckTimeout": 300
+          }
+        }
+      ],
+      "terminal_status": "SUCCESS",
+      "reported_branch": "main",
+      "reported_commit": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
+      "source_matches_merge": true,
+      "resolved_config": {
+        "root_directory": null,
+        "config_file": "/railway.toml",
+        "effective_builder": "DOCKERFILE",
+        "effective_dockerfile": "Dockerfile.prod",
+        "effective_healthcheck_path": "/health/live",
+        "effective_healthcheck_timeout_seconds": 300
+      },
+      "image_digest": "sha256:d6ffec20e32e55b05bff7fbab5bc1267c4203f27e4664f12f880e8efa4700f4d",
+      "previous_corrected_deployment": {
+        "deployment_id": "89624097-a5a9-4e4b-85a2-0604d901d04b",
+        "status_at_terminal_probe": "REMOVED",
+        "image_digest": "sha256:d6ffec20e32e55b05bff7fbab5bc1267c4203f27e4664f12f880e8efa4700f4d"
+      },
+      "image_matches_previous_corrected_deployment": true,
+      "health_evidence": {
+        "service": "rust-api",
+        "observed_at": "2026-10-08T12:41:49.528540+00:00",
+        "health_evidence": "explicit_build_log",
+        "events": [
+          {
+            "kind": "healthcheck_started",
+            "timestamp": "2026-10-08T12:37:10.998326733Z"
+          },
+          {
+            "kind": "healthcheck_succeeded",
+            "timestamp": "2026-10-08T12:37:11.311867541Z"
+          }
+        ]
+      }
+    }
+  ],
+  "verification_scope": {
+    "verified": [
+      "Both source-triggered deployments report branch main and exact merged commit.",
+      "Both deployments are SUCCESS with explicit healthcheck_succeeded build-log markers.",
+      "Both effective Docker/config/healthcheck settings match the corrected deployment configuration.",
+      "Both reported image digests are identical to the previous corrected manual deployment images."
+    ],
+    "not_verified": [
+      "No new reading, workflow, chart, or engine calculations were made in this monitoring task.",
+      "Health and image evidence do not independently verify every exposed tool or host interpretation.",
+      "This receipt does not assert completion or acceptance of all public plugin review cases."
+    ]
+  }
+}
