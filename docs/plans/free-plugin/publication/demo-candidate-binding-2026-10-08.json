@@ -1,0 +1,43 @@
+{
+  "schema": "selemene.publication.demo-candidate-binding.v1",
+  "checked_at": "2026-10-08T09:19:30.077324+00:00",
+  "candidate_source": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine/docs/plans/free-plugin/publication/public-package/selemene-engine",
+  "candidate_version": "0.2.0",
+  "source_sha256": {
+    "plugin.json": "2311edeb97e0daf3d539abddd45eae7d4097cd144f0472c0291b48301c2209d4",
+    "skills/selemene-reading/SKILL.md": "184a2b146800dbcde90b5912a7744da59d2b21de5b6d23735e2851c64af3c11c",
+    "skills/selemene-reading/references/host-reading-flow.md": "937026dbd0e791e9048f7bad1c631005a5b0ad549fbf6beeaeffaf666f64e303"
+  },
+  "verified_development_plugin": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "release_id": "pluginrel_6ac68a646a3481918caccb45c95ad63f",
+    "version": "0.2.0",
+    "scope": "USER",
+    "discoverability": "PRIVATE",
+    "verification": "Fresh Plugin Creator metadata and complete release list"
+  },
+  "reading_instructions_equal_private_source": false,
+  "candidate_runtime_binding": {
+    "status": "not_established",
+    "saved_candidate_id": null,
+    "saved_release_id": null,
+    "loaded_instruction_hash_evidence": null
+  },
+  "recording": {
+    "status": "not_established",
+    "verified_file": null,
+    "reviewer_accessible_url": null
+  },
+  "required_runtime_evidence": [
+    "Actual supported candidate preview or installation identity",
+    "Evidence that both staged reading instruction files were loaded",
+    "Observed host and native subscription model path",
+    "Actual tool calls/results and host-authored reading",
+    "Saved video playback, candidate binding and reviewer-accessible URL"
+  ],
+  "prohibitions": [
+    "Do not substitute a matching version label for instruction binding",
+    "Do not mark private development rehearsal as final candidate execution",
+    "Do not upload an incomplete public bundle or create a duplicate private plugin to manufacture proof"
+  ]
+}

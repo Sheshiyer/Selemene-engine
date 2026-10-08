@@ -1,0 +1,28 @@
+{
+  "schema": "selemene.publication.portal-observation.v1",
+  "observed_at": "2026-10-08T09:19:30.077324+00:00",
+  "url": "https://platform.openai.com/plugins",
+  "organization": "Personal",
+  "project_name": "thewhychromosome",
+  "loaded_plugin_table_rows": 2,
+  "selemene_submission_visible": false,
+  "archive_selected": false,
+  "archive_uploaded": false,
+  "submitted_for_review": false,
+  "published": false,
+  "private_plugin_metadata": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "release_id": "pluginrel_6ac68a646a3481918caccb45c95ad63f",
+    "version": "0.2.0",
+    "scope": "USER",
+    "discoverability": "PRIVATE",
+    "verification": "Fresh Plugin Creator metadata and complete release list"
+  },
+  "publication_scope": "No Selemene submission visible in the inspected current organization; saved plugin remains USER/PRIVATE",
+  "category_options_verified": false,
+  "notes": [
+    "Read-only portal listing and Plugin Creator metadata/release inspection",
+    "No upload or legal attestation attempted",
+    "Original private current release is unchanged"
+  ]
+}

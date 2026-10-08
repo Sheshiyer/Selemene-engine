@@ -1,0 +1,56 @@
+{
+  "schema": "selemene.publication.demo-capture-capabilities.v1",
+  "checked_at": "2026-10-08T09:19:30.077324+00:00",
+  "method": "Independent installed command help/version inspection plus supported native UI observation",
+  "capabilities": [
+    {
+      "name": "native screencapture",
+      "path": "/usr/sbin/screencapture",
+      "verified_options": [
+        "video",
+        "bounded duration",
+        "interactive selected region",
+        "output filename"
+      ],
+      "capture_permission_verified": false,
+      "executed_capture": false
+    },
+    {
+      "name": "playwright-cli",
+      "path": "/opt/homebrew/bin/playwright-cli",
+      "version": "0.1.21",
+      "verified_commands": [
+        "video-start",
+        "video-stop"
+      ],
+      "same_host_attachment_verified": false,
+      "executed_capture": false
+    },
+    {
+      "name": "ffmpeg/ffprobe",
+      "verified_capabilities": [
+        "AVFoundation input",
+        "H264/VP9 encoder help",
+        "saved file inspection"
+      ],
+      "device_enumeration_or_capture": false
+    }
+  ],
+  "native_ui": {
+    "application": "QuickTime Player",
+    "observed_control": "File > New Screen Recording",
+    "setup_menu_selected": true,
+    "capture_controls_lookup": "Screenshot-app lookup timed out",
+    "record_control_clicked": false,
+    "permissions_granted": false,
+    "verified_recording_file": null
+  },
+  "historical_receipt": "demo-capture-check.json remains narrower historical evidence; its no exposed recorder observation described session tools, not installed CLI capabilities",
+  "next_dependencies": [
+    "Establish supported actual candidate instruction loading in the intended host",
+    "Establish usable bounded capture controls and any required permission",
+    "Capture real interactions, verify playback and host actual file"
+  ],
+  "recording_status": "not_established",
+  "reviewer_accessible_url": null
+}

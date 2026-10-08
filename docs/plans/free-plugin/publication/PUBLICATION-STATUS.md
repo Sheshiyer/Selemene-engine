@@ -1,6 +1,6 @@
 # Selemene public publication preparation
 
-Updated 2026-10-07 20:20 UTC. **Incomplete preparation copy; no public ZIP, portal draft upload, review submission, approval or public publication is claimed.** The user has authorized publication, and the parent is gathering the remaining factual answers and evidence.
+Updated 2026-10-08. **Incomplete preparation copy; no public ZIP, portal draft upload, review submission, approval or public publication is claimed.** The user has authorized publication, and the parent is gathering the remaining factual answers and evidence.
 
 ## Separate public source and preserved private release
 
@@ -76,6 +76,12 @@ The separate Vedic chart case retains Swiss Ephemeris planetary-position provena
 Existing `../live-smoke.json`, `../deployment-receipt.json` and [installed-connectivity.json](installed-connectivity.json) remain narrower technical receipts. They do not certify the refreshed reader-facing host cases, demo recording, new manifest or public submission. The final public receipt must identify the final candidate manifest and distinguish development-host checks from saved-submission tests.
 
 ## Continuation within the authorized publication task
+
+Fresh read-only Plugin Creator metadata and release-list checks confirm the same USER/PRIVATE v0.2.0 plugin and current release. The loaded Personal portal table has no visible Selemene submission; no upload was attempted. [Current observation](portal-observation-2026-10-08.json) supplements the earlier portal receipt.
+
+The demo walkthrough now reflects repaired I Ching casting/Legge passage provenance and the distinct Gene Keys coordinate/meaning limits. It also separates private development rehearsal from actual staged instruction execution. [Candidate binding](demo-candidate-binding-2026-10-08.json) records current manifest/reading-file hashes but explicitly leaves runtime loading and final demo proof unestablished.
+
+A fresh local capability inspection identified installed native and browser recording commands. Native UI inspection reached QuickTime's recording menu, but the Screenshot-app control lookup timed out. [Capture capabilities](demo-capture-capabilities-2026-10-08.json) does not claim usable capture controls, permission, a saved recording or a hosted URL. The old receipt's inventory observation must not be treated as proof that no recorder is installed.
 
 1. Resolve publisher/countries/policy facts in the parent task, verify actual portal category and current policy content, then update only this separate public stage with known values.
 2. Complete and verify the full remaining Gene Keys meaning-source work; retain all intended engine scope and keep actual source limits visible.
