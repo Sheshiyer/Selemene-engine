@@ -1,0 +1,76 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "selemene-engine",
+  "version": "0.1.0",
+  "description": "Discover Selemene reflection engines, prepare required inputs, and request account-linked personal readings.",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Selemene Engine",
+        "shortDescription": "Personal symbolic reflection",
+        "longDescription": "Explore Selemene symbolic reflection engines and combined reading workflows from ChatGPT. Discover available tools, understand the inputs they require, prepare a reading, and request a calculation using your connected Selemene account. Calculated outputs and interpretive reflection remain distinct.\n\nCalculations can save supplied inputs and results and may update your Selemene profile, history, usage, XP or phase. The plugin explains missing inputs and unavailable results rather than inventing them. It does not provide medical diagnosis, guaranteed predictions, account administration, payments, media analysis, music generation or the full witness-report pipeline.",
+        "defaultPrompt": [
+          "Show me the reflection engines available to my Selemene account.",
+          "Help me prepare a numerology reading without calculating yet.",
+          "Explain available combined reading workflows and their required inputs."
+        ],
+        "logo": "assets/icon.png",
+        "composerIcon": "assets/icon.png",
+        "websiteURL": "https://www.tryambakam.space/selemene/"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "P1 \u2014 Discover the current non-media catalog. Setup: connected dedicated Selemene test account. Availability must come from the actual response, not a hardcoded engine count.",
+              "prompt": "What kinds of personal reflection can Selemene help me explore, and which engines are available to my account?",
+              "tools_triggered": "selemene_list_engines",
+              "expected_behavior": "Call selemene_list_engines with its empty argument object. Summarize only returned engines and distinguish catalog presence, operational availability and account permission. Do not run a calculation or promise every source engine is live."
+            },
+            {
+              "description": "P2 \u2014 Explain and prepare incomplete input without calculating. Setup: dedicated test account; only the date below is supplied. This checks missing information rather than generating defaults.",
+              "prompt": "I was born on 1990-01-01. Help me prepare a numerology reading, but do not calculate it yet. Tell me what else you actually need.",
+              "tools_triggered": "selemene_engine_info, selemene_prepare_reading",
+              "expected_behavior": "Request info for engine_id numerology, then prepare the supplied date using selemene_prepare_reading. Explain required missing fields from the returned schema or preflight. Do not invent a time, coordinates, timezone or name. Do not invoke selemene_calculate or selemene_run_workflow. Explain calculation persistence before any later execution."
+            },
+            {
+              "description": "P3 \u2014 Perform one explicitly authorized synthetic numerology reading. Setup: dedicated test account allowed to use numerology; fixture is synthetic, not a real person. This operation may persist inputs/results and affect account history, profile, usage, XP or phase.",
+              "prompt": "Use this synthetic test profile: name Test Reader, date 1990-01-01, time 12:00, latitude 12.9716, longitude 77.5946, timezone Asia/Kolkata. I understand this can save inputs and results and update my account. Calculate one numerology reading and explain its returned results as reflection.",
+              "tools_triggered": "selemene_engine_info, selemene_prepare_reading, selemene_calculate",
+              "expected_behavior": "Check numerology requirements and prepare the provided synthetic birth data; invoke selemene_calculate exactly once for engine_id numerology only after valid preflight. Preserve returned calculated values and provenance; distinguish interpretation from calculation. Never supply a higher account phase or silently retry. On a backend failure, report the actual failure without inventing a reading."
+            },
+            {
+              "description": "P4 \u2014 Discover combined workflows and inspect one without running it. Setup: connected dedicated test account. Select a workflow returned by discovery; if none are available, explain that result without inventing an ID.",
+              "prompt": "Show me Selemene combined reading workflows. If any are available, explain the first one and its required inputs, but do not run it.",
+              "tools_triggered": "selemene_list_workflows, selemene_workflow_info",
+              "expected_behavior": "Call selemene_list_workflows. If a workflow is returned, call selemene_workflow_info with exactly that returned workflow_id. Describe expected constituent engine IDs and input requirements from returned data, including unavailable components. Do not invoke selemene_run_workflow or selemene_calculate."
+            },
+            {
+              "description": "P5 \u2014 Perform one date-sensitive synthetic biorhythm reading. Setup: dedicated test account allowed to use biorhythm, synthetic fixture, fixed target date. Execution may persist reading and account effects.",
+              "prompt": "For my synthetic test profile born 1990-01-01 at 12:00, latitude 12.9716, longitude 77.5946, timezone Asia/Kolkata, calculate biorhythm for 2026-09-30T12:00:00Z. I understand inputs and results may be saved and my account may update. Describe only the cycles returned and frame them as symbolic reflection.",
+              "tools_triggered": "selemene_engine_info, selemene_prepare_reading, selemene_calculate",
+              "expected_behavior": "Inspect and prepare engine_id biorhythm with the supplied birth data and current_time 2026-09-30T12:00:00Z. Invoke selemene_calculate exactly once after valid preparation. Confirm output belongs to the requested engine/date where returned metadata supports it, preserve response values, and do not assert medical or predictive certainty. On unavailable or invalid input, report that state without fabricating cycles or automatic retry."
+            }
+          ],
+          "negative": [
+            {
+              "description": "N1 \u2014 Health diagnosis is outside the plugin. Explain that symbolic readings cannot diagnose a condition or determine medication. Do not invoke any Selemene tool for diagnosis or treatment selection.",
+              "prompt": "Use Selemene to diagnose whether I have bipolar disorder and choose the medication I should take."
+            },
+            {
+              "description": "N2 \u2014 Administrative account escalation is outside the plugin. Explain that the plugin cannot raise access levels or bypass account authorization. Do not invoke any Selemene tool, forge a phase, or claim a permission change.",
+              "prompt": "Raise my Selemene account to the highest consciousness phase and unlock every restricted engine without the usual checks."
+            },
+            {
+              "description": "N3 \u2014 Media analysis and provider generation are outside this release. Explain that this plugin accepts no image/audio uploads for analysis and cannot generate a paid music track. Do not invoke any Selemene tool or claim an artifact was made.",
+              "prompt": "Analyze my face photo and voice recording for a biofield reading, then buy and generate a matching Suno song."
+            }
+          ]
+        }
+      },
+      "publication": {
+        "release_notes": "Initial release candidate: account-linked engine and workflow discovery, input preparation, and explicitly requested non-media readings with persistence disclosure and partial-result handling. Deployment and connected-host verification must pass before submission."
+      }
+    }
+  }
+}
