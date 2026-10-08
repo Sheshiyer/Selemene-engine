@@ -150,8 +150,7 @@ def test_suno_bridge_reruns_migration_despite_persisted_done_state(tmp_path: Pat
 
 
 def test_ts_media_smoke_fails_on_health_or_contract_drift() -> None:
-    source = (REPO_ROOT / ".github/workflows/test.yml").read_text(encoding="utf-8")
-    smoke = workflow_step(source, "P1 W2 / T-020 media contract smoke")
+    smoke = (REPO_ROOT / ".local-jobs/media-smoke.sh").read_text(encoding="utf-8")
 
     assert "set -euo pipefail" in smoke
     assert "trap cleanup EXIT" in smoke
@@ -170,8 +169,7 @@ def test_ts_media_smoke_fails_on_health_or_contract_drift() -> None:
 
 
 def test_python_biofield_smoke_fails_on_http_or_contract_drift() -> None:
-    source = (REPO_ROOT / ".github/workflows/test.yml").read_text(encoding="utf-8")
-    smoke = workflow_step(source, "Biofield sidecar smoke")
+    smoke = (REPO_ROOT / ".local-jobs/biofield-smoke.sh").read_text(encoding="utf-8")
 
     assert "set -euo pipefail" in smoke
     assert "trap cleanup EXIT" in smoke
@@ -188,8 +186,8 @@ def test_python_biofield_smoke_fails_on_http_or_contract_drift() -> None:
     assert smoke.count("|| true") == 2
 
 
-def test_deployment_and_release_require_both_image_builds() -> None:
-    source = (REPO_ROOT / ".github/workflows/deploy.yaml").read_text(encoding="utf-8")
+def test_retired_deployment_contract_requires_both_image_builds() -> None:
+    source = (REPO_ROOT / "tests/scripts/fixtures/retired-workflows/deploy.yaml").read_text(encoding="utf-8")
     railway = source[source.index("  deploy-railway:") : source.index("  smoke-test:")]
     release = source[source.index("  release:") :]
 
