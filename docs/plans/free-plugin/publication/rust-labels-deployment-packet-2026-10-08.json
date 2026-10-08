@@ -1,0 +1,151 @@
+{
+  "schema": "selemene.publication.rust-labels-deployment-packet.v1",
+  "prepared_at": "2026-10-08T10:54:05.282345+00:00",
+  "state": "prepared_not_deployed",
+  "source_commit": "ebf4368df79ca0ddbf350a891d8d520c70a40af8",
+  "source_changed_paths": [
+    "crates/engine-gene-keys/src/engine.rs",
+    "crates/engine-gene-keys/src/frequency.rs",
+    "crates/engine-gene-keys/src/models.rs",
+    "crates/engine-gene-keys/src/wisdom.rs",
+    "crates/engine-gene-keys/src/witness.rs",
+    "crates/engine-gene-keys/tests/activation_line_regression.rs",
+    "crates/engine-gene-keys/tests/integration_tests.rs",
+    "crates/engine-gene-keys/tests/public_labels_regression.rs",
+    "data/gene-keys/source-provenance.json",
+    "data/gene-keys/verified-public-labels.json"
+  ],
+  "source_repo": "Sheshiyer/Selemene-engine",
+  "context": "/tmp/selemene-rust-labels-ebf4368d-iojiw1nw",
+  "files": 621,
+  "top_level_inputs": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "Dockerfile.prod",
+    ".dockerignore",
+    "railway.toml",
+    "crates",
+    "data",
+    "migrations"
+  ],
+  "git_archive_sha256": "ec93820e052f559b2424667939d6756de79c7059ea1e035088513a1fcd2b8ebc",
+  "context_tree_sha256": "0ba5ff70fe47cdbaf27ccfdc9a161ae9451d7bfdcc0f1dfcce477e392ef38356",
+  "context_file_hash_manifest": "/tmp/selemene-rust-labels-ebf4368d-context-files.json",
+  "context_file_hash_manifest_sha256": "0524cbd2abb42792d965b04972a8cf097ffdaf7b862256eecb0da4f5f9530c62",
+  "context_checks": {
+    "Cargo.toml_bytes_match_commit": true,
+    "Cargo.lock_bytes_match_commit": true,
+    "Dockerfile.prod_bytes_match_commit": true,
+    ".dockerignore_bytes_match_commit": true,
+    "railway.toml_bytes_match_commit": true,
+    "all_ten_source_paths_match_commit": true,
+    "build_inputs_unchanged_from_previous_packet": true,
+    "contains_no_publication_docs_or_private_candidate": true,
+    "tracked_commit_archive_only": true
+  },
+  "railway_target": {
+    "observed_at": "2026-10-08T10:52:41.884445+00:00",
+    "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+    "project_name": "robust-adventure",
+    "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+    "environment_name": "production",
+    "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+    "service_name": "Selemene-engine",
+    "service_source": {
+      "image": null,
+      "repo": "Sheshiyer/Selemene-engine"
+    },
+    "config_path": "/railway.toml",
+    "dockerfile": "Dockerfile.prod",
+    "builder": "DOCKERFILE",
+    "root_directory": null,
+    "healthcheck_path": "/health/live",
+    "active_deployments": [
+      {
+        "id": "04d7fea4-ff2b-4459-a057-77269a041f1a",
+        "status": "SUCCESS",
+        "created_at": "2026-10-07T19:55:53.443Z",
+        "running_instances": [
+          "RUNNING"
+        ]
+      }
+    ],
+    "rollback_deployment_id": "04d7fea4-ff2b-4459-a057-77269a041f1a",
+    "rollback_created_at": "2026-10-07T19:55:53.443Z",
+    "rollback_image_digest": "sha256:41524bde7f1a17381296694fd601d7f81c6c192e940299db8416cd291277d6b0",
+    "rollback_cli_message": "Gene Keys activation repair 9300ad41860d111b8595bd46c802699cb287901b",
+    "can_redeploy": true
+  },
+  "config_path_preserved": "/railway.toml",
+  "dockerfile_preserved": "Dockerfile.prod",
+  "rust_builder_preserved": "1.89-slim-bookworm",
+  "authorized_deploy_command": "railway up /tmp/selemene-rust-labels-ebf4368d-iojiw1nw --path-as-root --project 11eedde4-41e6-4f51-b86b-cf77111cf592 --environment 702b945e-2c66-4d5a-bae1-4c67ea14c3bb --service 48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4 --detach --message 'Gene Keys verified public labels ebf4368df79ca0ddbf350a891d8d520c70a40af8'",
+  "command_working_directory": "/tmp/selemene-rust-labels-ebf4368d-iojiw1nw",
+  "command_executed": false,
+  "guardrails": {
+    "target_service": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+    "project_environment_service_explicit": true,
+    "no_deploy_by_packet_author": true,
+    "database_target_change": false,
+    "variables_or_domains_change": false,
+    "migration_runner_added": false,
+    "startup_limit": "Existing startup runs an immediate-and-daily purge of revoked inactive API keys older than30days; no zero-DB-write claim"
+  },
+  "reported_verification": {
+    "gene_keys": {
+      "source": "data/gene-keys/source-provenance.json#/verification",
+      "passed": 78,
+      "failed": 0,
+      "command": "cargo test -p engine-gene-keys --lib --tests --jobs 1 --offline",
+      "toolchain": "1.99.0 (b940084d7 2026-09-28)",
+      "rerun_by_packet_author": false
+    },
+    "noesis_api_check": {
+      "reported_by": "root",
+      "package": "noesis-api",
+      "result": "passed",
+      "command_options": "not supplied to packet author",
+      "rerun_by_packet_author": false
+    },
+    "independent_source_audit": {
+      "result": "GO",
+      "scope": "runtime/null/schema/cache/source boundaries plus independently fetched64official public label triplets",
+      "rights_certified": false
+    },
+    "local_docker_build": "not run; prior Docker daemon limitation not re-probed",
+    "production_build": "not run for this source commit"
+  },
+  "meaning_source_contract": {
+    "status": "verified_public_labels_only",
+    "data_version": "2026-10-08.1",
+    "full_wisdom": "unavailable",
+    "author_descriptions": "null in calculation frequency assessments",
+    "biological_correspondences": "unavailable",
+    "reflection_prompts": "Selemene original questions, not author text",
+    "measurement_status": "not_measured configured lens",
+    "rights": {
+      "status": "no_open_licence_or_written_permission_established",
+      "scope": "short public terminology and numerical coordinates only; no copyrighted passages, course materials or images included",
+      "official_terms_url": "https://genekeys.com/terms-and-conditions/",
+      "official_corpus_licence_claimed": false
+    },
+    "dataset_sha256": "a6a4761ae31ab8ac25fe996209a7e6ca4cc01637dfeddd3ca11fb924f57c42af"
+  },
+  "rollback": {
+    "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+    "deployment_id": "04d7fea4-ff2b-4459-a057-77269a041f1a",
+    "state_observed": "SUCCESS and running",
+    "can_redeploy": true,
+    "source_commit": "9300ad41860d111b8595bd46c802699cb287901b",
+    "source_commit_basis": "Gene Keys activation repair 9300ad41860d111b8595bd46c802699cb287901b",
+    "live_image_digest": "sha256:41524bde7f1a17381296694fd601d7f81c6c192e940299db8416cd291277d6b0",
+    "previous_packet_image_digest": "sha256:0edd6f84f4bdbeddadb54c1ea5de13d5db22e2004f97df368a2b236fb7f8171f",
+    "image_digest_note": "Current Railway deployment metadata is the live-image evidence; previous packet records its earlier build-image digest. Neither value was changed by this lane."
+  },
+  "post_deployment_required": [
+    "Record actual deployment ID/build/health state for this source commit",
+    "Verify installed calculation returns data_version2026-10-08.1, actual verified labels, null author descriptions and source provenance",
+    "Recheck actual Human Design gate/line/canonical sphere bindings and not_measured lens",
+    "Keep public source permission, candidate host demo and exact reviewer cases as separate publication evidence"
+  ]
+}
