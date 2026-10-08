@@ -144,7 +144,7 @@ impl EphemerisCalculator {
                 longitude: south_longitude,
                 latitude: -north_node.latitude,
                 distance: north_node.distance,
-                speed: -north_node.speed,
+                speed: north_node.speed,
             });
         }
 
@@ -244,14 +244,18 @@ mod tests {
     #[test]
     fn test_south_node_opposite_north_node() {
         let calc = EphemerisCalculator::new("");
-        let dt = DateTime::parse_from_rfc3339("2000-01-01T12:00:00Z")
-            .unwrap()
-            .with_timezone(&Utc);
+        for timestamp in ["2000-01-01T12:00:00Z", "1990-01-01T06:30:00Z"] {
+            let dt = DateTime::parse_from_rfc3339(timestamp)
+                .unwrap()
+                .with_timezone(&Utc);
 
-        let north = calc.get_planet_position(HDPlanet::NorthNode, &dt).unwrap();
-        let south = calc.get_planet_position(HDPlanet::SouthNode, &dt).unwrap();
+            let north = calc.get_planet_position(HDPlanet::NorthNode, &dt).unwrap();
+            let south = calc.get_planet_position(HDPlanet::SouthNode, &dt).unwrap();
 
-        let diff = (north.longitude - south.longitude + 360.0) % 360.0;
-        assert!((diff - 180.0).abs() < 0.1);
+            let diff = (north.longitude - south.longitude + 360.0) % 360.0;
+            assert!((diff - 180.0).abs() < 0.1);
+            // Adding a constant 180° preserves longitudinal velocity and motion direction.
+            assert_eq!(south.speed, north.speed, "node speed at {timestamp}");
+        }
     }
 }
