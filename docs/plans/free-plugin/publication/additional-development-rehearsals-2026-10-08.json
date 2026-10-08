@@ -1,0 +1,156 @@
+{
+  "schema": "selemene.publication.additional-development-rehearsals.v1",
+  "recorded_at": "2026-10-08T12:08:00Z",
+  "private_plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+  "private_release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96",
+  "private_version": "0.2.4",
+  "stage_manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
+  "saved_public_case_status": "all_eight_not_run",
+  "cases": [
+    {
+      "id": "P4",
+      "chat_url": "https://chatgpt.com/c/6ac7852f-e720-83eb-8cb6-82aac813700b",
+      "title": "Decision Support Reflection",
+      "status": "completed_development_rehearsal_calculation_regression_confirmed",
+      "trace": {
+        "response_complete": true,
+        "workflow_event": "Evaluating Writing Versus Coding Project",
+        "one_visible_workflow_execution": true,
+        "raw_arguments": "unexposed",
+        "host_report_qualified_inconsistency": true
+      },
+      "host_i_ching": {
+        "cast": [
+          6,
+          7,
+          7,
+          6,
+          8,
+          8
+        ],
+        "changing_lines": [
+          1,
+          4
+        ],
+        "primary_number": 1,
+        "relating_number": 53,
+        "literal_stub_reported": true
+      },
+      "gene_keys": {
+        "sphere_coordinates": [
+          "38.2",
+          "39.2",
+          "48.4",
+          "21.4"
+        ],
+        "dataset": "2026-10-08.1",
+        "meanings": "verified_public_labels_only",
+        "author_meanings": "unavailable"
+      },
+      "regression": {
+        "basis": "separate explicit independent connector call after original host report; not a recast of the original case",
+        "timestamp": "2026-10-08T12:04:15.604Z",
+        "output": {
+          "engine_id": "i-ching",
+          "result": {
+            "casting": {
+              "line_values": [
+                6,
+                7,
+                7,
+                7,
+                7,
+                7
+              ],
+              "method": "three_coins"
+            },
+            "changing_lines": [
+              1
+            ],
+            "primary_hexagram": {
+              "chinese_name": "乾 (Qián)",
+              "image": "The movement of heaven is full of power. Thus the superior person makes themselves strong and untiring.",
+              "judgment": "The Creative works sublime success, furthering through perseverance.",
+              "meaning": "Pure yang energy, heaven, creative power, strong action",
+              "name": "The Creative",
+              "number": 1
+            },
+            "relating_hexagram": {
+              "chinese_name": "卦64",
+              "image": "The image for hexagram 64.",
+              "judgment": "The judgment for hexagram 64.",
+              "meaning": "Meaning for hexagram 64 (stub data)",
+              "name": "Hexagram 64",
+              "number": 64
+            },
+            "seed": 1594433808
+          },
+          "witness_prompt": "What does The Creative illuminate about your current situation?",
+          "metadata": {
+            "calculation_time_ms": 0,
+            "backend": "typescript",
+            "precision_achieved": "exact",
+            "cached": false,
+            "timestamp": "2026-10-08T12:04:15.604Z",
+            "engine_version": "3.3.1"
+          }
+        }
+      },
+      "actual_ts_deployment": {
+        "id": "702d3862-4bba-4aff-89d1-29a68a330e50",
+        "created_at": "2026-10-08T11:57:18.579Z",
+        "state": "SUCCESS",
+        "source": "063cf9a75991b4f261dd08ebab24082860291dd4",
+        "branch": "main",
+        "cause": "repository auto-deployment replaced previous corrected TS service",
+        "previous_corrected_deployment": "98d5b4f9-4834-4e7d-a81c-1a30e6806059"
+      },
+      "source_audit": "Deployed main selects primary, lines and relating independently and constructs 56 stub records; standalone/workflow route is shared and no result-cache read explains discrepancy."
+    },
+    {
+      "id": "P5",
+      "chat_url": "https://chatgpt.com/c/6ac7857d-1c30-83ed-b21f-42ff934331c1",
+      "title": "ज्योतिषीय पठन लेखन",
+      "status": "completed_development_rehearsal_backend_math_defects_source_confirmed",
+      "trace": {
+        "response_complete": true,
+        "chart_event": "Calculating Vedic Natal D1 and D9 Charts",
+        "one_visible_chart_execution": true,
+        "raw_arguments": "unexposed",
+        "language": "Hindi",
+        "source_limits_qualified": true
+      },
+      "reported_d1_nodes": {
+        "rahu": {
+          "sign": "Capricorn",
+          "degree": 23.153341,
+          "retrograde": false
+        },
+        "ketu": {
+          "sign": "Cancer",
+          "degree": 23.153341,
+          "retrograde": true
+        }
+      },
+      "reported_d9_nodes": {
+        "rahu": {
+          "sign": "Libra",
+          "degree": 28.380068
+        },
+        "ketu": {
+          "sign": "Libra",
+          "degree": 28.380068
+        }
+      },
+      "source_findings": [
+        "Worker returns fixed /api/v1/charts/vedic backend fields unchanged.",
+        "navamsa_sign_idx uses only modality starts0/4/8 instead of the D1 sign; opposed nodes collapse.",
+        "SouthNode adds180degrees to longitude but negates speed; longitude derivative should preserve the NorthNode speed."
+      ],
+      "fix_status": "not_implemented"
+    }
+  ],
+  "demo_recording": "not_established",
+  "public_submission": "not_established",
+  "no_hosted_inference_calls_by_selemene_connector": true
+}
