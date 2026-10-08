@@ -1,6 +1,6 @@
 {
   "version": "2",
-  "timestamp": "2026-10-08T12:32:17.746019+00:00",
+  "timestamp": "2026-10-08T12:38:00.303782+00:00",
   "phase": "build",
   "phase_name": "Free Selemene public publication preparation",
   "phase_dir": null,
@@ -36,10 +36,12 @@
     "Current package format/credential guard PASS; publicNOTREADY exactly demoURL/countries; noarchive",
     "TS restoration8b212532 SUCCESS; fresh standalone/workflow connector coherence passes",
     "PR1494 prepared from clean main with preserved GK and phase authority; local TS/Rust targeted checks pass",
-    "Corrected Rust deployment89624097 SUCCESS; installed synthetic D1/D9 math and node checks pass"
+    "Corrected Rust deployment89624097 SUCCESS; installed synthetic D1/D9 math and node checks pass",
+    "PR1494 merged with exacthead guard4cadb617; fetchedmain ancestry and identical tree pass",
+    "Fresh corrected Hindi P5 host response completes with chart facts/limits preserved"
   ],
   "remaining_tasks": [
-    "Complete fresh corrected P4/P5 host rehearsals and durable tracked-main PR1494 integration",
+    "Confirm restored P4 terminal completion and monitor tracked-main automatic deployments",
     "Receive explicit country targeting",
     "Record/play back/host real reviewer demo",
     "Build inspected final publicZIP after actual videoURL/countries are verified",
@@ -47,7 +49,6 @@
     "Complete developer legal attestations/scans, authorized review submission, and publish only approved release"
   ],
   "blockers": [
-    "Durable tracked-main source integration remains unmerged PR1494",
     "Country targeting pending explicit user answer",
     "Real recorder start/save/playback and reviewer URL pending"
   ],
@@ -67,7 +68,7 @@
     "ISA.md",
     ".planning/HANDOFF.json"
   ],
-  "next_action": "Verify terminal restored P4 and fresh Hindi P5 host outputs after live corrected TS/Rust connector checks; then record reviewable PR and publication receipts. Country targeting and real recording remain unanswered required facts.",
+  "next_action": "Verify terminal repaired P4 host and exact tracked-main deployment results; preserve completed Hindi P5 and negative cases. Pending country targeting and real reviewer demo remain required before final publicZIP.",
   "context_notes": "Current source repairs are deployed and installed connector facts pass. Completed host prose and durable main integration remain separate; do not repeat unchanged builds/tests. Unrelated witness WIP and historic ISCs remain preserved.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
@@ -152,11 +153,10 @@
     "ISC-283",
     "ISC-284",
     "ISC-285",
-    "ISC-285.1",
     "ISC-286",
     "ISC-296"
   ],
-  "isc_done_count": 253,
+  "isc_done_count": 254,
   "wave": "publication-installed-calculation-repair",
   "tier": "E3",
   "session_budget": {
@@ -164,7 +164,7 @@
     "rollover_at": 167960,
     "used_at_handoff": 218362
   },
-  "next_command": "Read current repaired host chats and installed-vedic-math-2026-10-08.json; preserve original failures and private release0.2.4.",
+  "next_command": "Read restored-host-rehearsals-2026-10-08.json and tracked-main deployment worker receipt; do not repeat unchanged source tests.",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -234,10 +234,12 @@
       "Current package format/credential guard PASS; publicNOTREADY exactly demoURL/countries; noarchive",
       "TS restoration8b212532 SUCCESS; fresh standalone/workflow connector coherence passes",
       "PR1494 prepared from clean main with preserved GK and phase authority; local TS/Rust targeted checks pass",
-      "Corrected Rust deployment89624097 SUCCESS; installed synthetic D1/D9 math and node checks pass"
+      "Corrected Rust deployment89624097 SUCCESS; installed synthetic D1/D9 math and node checks pass",
+      "PR1494 merged with exacthead guard4cadb617; fetchedmain ancestry and identical tree pass",
+      "Fresh corrected Hindi P5 host response completes with chart facts/limits preserved"
     ],
     "remaining_tasks": [
-      "Complete fresh corrected P4/P5 host rehearsals and durable tracked-main PR1494 integration",
+      "Confirm restored P4 terminal completion and monitor tracked-main automatic deployments",
       "Receive explicit country targeting",
       "Record/play back/host real reviewer demo",
       "Build inspected final publicZIP after actual videoURL/countries are verified",
@@ -245,7 +247,6 @@
       "Complete developer legal attestations/scans, authorized review submission, and publish only approved release"
     ],
     "blockers": [
-      "Durable tracked-main source integration remains unmerged PR1494",
       "Country targeting pending explicit user answer",
       "Real recorder start/save/playback and reviewer URL pending"
     ],
@@ -258,8 +259,8 @@
       "2026-10-08 user selected verified personal publisher and authorized website/data updates and own-profile candidate demo"
     ],
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
-    "next_action": "Verify terminal restored P4 and fresh Hindi P5 host outputs after live corrected TS/Rust connector checks; then record reviewable PR and publication receipts. Country targeting and real recording remain unanswered required facts.",
-    "next_command": "Read current repaired host chats and installed-vedic-math-2026-10-08.json; preserve original failures and private release0.2.4.",
+    "next_action": "Verify terminal repaired P4 host and exact tracked-main deployment results; preserve completed Hindi P5 and negative cases. Pending country targeting and real reviewer demo remain required before final publicZIP.",
+    "next_command": "Read restored-host-rehearsals-2026-10-08.json and tracked-main deployment worker receipt; do not repeat unchanged source tests.",
     "uncommitted_files": [],
     "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md",
     "isc_open": [
@@ -273,7 +274,6 @@
       "ISC-283",
       "ISC-284",
       "ISC-285",
-      "ISC-285.1",
       "ISC-286",
       "ISC-296"
     ],
@@ -284,9 +284,9 @@
     "checkpoint_commit": "30382db1991837e4e6ac9668de357ad9b64d6b58",
     "checkpoint_workspace_clean": true,
     "source_workers": {
-      "backend_contract": "read-only merge-risk review running",
-      "source_review": "completed focused math and preserved phase-authority checks",
-      "ops_contract": "successful corrected Rust deployment; collecting bounded health receipt"
+      "backend_contract": "monitoring tracked-main automatic deployments read-only",
+      "ops_contract": "updating current publication status only",
+      "source_review": "focused math/auth source tests complete"
     },
     "technical_deployments": {
       "typescript": {
@@ -335,7 +335,10 @@
       "additional-development-rehearsals-2026-10-08.json",
       "iching-restoration-2026-10-08.json",
       "negative-host-rehearsals-2026-10-08.json",
-      "installed-vedic-math-2026-10-08.json"
+      "installed-vedic-math-2026-10-08.json",
+      "vedic-math-live-2026-10-08.json",
+      "restored-host-rehearsals-2026-10-08.json",
+      "calculation-repair-pr-2026-10-08.json"
     ],
     "current_calculation_regression": {
       "typescript_deployment": "702d3862-4bba-4aff-89d1-29a68a330e50",
@@ -347,7 +350,9 @@
     "repair_branch": "codex/selemene-public-calculations",
     "source_repair_pr": "https://github.com/Sheshiyer/Selemene-engine/pull/1494",
     "repair_source": "89da83fc9f74cfd256f39308ce48e2cbe349193a",
-    "native_goal_status": "active_fresh_get_goal_verified"
+    "native_goal_status": "active_fresh_get_goal_verified",
+    "source_repair_pr_state": "MERGED",
+    "source_repair_merge": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5"
   },
   "publication_owned_main_files": [
     "ISA.md",

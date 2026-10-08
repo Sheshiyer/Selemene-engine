@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 253/304
+progress: 254/304
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T12:32:17.746019+00:00
+updated: 2026-10-08T12:38:00.303782+00:00
 ---
 
 ## Problem
@@ -422,7 +422,7 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [ ] ISC-284: Anti: private plugin identity and unrelated witness WIP are preserved.
 
 - [ ] ISC-285: Public I Ching casting and textual sources are verified end to end.
-- [ ] ISC-285.1: The verified TypeScript repair is integrated into the branch tracked by production auto-deployment.
+- [x] ISC-285.1: The verified TypeScript repair is integrated into the branch tracked by production auto-deployment.
 - [x] ISC-285.2: Fresh installed standalone/workflow checks verify coherent casts and sourced text after the deployment regression is repaired.
 - [ ] ISC-286: Public Gene Keys activation lines and meanings are verified end to end.
 - [x] ISC-286.1: Installed Gene Keys canonical spheres match actual Human Design gates, lines and sources.
@@ -517,6 +517,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 | PublicSelemenePlugin | Complete public listing, policy, demo and portal release gates for the existing free plugin | ISC-271..284 | FreeChatGPTPlugin | true |
 
 ## Decisions
+
+- 2026-10-08 12:38: refined: After focused TS/Rust tests, actual production checks and independent GO, merge guarded PR1494 within the authorized publication/backend-update scope. Main4cadb617 contains exact verified source89da83fc with identical tree; automatic deployment/runtime acceptance remains separately observed.
 
 - 2026-10-08 12:32: refined: Actual P4/P5 browser outputs exposed production TS auto-deploy drift and two independent D9/node math errors. Restore exact verified TS source and deploy the narrow reviewed Rust corrections; preserve original failed cases, shared-service boundaries, and incomplete corpus limits. PR #1494 is reviewable but not merged, so durable tracked-main integration remains ISC-285.1.
 
@@ -649,6 +651,9 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
   criterion now: ISC-278.1 verifies actual own-profile host execution; ISC-278 remains open until a real accessible recording is verified
 
 ## Verification
+
+- ISC-285.1: PR1494 MERGED at12:35:32UTC, merge4cadb617; exact-head guard and fetched origin/main ancestry pass. Source tree equals merged main tree. Durable TS source integration is established; source-triggered production images are separately monitored.
+- Fresh corrected P5: Actual private v0.2.4 Hindi chat c/6ac78d63-47d8-83eb-8cee-1b1e72ec758f shows Response complete, correct D9Libra and Cancer/Capricorn nodes, equal nonretrograde flags and Mars/Mercury vargottama. Expanded trace exposes one integration entry but not raw arguments/exact tool name. Repaired P4 full prose is coherent; terminal completion remains unconfirmed. ISC-296 stays open.
 
 - ISC-285.2: Restored TS deployment 8b212532 SUCCESS from 3b03bda6; fresh installed standalone and decision-support workflow both pass eight casting/source consistency checks at 12:12–12:13 UTC. Algorithm1.1.0 and Legge1882 page provenance are returned. Changing-line passages remain unavailable.
 - ISC-294/295: Reviewed source89da83fc includes all12x9 Navamsa sectors,108 opposed pairs, lagna/degree/vargottama fixtures and same-node-speed regression. Four focused Rust tests pass. TS14 tests/1914 assertions and typecheck pass; report phase-authority test passes ten mocked requests.
