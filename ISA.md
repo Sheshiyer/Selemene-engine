@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 254/304
+progress: 255/304
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T12:38:00.303782+00:00
+updated: 2026-10-08T12:44:12.988819+00:00
 ---
 
 ## Problem
@@ -421,7 +421,7 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [ ] ISC-283: Anti: no credential or unverified policy claim enters the public upload.
 - [ ] ISC-284: Anti: private plugin identity and unrelated witness WIP are preserved.
 
-- [ ] ISC-285: Public I Ching casting and textual sources are verified end to end.
+- [x] ISC-285: Public I Ching casting and textual sources are verified end to end.
 - [x] ISC-285.1: The verified TypeScript repair is integrated into the branch tracked by production auto-deployment.
 - [x] ISC-285.2: Fresh installed standalone/workflow checks verify coherent casts and sourced text after the deployment regression is repaired.
 - [ ] ISC-286: Public Gene Keys activation lines and meanings are verified end to end.
@@ -518,6 +518,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 
 ## Decisions
 
+- 2026-10-08 12:44: refined: Both tracked-main services now run images identical to the corrected verified deployments. Close I Ching casting/judgment-image source acceptance in its explicitly bounded scope; unavailable moving-line passages remain unavailable. The repaired P4 host terminal stalls after full coherent prose and a Stop attempt does not establish termination, so ISC-296 remains open and no final saved-public case is promoted.
+
 - 2026-10-08 12:38: refined: After focused TS/Rust tests, actual production checks and independent GO, merge guarded PR1494 within the authorized publication/backend-update scope. Main4cadb617 contains exact verified source89da83fc with identical tree; automatic deployment/runtime acceptance remains separately observed.
 
 - 2026-10-08 12:32: refined: Actual P4/P5 browser outputs exposed production TS auto-deploy drift and two independent D9/node math errors. Restore exact verified TS source and deploy the narrow reviewed Rust corrections; preserve original failed cases, shared-service boundaries, and incomplete corpus limits. PR #1494 is reviewable but not merged, so durable tracked-main integration remains ISC-285.1.
@@ -601,6 +603,11 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 
 ## Changelog
 
+- 2026-10-08 | conjectured: a complete visible report establishes completed host rehearsal.
+  refuted_by: repaired P4 retains Stop and disabled Share after full prose, reload and one attempted Stop; no response-complete observation exists.
+  learned: correct calculation and rendered content are narrower than host termination.
+  criterion_now: ISC-296 remains open despite completed P5 and all installed math checks; original/repair case evidence stays qualified.
+
 - 2026-10-08 | conjectured: prior corrected live service checks establish the current combined/chart calculations.
   refuted_by: TS main auto-deployment 702d3862 replaced the corrected image; the actual D9 source discarded D1 sign and inverted Ketu speed.
   learned: source ancestry, deployment image, connector facts and completed host prose require separate current checks.
@@ -651,6 +658,9 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
   criterion now: ISC-278.1 verifies actual own-profile host execution; ISC-278 remains open until a real accessible recording is verified
 
 ## Verification
+
+- ISC-285: Bounded I Ching cast/mapping and all64 Legge1882 judgments/images now have reviewed local source/tests, fresh installed standalone/workflow coherence and durable tracked-main deployment. TS1e269664 and Rust8161b09b both SUCCESS from merge4cadb617, with corrected image digests identical to previously verified manual images and passed healthchecks. Moving-line passages/legacy label limitations remain explicit.
+- Host terminal boundary: P4 full text is coherent, but no Response complete follows reload or one Stop attempt; Stop re-enabled. This is an unresolved host-rehearsal state, not an engine inconsistency. ISC-296 stays open.
 
 - ISC-285.1: PR1494 MERGED at12:35:32UTC, merge4cadb617; exact-head guard and fetched origin/main ancestry pass. Source tree equals merged main tree. Durable TS source integration is established; source-triggered production images are separately monitored.
 - Fresh corrected P5: Actual private v0.2.4 Hindi chat c/6ac78d63-47d8-83eb-8cee-1b1e72ec758f shows Response complete, correct D9Libra and Cancer/Capricorn nodes, equal nonretrograde flags and Mars/Mercury vargottama. Expanded trace exposes one integration entry but not raw arguments/exact tool name. Repaired P4 full prose is coherent; terminal completion remains unconfirmed. ISC-296 stays open.
