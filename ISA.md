@@ -7,7 +7,7 @@ phase: verify
 progress: 245/294
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T09:23:01.504057+00:00
+updated: 2026-10-08T09:27:50.904592+00:00
 ---
 
 ## Problem
@@ -771,3 +771,10 @@ NotebookLM generation requests were attempted once per planned artifact; most re
 - ISC-278 remains open. Walkthrough now describes repaired I Ching and bounded Gene Keys sources and requires loaded candidate instruction proof. Installed native/CLI recorder capabilities exist; QuickTime recording menu was observed, but Screenshot-app capture-controls lookup timed out. No Record action, saved playback or reviewer URL is established.
 - ISC-273..275 and ISC-286 remain open: publisher/country/policy handling and complete authorized meaning-source facts are still missing. A factual publisher/country question is queued; prior publication authorization persists. No answers are inferred.
 - Three JSON receipts parse and candidate manifest/reading-file hashes match actual staged bytes. Independent review found no actionable inaccuracies in the corrected walkthrough or binding record. Package/runtime files remain unchanged; original Witness WIP preserved.
+
+
+### Resumed publication blocked audit (2026-10-08)
+
+- Three consecutive resumed goal turns retain the same missing publisher/country/policy/source facts and final candidate/demo evidence. Turn1 completed bounded demo preparation; turn2 and turn3 are no progress after direct source revalidation. Independent review confirmed no remaining concrete preparation that removes the impasse without input or external-state change.
+- Current public stage still has no developerName, countries, effective privacy URL or demo URL. Candidate runtime/recording status remains not_established, and the isolated worktree is clean at4766f7e2. Publication criteria remain unchecked.
+- Native goal update returned blocked. The full public publication objective and prior publication authorization are preserved; no completion, upload, submission, approval or public release is claimed. Resume after the queued factual answers and required evidence become available.

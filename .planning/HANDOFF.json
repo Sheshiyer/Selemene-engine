@@ -7,7 +7,7 @@
   "plan": null,
   "task": 4,
   "total_tasks": 6,
-  "status": "active",
+  "status": "blocked",
   "goal": "Repair the witness reading system and deliver eight detailed English/French readings for Gary, Mohan, Sheshnarayan, and their business triad, grounded in the recovered engine fact to interpretation to symbolic meaning matrix, with private evidence sidecars and verified DOCX/PDF outputs.",
   "completed_tasks": [
     "Private identity, saved release and installed connector verified",
@@ -49,7 +49,7 @@
     "ISA.md",
     ".planning/HANDOFF.json"
   ],
-  "next_action": "Receive the queued publisher/country facts and prior policy/source answers; establish actual candidate instruction loading and usable capture controls, then produce/play back/host the real demo before final packaging",
+  "next_action": "Resume the same authorized public publication goal when queued publisher/country and prior policy/source facts arrive; then establish actual candidate loading, recording/playback and reviewer URL before packaging and portal submission",
   "context_notes": "Current publication task supersedes historical witness next actions. Preserve unrelated witness WIP and its open acceptance criteria. Both exact technical services are now deployed and live-verified; do not repeat unchanged builds/tests. No publisher/legal/country facts may be inferred from elapsed time or private metadata.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
@@ -137,14 +137,14 @@
     "ISC-286"
   ],
   "isc_done_count": 245,
-  "wave": "resumed-publication-demo-binding",
+  "wave": "publication-blocked-after-resumed-audit",
   "tier": "E4",
   "session_budget": {
-    "native_goal_status": "active",
-    "fresh_resumed_audit_turn": 1,
-    "last_goal_turn": "progress"
+    "native_goal_status": "blocked",
+    "fresh_resumed_audit_turn": 3,
+    "last_goal_turn": "no_progress"
   },
-  "next_command": "Incorporate pending factual answers when supplied; otherwise finish the fresh resumed blocked audit without inventing fields or rerunning unchanged tests",
+  "next_command": "Read existing pending factual answers and publication candidate binding; do not repeat unchanged tests or substitute guessed fields",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -186,7 +186,7 @@
     "goal": "Publish existing free Selemene plugin through verified public review and approval gates",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
     "branch": "codex/selemene-free-plugin",
-    "status": "waiting_required_facts",
+    "status": "blocked",
     "completed_tasks": [
       "Private identity, saved release and installed connector verified",
       "Public staging copy and policy drafts prepared; private source preserved",
@@ -271,15 +271,15 @@
     "public_state": "not_uploaded_not_submitted_not_approved_not_published",
     "stage_manifest_sha256": "2311edeb97e0daf3d539abddd45eae7d4097cd144f0472c0291b48301c2209d4",
     "blocked_at": "2026-10-07T20:18:40.712367+00:00",
-    "blocking_audit": "Fresh resumed audit begins at turn1. This turn made concrete preparation progress. Do not reuse the earlier blocked threshold for the resumed run.",
+    "blocking_audit": "Fresh resumed threshold met across turns1-3. Required factual answers/source and final candidate/demo evidence remain absent; independent preparation exhausted. Native update_goal returned blocked.",
     "resume_audit": {
-      "resumed_goal_turns": 2,
-      "previous_goal_turn_classification": "progress",
+      "resumed_goal_turns": 3,
+      "previous_goal_turn_classification": "no_progress",
       "current_goal_turn_classification": "no_progress",
       "same_required_facts_missing": true,
       "meaningful_progress": null,
-      "blocked_threshold_reached": false,
-      "revalidation": "Worktree4766f7e2 remains clean; required listing fields absent; candidate runtime and video evidence unestablished; no factual answer in current input"
+      "blocked_threshold_reached": true,
+      "revalidation": "Clean isolated worktree; required listing facts absent and candidate runtime/video unestablished; current input supplies no answers; independent review found no further substantive preparation"
     },
     "worktree_head": "4766f7e2a6b66e6bd49327a241542ec4ae4a46e3"
   },
@@ -352,8 +352,8 @@
     "284",
     "286"
   ],
-  "updated_at": "2026-10-08T09:25:15.771728+00:00",
-  "native_goal_status": "active",
+  "updated_at": "2026-10-08T09:27:50.904592+00:00",
+  "native_goal_status": "blocked",
   "active_witness_plugin_design": {
     "request": "Explain reuse of existing Witness agents, skills and MCPs in the free plugin with user ChatGPT limits",
     "status": "complete",
