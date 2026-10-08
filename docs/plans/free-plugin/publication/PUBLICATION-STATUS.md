@@ -1,25 +1,31 @@
 # Selemene public publication preparation
 
-Updated 2026-10-08. **Incomplete preparation copy; no public ZIP, portal draft upload, review submission, approval or public publication is claimed.** The user has authorized publication, and the parent is gathering the remaining factual answers and evidence.
+Updated 2026-10-08. **Publication preparation remains incomplete. No public ZIP, saved public portal draft, review submission, approval, or public plugin listing is established.** The user has authorized publication and selected the verified personal publisher. Effective website pages are live; private/public source is now v0.2.4, installed Gene Keys factual-label evidence passes, and historical private v0.2.2 has observable P1/P2 host evidence. The v0.2.4 own-profile development rehearsal has completed with observable trace and report evidence; no recording, playback verification, or reviewer-accessible video URL is established. These are separate acceptance states.
 
-## Separate public source and preserved private release
+## Current public stage and existing private release
 
-The reversible staging root is `public-package/selemene-engine/`. It retains portable identity `selemene-engine`, version `0.2.0`, the original icon and onboarding skill, and the credential-free Streamable HTTP MCP connection. The staged manifest has refreshed reviewer cases, accurate source limitations and an explicit `review.commerce: false`. Its two reading instruction files also preserve the repaired calculation and source-quality contracts.
+The portable staging root is `public-package/selemene-engine/`, currently version `0.2.4`. It preserves identity `selemene-engine`, the original icon, two skills, a host-reading reference, and the credential-free Streamable HTTP MCP connection. The separate private development overlay is also v0.2.4. Its server readback passes all three manifest/app semantic comparisons and all three instruction-byte comparisons. The portable manifest hash below identifies the current staged bytes; it does not establish a saved public submission binding.
 
-| Artifact | Known state |
+| Artifact | Current evidence |
 | --- | --- |
-| Private plugin | `plugins_6ac68a62e61081918179487264135f28`, USER scope, PRIVATE discoverability |
-| Private release | `pluginrel_6ac68a646a3481918caccb45c95ad63f`, version `0.2.0` |
-| Private source manifest SHA-256 | `f974719334bff543532de460fb7156f1c7c246daf0c60112112b5644f1ebcdf1` |
-| Staged public manifest SHA-256 | `2311edeb97e0daf3d539abddd45eae7d4097cd144f0472c0291b48301c2209d4` |
-| MCP endpoint | `https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp` |
-| Public stage inventory | Six portable files; no `.app.json`, private binding, scripts, environment file, client credential or ZIP |
-| Reviewer cases | Exactly five positive and three negative; all eight callable tools covered; every refreshed host case **Not run** |
-| Effective policy pages, public draft, demo | Not established by this stage |
+| Existing private plugin | `plugins_6ac68a62e61081918179487264135f28`, USER scope, PRIVATE discoverability |
+| Current private release | `pluginrel_6ac779e2df3c8191821ce4e791d16a96`, version `0.2.4` |
+| Private development connection | App-only binding `asdk_app_6ac77118e9688191818c84d5bff853bc`; raw MCP configurations removed |
+| Private cloud readback | Seven files read back; all three manifest/app semantic matches and all three instruction-byte matches pass; private author and USER/PRIVATE sharing preserved |
+| Portable public manifest snapshot | Version `0.2.4`, SHA-256 `cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45` |
+| Free MCP endpoint | `https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp` |
+| Portable public inventory | Six files; no `.app.json`, private app binding, credential, environment file, or generated archive |
+| Declared review cases | Five positive and three negative; final public/submission cases remain **Not run** |
+| Development host cases | Historical v0.2.2 P1/P2 passed observable behavior; raw argument-level trace remains unestablished |
+| Installed Gene Keys source | Four own-profile sphere comparisons pass; public labels verified, author descriptions null, configured lens not measured; persistence not confirmed |
+| Current own-profile host rehearsal | Private v0.2.4 development response complete; visible single Gene Keys calculation and source-limited host report observed; raw tool JSON unavailable |
+| Website | Five effective pages live; ten apex/www HTTP checks match exact source bytes; root IAB rendering observed separately |
+| Inspected Personal portal table | No visible Selemene public submission draft in the reported observation |
+| Actual demo recording | No saved recording or reviewer-accessible video URL established |
 
-The private plugin ID/release, `plugins/selemene-engine/`, original archive and original public guard are preserved. This copy neither creates another private plugin nor changes the uploaded private release. Root `author`/developer identity is not copied from platform-added private metadata because the intended public publisher remains unconfirmed. The staging directory is named `selemene-engine` to preserve the portable manifest/directory contract when the unchanged public guard is applied later.
+[Final live readback](private-candidate/final-live-readback-2026-10-08.json), SHA-256 `cd4e57e7f05115ff56211b4a90f5d969bd3d7680caf61fa9a6ee90ff931a83d6`, records the current private v0.2.4 release and seven-file inventory. The v0.2.3 upload omitted the private author and triggered the backend's legacy Workspace default; v0.2.4 restores the prior Shesh Iyer name/email and USER/PRIVATE sharing on the same plugin ID. The prior v0.2.0/v0.2.1 receipts/archive and [v0.2.2 cloud readback](private-candidate/cloud-live-readback-2026-10-08.json) remain historical evidence. The private plugin identity was preserved. Private app bindings remain private; the portable upload copy retains its MCP configuration and must not acquire those bindings.
 
-Portable inventory:
+Portable inventory remains:
 
 - `plugin.json`
 - `mcp.json`
@@ -28,63 +34,83 @@ Portable inventory:
 - `skills/selemene-reading/SKILL.md`
 - `skills/selemene-reading/references/host-reading-flow.md`
 
-## Known listing and commerce facts
+## Publisher, listing URLs, and commerce
 
-The stage retains the current display name, short/long descriptions, three distinct default prompts, original icon references, known umbrella website URL `https://www.tryambakam.space/selemene/`, and v0.2.0 release notes. The website URL is a known locator; current free-release content still needs verification and an exact-manifest receipt.
+The selected verified personal publisher is **SHESHNARAYAN CUMBIPURAM NATESHAN**, known publicly as Shesh Iyer. The staged public root author and `interface.developerName` contain that exact verified name; the private overlay retains its prior Shesh Iyer author. Both use the authorized contact `sheshnarayan.iyer@gmail.com`. The effective website identifies the operator and that private email review contact. Unknown publisher identity and missing policy pages are no longer current gaps.
 
-`review.commerce` is explicitly `false`. The authorized product is free sponsored access, the exposed tools do not buy or charge for products or services, and paid/provider generation is excluded. Applicable ChatGPT account limits and service quotas do not create a Selemene purchase or payment flow. This declaration describes this plugin's current scope; it adds no refund, warranty or legal policy commitment. No `commerce_description` is supplied because commerce is false.
+All four interface URL fields now point to the actual public pages:
 
-The review set in [review-cases.md](review-cases.md) uses only a synthetic fixture, natural reviewer prompts, known schemas and actual tool IDs. P1 discovers catalogs and inspects a returned workflow; P2 prepares incomplete data; P3 executes one numerology calculation and host synthesis; P4 executes decision-support while preserving omissions and source limits; P5 exercises the separate D1/D9 tool and a Hindi host reading. The three existing negative cases remain unchanged as JSON values.
+| Manifest field | Verified URL |
+| --- | --- |
+| `websiteURL` | https://www.tryambakam.space/selemene/ |
+| `supportURL` | https://www.tryambakam.space/selemene/support/ |
+| `privacyPolicyURL` | https://www.tryambakam.space/selemene/privacy/ |
+| `termsOfServiceURL` | https://www.tryambakam.space/selemene/terms/ |
 
-## Fields deliberately absent and facts still pending
+[Website live evidence](website-live-2026-10-08.json) preserves source `e8ba4403106a8491c53c4241e1ba58bf7a831e57`, promoted production deployment `dpl_3jy5qvQSjBr6JBQka6ygVaHdYNwF`, project/domain metadata, and all ten unauthenticated route hashes. Every route returned HTTP200 and exact source bytes. Root additionally observed the live pages rendering in IAB; the durable HTTP receipt itself does not claim browser proof.
 
-| Field or evidence | Gap | Required next evidence |
-| --- | --- | --- |
-| `interface.developerName` and root author | Intended verified public publisher/controller has not been selected for this release | Actual chosen portal identity and publisher/controller details; do not substitute private profile metadata |
-| `interface.category` | Current dashboard-supported category unverified | Inspect the intended public portal and select a matching actual category |
-| `publication.countries` | Targeting answer pending | Explicit country codes or explicit all-countries choice; no empty array is inferred |
-| `interface.supportURL` | No approved and verified free-release support page | Actual working support contact/process and a verified public HTTPS page |
-| `interface.privacyPolicyURL` | No approved and verified policy for shared/admin storage | Controller/contact, retention, access/deletion handling, processors/operational logs and effective approved page |
-| `interface.termsOfServiceURL` | No approved and verified free-release terms | Intended audience/age/countries and actual permitted-use/legal commitments, then effective approved HTTPS page |
-| `review.demo_recording_url` | No actual reviewer-accessible recording | Demonstrate v0.2.0 in the intended host, record real interactions, play back for accuracy/secrets/readability, host and verify accessible playback |
-| Exact-manifest public evidence | No receipt for this staged SHA | Current verified listing/URLs/publisher/country/commerce values plus endpoint/protocol/annotations/icon evidence matched to the final manifest |
-| Exact saved submission review cases | No saved public submission version/run | After a valid public candidate exists, connect the saved submission and run the exact five/three cases with evidence |
-| Developer attestations and scans | No current public draft state or legal attestation | Inspect saved portal state and complete applicable developer attestations/scans before authorized review submission |
+The pages describe the actual no-customer-authentication connector, ChatGPT narration, shared administrator storage, source limits, service quotas, and a practical private email review process. No fixed automatic reading-deletion period, response SLA, complete backup-erasure guarantee, jurisdiction, or age/country declaration is invented. Earlier [policy preparation](policy-preparation.md) and policy drafts are historical preparation materials, superseded for actual website state by the live receipt and current source. Website deployment does not complete portal legal attestations.
 
-Unverified policy URLs and demo are absent instead of placeholder values. Known site paths or drafted policies are not effective free-release policy evidence. Publisher facts, countries and policy commitments remain pending in the parent task; no second questionnaire is introduced here. [policy-preparation.md](policy-preparation.md) belongs to the independent policy lane and should be updated by its owner when the actual answers arrive.
+`review.commerce` remains explicitly `false`: this connector offers free sponsored calculations and has no purchase or billing flow. Applicable ChatGPT fees/limits are separate. The declaration adds no invented refund or legal commitment. The category is now Other, matching the observed private listing and the current official public category enumeration. Country targeting remains absent pending the explicit user answer. Saved-public import of these values remains unverified.
+
+## Development-host observations
+
+The browser **Try in chat** action worked for the actual existing USER/PRIVATE v0.2.2 release. Root observed a **GPT-6.1 Sol Light** response in the owner development conversation `c/6ac7763e-158c-83eb-9ac0-301281256fed`. This is development evidence, not a public demo URL or saved submission version.
+
+[Development case receipt](development-host-cases-2026-10-08.json) retains the historical v0.2.2 private release and then-observed prompt snapshot. It is unchanged by the v0.2.4 refresh and preserves the version and trace boundaries:
+
+| Case | Observable development result | Unverified boundary | Final public/submission status |
+| --- | --- | --- | --- |
+| P1 | Exact prompt text matched; three catalog/workflow metadata tool titles; eleven engines, one decision-support workflow, five named constituent engines; readiness distinguished from catalog membership; no execution observed | Raw empty argument objects and exact workflow-ID argument were not visible/verified | **Not run** |
+| P2 | Exact prompt text matched; metadata and preflight appeared as two integration entries; name, latitude, longitude and timezone identified as missing; time explained as optional; no calculation observed | Raw engine-ID and date-only birth-data argument objects were not visible/verified | **Not run** |
+
+Both development results are classified **Passed observable development behavior; argument-level trace not established**. They do not promote P1/P2 into final public passes, and they establish no P3–P5 or negative-case execution. The prepared five-positive/three-negative set remains portable source. [Review cases](review-cases.md) still records all eight final cases as **Not run** until the actual final saved public/submission host is tested and bound to its release.
+
+Root observed **Response complete** for the own-profile development rehearsal against private v0.2.4 in [the owner conversation](https://chatgpt.com/c/6ac77a16-bf8c-83eb-a7f2-88988bbc10bb). The expanded trace shows requirements, engine listing, preparation, then a single visible **Calculating Gene Keys Profile** event. The final report preserves all four actual sphere coordinates, the `2026-10-08.1` short-label/source limits, null author descriptions, and the `not_measured` lens. Aletheios, Pichet, and integrated perspectives are explicitly attributed to host interpretation. This establishes **completed observable development rehearsal behavior; argument-level trace not established** because raw tool JSON is unavailable. It does not pass any final saved-public case. The sanitized [personal host rehearsal receipt](personal-host-rehearsal-2026-10-08.json) now records this completed observable development behavior. It retains the historical pre-category public manifest hash `3f91c158cc11d04b2aff6d5d92cbcecc1054870856eec4706d7c590f0423b3b0` and the raw-argument/runtime-file limitations; current instruction bytes are unchanged. No saved recording, verified playback, or reviewer-accessible video URL is established; the owner conversation is not a reviewer-accessible demo URL.
 
 ## Technical source remediation and remaining meaning gap
 
-The initial source defects are preserved as historical evidence in [source-readiness-audit.md](source-readiness-audit.md). Current remediation evidence is [source-remediation.json](source-remediation.json); it supersedes the baseline defect descriptions for verified fields.
+[Source readiness audit](source-readiness-audit.md) preserves the initial defects; [source remediation](source-remediation.json) and installed regression receipts distinguish corrected fields from historical limitations.
 
-I Ching now derives primary and relating patterns from the actual three-coin line values, verifies all64 King Wen mappings, and supplies all64 primary judgments and Great Symbolism images from the scan-reviewed1882 Legge transcription. Source/test and exact-source production deployment checks pass. The actual installed connector returned algorithm1.1.0 with hexagram50 changing on line1 to14, matching exact source passages and page references. Individual changing-line passages remain unavailable; first-eight legacy names/Chinese labels/summaries are unverified, and other modern summaries/Chinese labels are unavailable. This establishes the declared casting and sourced-passage scope, not a complete edition or a fully sourced moving-line corpus.
+I Ching derives primary/relating patterns from the actual six three-coin line values, uses verified all64 King Wen mappings, and supplies all64 primary judgments and Great Symbolism images from the scan-reviewed original1882 Legge transcription. Exact-source production and installed route evidence establish that scope. Individual changing-line passages remain unavailable, and legacy names/Chinese labels/summaries remain incomplete or unverified. This is not a complete moving-line edition or independent certification.
 
-Gene Keys activation repair passes77 crate tests and102 API library tests, plus all-target compilation. Real Human Design gate/line/source values and canonical spheres are preserved, gate-only lines are null, and legacy arrays are labeled. The exact-source Rust deployment04d7fea4 is SUCCESS and its actual installed result preserves Life’s Work38.2, Evolution39.2, Radiance48.4 and Purpose21.4, each matching the independently returned Human Design gate/line/source. Gate-only input is rejected by the free connector; null line behavior is local engine/test evidence only. A complete authorized verified meaning dataset has not been supplied. The remaining58 generic records and unverified labels/descriptions are explicitly marked; no detailed canonical Gene Keys meaning is certified. ISC-286 stays open.
+The earlier deployed Gene Keys activation repair preserved actual Human Design gate/line/source coordinates and canonical Sun/Earth sphere bindings. Narrow installed evidence matched Life’s Work38.2, Evolution39.2, Radiance48.4 and Purpose21.4 to its Human Design output. Gate-only null-line behavior is local engine evidence; the free connector rejects gate-only input.
 
-P4 retains all five intended engines and requires these distinct factual/source boundaries. Updated case execution remains **Not run**; local source tests and actual installed single-engine/workflow route checks are narrower evidence. The repaired decision-support route returned all five engines with partial=false, a consistent I Ching29 changing on lines5/6 into4, and canonical Gene Keys spheres matching its own Human Design output. No public package, portal submission, or review approval follows from those checks.
+The all64 factual-label source is `ebf4368df79ca0ddbf350a891d8d520c70a40af8`. Parent reports all64 Shadow/Gift/Siddhi triplets checked against primary references, 96label corrections, partner-map corrections with explicit source conflicts, 78crate tests passing, and API checks passing. Author wisdom descriptions are not supplied as verified meanings; full wisdom/licensing remains unavailable and physiology is not measured. This source evidence replaces the old local claim that58 generic descriptions remain accepted. The [exact-source deployment receipt](rust-labels-live-2026-10-08.json) supersedes the earlier building observation: deployment `00d91add-f75e-40f9-af9d-ddefa4873fcd` is **SUCCESS**, with a running instance and a passed production healthcheck.
 
-The separate Vedic chart case retains Swiss Ephemeris planetary-position provenance, approximate linear Lahiri ayanamsa, whole-sign houses and unavailable advanced fields. Detailed narrative remains a host ChatGPT capability driven by returned facts and the bundled reading flow.
+The [installed factual-label receipt](installed-gene-keys-public-labels-2026-10-08.json), SHA-256 `7b810bc74165f6d1a4ec8da2e528c3c3e29f3e56750fc99a023a669a0df7a950`, independently establishes the returned own-profile contract: all four Gene Keys sphere key/line comparisons match the accompanying Human Design output; `source_quality.status=verified_public_labels_only`, labels are `verified_official_public_heading`, and data version is `2026-10-08.1`. All author descriptions are null, full wisdom is unavailable, reflection questions are Selemene originals, and the configured reflection lens is `not_measured`. The response reports `persistence_status=not_confirmed` for both Gene Keys and Human Design; the receipt does not establish saved storage or deletion. No open licence or written Gene Keys permission is established. **ISC-286 stays open.**
 
-## Local preparation verification
+The prior decision-support regression returned all five engines with partial=false, coherent I Ching29 changing on lines5/6 into4, and canonical Gene Keys spheres matching its own Human Design output. These are narrower route regressions, not the full final P4 prompt/report. P4 must preserve source-quality evidence rather than silently substituting complete licensed meanings. Current v0.2.4 source/readback evidence does not establish the final saved public P4 host behavior.
 
-- The copied MCP, icon and onboarding skill are byte-identical to private source. The staged manifest and two reading instruction files differ to make source limits explicit. Private originals remain unchanged.
-- Stage format/safety checks pass using the unchanged private builder's validation logic with `--check` against this root. This creates no private export and establishes no public readiness.
-- The unchanged original public guard evaluated against this stage with `--check` returns exit `1`, **NOT READY**, for the deliberately missing publisher/category/policy/demo/country fields and absent current exact-manifest evidence. It no longer reports commerce as missing because the declaration is an actual boolean.
-- The guard was not weakened, copied into the package or used with `--output`. No archive was created, uploaded or submitted.
-- All five positive cases have required string fields; three negative cases are preserved; case status/evidence appear only in preparation notes.
+The Vedic chart scope remains D1/D9 with Swiss Ephemeris planetary positions, approximate linear Lahiri ayanamsa, whole-sign houses, and explicit unavailable advanced fields. Requested narrative remains a host ChatGPT capability.
 
-Existing `../live-smoke.json`, `../deployment-receipt.json` and [installed-connectivity.json](installed-connectivity.json) remain narrower technical receipts. They do not certify the refreshed reader-facing host cases, demo recording, new manifest or public submission. The final public receipt must identify the final candidate manifest and distinguish development-host checks from saved-submission tests.
+## Remaining publication gates
 
-## Continuation within the authorized publication task
+| Field or evidence | Current gap | Required next evidence |
+| --- | --- | --- |
+| Saved-public category import | Other is selected and verified against the observed private listing and official public category enumeration | Confirm the same value imports into the later saved public draft |
+| `publication.countries` | User targeting question remains pending | Explicit country codes or explicit all-available-countries choice; do not infer an empty array |
+| Final source-quality contract | Exact-source deployment, installed factual-label response, and narrow own-profile development report pass observable checks; full wisdom/licensing unavailable and final saved-public report unverified | Preserve verified short labels versus absent author meanings in the final saved public host; ISC-286 remains open |
+| `review.demo_recording_url` | No saved, playable, reviewer-accessible recording | Record the actual bound candidate host flow, inspect playback/readability/secrets, host and verify access |
+| Final public candidate binding | Portable/private source is v0.2.4 and private readback passes; no saved public submission binding established | Bind the current portable hash, metadata and instructions to the actual saved public candidate; private app bindings and author representation remain distinct |
+| Exact-manifest final evidence | Current URLs/publisher and development receipts exist; complete final readiness receipt absent | Bind all required final listing, endpoint/protocol, icon, source-quality, country/commerce and demo evidence to the final manifest |
+| Saved public portal draft and cases | No visible Selemene public draft and no final saved-submission runs | Upload the ready candidate within authorization, inspect imported fields/connection, run exact five/three cases against its saved version |
+| Scans and developer attestations | No current public-draft legal/policy attestation or scan completion established | Complete the actual required portal steps; retain developer attestations as separate evidence |
 
-Fresh read-only Plugin Creator metadata and release-list checks confirm the same USER/PRIVATE v0.2.0 plugin and current release. The loaded Personal portal table has no visible Selemene submission; no upload was attempted. [Current observation](portal-observation-2026-10-08.json) supplements the earlier portal receipt.
+The fresh QuickTime command attempt did not expose usable recording controls. A short CDP screencast probe was stopped without a saved video. These attempts do not establish a demo recording, recording permission, working capture controls, or reviewer access. The earlier capability inventory remains useful; it is not recording proof.
 
-The demo walkthrough now reflects repaired I Ching casting/Legge passage provenance and the distinct Gene Keys coordinate/meaning limits. It also separates private development rehearsal from actual staged instruction execution. [Candidate binding](demo-candidate-binding-2026-10-08.json) records current manifest/reading-file hashes but explicitly leaves runtime loading and final demo proof unestablished.
+## Verification and continuation
 
-A fresh local capability inspection identified installed native and browser recording commands. Native UI inspection reached QuickTime's recording menu, but the Screenshot-app control lookup timed out. [Capture capabilities](demo-capture-capabilities-2026-10-08.json) does not claim usable capture controls, permission, a saved recording or a hosted URL. The old receipt's inventory observation must not be treated as proof that no recorder is installed.
+The previous builder/guard receipts are historical checks for earlier candidates. The old guard’s missing-publisher/policy messages no longer describe the current stage; the earlier scoped documentation refresh itself did not rerun tests, builders, guards, models, or remote calls. Root subsequently ran the current bounded format/readiness guards recorded below. No guard was weakened, no archive created here, and no upload/submission performed here. Current source preparation alone remains insufficient for public readiness because the gaps above are concrete and unresolved.
 
-1. Resolve publisher/countries/policy facts in the parent task, verify actual portal category and current policy content, then update only this separate public stage with known values.
-2. Complete and verify the full remaining Gene Keys meaning-source work; retain all intended engine scope and keep actual source limits visible.
-3. Rehearse the exact review cases in the intended host using the existing development/private release, produce and verify a real recording, and record actual case outcomes.
-4. Assemble fresh exact-manifest evidence and run the unchanged public guard. Create a public ZIP only after candidate readiness passes; inspect the complete archive for forbidden bindings and credentials.
-5. Inspect/reuse the actual intended public draft, preserve private identity, upload the concrete candidate, verify saved connection/imported values and run saved-submission cases/scans. Complete applicable developer attestations and submit for authorized review. Publish only after approval; record actual responses separately.
+1. Receive the pending country answer; preserve selected Other category, the installed factual-label/meaning distinction and the open full-wisdom/licensing limitation. Verify saved-public category import during later portal setup.
+2. Bind the current v0.2.4 public candidate, portable cases, source-quality instructions and exact-manifest evidence to its saved public version. Historical hashes remain historical snapshots.
+3. Preserve the completed v0.2.4 own-profile development rehearsal receipt and obtain the requested inspectable recording with playback/reviewer-access verification, preserving raw-argument limitations where trace is unavailable.
+4. Run the unchanged public readiness guard against the final evidence, create and inspect the public ZIP only when readiness passes, and inspect the actual saved submission import/connection.
+5. Run final saved-submission cases and required scans/attestations, then submit within authorization. Review submission, approval, and approved publication each require their own returned state.
+
+The original private ID, prior receipts, and unrelated source/WIP remain preserved. Development-host success, website publication, and local engine checks do not imply marketplace publication.
+
+## Current bounded package check
+
+`package-validation-2026-10-08.json` binds all six current portable files and the manifest hash above. The unchanged format/credential guard passes. The public guard correctly returns NOT READY without an archive; only the recorded-demo URL and explicit country targeting are missing from package preparation. `package-contracts-2026-10-08.json`, `icon-visual-verification-2026-10-08.json` and `category-verification-2026-10-08.json` supply scoped verification for the now-complete contract, icon and category fields. Final saved-public connection/cases, scans, developer attestations, approval and publication remain separate online steps. The latest manifest adds only the supported category after the personal rehearsal; demonstrated instruction bytes remain identical.

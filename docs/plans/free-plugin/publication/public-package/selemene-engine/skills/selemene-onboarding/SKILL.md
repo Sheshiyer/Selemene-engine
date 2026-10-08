@@ -7,6 +7,10 @@ description: Introduce Selemene to new users, help them choose a reflection focu
 
 This skill is designed for first-time users to introduce them to Selemene's free hosted reflection service, guide them through choosing a reflection focus, and prepare them for their first reading.
 
+The `selemene_*` names below identify the service operations. A host may expose these through a registered connection with a different tool namespace. Discover that connection's actual advertised tools and schemas, use the matching operation, and explain any missing tool or connection without guessing names or substituting another service.
+
+If the same endpoint appears through a registered app and a bundled MCP connection, select one available connection and hand that choice to `selemene-reading`. Do not request the same calculation through both namespaces.
+
 ## 1. Introduction and Focus Selection
 
 Begin by welcoming the user and explaining that Selemene offers free symbolic reflection through a hosted service. Emphasize that it uses their current ChatGPT model for interpretation and synthesis.
@@ -27,6 +31,6 @@ Based on the user's chosen reflection focus, guide them in providing the necessa
 
 Before any calculation or full reading request, ensure the user understands the nature of the free hosted service.
 
-- **Shared Service Disclosure:** Clearly explain: "Free readings send submitted inputs to the hosted Selemene service. The service can store submitted inputs and reading results under a shared service/admin account and may update its profile, history, usage, or XP. This does not create a personal linked account or provide private account history." Reinforce that no personal API key or login is required.
+- **Shared Service Disclosure:** Clearly explain: "Free readings send submitted inputs to the hosted Selemene service. The service can store submitted inputs and reading results under a shared service/admin account and may update its profile, history, usage, XP or automatically derived access phase. This does not create a personal linked account or provide private account history." Reinforce that no personal API key or login is required. An automatically updated phase is shared-account access state, not a measurement of the reader; do not manually raise it.
 - **Execution scope:** Preparing and discussing a reading never authorizes a calculation. When the user explicitly requests their selected reading after understanding the disclosure, continue without requesting the same authorization again. Keep free quota limits and any unavailable service state visible.
 - **Hand-off to `selemene-reading`:** Once the user selects a reading, use `selemene-reading` for its preflight, explicitly requested execution, and host-model synthesis. Onboarding owns introduction and selection; it does not independently repeat execution or invoke a hosted narration/report endpoint.

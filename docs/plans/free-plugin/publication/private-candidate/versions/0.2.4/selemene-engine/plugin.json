@@ -1,0 +1,38 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "selemene-engine",
+  "version": "0.2.4",
+  "description": "Free Selemene onboarding, engine calculations, and detailed symbolic readings composed in ChatGPT.",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Selemene Engine",
+        "shortDescription": "Free symbolic readings",
+        "developerName": "SHESHNARAYAN CUMBIPURAM NATESHAN",
+        "longDescription": "Explore Selemene engines, choose a reflection focus, prepare required inputs, and receive brief or detailed integrated readings in your current ChatGPT conversation. ChatGPT supplies the interpretation, Aletheios structural perspective, Pichet experiential perspective, and final prose using your active model and applicable ChatGPT limits. The hosted service supplies engine calculations, local symbolic draws, available source passages or framework records with stated quality limits, and any returned workflow commentary. ChatGPT composes the integrated synthesis; the service does not invoke another narration model. Gene Keys canonical activation coordinates and source-qualified short public labels are available; full author meanings and biological correspondences remain unavailable.\n\nNo personal Selemene account, login, or API key is needed. Free access is subject to service quotas and availability. Submitted inputs and results can be stored under a shared service/admin account and may update its profile, history, usage, XP or automatically derived access phase; this creates no personal linked account or private history. The plugin discloses this before execution and preserves missing inputs and partial results. Detailed readings are composed in ChatGPT; available host-native file tools can provide requested exports. Hosted witness/report generation and independent certification are not invoked. Medical diagnosis, guaranteed predictions, account administration, media analysis, and paid generation are outside this plugin.",
+        "defaultPrompt": [
+          "Help me choose a reflection focus and discover free Selemene engines.",
+          "Help me prepare a numerology reading without calculating yet.",
+          "Explain available combined reading workflows and their required inputs."
+        ],
+        "logo": "assets/icon.png",
+        "composerIcon": "assets/icon.png",
+        "websiteURL": "https://www.tryambakam.space/selemene/",
+        "supportURL": "https://www.tryambakam.space/selemene/support/",
+        "privacyPolicyURL": "https://www.tryambakam.space/selemene/privacy/",
+        "termsOfServiceURL": "https://www.tryambakam.space/selemene/terms/"
+      },
+      "review": {
+        "commerce": false
+      },
+      "publication": {
+        "release_notes": "Version 0.2.4: native ChatGPT onboarding and source-qualified readings use the free calculation service. Gene Keys preserves actual Human Design activation coordinates and verified short public labels with per-key provenance; unavailable author descriptions remain null. I Ching preserves returned cast transformations and historical judgment/image provenance. All interpretation, Aletheios/Pichet perspectives and synthesis stay in the current ChatGPT conversation. Shared service/admin storage, source gaps, quotas, partial results and the unmeasured configured lens remain explicit. No hosted narration, paid generation or independent certification is invoked."
+      },
+      "apps": "./.app.json"
+    }
+  },
+  "author": {
+    "name": "Shesh Iyer",
+    "email": "sheshnarayan.iyer@gmail.com"
+  }
+}

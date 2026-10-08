@@ -1,0 +1,81 @@
+{
+  "schema": "selemene.private-candidate-overlay.v1",
+  "prepared_at": "2026-10-08T10:41:05.954347+00:00",
+  "status": "prepared_not_applied",
+  "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+  "expected_release_id": "pluginrel_6ac68a646a3481918caccb45c95ad63f",
+  "version": "0.2.1",
+  "scope": "USER",
+  "discoverability": "PRIVATE",
+  "archive": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine/docs/plans/free-plugin/publication/private-candidate/selemene-engine-v0.2.1-overlay.zip",
+  "archive_sha256": "6d160541379d46586e7ff15854e9e5904097911d107d8a14dec2a77c4b2940d2",
+  "files": {
+    ".app.json": "f912514cae9d5d556da312a6a652c5c468a6f0eccb91004c712052cbb69210e6",
+    ".codex-plugin/plugin.json": "bb71b1cd9630fd9edfdde3767bb30602f1d1e465430bbf073af505840ae3569f",
+    "plugin.json": "234314e588ff1126ab36eaeabfa36063a5896697d74ca3a698312c26ad286ba6",
+    "skills/selemene-onboarding/SKILL.md": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0",
+    "skills/selemene-reading/SKILL.md": "6c14b8612dc95da6e44b339f74cdd33de3b1becdaaef012ffa38cd07586deb10",
+    "skills/selemene-reading/references/host-reading-flow.md": "018591b1a8562f256c2984d1b4198cca8160f2762595bdc4bd9a0f821344860d"
+  },
+  "preserved_omitted_files": [
+    "mcp.json",
+    ".mcp.json",
+    "assets/icon.png"
+  ],
+  "preservation_checks": {
+    "original_author_preserved": true,
+    "original_defaultPrompt_type_value_order_preserved": true,
+    "legacy_defaultPrompt_type_value_order_preserved": true,
+    "legacy_skills_and_mcp_paths_preserved": true,
+    "legacy_category_capabilities_keywords_preserved": true,
+    "base_current_release_matches_guard": true,
+    "version_greater": true,
+    "same_package_name": true,
+    "root_legacy_version_equal": true,
+    "apps_paths_equal": true,
+    "instruction_copy_equal": true,
+    "public_has_no_app_file": true,
+    "public_has_no_apps_declaration": true,
+    "zip_valid": true,
+    "zip_members_match": true,
+    "no_mcp_or_icon_replacements": true,
+    "accepted_app_id_prefix": true
+  },
+  "registered_dependency": {
+    "id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "url": "https://chatgpt.com/plugins/plugin_asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "status": "root_observed_connected",
+    "required": true,
+    "endpoint": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+    "authentication": "none",
+    "runtime_use": "not_verified",
+    "app_id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "plugin_id": "plugin_asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "application_version_id": "asdk_app_v_6ac77118e9748191a42e190512e58d7c",
+    "id_provenance": "Root observed exact App ID in connection settings UI; not derived from the plugin URL.",
+    "review_state": "DEVELOPMENT",
+    "authorization_supported": "None",
+    "authorization_used": "None"
+  },
+  "connection_coexistence": {
+    "registered_app": "Browser Work uses the registered dependency when available; discover the actual namespace and schema.",
+    "bundled_mcp": "Preserve original portable and legacy MCP files for compatible hosts. Both paths point to the same existing free endpoint.",
+    "execution_rule": "Select one available connection per reading; never call duplicate namespaces for verification or retry. One engine calculation or one workflow per authorized request.",
+    "new_backend_permissions": "No new backend tool, account admin capability, OAuth flow or client credential added. Existing calculations may persist readings and automatically update shared-account access phase."
+  },
+  "public_upload": "Separate public-author source remains apps-free; this development binding is not a public submission or Portal-generated final binding.",
+  "required_readback": [
+    "Returned same plugin ID, USER/PRIVATE audience,0.2.1 release and retained0.2.0 history",
+    "New source manifests/apps and all three instruction hashes match this overlay",
+    "Three original defaultPrompt strings and saved author metadata preserved",
+    "Preserved original MCP files and icon; actual registered dependency and effective tool schema",
+    "Fresh supported host execution and actual recording remain separate"
+  ],
+  "rejected_preparation": {
+    "archive_sha256": "ef7539c90285d014af0c535acc139bd4456d8c003066741ca33dde69eefa6d74",
+    "invalid_mapping_id": "plugin_asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "result": "Update rejected before action invocation: apps entry ID must begin asdk_app_, connector_ or templated_apps_.",
+    "release_mutated": false,
+    "correction": "Verified actual underlying App ID from settings UI; corrected mapping and rebuilt archive. Do not reuse rejected archive bytes."
+  }
+}

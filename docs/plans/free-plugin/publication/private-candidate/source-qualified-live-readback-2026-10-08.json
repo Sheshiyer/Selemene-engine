@@ -1,0 +1,66 @@
+{
+  "schema": "selemene.private-source-qualified-candidate-readback.v1",
+  "checked_at": "2026-10-08T11:08:21.183292+00:00",
+  "plugin": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "name": "selemene-engine",
+    "description": "Free Selemene onboarding, engine calculations, and detailed symbolic readings composed in ChatGPT.",
+    "version": "0.2.3",
+    "current_release_id": "pluginrel_6ac7795d59b881918d9ed8302f07399e",
+    "scope": "USER",
+    "discoverability": "PRIVATE"
+  },
+  "files": [
+    {
+      "path": ".app.json",
+      "size_bytes": 142
+    },
+    {
+      "path": ".codex-plugin/plugin.json",
+      "size_bytes": 3507
+    },
+    {
+      "path": "assets/icon.png",
+      "size_bytes": 53339
+    },
+    {
+      "path": "plugin.json",
+      "size_bytes": 3513
+    },
+    {
+      "path": "skills/selemene-onboarding/SKILL.md",
+      "size_bytes": 4447
+    },
+    {
+      "path": "skills/selemene-reading/SKILL.md",
+      "size_bytes": 11050
+    },
+    {
+      "path": "skills/selemene-reading/references/host-reading-flow.md",
+      "size_bytes": 22499
+    }
+  ],
+  "semantic_overlay_matches": {
+    "plugin.json": true,
+    ".codex-plugin/plugin.json": false,
+    ".app.json": true
+  },
+  "instruction_byte_matches": {
+    "skills/selemene-onboarding/SKILL.md": true,
+    "skills/selemene-reading/SKILL.md": true,
+    "skills/selemene-reading/references/host-reading-flow.md": true
+  },
+  "instruction_sha256": {
+    "skills/selemene-onboarding/SKILL.md": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0",
+    "skills/selemene-reading/SKILL.md": "83e4fb53ee5cfdf9390ded43e76bc9be9d4f3f15fde3a56af85d577095c2e938",
+    "skills/selemene-reading/references/host-reading-flow.md": "513f9954d654098fe61b4bfb8429b50891754b5ab3c3cf786126c30d0c2d4980"
+  },
+  "root_author": null,
+  "registered_app_id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+  "sharing": "USER PRIVATE",
+  "raw_mcp_configs_absent": true,
+  "public_portable_mapping_absent": true,
+  "production_source_checked_before_save": "00d91add SUCCESS, installedMCP returns2026-10-08.1 verified_public_labels_only; all4sphere/HDcomparisons and nullauthor fields pass",
+  "host_demo": "not_yet_run_for_v0.2.3",
+  "recording": "not_established"
+}

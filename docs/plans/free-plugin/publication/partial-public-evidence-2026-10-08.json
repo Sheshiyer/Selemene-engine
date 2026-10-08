@@ -1,0 +1,79 @@
+{
+  "schema": "selemene.publication.partial-exact-manifest-evidence.v1",
+  "status": "incomplete_not_ready",
+  "manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
+  "manifest_version": "0.2.4",
+  "checks": {
+    "websiteURL": {
+      "value": "https://www.tryambakam.space/selemene/",
+      "verified_at": "2026-10-08T11:14:11.293874+00:00",
+      "evidence": "website-live-2026-10-08.json: unauthenticated effectivewww routes HTTP200 and byte-identical reviewed e8ba440 source; root liveIAB render"
+    },
+    "supportURL": {
+      "value": "https://www.tryambakam.space/selemene/support/",
+      "verified_at": "2026-10-08T11:14:11.293874+00:00",
+      "evidence": "website-live-2026-10-08.json: unauthenticated effectivewww routes HTTP200 and byte-identical reviewed e8ba440 source; root liveIAB render"
+    },
+    "privacyPolicyURL": {
+      "value": "https://www.tryambakam.space/selemene/privacy/",
+      "verified_at": "2026-10-08T11:14:11.293874+00:00",
+      "evidence": "website-live-2026-10-08.json: unauthenticated effectivewww routes HTTP200 and byte-identical reviewed e8ba440 source; root liveIAB render"
+    },
+    "termsOfServiceURL": {
+      "value": "https://www.tryambakam.space/selemene/terms/",
+      "verified_at": "2026-10-08T11:14:11.293874+00:00",
+      "evidence": "website-live-2026-10-08.json: unauthenticated effectivewww routes HTTP200 and byte-identical reviewed e8ba440 source; root liveIAB render"
+    },
+    "developerName": {
+      "value": "SHESHNARAYAN CUMBIPURAM NATESHAN",
+      "verified_at": "2026-10-08T11:14:11.293874+00:00",
+      "evidence": "User selected personal publisher; actual verified individual name observed in portal and saved private metadata"
+    },
+    "endpoint": {
+      "value": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+      "verified_at": "2026-10-08T11:14:11.293874+00:00",
+      "evidence": "Registered connected developmentApp asdk_app_6ac77118e9688191818c84d5bff853bc; actual host discovery/preflight and installed GeneKeys/HumanDesign calculation results"
+    },
+    "review.commerce": {
+      "value": "false",
+      "verified_at": "2026-10-08T11:14:11.293874+00:00",
+      "evidence": "Free sponsored plugin scope; hosted paid generation and purchase/account administration absent; manifest actual booleanfalse"
+    },
+    "protocol_contract_tests": {
+      "value": "passed",
+      "verified_at": "2026-10-08T11:25:22.102949+00:00",
+      "evidence": "Prior deployment-receipt.json records 77 passing service tests and typecheck/dry-run passes. Current protocol.test.ts, mcp.ts, vedic-chart.ts and upstream.ts are exact deployed hashes; all 15 tracked receipt files match checkpoint hashes, with the eight original-byte differences independently reproduced as one removed trailing LF. This is retained local protocol-contract evidence plus source continuity, not a fresh raw-network protocol pass."
+    },
+    "tool_annotations": {
+      "value": "passed",
+      "verified_at": "2026-10-08T11:25:22.102949+00:00",
+      "evidence": "Fresh deterministic inspection of all eight current registrations: required hints are explicit booleans; calculate/workflow are non-read-only and non-idempotent, catalog/info/preflight/chart are read-only and idempotent, and all are non-destructive/closed to arbitrary destinations. Actual SDK discovery forwards those static annotations unchanged. Operational quotas/logs are disclosed and are distinguished from reading/profile persistence."
+    },
+    "icon_visual_inspection": {
+      "value": "passed",
+      "verified_at": "2026-10-08T11:28:37.181570+00:00",
+      "evidence": "Actual root IAB rendered screenshot of original packaged asset at256px/48px on light and dark backgrounds; SHA bound"
+    },
+    "category": {
+      "value": "Other",
+      "verified_at": "2026-10-08T11:28:37.181570+00:00",
+      "evidence": "category-verification-2026-10-08.json: observed private category and current official public enum Other; saved-public import pending"
+    }
+  },
+  "not_verified": [
+    "reviewer-accessible recorded video",
+    "explicit publication.countries",
+    "saved-public connected review cases",
+    "scans and developer legal attestations",
+    "review approval and public publication",
+    "final saved public listing/category import"
+  ],
+  "direct_cli_probe": {
+    "date": "2026-10-08",
+    "result": "Cloudflare1010 browser_signature_banned HTTP403; no firewall/protection change or signature bypass performed",
+    "scope": "Direct urllib initialize probe; does not negate actual connected OpenAI MCP calls which succeeded"
+  },
+  "full_meaning_source_limit": "Gene Keys full author meanings and biologicalcorrespondences remain unavailable; shortlabels verified only; no rights certification",
+  "archive_created": false,
+  "checked_at": "2026-10-08T11:28:37.181570+00:00"
+}

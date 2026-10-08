@@ -1,0 +1,558 @@
+{
+  "schema": "selemene.publication.package-contracts.v1",
+  "checked_at": "2026-10-08T11:25:22.102949+00:00",
+  "status": "source_contracts_verified_runtime_evidence_scoped",
+  "manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
+  "manifest_version": "0.2.4",
+  "manifest_binding_note": "Snapshot of the current portable manifest. Root must rebind these unchanged contract findings to the final manifest hash if listing fields subsequently change.",
+  "source_checkpoint_head": "ea231d77bcfb9a5aa431c498bd13a668f952d01f",
+  "endpoint": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+  "checks": {
+    "protocol_contract_tests": {
+      "value": "passed",
+      "verified_at": "2026-10-08T11:25:22.102949+00:00",
+      "evidence": "Prior deployment-receipt.json records 77 passing service tests and typecheck/dry-run passes. Current protocol.test.ts, mcp.ts, vedic-chart.ts and upstream.ts are exact deployed hashes; all 15 tracked receipt files match checkpoint hashes, with the eight original-byte differences independently reproduced as one removed trailing LF. This is retained local protocol-contract evidence plus source continuity, not a fresh raw-network protocol pass."
+    },
+    "tool_annotations": {
+      "value": "passed",
+      "verified_at": "2026-10-08T11:25:22.102949+00:00",
+      "evidence": "Fresh deterministic inspection of all eight current registrations: required hints are explicit booleans; calculate/workflow are non-read-only and non-idempotent, catalog/info/preflight/chart are read-only and idempotent, and all are non-destructive/closed to arbitrary destinations. Actual SDK discovery forwards those static annotations unchanged. Operational quotas/logs are disclosed and are distinguished from reading/profile persistence."
+    }
+  },
+  "deployment_binding": {
+    "receipt_path": "docs/plans/free-plugin/deployment-receipt.json",
+    "receipt_sha256": "b0188adebb34a2705f1f7095291fc47b560d6d4f00d82ebb61f13e567ee411fe",
+    "observed_at": "2026-10-07T18:16:03.136752+00:00",
+    "worker_version_id": "78262f06-054a-49ac-8f48-dccc507c1814",
+    "source_files_checked": 15,
+    "exact_deployed_byte_matches": 7,
+    "only_trailing_newline_differences": 8,
+    "all_checkpoint_hashes_match": true,
+    "all_original_deployment_hashes_exact_or_reconstructed": true,
+    "source_comparisons": [
+      {
+        "path": "workers/selemene-free-mcp/src/sanitize.ts",
+        "deployed_sha256": "803b5a443100c614e95d86a00c48a5e48b370531f52a040cb00205f3a069c7b3",
+        "checkpoint_sha256": "e432a21bcae0517d9df5bbb5bc66bc9a133d0f2b58a4136e6c431d6b9856d190",
+        "current_sha256": "e432a21bcae0517d9df5bbb5bc66bc9a133d0f2b58a4136e6c431d6b9856d190",
+        "exact_deployed_bytes": false,
+        "exact_checkpoint_bytes": true,
+        "difference": "deployed has two trailing LF bytes; current has one; reconstruction reproduces exact deployed hash",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/src/mcp.ts",
+        "deployed_sha256": "c5cae96963426a488b77d7c07796e17bcb52588b0dc3b32cfba520f0d48f5e8c",
+        "checkpoint_sha256": "c5cae96963426a488b77d7c07796e17bcb52588b0dc3b32cfba520f0d48f5e8c",
+        "current_sha256": "c5cae96963426a488b77d7c07796e17bcb52588b0dc3b32cfba520f0d48f5e8c",
+        "exact_deployed_bytes": true,
+        "exact_checkpoint_bytes": true,
+        "difference": "none",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/src/rate-limiter.ts",
+        "deployed_sha256": "4337bd97bceba0633c3bbc519b40aa5b80f597b9642615d05a323549a9ad8604",
+        "checkpoint_sha256": "ee1ec5cf6b68eb833a1fa103bdf15cf40b6aedb462968c06c6b6c9255c472ad9",
+        "current_sha256": "ee1ec5cf6b68eb833a1fa103bdf15cf40b6aedb462968c06c6b6c9255c472ad9",
+        "exact_deployed_bytes": false,
+        "exact_checkpoint_bytes": true,
+        "difference": "deployed has two trailing LF bytes; current has one; reconstruction reproduces exact deployed hash",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/src/vedic-chart.ts",
+        "deployed_sha256": "5531041aa63b6d693cf7baacfca0339cb1b39154cc3b5b7bfbd212f3a8b62e5f",
+        "checkpoint_sha256": "5531041aa63b6d693cf7baacfca0339cb1b39154cc3b5b7bfbd212f3a8b62e5f",
+        "current_sha256": "5531041aa63b6d693cf7baacfca0339cb1b39154cc3b5b7bfbd212f3a8b62e5f",
+        "exact_deployed_bytes": true,
+        "exact_checkpoint_bytes": true,
+        "difference": "none",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/src/index.ts",
+        "deployed_sha256": "224cd1fe245ec03bfcd02188c13ed24374faa5e1ab4804f20546b3d46f3b062d",
+        "checkpoint_sha256": "ad384823e1e617125b797c2929208def391743c6f9e92be415a3c2b8cdaa8943",
+        "current_sha256": "ad384823e1e617125b797c2929208def391743c6f9e92be415a3c2b8cdaa8943",
+        "exact_deployed_bytes": false,
+        "exact_checkpoint_bytes": true,
+        "difference": "deployed has two trailing LF bytes; current has one; reconstruction reproduces exact deployed hash",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/src/env.ts",
+        "deployed_sha256": "e562728b0fa231aa59772912d4e5543ed7d943b4d4ccace641a7346833fcf43a",
+        "checkpoint_sha256": "df5406df38ad5e6703ff9bc980658c4a16bbd0b748b2eea317d17b607ca9c152",
+        "current_sha256": "df5406df38ad5e6703ff9bc980658c4a16bbd0b748b2eea317d17b607ca9c152",
+        "exact_deployed_bytes": false,
+        "exact_checkpoint_bytes": true,
+        "difference": "deployed has two trailing LF bytes; current has one; reconstruction reproduces exact deployed hash",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/test/protocol.test.ts",
+        "deployed_sha256": "5063b6bd4acddbd9f22be223b34397fdac01b012cbbafe20e30e7436027f578a",
+        "checkpoint_sha256": "5063b6bd4acddbd9f22be223b34397fdac01b012cbbafe20e30e7436027f578a",
+        "current_sha256": "5063b6bd4acddbd9f22be223b34397fdac01b012cbbafe20e30e7436027f578a",
+        "exact_deployed_bytes": true,
+        "exact_checkpoint_bytes": true,
+        "difference": "none",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/test/helpers.ts",
+        "deployed_sha256": "00fe7c5c44816b8deeb072ed5f9942607ec06470cd23c9439cdbc5a22e0e06a8",
+        "checkpoint_sha256": "4be99efdbf5b4ea6ec9d5e5c8a4f2317edf6e841422fbb4bc068ad72c22736eb",
+        "current_sha256": "4be99efdbf5b4ea6ec9d5e5c8a4f2317edf6e841422fbb4bc068ad72c22736eb",
+        "exact_deployed_bytes": false,
+        "exact_checkpoint_bytes": true,
+        "difference": "deployed has two trailing LF bytes; current has one; reconstruction reproduces exact deployed hash",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/test/sanitize.test.ts",
+        "deployed_sha256": "569f7487e39fb6b966eec2032e7402d03e6d687d92386dd595e231bbdc2c7783",
+        "checkpoint_sha256": "dbadc23e352156a70aef24d537bc3c8983048f046eaf97ba818ee9d29575054b",
+        "current_sha256": "dbadc23e352156a70aef24d537bc3c8983048f046eaf97ba818ee9d29575054b",
+        "exact_deployed_bytes": false,
+        "exact_checkpoint_bytes": true,
+        "difference": "deployed has two trailing LF bytes; current has one; reconstruction reproduces exact deployed hash",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/test/rate-limiter.test.ts",
+        "deployed_sha256": "5e797f0c3f00f6348a4399259e6c11b157427ce497edf56e17214c9c49cc7375",
+        "checkpoint_sha256": "9bd26b61e884a4c85f52b1682ce2d0a98d75fa7f6de3382745321fccd9a9f2be",
+        "current_sha256": "9bd26b61e884a4c85f52b1682ce2d0a98d75fa7f6de3382745321fccd9a9f2be",
+        "exact_deployed_bytes": false,
+        "exact_checkpoint_bytes": true,
+        "difference": "deployed has two trailing LF bytes; current has one; reconstruction reproduces exact deployed hash",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/test/vedic-chart.test.ts",
+        "deployed_sha256": "f3c24877c99937f586be1aacbf2b9b3e1ff3f72d7638ce5f6ba23dfed5976664",
+        "checkpoint_sha256": "f3c24877c99937f586be1aacbf2b9b3e1ff3f72d7638ce5f6ba23dfed5976664",
+        "current_sha256": "f3c24877c99937f586be1aacbf2b9b3e1ff3f72d7638ce5f6ba23dfed5976664",
+        "exact_deployed_bytes": true,
+        "exact_checkpoint_bytes": true,
+        "difference": "none",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/test/workerd-upstream.test.js",
+        "deployed_sha256": "1f480c693ba7b6e3229353946fa12402ebfe8536aaa1e94a54d7a502ec441257",
+        "checkpoint_sha256": "1f480c693ba7b6e3229353946fa12402ebfe8536aaa1e94a54d7a502ec441257",
+        "current_sha256": "1f480c693ba7b6e3229353946fa12402ebfe8536aaa1e94a54d7a502ec441257",
+        "exact_deployed_bytes": true,
+        "exact_checkpoint_bytes": true,
+        "difference": "none",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-mcp/src/upstream.ts",
+        "deployed_sha256": "e384352c9dcc3c31b9b08be51c55fc97fcce5daa19f45e56c683749492d75f2d",
+        "checkpoint_sha256": "e384352c9dcc3c31b9b08be51c55fc97fcce5daa19f45e56c683749492d75f2d",
+        "current_sha256": "e384352c9dcc3c31b9b08be51c55fc97fcce5daa19f45e56c683749492d75f2d",
+        "exact_deployed_bytes": true,
+        "exact_checkpoint_bytes": true,
+        "difference": "none",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/wrangler.jsonc",
+        "deployed_sha256": "a3e84c7ca79efabcd3cb4224262565c416279c2ecc37d738f7237a0b2ec4ed99",
+        "checkpoint_sha256": "e83db586c1f5938eb774b3709cf5b7d1230ddccb55a16ca718c30c60eb2a282b",
+        "current_sha256": "e83db586c1f5938eb774b3709cf5b7d1230ddccb55a16ca718c30c60eb2a282b",
+        "exact_deployed_bytes": false,
+        "exact_checkpoint_bytes": true,
+        "difference": "deployed has two trailing LF bytes; current has one; reconstruction reproduces exact deployed hash",
+        "deployed_hash_reconstructed": true
+      },
+      {
+        "path": "workers/selemene-free-mcp/package-lock.json",
+        "deployed_sha256": "428bae8373faaec6eac752987117b114d0b8d51ce9253afbb9cd9d255a8706d5",
+        "checkpoint_sha256": "428bae8373faaec6eac752987117b114d0b8d51ce9253afbb9cd9d255a8706d5",
+        "current_sha256": "428bae8373faaec6eac752987117b114d0b8d51ce9253afbb9cd9d255a8706d5",
+        "exact_deployed_bytes": true,
+        "exact_checkpoint_bytes": true,
+        "difference": "none",
+        "deployed_hash_reconstructed": true
+      }
+    ],
+    "additional_imported_contract_source": [
+      {
+        "path": "workers/selemene-mcp/src/tools/index.ts",
+        "current_sha256": "b2a40a89057177db88ba3be8b94b36505a843bba669e8744d1add079a7aba3e2",
+        "checkpoint": "74608e54",
+        "matches_git_checkpoint": true,
+        "scope": "Unchanged source checkpoint; this imported file was not independently hashed in deployment-receipt.json"
+      },
+      {
+        "path": "workers/selemene-mcp/src/allowlist.ts",
+        "current_sha256": "fc149bbb904ffaf94f49e5ec477bebbb7421c1e155dc54fa148fb4a53c4e294c",
+        "checkpoint": "74608e54",
+        "matches_git_checkpoint": true,
+        "scope": "Unchanged source checkpoint; this imported file was not independently hashed in deployment-receipt.json"
+      },
+      {
+        "path": "workers/selemene-mcp/src/engine-schemas.ts",
+        "current_sha256": "3a712f462a3850453130315cec18b9e7610138d3e6893b7ea07de5b87f7391cf",
+        "checkpoint": "74608e54",
+        "matches_git_checkpoint": true,
+        "scope": "Unchanged source checkpoint; this imported file was not independently hashed in deployment-receipt.json"
+      },
+      {
+        "path": "workers/selemene-mcp/src/env.ts",
+        "current_sha256": "98aadc395026f0123e7c8a1791e750af13332c29198941be1420134b985c5938",
+        "checkpoint": "74608e54",
+        "matches_git_checkpoint": true,
+        "scope": "Unchanged source checkpoint; this imported file was not independently hashed in deployment-receipt.json"
+      },
+      {
+        "path": "workers/selemene-mcp/src/props.ts",
+        "current_sha256": "12c2ee15d5f7e8de4dd81b1156189c431250e0292a30a67b5a6f6e50545935e1",
+        "checkpoint": "74608e54",
+        "matches_git_checkpoint": true,
+        "scope": "Unchanged source checkpoint; this imported file was not independently hashed in deployment-receipt.json"
+      },
+      {
+        "path": "workers/selemene-free-mcp/package.json",
+        "current_sha256": "d1d769190351f9884bfbe86f0f064d55f43fc7ac794750e24f1099ef2e6472ec",
+        "checkpoint": "74608e54",
+        "matches_git_checkpoint": true,
+        "scope": "Unchanged source checkpoint; this imported file was not independently hashed in deployment-receipt.json"
+      }
+    ],
+    "scope_limit": "Saved operator deployment receipt binds hashes to the deployment. This review did not fetch production bundle bytes or reread Cloudflare infrastructure."
+  },
+  "retained_local_verification": {
+    "executed_again_in_this_review": false,
+    "service_tests_passed_recorded": 77,
+    "original_oauth_tests_passed_recorded": 18,
+    "package_tests_passed_recorded": 13,
+    "typecheck_recorded": "pass",
+    "deployment_dry_run_recorded": "pass",
+    "protocol_test_path": "workers/selemene-free-mcp/test/protocol.test.ts",
+    "protocol_test_sha256": "5063b6bd4acddbd9f22be223b34397fdac01b012cbbafe20e30e7436027f578a",
+    "meaningful_protocol_cases_in_source": [
+      "connects the actual SDK client and preserves noauth discovery metadata",
+      "initializes and advertises both server-owned noauth scheme locations",
+      "accepts current SDK client metadata as ignored descriptive data",
+      "accepts a bounded tools/list cursor without changing the fixed single-page catalog",
+      "allows only harmless initialized/cancelled lifecycle notifications",
+      "rejects batches, extra envelope/operation fields and unsupported methods before upstream",
+      "rejects multibyte body oversize and wrong content type",
+      "discovers the reviewed catalog and prepares locally with shared account disclosure",
+      "uses server-derived phase, sponsor header and fixed ordinary calculation path",
+      "fails closed on an invalid internal account phase without calculation",
+      "sanitizes sponsor 401/403 without an OAuth challenge or retry",
+      "redacts nested credential echoes and retains legitimate Human Design profile/authority",
+      "rejects oversize upstream responses without leaking their body",
+      "returns atomic public 429 after calculation attempt budget and never makes a second POST",
+      "fails closed without trusted edge IP, DO or valid service origins/secrets"
+    ],
+    "additional_table_driven_case_scope": "Denied or privileged tool inputs are rejected before upstream execution.",
+    "invariants": [
+      "Official SDK stateless Streamable HTTP transport with JSON responses",
+      "No customer auth; server-owned noauth discovery in both securitySchemes and _meta.securitySchemes",
+      "Eight strict tool input schemas; one JSON-RPC operation per bounded request; unsupported operations and unsafe notifications rejected",
+      "Bounded metadata/cursor acceptance; caller metadata never controls credential/phase/destination/quota identity",
+      "Server-authenticated account phase; fixed allowlisted upstream routes; exact workflow composition check",
+      "Shared-storage disclosure and unconfirmed persistence for ordinary calculate/workflow; no hosted narration model calls",
+      "Nested secret/account redaction and body/time bounds; authentication errors sanitized without retry or OAuth prompt",
+      "Atomic attempt/request quotas; public429 with retry-after; fail closed for absent trusted identity/configuration"
+    ],
+    "fixture_protocol_version": "2025-03-26",
+    "fresh_live_negotiated_protocol_version": null
+  },
+  "tool_annotations": {
+    "count": 8,
+    "all_passed": true,
+    "tools": [
+      {
+        "name": "selemene_list_engines",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "all_required_hints_are_boolean": true,
+        "behavior_matches": true,
+        "registration_source": "workers/selemene-mcp/src/tools/index.ts:174",
+        "required_scope": "read",
+        "behavior": "Catalog GETs to the fixed service; no reading/profile mutation. Catalog membership remains separate from operational readiness.",
+        "handler_source": "workers/selemene-mcp/src/tools/index.ts:201"
+      },
+      {
+        "name": "selemene_engine_info",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "all_required_hints_are_boolean": true,
+        "behavior_matches": true,
+        "registration_source": "workers/selemene-mcp/src/tools/index.ts:270",
+        "required_scope": "read",
+        "behavior": "Engine metadata GET and reviewed local schema; no calculation or reading/profile mutation.",
+        "handler_source": "workers/selemene-mcp/src/tools/index.ts:295"
+      },
+      {
+        "name": "selemene_prepare_reading",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "all_required_hints_are_boolean": true,
+        "behavior_matches": true,
+        "registration_source": "workers/selemene-mcp/src/tools/index.ts:328",
+        "required_scope": "read",
+        "behavior": "Local partial-input validation; handler performs no upstream call and does not save a reading. The common edge request quota still applies.",
+        "handler_source": "workers/selemene-mcp/src/tools/index.ts:352"
+      },
+      {
+        "name": "selemene_calculate",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "all_required_hints_are_boolean": true,
+        "behavior_matches": true,
+        "registration_source": "workers/selemene-mcp/src/tools/index.ts:384",
+        "required_scope": "calculate",
+        "behavior": "One fixed engine calculation POST after validation and server account-phase lookup. Shared account may store inputs/results and update usage, profile, XP and access phase; persistence is not_confirmed. These are additive/initial-population operations rather than deletion.",
+        "handler_source": "workers/selemene-mcp/src/tools/index.ts:450"
+      },
+      {
+        "name": "selemene_list_workflows",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "all_required_hints_are_boolean": true,
+        "behavior_matches": true,
+        "registration_source": "workers/selemene-mcp/src/tools/index.ts:481",
+        "required_scope": "read",
+        "behavior": "Catalog and exact composition metadata GETs; no workflow execution or reading/profile mutation.",
+        "handler_source": "workers/selemene-mcp/src/tools/index.ts:507"
+      },
+      {
+        "name": "selemene_workflow_info",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "all_required_hints_are_boolean": true,
+        "behavior_matches": true,
+        "registration_source": "workers/selemene-mcp/src/tools/index.ts:543",
+        "required_scope": "read",
+        "behavior": "Exact allowlisted workflow metadata GET; no workflow execution or reading/profile mutation.",
+        "handler_source": "workers/selemene-mcp/src/tools/index.ts:568"
+      },
+      {
+        "name": "selemene_run_workflow",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "all_required_hints_are_boolean": true,
+        "behavior_matches": true,
+        "registration_source": "workers/selemene-mcp/src/tools/index.ts:605",
+        "required_scope": "calculate",
+        "behavior": "Checks exact reviewed composition and constituent inputs, then one workflow POST. Shared account reading/usage/profile/XP/access-phase effects are possible; persistence is not_confirmed.",
+        "handler_source": "workers/selemene-mcp/src/tools/index.ts:687"
+      },
+      {
+        "name": "selemene_vedic_chart",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "all_required_hints_are_boolean": true,
+        "behavior_matches": true,
+        "registration_source": "workers/selemene-free-mcp/src/vedic-chart.ts:161",
+        "required_scope": "calculate",
+        "behavior": "Fixed chart POST computes D1/D9; chart handler does not persist charts/readings or populate the user profile. Requires calculation attempt quota and internal service authentication; metrics and operational logs remain possible.",
+        "handler_source": "workers/selemene-free-mcp/src/vedic-chart.ts:186"
+      }
+    ],
+    "common_operational_effects": "Every service request can update protected edge rate-limit accounting and logs. These operational effects do not make metadata/preflight tools reading/profile writes. Chart calculations consume sponsored attempt budget although the chart handler does not save charts.",
+    "open_world_basis": "All handlers are limited to the fixed Selemene service origin, reviewed engine/workflow identifiers and one fixed chart path; inputs cannot choose arbitrary network destinations or external actions.",
+    "destructive_basis": "No exposed operation deletes user resources. Ordinary calculations/workflows append readings/usage, fill missing profile fields (COALESCE retains existing birth/location/timezone values), may replace a placeholder full_name, award XP and advance access phase. These are disclosed account updates; readOnlyHint is false for both operations.",
+    "server_effect_sources": [
+      "crates/noesis-api/src/lib.rs:2546",
+      "crates/noesis-api/src/lib.rs:2804",
+      "crates/noesis-api/src/lib.rs:3223",
+      "workers/selemene-free-mcp/src/mcp.ts:153",
+      "workers/selemene-free-mcp/src/index.ts:21",
+      "crates/noesis-data/src/repositories/user_repository.rs:571"
+    ]
+  },
+  "runtime_evidence": {
+    "historical_direct_sdk_smoke": {
+      "path": "docs/plans/free-plugin/live-smoke.json",
+      "sha256": "02e89ba4cc0eae98a1058771ab16b65a4ca96b182ba8e368a49afb87c3709cec",
+      "observed_at": "2026-10-07T18:06:34.749Z",
+      "passed_checks": 14,
+      "checks": [
+        {
+          "name": "SDK initialize and initialized notification",
+          "status": "pass"
+        },
+        {
+          "name": "Noauth tool discovery",
+          "status": "pass"
+        },
+        {
+          "name": "Live reviewed engine catalog",
+          "status": "pass"
+        },
+        {
+          "name": "Incomplete-input preflight",
+          "status": "pass"
+        },
+        {
+          "name": "Denied biofield",
+          "status": "pass"
+        },
+        {
+          "name": "Denied face-reading",
+          "status": "pass"
+        },
+        {
+          "name": "Denied sigil-forge",
+          "status": "pass"
+        },
+        {
+          "name": "Denied admin",
+          "status": "pass"
+        },
+        {
+          "name": "Privilege injection denied",
+          "status": "pass"
+        },
+        {
+          "name": "Complete synthetic preflight",
+          "status": "pass"
+        },
+        {
+          "name": "Synthetic numerology calculation",
+          "status": "pass"
+        },
+        {
+          "name": "Synthetic Vedic D1/D9 calculation",
+          "status": "pass"
+        },
+        {
+          "name": "Reviewed workflows",
+          "status": "pass"
+        },
+        {
+          "name": "Original OAuth Worker preserved",
+          "status": "pass"
+        }
+      ],
+      "scope": "Real direct SDK/service smoke recorded 2026-10-07. It is not a current raw urllib pass or execution of the final saved-public host cases."
+    },
+    "installed_read_preflight": {
+      "path": "docs/plans/free-plugin/publication/installed-connectivity.json",
+      "sha256": "e4cd4a8647205e63646262d4294d0881c91dbe98c43800706a7cda202a5d92c9",
+      "observed_at": "2026-10-07 18:47:32 UTC",
+      "calls": [
+        {
+          "tool": "mcp__selemene__selemene_list_engines",
+          "is_error": false
+        },
+        {
+          "tool": "mcp__selemene__selemene_engine_info",
+          "is_error": false
+        },
+        {
+          "tool": "mcp__selemene__selemene_list_workflows",
+          "is_error": false
+        },
+        {
+          "tool": "mcp__selemene__selemene_prepare_reading",
+          "is_error": false
+        },
+        {
+          "tool": "mcp__selemene__selemene_workflow_info",
+          "is_error": false
+        }
+      ],
+      "scope": "Actual installed connector read/preflight calls; separate from SDK fixtures and no new persistence calculation in that pass."
+    },
+    "current_registered_calculation_regression": {
+      "path": "docs/plans/free-plugin/publication/installed-gene-keys-public-labels-2026-10-08.json",
+      "sha256": "7b810bc74165f6d1a4ec8da2e528c3c3e29f3e56750fc99a023a669a0df7a950",
+      "checked_at": "2026-10-08T11:07:41.055Z",
+      "connection": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+      "all_sphere_matches": true,
+      "author_descriptions_all_null": true,
+      "persistence_status": {
+        "gene_keys": "not_confirmed",
+        "human_design": "not_confirmed"
+      },
+      "scope": "Real registered installed connector calculation/source regression; no personal birth/profile values copied into this consolidation. Not a final saved-public host case or demo recording."
+    },
+    "current_direct_urllib_probe": {
+      "path": "docs/plans/free-plugin/publication/partial-public-evidence-2026-10-08.json",
+      "date": "2026-10-08",
+      "operation": "MCP initialize",
+      "http_status": 403,
+      "cloudflare_code": 1010,
+      "reason": "browser_signature_banned",
+      "passed": false,
+      "bypass_or_firewall_changes": false,
+      "scope": "Parent-recorded fresh direct probe was blocked by edge protection. No fresh raw protocol success is claimed; actual registered OpenAI discovery/preflight and own-profile development calculation success remain separate evidence."
+    },
+    "own_profile_host_rehearsal": {
+      "evidence_path": "docs/plans/free-plugin/publication/PUBLICATION-STATUS.md:69",
+      "surface": "Parent-observed registered OpenAI development chat, private v0.2.4",
+      "status": "parent-reported completed observable behavior",
+      "separate_rehearsal_receipt_present": true,
+      "raw_argument_trace_established": false,
+      "saved_public_case_pass": false,
+      "scope": "Parent browser observation only in this review; no personal report body or profile identifiers read or included."
+    }
+  },
+  "public_submission_limits": [
+    "No fresh raw urllib initialize success: edge returned403/Cloudflare1010.",
+    "Local contract/source continuity and actual registered host evidence do not prove completion of final saved-public five-positive/three-negative cases.",
+    "No reviewer-accessible video, legal attestation, scan result, approval or publication is established by this receipt.",
+    "Catalog membership alone does not establish engine readiness; missing/unknown capability source remains uncertain.",
+    "Gene Keys public labels only; full author meanings/biological correspondences unavailable; no rights certification."
+  ],
+  "actions_this_review": {
+    "file_written": "docs/plans/free-plugin/publication/package-contracts-2026-10-08.json",
+    "server_or_test_edits": false,
+    "new_network_or_calculation_calls": false,
+    "broad_test_suites_rerun": false,
+    "secrets_read_or_disclosed": false,
+    "remote_infrastructure_changes": false,
+    "commit_or_staging": false
+  },
+  "prior_manifest_sha256": "3f91c158cc11d04b2aff6d5d92cbcecc1054870856eec4706d7c590f0423b3b0",
+  "metadata_rebinding": {
+    "checked_at": "2026-10-08T11:28:37.181570+00:00",
+    "change": "Added supported Other category to unuploaded public manifest; protocol/tool/instruction files unchanged",
+    "prior_manifest_sha256": "3f91c158cc11d04b2aff6d5d92cbcecc1054870856eec4706d7c590f0423b3b0",
+    "current_manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45"
+  }
+}

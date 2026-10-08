@@ -1,0 +1,39 @@
+{
+  "schema": "selemene.publication.current-package-validation.v1",
+  "checked_at": "2026-10-08T11:29:36.875926+00:00",
+  "version": "0.2.4",
+  "manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
+  "inventory": [
+    "assets/icon.png",
+    "mcp.json",
+    "plugin.json",
+    "skills/selemene-onboarding/SKILL.md",
+    "skills/selemene-reading/SKILL.md",
+    "skills/selemene-reading/references/host-reading-flow.md"
+  ],
+  "file_sha256": {
+    "assets/icon.png": "7a9b053b7e7fce21aa0aa4c460dabd5465c2510b97672f434adfa7e401bf5d9f",
+    "mcp.json": "1203b35853b8dd6c85897ca57793106216ca6b485acd2e3d2d3e954d4c6afcfb",
+    "plugin.json": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
+    "skills/selemene-onboarding/SKILL.md": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0",
+    "skills/selemene-reading/SKILL.md": "83e4fb53ee5cfdf9390ded43e76bc9be9d4f3f15fde3a56af85d577095c2e938",
+    "skills/selemene-reading/references/host-reading-flow.md": "513f9954d654098fe61b4bfb8429b50891754b5ab3c3cf786126c30d0c2d4980"
+  },
+  "private_format_and_credential_guard": {
+    "exit_code": 0,
+    "output": "Private format and safety checks passed; no archive requested.\nPrivate export does not establish service deployment, host execution or public publication.\n"
+  },
+  "public_readiness_guard": {
+    "exit_code": 1,
+    "output": "NOT READY \u2014 no archive created.\n- Verified reviewer-accessible demo recording URL is missing.\n- Explicit country targeting is missing (empty array means all countries only if chosen).\n- Current verification evidence is missing: demo_recording_url.\n- Current verification evidence is missing: publication.countries.\n"
+  },
+  "guard_source_unchanged_on_disk": true,
+  "runtime_stage_override": "Only ROOT targets the separate public stage; all validation rules unchanged",
+  "archive_created": false,
+  "known_remaining_package_fields": [
+    "verified demo_recording_url",
+    "explicit publication.countries"
+  ],
+  "saved_public_case_status": "All eight Not run",
+  "submission_and_approval": "not_completed"
+}

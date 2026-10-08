@@ -1,0 +1,159 @@
+{
+  "schema": "selemene.website-live-publication.v1",
+  "status": "VERIFIED_PUBLIC_HTTP",
+  "source_commit": "e8ba4403106a8491c53c4241e1ba58bf7a831e57",
+  "project": "tryambakam-space",
+  "project_id": "prj_It3eejxU1cGWz0hev1X2lyEQrHVG",
+  "org_id": "team_SC6taS2Jv873KjJpO2Q0uOvQ",
+  "deployment_id": "dpl_3jy5qvQSjBr6JBQka6ygVaHdYNwF",
+  "deployment_url": "https://tryambakam-space-7ofer5nx4-sheshiyers-projects.vercel.app",
+  "verified_at": "2026-10-08T10:53:29.365568+00:00",
+  "listing_url_fields": {
+    "websiteURL": "https://www.tryambakam.space/selemene/",
+    "supportURL": "https://www.tryambakam.space/selemene/support/",
+    "privacyPolicyURL": "https://www.tryambakam.space/selemene/privacy/",
+    "termsOfServiceURL": "https://www.tryambakam.space/selemene/terms/"
+  },
+  "manifest_path": "docs/plans/free-plugin/publication/public-package/selemene-engine/plugin.json",
+  "manifest_sha256_after_url_update": "496830491aa5d7113e187c61d3de48711ef3287a6d0567d23215658f7f029b38",
+  "evidence_provenance": [
+    {
+      "source_file": "/tmp/selemene-website-promotion-2026-10-08.json",
+      "sha256": "7b47131caa7246e7dab7e1f8eadc5165ec783671afd462cfaceec82c710e02ad",
+      "role": "promotion and production-domain metadata; parent supplied"
+    },
+    {
+      "source_file": "/tmp/selemene-public-website-verified-2026-10-08.json",
+      "sha256": "e39d3b7cf9e857185dd87873e59ff10628d173d811967680beadf61cae309c13",
+      "role": "final unauthenticated apex/www content verification; parent supplied"
+    }
+  ],
+  "promotion_receipt": {
+    "verified_at": "2026-10-08T10:53:25.899166+00:00",
+    "source_commit": "e8ba4403106a8491c53c4241e1ba58bf7a831e57",
+    "project": "tryambakam-space",
+    "project_id": "prj_It3eejxU1cGWz0hev1X2lyEQrHVG",
+    "org_id": "team_SC6taS2Jv873KjJpO2Q0uOvQ",
+    "deployment_id": "dpl_3jy5qvQSjBr6JBQka6ygVaHdYNwF",
+    "deployment_url": "https://tryambakam-space-7ofer5nx4-sheshiyers-projects.vercel.app",
+    "candidate_five_routes": "PASS; parent supplied byte-identical source hashes in /tmp/selemene-website-candidate-verified-2026-10-08.json",
+    "promotion": {
+      "command": "vercel promote dpl_3jy5qvQSjBr6JBQka6ygVaHdYNwF --scope sheshiyers-projects --timeout 60s",
+      "exit_code": 0,
+      "result": "SUCCESS"
+    },
+    "domain_metadata": {
+      "https://tryambakam.space": {
+        "deployment_id": "dpl_3jy5qvQSjBr6JBQka6ygVaHdYNwF",
+        "target": "production",
+        "readyState": "READY"
+      },
+      "https://www.tryambakam.space": {
+        "deployment_id": "dpl_3jy5qvQSjBr6JBQka6ygVaHdYNwF",
+        "target": "production",
+        "readyState": "READY"
+      }
+    },
+    "source_clean_after": true,
+    "live_body_hashes": "Pending parent unauthenticated apex/www five-route checks",
+    "live_browser_render": "Pending parent IAB check; this resumed subagent has no IAB surface",
+    "scope_preserved": "No source edits, security/protection setting changes, credentials, domains, or unrelated deployment changes"
+  },
+  "public_route_verification": {
+    "schema": "selemene.public-website-deployment.v1",
+    "source_commit": "e8ba4403106a8491c53c4241e1ba58bf7a831e57",
+    "deployment_id": "dpl_3jy5qvQSjBr6JBQka6ygVaHdYNwF",
+    "checked_at": "2026-10-08T10:53:29.365568+00:00",
+    "unauthenticated_routes": [
+      {
+        "requested_url": "https://tryambakam.space/selemene/",
+        "effective_url": "https://www.tryambakam.space/selemene/",
+        "status": 200,
+        "exact_match": true,
+        "sha256": "e9b1c2bdddfe928f57e68b1ca35931fe666156a274c35e4c870f5671e8cff2e4"
+      },
+      {
+        "requested_url": "https://tryambakam.space/selemene/readings/",
+        "effective_url": "https://www.tryambakam.space/selemene/readings/",
+        "status": 200,
+        "exact_match": true,
+        "sha256": "605b1caf98fc94fde5f228cf4be1786192e20c47f25ebd1d8d9ec43c83074bee"
+      },
+      {
+        "requested_url": "https://tryambakam.space/selemene/privacy/",
+        "effective_url": "https://www.tryambakam.space/selemene/privacy/",
+        "status": 200,
+        "exact_match": true,
+        "sha256": "8dc59a5375bc17c3f173816edb3585f522ee13a83da4ee80964f4abeaa0e8b01"
+      },
+      {
+        "requested_url": "https://tryambakam.space/selemene/terms/",
+        "effective_url": "https://www.tryambakam.space/selemene/terms/",
+        "status": 200,
+        "exact_match": true,
+        "sha256": "239cdb0350a8f8f940890799156bafc4646a9177ff0d2cb6fea5e549f66fa575"
+      },
+      {
+        "requested_url": "https://tryambakam.space/selemene/support/",
+        "effective_url": "https://www.tryambakam.space/selemene/support/",
+        "status": 200,
+        "exact_match": true,
+        "sha256": "09e793ad09ff32b500b33ee37a4c3a171c8ea7e908a6121efb5f06dbe5c15e76"
+      },
+      {
+        "requested_url": "https://www.tryambakam.space/selemene/",
+        "effective_url": "https://www.tryambakam.space/selemene/",
+        "status": 200,
+        "exact_match": true,
+        "sha256": "e9b1c2bdddfe928f57e68b1ca35931fe666156a274c35e4c870f5671e8cff2e4"
+      },
+      {
+        "requested_url": "https://www.tryambakam.space/selemene/readings/",
+        "effective_url": "https://www.tryambakam.space/selemene/readings/",
+        "status": 200,
+        "exact_match": true,
+        "sha256": "605b1caf98fc94fde5f228cf4be1786192e20c47f25ebd1d8d9ec43c83074bee"
+      },
+      {
+        "requested_url": "https://www.tryambakam.space/selemene/privacy/",
+        "effective_url": "https://www.tryambakam.space/selemene/privacy/",
+        "status": 200,
+        "exact_match": true,
+        "sha256": "8dc59a5375bc17c3f173816edb3585f522ee13a83da4ee80964f4abeaa0e8b01"
+      },
+      {
+        "requested_url": "https://www.tryambakam.space/selemene/terms/",
+        "effective_url": "https://www.tryambakam.space/selemene/terms/",
+        "status": 200,
+        "exact_match": true,
+        "sha256": "239cdb0350a8f8f940890799156bafc4646a9177ff0d2cb6fea5e549f66fa575"
+      },
+      {
+        "requested_url": "https://www.tryambakam.space/selemene/support/",
+        "effective_url": "https://www.tryambakam.space/selemene/support/",
+        "status": 200,
+        "exact_match": true,
+        "sha256": "09e793ad09ff32b500b33ee37a4c3a171c8ea7e908a6121efb5f06dbe5c15e76"
+      }
+    ]
+  },
+  "consistency_checks": {
+    "source_and_deployment_ids_agree": true,
+    "ten_unauthenticated_apex_www_routes_200": true,
+    "all_route_hashes_match_exact_website_commit": true,
+    "all_four_listing_urls_verified": true,
+    "only_three_policy_fields_added_to_existing_manifest": true,
+    "review_cases_unchanged": true,
+    "five_positive_three_negative_cases": true,
+    "all_eight_case_statuses_remain_not_run": true,
+    "countries_absent_and_pending": true
+  },
+  "evidence_boundaries": {
+    "snapshot_order": "The original promotion receipt preceded the final public HTTP readback. Its pending live-body-hash note is superseded by the complete public_route_verification retained here.",
+    "browser_render": "This receipt establishes HTTP/content equality, not browser rendering. Browser QA is a separate parent-owned receipt.",
+    "host_review_cases": "No exact installed/submission host case execution is asserted.",
+    "plugin_publication": "Website promotion does not establish plugin submission, marketplace approval or public plugin listing.",
+    "legal_and_targeting": "No policy attestation, category, country selection, age targeting, address or jurisdiction is invented by this receipt.",
+    "remote_actions_in_this_lane": "None. This lane copied parent-supplied public evidence and edited local staging metadata only."
+  }
+}

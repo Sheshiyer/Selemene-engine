@@ -1,0 +1,110 @@
+{
+  "schema": "selemene.publication.personal-host-rehearsal.v1",
+  "checked_at": "2026-10-08T11:23:34.886279+00:00",
+  "status": "completed_observable_development_behavior",
+  "host": "ChatGPT browser Work",
+  "model_observed": "GPT-6.1 Sol / Light",
+  "chat_url": "https://chatgpt.com/c/6ac77a16-bf8c-83eb-a7f2-88988bbc10bb",
+  "chat_title": "Gene Keys Reading",
+  "candidate": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "name": "selemene-engine",
+    "description": "Free Selemene onboarding, engine calculations, and detailed symbolic readings composed in ChatGPT.",
+    "version": "0.2.4",
+    "current_release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96",
+    "scope": "USER",
+    "discoverability": "PRIVATE",
+    "binding": "Fresh Try in chat from current plugin listing; actual Selemene mention preserved; development app connected",
+    "app_id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "source_readback_receipt": "private-candidate/final-live-readback-2026-10-08.json",
+    "public_manifest_sha256": "3f91c158cc11d04b2aff6d5d92cbcecc1054870856eec4706d7c590f0423b3b0",
+    "instruction_sha256": {
+      "skills/selemene-onboarding/SKILL.md": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0",
+      "skills/selemene-reading/SKILL.md": "83e4fb53ee5cfdf9390ded43e76bc9be9d4f3f15fde3a56af85d577095c2e938",
+      "skills/selemene-reading/references/host-reading-flow.md": "513f9954d654098fe61b4bfb8429b50891754b5ab3c3cf786126c30d0c2d4980"
+    },
+    "runtime_file_evidence": "Host announces use of Selemene reading skill; expanded trace shows two Read files events. Exact runtime file paths/contents are not exposed. Saved-source equality is verified separately, not an executor hash attestation."
+  },
+  "authorized_fixture": {
+    "subject": "User own selected profile",
+    "source_pointer": "/shesh/engine_input",
+    "source_sha256": "68dc2afadd8ccb36d5725ea4d2c11e506991183d5c9b75404253fc8046422d45",
+    "raw_birth_values_bundled": false,
+    "temporary_upload": "Minimal six birth fields and confidence/format notes; not committed or distributed",
+    "time_confidence": "From saved chart record; not independently verified.",
+    "normalization": "Recorded zero seconds omitted for HH:mm input schema; birth instant and precision unchanged",
+    "authorization": "User permits own profile and reading for candidate host and accessible reviewer demo; prompt acknowledged shared admin persistence and account effects"
+  },
+  "observed_trace_in_order": [
+    "Host announces Selemene reading skill",
+    "Read files",
+    "Retrieving Gene Keys Engine Requirements",
+    "Listing Available Selemene Reflection Engines",
+    "Read files",
+    "Preparing Gene Keys Birth Chart Calculation",
+    "Host reports valid preparation and preserves both input notes",
+    "One visible Calculating Gene Keys Profile event",
+    "Detailed host-authored report",
+    "Response complete"
+  ],
+  "tool_evidence_limit": "Expanded UI exposes operation titles and report. Raw tool JSON arguments/results and complete traffic are not shown; no exhaustive hidden-call audit claimed.",
+  "reported_result": {
+    "engine": "gene-keys",
+    "engine_version": "3.3.1",
+    "backend": "hd-derived",
+    "timestamp": "2026-10-08T11:11:09.276617843Z",
+    "cached": false,
+    "canonical_spheres": {
+      "lifes_work": {
+        "key": 4,
+        "line": 2,
+        "source": "PersonalitySun"
+      },
+      "evolution": {
+        "key": 49,
+        "line": 2,
+        "source": "PersonalityEarth"
+      },
+      "radiance": {
+        "key": 23,
+        "line": 4,
+        "source": "DesignSun"
+      },
+      "purpose": {
+        "key": 43,
+        "line": 4,
+        "source": "DesignEarth"
+      }
+    },
+    "installed_comparison_receipt": "installed-gene-keys-public-labels-2026-10-08.json",
+    "all_four_coordinates_match_independent_installed_comparison": true,
+    "line_provenance": "preserved_human_design_activations",
+    "data_version": "2026-10-08.1",
+    "meaning_source_quality": "verified_public_labels_only",
+    "frequency_measurement": "not_measured",
+    "persistence": "not_confirmed"
+  },
+  "report_checks": {
+    "raw_birth_details_omitted_from_prose": true,
+    "recorded_time_confidence_preserved": true,
+    "source_facts_distinct_from_host_interpretation": true,
+    "aletheios_structural_perspective_present": true,
+    "pichet_experiential_perspective_present": true,
+    "integrated_reflection_present": true,
+    "four_official_source_urls_and_fingerprints_present": true,
+    "derived_partners_and_dataset_conflicts_explicit": true,
+    "full_author_and_biological_meanings_unavailable": true,
+    "null_author_descriptions_preserved": true,
+    "original_selemene_questions_not_attributed_to_author": true,
+    "no_spiritual_state_measurement_or_independent_certification_claim": true
+  },
+  "narration": "Current ChatGPT host composes report; Aletheios/Pichet are attributed perspectives. No separate hosted inference visible or required by candidate.",
+  "recording": {
+    "status": "not_established",
+    "saved_file": null,
+    "playback_verified": false,
+    "reviewer_url": null
+  },
+  "final_saved_public_cases": "All eight Not run; this personal Gene Keys development rehearsal is not the synthetic public P3 or saved-public-submission execution.",
+  "public_release_state": "not_uploaded_not_submitted_not_approved_not_published"
+}

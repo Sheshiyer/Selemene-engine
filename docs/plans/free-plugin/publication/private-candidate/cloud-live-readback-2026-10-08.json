@@ -1,0 +1,52 @@
+{
+  "schema": "selemene.private-cloud-candidate-readback.v1",
+  "plugin": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "name": "selemene-engine",
+    "description": "Free Selemene onboarding, engine calculations, and detailed symbolic readings composed in ChatGPT.",
+    "version": "0.2.2",
+    "current_release_id": "pluginrel_6ac7760ba6448191a6966f61ee943bd6",
+    "scope": "USER",
+    "discoverability": "PRIVATE"
+  },
+  "files": [
+    {
+      "path": ".app.json",
+      "size_bytes": 142
+    },
+    {
+      "path": ".codex-plugin/plugin.json",
+      "size_bytes": 3532
+    },
+    {
+      "path": "assets/icon.png",
+      "size_bytes": 53339
+    },
+    {
+      "path": "plugin.json",
+      "size_bytes": 3576
+    },
+    {
+      "path": "skills/selemene-onboarding/SKILL.md",
+      "size_bytes": 4447
+    },
+    {
+      "path": "skills/selemene-reading/SKILL.md",
+      "size_bytes": 10392
+    },
+    {
+      "path": "skills/selemene-reading/references/host-reading-flow.md",
+      "size_bytes": 22036
+    }
+  ],
+  "semantic_overlay_matches": {
+    "plugin.json": true,
+    ".codex-plugin/plugin.json": true,
+    ".app.json": true
+  },
+  "deleted_raw_configs": true,
+  "app_id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+  "sharing": "USER PRIVATE",
+  "candidate_host": "Browser Try in chat observed and actual onboardcaseP1 completed in cloud ChatGPT",
+  "chat_url": "https://chatgpt.com/c/6ac7763e-158c-83eb-9ac0-301281256fed"
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "selemene.publication.icon-visual-verification.v1",
+  "checked_at": "2026-10-08T11:28:37.181570+00:00",
+  "asset": "public-package/selemene-engine/assets/icon.png",
+  "sha256": "7a9b053b7e7fce21aa0aa4c460dabd5465c2510b97672f434adfa7e401bf5d9f",
+  "dimensions": [
+    512,
+    512
+  ],
+  "size_bytes": 53339,
+  "original_asset_unchanged": true,
+  "actual_render": "Root observed IAB HTML fixture rendering actual asset at 256px and48px on white and #131312 backgrounds",
+  "visual_findings": "Distinct gold geometric silhouette visible at both sizes/backgrounds, no text, clipping, distortion or broken image. Fine interior lines are less prominent at48px.",
+  "screenshots_are_video": false,
+  "checks": {
+    "icon_visual_inspection": {
+      "value": "passed",
+      "verified_at": "2026-10-08T11:28:37.181570+00:00",
+      "evidence": "Actual root IAB rendered screenshot of original packaged asset at256px/48px on light and dark backgrounds; SHA bound"
+    }
+  }
+}

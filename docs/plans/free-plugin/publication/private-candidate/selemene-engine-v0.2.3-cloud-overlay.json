@@ -1,0 +1,24 @@
+{
+  "state": "uploaded_readback_verified",
+  "expected_release_id": "pluginrel_6ac7760ba6448191a6966f61ee943bd6",
+  "version": "0.2.3",
+  "sha256": "7f1819b1bffd5e2ffc93675a5be2a6ffb829f072bda51cc2f3be944c9670740a",
+  "files": [
+    "plugin.json",
+    ".codex-plugin/plugin.json",
+    ".app.json",
+    "skills/selemene-onboarding/SKILL.md",
+    "skills/selemene-reading/SKILL.md",
+    "skills/selemene-reading/references/host-reading-flow.md"
+  ],
+  "reading_instruction_hashes": {
+    "skills/selemene-onboarding/SKILL.md": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0",
+    "skills/selemene-reading/SKILL.md": "83e4fb53ee5cfdf9390ded43e76bc9be9d4f3f15fde3a56af85d577095c2e938",
+    "skills/selemene-reading/references/host-reading-flow.md": "513f9954d654098fe61b4bfb8429b50891754b5ab3c3cf786126c30d0c2d4980"
+  },
+  "public_instruction_bytes_equal": true,
+  "requires_live_source_before_upload": true,
+  "public_cases_preserved_in_portable_package": true,
+  "actual_release_id": "pluginrel_6ac7795d59b881918d9ed8302f07399e",
+  "source_live_evidence": "../installed-gene-keys-public-labels-2026-10-08.json"
+}

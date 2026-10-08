@@ -1,0 +1,37 @@
+{
+  "checked_at": "2026-10-08T10:44:33.910244+00:00",
+  "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+  "previous_release_id": "pluginrel_6ac68a646a3481918caccb45c95ad63f",
+  "saved_release_id": "pluginrel_6ac7736cb8188191aadfb5c80b4fe78f",
+  "scope": "USER",
+  "discoverability": "PRIVATE",
+  "version": "0.2.1",
+  "overlay_sha256": "6d160541379d46586e7ff15854e9e5904097911d107d8a14dec2a77c4b2940d2",
+  "overlay_byte_matches": {
+    ".app.json": true,
+    ".codex-plugin/plugin.json": false,
+    "plugin.json": true,
+    "skills/selemene-onboarding/SKILL.md": true,
+    "skills/selemene-reading/SKILL.md": true,
+    "skills/selemene-reading/references/host-reading-flow.md": true
+  },
+  "legacy_json_semantic_match": true,
+  "legacy_bytes_note": "Backend returned semantically identical JSON with normalized formatting.",
+  "saved_file_sha256": {
+    ".app.json": "f912514cae9d5d556da312a6a652c5c468a6f0eccb91004c712052cbb69210e6",
+    ".codex-plugin/plugin.json": "7a4eb8638a86e625b0fa1fddf2f190ff395c1877e3e259e4c72faa221f2a9fdb",
+    "plugin.json": "234314e588ff1126ab36eaeabfa36063a5896697d74ca3a698312c26ad286ba6",
+    "skills/selemene-onboarding/SKILL.md": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0",
+    "skills/selemene-reading/SKILL.md": "6c14b8612dc95da6e44b339f74cdd33de3b1becdaaef012ffa38cd07586deb10",
+    "skills/selemene-reading/references/host-reading-flow.md": "018591b1a8562f256c2984d1b4198cca8160f2762595bdc4bd9a0f821344860d"
+  },
+  "raw_mcp_root_bytes_preserved": true,
+  "legacy_mcp_endpoint_and_credential_free_config_verified": true,
+  "omitted_legacy_mcp_inventory_size_preserved": 179,
+  "starter_prompts_preserved": true,
+  "registered_app_id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+  "registered_app_version_id": "asdk_app_v_6ac77118e9748191a42e190512e58d7c",
+  "icon_inventory_size_preserved": 53339,
+  "host_case_execution": "not_run",
+  "public_submission": "not_uploaded_not_submitted_not_published"
+}

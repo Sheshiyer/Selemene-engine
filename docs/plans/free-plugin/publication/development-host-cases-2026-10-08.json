@@ -1,0 +1,119 @@
+{
+  "schema": "selemene.development-host-cases.v1",
+  "recorded_on": "2026-10-08",
+  "evidence_source": "Parent direct browser observation supplied to the documentation lane; this lane performed no remote calls or host reruns.",
+  "scope": "Existing private development release; not a saved public submission.",
+  "runtime": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "version": "0.2.2",
+    "release_id": "pluginrel_6ac7760ba6448191a6966f61ee943bd6",
+    "scope": "USER",
+    "discoverability": "PRIVATE",
+    "app_id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "host": "ChatGPT browser via Try in chat",
+    "model_label_observed_by_parent": "GPT-6.1 Sol Light",
+    "chat_url": "https://chatgpt.com/c/6ac7763e-158c-83eb-9ac0-301281256fed",
+    "chat_is_public_reviewer_evidence": false
+  },
+  "portable_case_snapshot": {
+    "manifest_path": "docs/plans/free-plugin/publication/public-package/selemene-engine/plugin.json",
+    "manifest_version": "0.2.3",
+    "manifest_sha256": "b0946ab0eb25536102a2c0779aa76e9cc9029e10ed5cebeac63d3e173b9bb52d",
+    "declared_positive_cases": 5,
+    "declared_negative_cases": 3,
+    "all_final_public_submission_cases": "Not run",
+    "sampled_at": "2026-10-08T11:08:01.227579+00:00",
+    "snapshot_status": "Observed during active parent candidate edits; not a final frozen public binding."
+  },
+  "private_release_readback": {
+    "path": "docs/plans/free-plugin/publication/private-candidate/cloud-live-readback-2026-10-08.json",
+    "sha256": "a98092a4c8bb4f1a0017228613c8b2eecd8b32f4af0ed4cd2f2ded0a553d37d0",
+    "files_read_back": 7,
+    "manifest_semantic_match": true,
+    "skills_inventory_preserved": true,
+    "raw_mcp_configs_removed": true,
+    "connection_shape": "Existing app-only private binding; portable public package remains separate."
+  },
+  "cases": [
+    {
+      "case_id": "P1",
+      "portable_prompt": "I am new to Selemene. Show me the available engines and combined reading workflows, explain the first combined workflow if one is listed, and help me choose a reflection focus. Do not calculate anything yet.",
+      "prompt_sha256": "a910da365a62ae18d660f6374d6a89439fc7472e8df46b0afaabaca17f6d7c9e",
+      "expected_tool_ids": [
+        "selemene_list_engines",
+        "selemene_list_workflows",
+        "selemene_workflow_info"
+      ],
+      "exact_prompt_match_confirmed_by_parent": true,
+      "classification": "Passed observable development behavior; argument-level trace not established",
+      "final_public_submission_case_status": "Not run",
+      "observed_tool_titles": [
+        "Listing Available Selemene Reflection Engines",
+        "Listing Reviewed Decision-Support Workflows",
+        "Retrieving Decision Support Workflow Metadata"
+      ],
+      "observed_behavior": {
+        "engine_count": 11,
+        "workflow_count": 1,
+        "workflow_id": "decision-support",
+        "workflow_engine_count": 5,
+        "five_workflow_engines_named": true,
+        "catalog_membership_distinguished_from_calculation_readiness": true,
+        "calculation_or_workflow_execution_observed": false
+      },
+      "trace_limits": {
+        "raw_tool_arguments_visible_in_ui": false,
+        "empty_catalog_arguments_verified": false,
+        "workflow_id_argument_verified": false,
+        "tool_titles_and_result_summary": "Observed by parent in the development ChatGPT browser host; titles are transcribed with readable spacing."
+      }
+    },
+    {
+      "case_id": "P2",
+      "portable_prompt": "For a synthetic test, I was born on 1990-01-01. Help me prepare a numerology reading, but do not calculate it yet. Tell me what information is missing and whether the time is actually required.",
+      "prompt_sha256": "29a33ede0e8543bba38fe12b84b03aedb38eca94db6b218f4e228e3368f6fa54",
+      "expected_tool_ids": [
+        "selemene_engine_info",
+        "selemene_prepare_reading"
+      ],
+      "exact_prompt_match_confirmed_by_parent": true,
+      "classification": "Passed observable development behavior; argument-level trace not established",
+      "final_public_submission_case_status": "Not run",
+      "observed_integration_entries": [
+        {
+          "role": "numerology engine metadata",
+          "expected_tool_id": "selemene_engine_info"
+        },
+        {
+          "role": "input preparation/preflight",
+          "expected_tool_id": "selemene_prepare_reading"
+        }
+      ],
+      "observed_behavior": {
+        "missing_fields": [
+          "name",
+          "latitude",
+          "longitude",
+          "timezone"
+        ],
+        "birth_time_requirement": "optional",
+        "calculation_observed": false,
+        "integration_entry_count": 2
+      },
+      "trace_limits": {
+        "raw_tool_arguments_visible_in_ui": false,
+        "engine_id_argument_verified": false,
+        "birth_data_date_only_argument_verified": false,
+        "metadata_and_preflight_use": "Two integration entries and the returned missing-field/time explanation were observed by parent; raw argument objects were not shown."
+      }
+    }
+  ],
+  "evidence_boundaries": {
+    "passed_scope": "Only observable development-host behavior for the matching P1/P2 prompt texts.",
+    "argument_trace": "No exact raw tool argument object was verified in the UI.",
+    "public_submission": "Neither development result is a final saved-public/submission pass; all portable final cases remain Not run.",
+    "version_binding": "Runtime private v0.2.2 and current portable source v0.2.3 are distinct versions. Matching prompt text does not prove a final public release binding.",
+    "recording": "No saved video or reviewer-accessible recording URL is established.",
+    "private_chat": "The chat locator is an owner development reference, not a public demo or reviewer-accessible video."
+  }
+}

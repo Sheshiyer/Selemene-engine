@@ -1,0 +1,67 @@
+{
+  "schema": "selemene.private-candidate-final-source-readback.v1",
+  "checked_at": "2026-10-08T11:09:55.063078+00:00",
+  "plugin": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "name": "selemene-engine",
+    "description": "Free Selemene onboarding, engine calculations, and detailed symbolic readings composed in ChatGPT.",
+    "version": "0.2.4",
+    "current_release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96",
+    "scope": "USER",
+    "discoverability": "PRIVATE"
+  },
+  "files": [
+    {
+      "path": ".app.json",
+      "size_bytes": 142
+    },
+    {
+      "path": ".codex-plugin/plugin.json",
+      "size_bytes": 3545
+    },
+    {
+      "path": "assets/icon.png",
+      "size_bytes": 53339
+    },
+    {
+      "path": "plugin.json",
+      "size_bytes": 3601
+    },
+    {
+      "path": "skills/selemene-onboarding/SKILL.md",
+      "size_bytes": 4447
+    },
+    {
+      "path": "skills/selemene-reading/SKILL.md",
+      "size_bytes": 11050
+    },
+    {
+      "path": "skills/selemene-reading/references/host-reading-flow.md",
+      "size_bytes": 22499
+    }
+  ],
+  "semantic_manifest_matches": {
+    "plugin.json": true,
+    ".codex-plugin/plugin.json": true,
+    ".app.json": true
+  },
+  "exact_instruction_matches": {
+    "skills/selemene-onboarding/SKILL.md": true,
+    "skills/selemene-reading/SKILL.md": true,
+    "skills/selemene-reading/references/host-reading-flow.md": true
+  },
+  "instruction_sha256": {
+    "skills/selemene-onboarding/SKILL.md": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0",
+    "skills/selemene-reading/SKILL.md": "83e4fb53ee5cfdf9390ded43e76bc9be9d4f3f15fde3a56af85d577095c2e938",
+    "skills/selemene-reading/references/host-reading-flow.md": "513f9954d654098fe61b4bfb8429b50891754b5ab3c3cf786126c30d0c2d4980"
+  },
+  "private_author_preserved": {
+    "name": "Shesh Iyer",
+    "email": "sheshnarayan.iyer@gmail.com"
+  },
+  "sharing_preserved": "USER PRIVATE",
+  "app_id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+  "source_live_receipt": "../installed-gene-keys-public-labels-2026-10-08.json",
+  "host_personal_demo_status": "not_yet_run",
+  "recording_status": "not_established"
+}

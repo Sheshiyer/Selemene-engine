@@ -1,0 +1,13 @@
+{
+  "schema": "selemene.publication.category-verification.v1",
+  "checked_at": "2026-10-08T11:28:37.181570+00:00",
+  "category": "Other",
+  "basis": [
+    "Actual private listing previously observed as Other; legacy cloud manifest preserves Other",
+    "Current official public submission error reference lists Other as an accepted title"
+  ],
+  "primary_source": "https://developers.openai.com/plugins/deploy/submission-errors",
+  "source_identifier": "plugin_category_unknown",
+  "saved_public_import_verified": false,
+  "public_manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45"
+}

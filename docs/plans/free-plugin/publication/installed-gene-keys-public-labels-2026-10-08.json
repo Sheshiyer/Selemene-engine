@@ -1,0 +1,177 @@
+{
+  "schema": "selemene.installed-gene-keys-public-labels.v1",
+  "checked_at": "2026-10-08T11:07:41.055Z",
+  "deployment_id": "00d91add-f75e-40f9-af9d-ddefa4873fcd",
+  "source_commit": "ebf4368df79ca0ddbf350a891d8d520c70a40af8",
+  "connection": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+  "fixture": "Authorized operator own saved profile, raw values omitted from receipt",
+  "time_normalization": "Losslessly omitted recorded zero seconds to match HH:mm connector schema; no birth instant change",
+  "source_quality": {
+    "data_version": "2026-10-08.1",
+    "descriptions": "unavailable_authorized_meanings_not_supplied",
+    "full_wisdom": "unavailable",
+    "labels": "verified_official_public_heading",
+    "name": "numeric_identifier_not_author_chapter_title",
+    "note": "Short public labels are verified. Author meanings, biological correspondences and chapter titles are unavailable. Reflection questions are Selemene's own, not author text or a measured user state.",
+    "programming_partners": {
+      "kind": "derived_rave_mandala_opposition",
+      "offset_positions": 32,
+      "public_page_agreements": 62,
+      "public_page_conflicts": [
+        {
+          "number": 6,
+          "official_page_partner": 2,
+          "rave_mandala_opposite": 36
+        },
+        {
+          "number": 8,
+          "official_page_partner": 8,
+          "rave_mandala_opposite": 14
+        }
+      ],
+      "source_path": "crates/engine-human-design/src/gate_sequence.rs",
+      "source_sha256": "417d7f8c7687c4832189ab533eddf4e712f8743e787ca569e6fb678f1bb434aa"
+    },
+    "reflection_prompts": "selemene_original_runtime_questions_not_author_text",
+    "rights": {
+      "official_corpus_licence_claimed": false,
+      "official_terms_url": "https://genekeys.com/terms-and-conditions/",
+      "scope": "short public terminology and numerical coordinates only; no copyrighted passages, course materials or images included",
+      "status": "no_open_licence_or_written_permission_established"
+    },
+    "source": "official_per_key_public_headings",
+    "status": "verified_public_labels_only"
+  },
+  "frequency_context": {
+    "basis": "configured_service_level",
+    "measurement_status": "not_measured",
+    "note": "Suggested frequency is a configured reflection lens, not a measured user consciousness or frequency. Public labels are verified; author meanings are unavailable."
+  },
+  "all_sphere_matches": true,
+  "sphere_comparisons": {
+    "lifes_work": {
+      "gene_keys": {
+        "key_number": 4,
+        "line": 2,
+        "source": "PersonalitySun"
+      },
+      "human_design": {
+        "gate": 4,
+        "line": 2
+      },
+      "matches": true
+    },
+    "evolution": {
+      "gene_keys": {
+        "key_number": 49,
+        "line": 2,
+        "source": "PersonalityEarth"
+      },
+      "human_design": {
+        "gate": 49,
+        "line": 2
+      },
+      "matches": true
+    },
+    "radiance": {
+      "gene_keys": {
+        "key_number": 23,
+        "line": 4,
+        "source": "DesignSun"
+      },
+      "human_design": {
+        "gate": 23,
+        "line": 4
+      },
+      "matches": true
+    },
+    "purpose": {
+      "gene_keys": {
+        "key_number": 43,
+        "line": 4,
+        "source": "DesignEarth"
+      },
+      "human_design": {
+        "gate": 43,
+        "line": 4
+      },
+      "matches": true
+    }
+  },
+  "active_key_labels": [
+    {
+      "key_number": 4,
+      "shadow": "Intolerance",
+      "gift": "Understanding",
+      "siddhi": "Forgiveness",
+      "programming_partner": 49,
+      "source_provenance": {
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "final_url": "https://genekeys.com/gene-key-4/",
+        "programming_partner_status": "confirmed_against_rave_mandala",
+        "public_page_partner_coordinate": 49,
+        "retrieved_at": "2026-10-08T10:25:16.003201+00:00",
+        "source_response_sha256": "b4faf2a097ebc5167984735dcd94b24ab4179126ed27f1fce5f14fbfc1570da2",
+        "status": 200,
+        "url": "https://genekeys.com/gene-key-4/"
+      }
+    },
+    {
+      "key_number": 49,
+      "shadow": "Reaction",
+      "gift": "Revolution",
+      "siddhi": "Rebirth",
+      "programming_partner": 4,
+      "source_provenance": {
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "final_url": "https://genekeys.com/gene-key-49/",
+        "programming_partner_status": "confirmed_against_rave_mandala",
+        "public_page_partner_coordinate": 4,
+        "retrieved_at": "2026-10-08T10:25:37.153151+00:00",
+        "source_response_sha256": "2ac72e387c03916b00339fe05468d8ce912d479d9444985fc2f3a848cebf92e0",
+        "status": 200,
+        "url": "https://genekeys.com/gene-key-49/"
+      }
+    },
+    {
+      "key_number": 23,
+      "shadow": "Complexity",
+      "gift": "Simplicity",
+      "siddhi": "Quintessence",
+      "programming_partner": 43,
+      "source_provenance": {
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "final_url": "https://genekeys.com/gene-key-23/",
+        "programming_partner_status": "confirmed_against_rave_mandala",
+        "public_page_partner_coordinate": 43,
+        "retrieved_at": "2026-10-08T10:25:25.149944+00:00",
+        "source_response_sha256": "911983355953b393b35c98e211ae93043b385b2826c33f2c3bbff6930a780d7c",
+        "status": 200,
+        "url": "https://genekeys.com/gene-key-23/"
+      }
+    },
+    {
+      "key_number": 43,
+      "shadow": "Deafness",
+      "gift": "Insight",
+      "siddhi": "Epiphany",
+      "programming_partner": 23,
+      "source_provenance": {
+        "extraction_scope": "public triplet heading and partner-link coordinate only; no passages or images retained",
+        "final_url": "https://genekeys.com/gene-key-43/",
+        "programming_partner_status": "confirmed_against_rave_mandala",
+        "public_page_partner_coordinate": 23,
+        "retrieved_at": "2026-10-08T10:25:33.830020+00:00",
+        "source_response_sha256": "7f860b7bc6cd065a3dfe0b0ab49bfcdffa2d123d21d0a3cbccb3a04fcf4582c1",
+        "status": 200,
+        "url": "https://genekeys.com/gene-key-43/"
+      }
+    }
+  ],
+  "author_descriptions_all_null": true,
+  "persistence_status": {
+    "gene_keys": "not_confirmed",
+    "human_design": "not_confirmed"
+  },
+  "limitations": "Calculation/source regression through installed connection; not a host-authored reading, recorded demo, final saved public submission case, licence certification or publication proof"
+}

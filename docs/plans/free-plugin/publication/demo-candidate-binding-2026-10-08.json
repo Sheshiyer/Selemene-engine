@@ -1,32 +1,38 @@
 {
   "schema": "selemene.publication.demo-candidate-binding.v1",
-  "checked_at": "2026-10-08T09:19:30.077324+00:00",
+  "checked_at": "2026-10-08T11:28:37.181570+00:00",
   "candidate_source": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine/docs/plans/free-plugin/publication/public-package/selemene-engine",
-  "candidate_version": "0.2.0",
+  "candidate_version": "0.2.4",
   "source_sha256": {
-    "plugin.json": "2311edeb97e0daf3d539abddd45eae7d4097cd144f0472c0291b48301c2209d4",
-    "skills/selemene-reading/SKILL.md": "184a2b146800dbcde90b5912a7744da59d2b21de5b6d23735e2851c64af3c11c",
-    "skills/selemene-reading/references/host-reading-flow.md": "937026dbd0e791e9048f7bad1c631005a5b0ad549fbf6beeaeffaf666f64e303"
+    "plugin.json": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
+    "skills/selemene-onboarding/SKILL.md": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0",
+    "skills/selemene-reading/SKILL.md": "83e4fb53ee5cfdf9390ded43e76bc9be9d4f3f15fde3a56af85d577095c2e938",
+    "skills/selemene-reading/references/host-reading-flow.md": "513f9954d654098fe61b4bfb8429b50891754b5ab3c3cf786126c30d0c2d4980"
   },
   "verified_development_plugin": {
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
-    "release_id": "pluginrel_6ac68a646a3481918caccb45c95ad63f",
-    "version": "0.2.0",
+    "name": "selemene-engine",
+    "description": "Free Selemene onboarding, engine calculations, and detailed symbolic readings composed in ChatGPT.",
+    "version": "0.2.4",
+    "current_release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96",
     "scope": "USER",
     "discoverability": "PRIVATE",
-    "verification": "Fresh Plugin Creator metadata and complete release list"
+    "verification": "Fresh saved source readback and actual selected plugin in browser chat"
   },
-  "reading_instructions_equal_private_source": false,
+  "reading_instructions_equal_private_source": true,
   "candidate_runtime_binding": {
-    "status": "not_established",
-    "saved_candidate_id": null,
-    "saved_release_id": null,
-    "loaded_instruction_hash_evidence": null
+    "status": "saved_source_and_observable_development_behavior_verified",
+    "saved_candidate_id": "plugins_6ac68a62e61081918179487264135f28",
+    "saved_release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96",
+    "loaded_instruction_hash_evidence": "private-candidate/final-live-readback-2026-10-08.json; hashes identify saved source, not an executor hash attestation",
+    "actual_host_receipt": "personal-host-rehearsal-2026-10-08.json",
+    "runtime_file_limit": "Host announces use of Selemene reading skill; expanded trace shows two Read files events. Exact runtime file paths/contents are not exposed. Saved-source equality is verified separately, not an executor hash attestation."
   },
   "recording": {
     "status": "not_established",
-    "verified_file": null,
-    "reviewer_accessible_url": null
+    "saved_file": null,
+    "playback_verified": false,
+    "reviewer_url": null
   },
   "required_runtime_evidence": [
     "Actual supported candidate preview or installation identity",
@@ -39,5 +45,57 @@
     "Do not substitute a matching version label for instruction binding",
     "Do not mark private development rehearsal as final candidate execution",
     "Do not upload an incomplete public bundle or create a duplicate private plugin to manufacture proof"
-  ]
+  ],
+  "private_candidate_overlay": {
+    "status": "applied_and_read_back",
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "current_release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96",
+    "version": "0.2.4",
+    "archive": "private-candidate/selemene-engine-v0.2.4-cloud-overlay.zip",
+    "archive_sha256": "34336fe0204398aca6cda681d9d9d28b8b57b148db002a53f422e30baa774dcf",
+    "final_readback": "private-candidate/final-live-readback-2026-10-08.json",
+    "instruction_copy_equal": true,
+    "historical_overlay_checks": "private-candidate/overlay-checks-2026-10-08.json"
+  },
+  "registered_development_dependency": {
+    "id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "url": "https://chatgpt.com/plugins/plugin_asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "status": "root_observed_connected",
+    "required": true,
+    "endpoint": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+    "authentication": "none",
+    "runtime_use": "Actual browser discovery, preparation and personal reading verified",
+    "app_id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "plugin_id": "plugin_asdk_app_6ac77118e9688191818c84d5bff853bc",
+    "application_version_id": "asdk_app_v_6ac77118e9748191a42e190512e58d7c",
+    "id_provenance": "Root observed exact App ID in connection settings UI; not derived from the plugin URL.",
+    "review_state": "DEVELOPMENT",
+    "authorization_supported": "None",
+    "authorization_used": "None"
+  },
+  "publisher": {
+    "kind": "PERSONAL",
+    "developer_name": "SHESHNARAYAN CUMBIPURAM NATESHAN",
+    "basis": "Root reports verified legal individual identity and user personal-publisher selection; account mutation remains separate."
+  },
+  "own_data_demo": {
+    "authorization": "User authorized their own data in the candidate host and reviewer-accessible demo.",
+    "source_path": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/tools/humdes-extractor/output/gary-abitbol-2026-09-28/jev-shadow/source-provenance.json",
+    "json_pointer": "/shesh/engine_input",
+    "source_sha256": "68dc2afadd8ccb36d5725ea4d2c11e506991183d5c9b75404253fc8046422d45",
+    "source_hash_matches_existing_personal_reading": true,
+    "required_birth_fields_complete": true,
+    "birth_time_confidence": "from saved chart record",
+    "profile_values_bundled": false
+  },
+  "host_observations": {
+    "native": "Private plugin starter-prompt route opens chatgpt.com/codex/open-app and resolves com.openai.codex; Computer Use explicitly rejected that app for safety.",
+    "browser": "Fresh Home Work Plugins selector Selemene search returned No plugins found before the separate development connection registration.",
+    "candidate_after_registration": "v0.2.4 personal Gene Keys report completed; see personal-host-rehearsal-2026-10-08.json",
+    "capture": "No Record control clicked; no recording started or saved file verified."
+  },
+  "host_model_path": "Current ChatGPT browser GPT-6.1 Sol / Light; no separately hosted narration required",
+  "development_rehearsal": "Completed actual own-profile Gene Keys report; personal fixture, not exact saved-public reviewer cases",
+  "demonstrated_stage_manifest_sha256": "3f91c158cc11d04b2aff6d5d92cbcecc1054870856eec4706d7c590f0423b3b0",
+  "metadata_since_rehearsal": "Added supported Other category only; all three demonstrated instruction files remain byte identical"
 }

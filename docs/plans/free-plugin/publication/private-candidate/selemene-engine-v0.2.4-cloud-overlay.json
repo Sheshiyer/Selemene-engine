@@ -1,0 +1,15 @@
+{
+  "schema": "selemene.source-qualified-attribution-candidate.v1",
+  "state": "uploaded_readback_verified",
+  "version": "0.2.4",
+  "expected_release_id": "pluginrel_6ac7795d59b881918d9ed8302f07399e",
+  "archive_sha256": "34336fe0204398aca6cda681d9d9d28b8b57b148db002a53f422e30baa774dcf",
+  "reason": "Restore prior private author display/email explicitly at root after v0.2.3 root omission normalized legacy author to Workspace upload. Public legal publisher is explicitly separate. Instruction bytes unchanged.",
+  "instruction_sha256": {
+    "skills/selemene-onboarding/SKILL.md": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0",
+    "skills/selemene-reading/SKILL.md": "83e4fb53ee5cfdf9390ded43e76bc9be9d4f3f15fde3a56af85d577095c2e938",
+    "skills/selemene-reading/references/host-reading-flow.md": "513f9954d654098fe61b4bfb8429b50891754b5ab3c3cf786126c30d0c2d4980"
+  },
+  "production_source_live_before_upload": true,
+  "release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96"
+}

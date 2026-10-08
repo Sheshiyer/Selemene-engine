@@ -1,0 +1,23 @@
+{
+  "schema": "selemene.private-cloud-candidate-overlay.v1",
+  "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+  "expected_release_id": "pluginrel_6ac7736cb8188191aadfb5c80b4fe78f",
+  "version": "0.2.2",
+  "app_id": "asdk_app_6ac77118e9688191818c84d5bff853bc",
+  "archive_sha256": "8a2371245b4ced13699d6247e06d085377059d8fdc5f338c9d11f2cacef4d7a9",
+  "changed_files": [
+    "plugin.json",
+    ".codex-plugin/plugin.json",
+    ".app.json"
+  ],
+  "delete_paths": [
+    "mcp.json",
+    ".mcp.json"
+  ],
+  "reason": "Observed package remains desktop-only with raw MCP files despite registered app; browser Work picker lists development app only. Cloud connection targets same existing free-service URL. Prior release and portable public source preserved.",
+  "skills_preserved": true,
+  "icon_preserved": true,
+  "sharing_preserved": "USER PRIVATE",
+  "review_cases": "Prepared public five positive and three negative cases remain in the portable public package. App-only private candidate omits plugin-level cases because backend requires exactly one bundled MCP for that field.",
+  "first_attempt": "Rejected before action invocation; v0.2.1 preserved"
+}
