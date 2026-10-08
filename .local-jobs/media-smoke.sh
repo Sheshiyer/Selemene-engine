@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 # Manual local smoke; provision sidecars and dependencies before execution.
 set -euo pipefail
-sudo apt-get update -qq && sudo apt-get install -y -qq jq
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+command -v jq >/dev/null || { echo "Install jq before running this smoke" >&2; exit 1; }
+RUNNER_TEMP="$(mktemp -d "${TMPDIR:-/tmp}/selemene-smoke.XXXXXX")"
+cd "$REPO_ROOT/ts-engines"
 bun run start &
 SERVER_PID=$!
 cleanup() {
+  rm -rf "$RUNNER_TEMP"
   kill "$SERVER_PID" 2>/dev/null || true
   wait "$SERVER_PID" 2>/dev/null || true
 }

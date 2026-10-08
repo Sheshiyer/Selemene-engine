@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # Manual local smoke; provision sidecars and dependencies before execution.
 set -euo pipefail
-sudo apt-get update -qq && sudo apt-get install -y -qq jq
-cd python-services
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+command -v jq >/dev/null || { echo "Install jq before running this smoke" >&2; exit 1; }
+RUNNER_TEMP="$(mktemp -d "${TMPDIR:-/tmp}/selemene-smoke.XXXXXX")"
+cd "$REPO_ROOT/python-services"
 python -m uvicorn biofield_cv_service.main:app --host 127.0.0.1 --port 8002 --log-level error &
 UV_PID=$!
 cleanup() {
+  rm -rf "$RUNNER_TEMP"
   kill "$UV_PID" 2>/dev/null || true
   wait "$UV_PID" 2>/dev/null || true
 }
