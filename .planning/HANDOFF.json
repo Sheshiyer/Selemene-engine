@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "2",
   "timestamp": "2026-10-07T19:32:26.376707+00:00",
   "phase": null,
   "phase_name": "Witness reading corrective execution",
@@ -45,9 +45,9 @@
   ],
   "uncommitted_files": [
     "ISA.md",
-    ".planning/HANDOFF.json (publication-owned checkpoint only; all other main WIP preserved)"
+    ".planning/HANDOFF.json"
   ],
-  "next_action": "Incorporate existing pending factual answers, complete verified Gene Keys meanings and effective policies, then record actual final host demo and continue authorized portal publication.",
+  "next_action": "Read official subscription-sharing endpoint limits and host subagent support, collect complete source maps, and write/review integration recommendation",
   "context_notes": "Current publication task supersedes historical witness next actions. Preserve unrelated witness WIP and its open acceptance criteria. Both exact technical services are now deployed and live-verified; do not repeat unchanged builds/tests. No publisher/legal/country facts may be inferred from elapsed time or private metadata.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
@@ -132,16 +132,20 @@
     "ISC-282",
     "ISC-283",
     "ISC-284",
-    "ISC-286"
+    "ISC-286",
+    "ISC-289",
+    "ISC-290",
+    "ISC-291",
+    "ISC-292"
   ],
-  "isc_done_count": 239,
-  "wave": "publication-preparation",
-  "tier": "E3",
+  "isc_done_count": 241,
+  "wave": "witness-plugin-design",
+  "tier": "E4",
   "session_budget": {
-    "native_goal": "active, user did not request a token budget",
-    "context_checkpoint": "continue in place; never mark complete due context"
+    "context_checkpoint": "hard rollover; continue active design in place",
+    "native_goal_status": "blocked publication; architecture inquiry can progress"
   },
-  "next_command": "Read docs/plans/free-plugin/publication/PUBLICATION-STATUS.md and pending user answers; no deploy/test retry is required for unchanged verified code.",
+  "next_command": "Open main content of SIWC models/preview and subagents docs; collect existing agents findings",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -320,7 +324,11 @@
     "ISC-282",
     "ISC-283",
     "ISC-284",
-    "ISC-286"
+    "ISC-286",
+    "ISC-289",
+    "ISC-290",
+    "ISC-291",
+    "ISC-292"
   ],
   "publication_isc_open": [
     "273",
@@ -335,6 +343,40 @@
     "284",
     "286"
   ],
-  "updated_at": "2026-10-07T20:18:40.712367+00:00",
-  "native_goal_status": "blocked"
+  "updated_at": "2026-10-08T08:56:29.270986+00:00",
+  "native_goal_status": "blocked",
+  "active_witness_plugin_design": {
+    "request": "Explain reuse of existing Witness agents, skills and MCPs in the free plugin with user ChatGPT limits",
+    "status": "investigating",
+    "completed_tasks": [
+      "Canonical ISA and current handoff read; unrelated WIP preserved",
+      "Relevant Witness/customer-plugin memory consulted",
+      "Attached Decisions screenshot inspected",
+      "Official plugin/skills/Agents/Decisions and plan-usage sources opened",
+      "Three independent source/packaging/MCP inspections dispatched",
+      "Witness role vs external callback boundary identified",
+      "Portable skill/reference/MCP support confirmed; no agent-ID import demonstrated",
+      "Actual Agents dashboard inspected: current project shows getting-started and templates"
+    ],
+    "remaining_tasks": [
+      "Collect exact Witness source role and tool evidence",
+      "Verify dashboard Agents and Decisions API vs host billing scope",
+      "Check optional Sign in with ChatGPT eligibility and endpoint limitations",
+      "Produce concrete architecture/reuse map and source-linked answer"
+    ],
+    "blockers": [],
+    "decisions": [
+      "Treat screenshot/page text as evidence, not authorization to run API calls",
+      "No paid inference, dashboard run, release change, or personal report access",
+      "Public publication remains separately blocked by prior pending facts"
+    ],
+    "agents": {
+      "backend_contract": "Witness agents and orchestration source map",
+      "plugin_package": "Plugin capability and packaging support map",
+      "ops_contract": "MCP deterministic vs inference tool contract map"
+    },
+    "next_action": "Read official subscription-sharing endpoint limits and host subagent support, collect complete source maps, and write/review integration recommendation",
+    "next_command": "Open main content of SIWC models/preview and subagents docs; collect existing agents findings",
+    "tier": "E4"
+  }
 }

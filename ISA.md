@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E4
 effort_source: continuity-restore
 phase: verify
-progress: 239/288
+progress: 241/294
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-07T20:17:31.318289+00:00
+updated: 2026-10-08T08:56:29.270986+00:00
 ---
 
 ## Problem
@@ -608,6 +608,15 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
   refuted by: The inspected route omits dyad and retriever wiring; final verification omits advertised quality dimensions; the legacy stitcher already encodes Opening plus Parts I–XI.
   learned: Evidence correctness, interpretive depth, architecture participation and document rendering require distinct probes.
   criterion now: ISC-171 through ISC-186 capture the missing report contract.
+
+### Witness plugin integration design (2026-10-08)
+
+- [x] ISC-287: Concrete Witness role contracts and external model runners are distinguished using current source evidence.
+- [x] ISC-288: Current plugin skill, reference and MCP packaging support is verified without assuming dashboard agent import.
+- [ ] ISC-289: Agents/Decisions billing and optional Sign in with ChatGPT endpoint limits are verified from official current documentation.
+- [ ] ISC-290: A source-linked reuse architecture specifies host execution, deterministic tools, evidence boundaries and mode limitations.
+- [ ] ISC-291: An independent review checks the recommendation for unsupported runtime, source-quality and usage claims.
+- [ ] ISC-292: The investigation preserves existing package/runtime identities and unrelated Witness WIP.
 
 ## Verification
 
