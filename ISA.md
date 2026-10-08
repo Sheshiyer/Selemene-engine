@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 257/306
+progress: 261/309
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T16:01:17.142629+00:00
+updated: 2026-10-08T16:27:51.258599+00:00
 ---
 
 ## Problem
@@ -415,13 +415,16 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [ ] ISC-278: Reviewer-accessible demo recording shows the actual host flow.
 - [x] ISC-278.1: The actual selected browser candidate completes the authorized personal reading from a live calculation (probe: personal-host-rehearsal-2026-10-08.json).
 - [ ] ISC-279: Public ZIP contains verified listing, review and publication fields.
-- [ ] ISC-280: Saved portal draft imports the intended package and MCP connection.
+- [x] ISC-280: Saved portal draft imports the intended package and MCP connection.
 - [x] ISC-280.1: Actual Personal portal saves the inspected v0.2.4 draft with intended publisher, metadata and both skills (probe: requested-draft-upload-2026-10-08.json and portal UI).
-- [ ] ISC-280.2: The saved public draft connects its intended free MCP endpoint (probe: actual saved draft MCP setup and connection test).
+- [x] ISC-280.2: The saved public draft connects its intended free MCP endpoint (probe: actual saved draft MCP setup and connection test).
 - [ ] ISC-281: Authorized submission completes all required scans and attestations.
+- [ ] ISC-281.1: Public MCP exposes each reviewed operation as an individually named tool with a strict operation-specific input schema and accurate annotations; original private endpoint remains compatible.
+- [ ] ISC-281.2: Updated public package instructions and review cases use the explicit public tool contract while preserving the verified publisher and public draft identity.
+- [ ] ISC-281.3: Fresh actual saved-draft MCP rescan no longer reports the four unexposed-operation findings before submission (user-required gate).
 - [ ] ISC-282: Approved release is publicly published with verified targeting.
-- [ ] ISC-283: Anti: no credential or unverified policy claim enters the public upload.
-- [ ] ISC-284: Anti: private plugin identity and unrelated witness WIP are preserved.
+- [x] ISC-283: Anti: no credential or unverified policy claim enters the public upload.
+- [x] ISC-284: Anti: private plugin identity and unrelated witness WIP are preserved.
 
 - [x] ISC-285: Public I Ching casting and textual sources are verified end to end.
 - [x] ISC-285.1: The verified TypeScript repair is integrated into the branch tracked by production auto-deployment.
@@ -519,6 +522,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 | PublicSelemenePlugin | Complete public listing, policy, demo and portal release gates for the existing free plugin | ISC-271..284 | FreeChatGPTPlugin | true |
 
 ## Decisions
+
+- 2026-10-08T16:27:51.258599+00:00 refined: User requires all four operation findings fixed before submission. Descriptor-only correction deployed and current rescan still flags the four tools. Actual Submit modal classifies these as nonblocking Other issues, but user makes clearance an acceptance gate. Implement individually exposed strict public tools, preserve the original private compatibility endpoint, update only the public stage and verify a fresh portal rescan. ISC-283/284 close for completed v0.2.4 draft upload/setup from exact saved-source readback and fresh private metadata; future updates retain these anti-constraints.
 
 - 2026-10-08T16:01:17.142629+00:00 refined: User explicitly requests Computer upload and review submission. Lifecycle permits requested incomplete draft upload. Saved Personal v0.2.4 draft plugin_asdk_app_6ac7bdc177548191b18f16f891c77d00/appsub_6ac7bdc1777c819185a7a780b9e09f55 imports intended publisher/listing/skills; original USER/PRIVATE identity preserved. Close ISC-280.1 only; MCP setup, demo/country facts, final cases, attestations, review and publication stay open. Earlier blocked audit is historical; this new request provides meaningful draft-upload progress.
 
@@ -671,6 +676,10 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
   criterion now: ISC-278.1 verifies actual own-profile host execution; ISC-278 remains open until a real accessible recording is verified
 
 ## Verification
+
+- 2026-10-08T16:27:51.258599+00:00 ISC-283/284: exact portal-downloaded v0.2.4 six-file source matches reviewed public stage; credential/format exporter passed, no private binding/environment file; fresh post-upload private metadata preserves original USER/PRIVATE ID and release, canonical unrelated Witness WIP remains outside owned changes. Evidence: saved-draft-readback-2026-10-08.json; independent ops audit.
+
+- ISC-280/280.2: Corrected listing reupload retains exact same public draft/version ID and reports No Issues; both skills Checks passed. Actual portal accepts public ownership challenge served by Worker9a711b10; endpoint Configured with No authentication and eight intended tools discovered. Initial scan completed with four unclear-operation findings. Names/handlers/annotations remain bounded under source review; accuracy-only descriptor correction is underway. Final eight saved-public cases remain Not run; real demo, explicit targeting, attestations, review and public release stay open.
 
 - ISC-280.1: Actual Computer filechooser sets the inspected six-file ZIP (81fddc16619ea0b1430a2aec10f4d66b449b1f71c415b54dbd3e298f74386650); resulting Personal page shows v0.2.4 Draft, selected verified individual, package name, Other category, both skills and four liveURLs. Review is Not submitted, publication Not published, MCP Configuration incomplete. Initial pricing/category/review-information issues remain. Receipt and screenshot are in isolated publication/requested-draft-upload-2026-10-08.json and portal-draft-upload-2026-10-08.jpg.
 

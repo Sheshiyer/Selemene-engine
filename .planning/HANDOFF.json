@@ -1,8 +1,8 @@
 {
   "version": "2",
-  "timestamp": "2026-10-08T16:01:45.515774+00:00",
-  "phase": "execute",
-  "phase_name": "Requested public draft upload and review setup",
+  "timestamp": "2026-10-08T16:27:51.258599+00:00",
+  "phase": "build",
+  "phase_name": "Explicit public MCP operation remediation",
   "phase_dir": null,
   "plan": null,
   "task": null,
@@ -42,14 +42,17 @@
     "Both tracked-main automatic deployments SUCCESS from4cadb617; identical corrected images and healthchecks verified",
     "IChing end-to-end bounded cast/judgment-image source acceptance verified",
     "One fresh exact P4 retry completes naturally after2m18s; all-five-engine/source-qualified report verified; ISC296 closes for observable development behavior",
-    "Explicit requested incomplete draft ZIP inspected and uploaded; saved Personal v0.2.4 publisher/listing/skills verified; ISC280.1 closed"
+    "Explicit requested incomplete draft ZIP inspected and uploaded; saved Personal v0.2.4 publisher/listing/skills verified; ISC280.1 closed",
+    "Saved draft six-file readback verified; original private metadata remains unchanged",
+    "Listing checks pass and domain ownership accepted; MCP configured8tools",
+    "Accurate descriptor deployment passed90tests/typecheck; actual rescan retains4advisory operation findings; final submission gate inspected"
   ],
   "remaining_tasks": [
-    "Resolve actual saved-draft listing/skill checks and MCP connection requirements",
-    "Supply genuine review demo/country facts as required",
-    "Run five positive/three negative cases on saved public draft",
-    "Authorized developer completes actual attestations; run scans and submit for review",
-    "Publish only approved release with verified targeting"
+    "Fix generic public operation contract and verify zero corresponding portal findings",
+    "Adapt public-only skills/review cases and upload saved identity",
+    "Supply genuine reviewer recording and explicit countries",
+    "Run final saved-public review cases",
+    "Authorized developer completes six declarations; submit, then publish only an approved release"
   ],
   "blockers": [
     "Country targeting pending explicit user answer",
@@ -66,14 +69,16 @@
     "Full reviewed engine set retained; verified coordinates do not certify incomplete meaning records",
     "Public stage has two repaired runtime instruction files; original private files/release remain preserved",
     "2026-10-08 user selected verified personal publisher and authorized website/data updates and own-profile candidate demo",
-    "Explicit incomplete draft upload authorized and completed without weakening readiness guard or supplying missing facts"
+    "Explicit incomplete draft upload authorized and completed without weakening readiness guard or supplying missing facts",
+    "User requires four operation findings fixed although portal classifies them as advisory; do not submit with known findings",
+    "Original private /mcp contract should remain compatible while new public route exposes explicit operations"
   ],
   "uncommitted_files": [
     "ISA.md",
     ".planning/HANDOFF.json"
   ],
-  "next_action": "Continue the actual saved Personal v0.2.4 draft: inspect MCP and review forms, resolve listing validation and connection requirements within authorization, run saved-version cases, then submit only after real required demo/country facts and authorized developer attestations. Preserve original private release and unrelated Witness WIP.",
-  "context_notes": "New explicit Computer upload request permits incomplete draft. Inspected ZIP upload now succeeds; saved draft Not submitted/Not published, MCP incomplete. Previous blocked audit remains historical; no factual answers invented.",
+  "next_action": "Implement strict individually named public MCP operations on a compatibility-preserving public endpoint, update only the public stage and review cases, deploy, upload to the same saved public plugin and verify a fresh rescan clears user-reported findings. Then resume genuine recording, country, final host cases and developer declarations; never infer submission from upload.",
+  "context_notes": "Draft uploaded/configured, listing/skills pass, domain accepted. Descriptor-only rescan completed with same4advisory findings. User explicitly requires fixing them before submission. Prior blocked audit historical; current new request supports meaningful work.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
     "manifest": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/delivery-manifest.json",
@@ -151,23 +156,22 @@
     "ISC-273.2",
     "ISC-278",
     "ISC-279",
-    "ISC-280",
-    "ISC-280.2",
     "ISC-281",
+    "ISC-281.1",
+    "ISC-281.2",
+    "ISC-281.3",
     "ISC-282",
-    "ISC-283",
-    "ISC-284",
     "ISC-286"
   ],
-  "isc_done_count": 257,
-  "wave": "requested-incomplete-draft-portal-setup",
+  "isc_done_count": 261,
+  "wave": "public-explicit-operation-contract",
   "tier": "E3",
   "session_budget": {
     "window": 258400,
-    "rollover_at": 167960,
-    "used_at_handoff": 225600
+    "rollover_at": 180880,
+    "used_at_handoff": 224427
   },
-  "next_command": "Continue CUA tab7 saved draft; inspect MCPs and Add review information controls from current UI.",
+  "next_command": "Review mcp_scan_contract and plugin_package maps; dispatch bounded backend implementation on noesis-build.",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -265,8 +269,8 @@
       "2026-10-08 user selected verified personal publisher and authorized website/data updates and own-profile candidate demo"
     ],
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
-    "next_action": "Continue the actual saved Personal v0.2.4 draft: inspect MCP and review forms, resolve listing validation and connection requirements within authorization, run saved-version cases, then submit only after real required demo/country facts and authorized developer attestations. Preserve original private release and unrelated Witness WIP.",
-    "next_command": "Continue CUA tab7 saved draft; inspect MCPs and Add review information controls from current UI.",
+    "next_action": "Review the pending free Worker descriptor accuracy fix, deploy and rescan the configured public draft. Preserve exact draft IDs and original private release. Submission is disabled for absent real video; actual countries/developer attestations remain pending. Final saved-public host cases remain unrun and no preview action was exposed by the inspected portal menus.",
+    "next_command": "Review backend_contract descriptor patch; then scoped Wrangler deploy and CUA Rescan on tab7.",
     "uncommitted_files": [],
     "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md",
     "isc_open": [
@@ -274,8 +278,6 @@
       "ISC-273.2",
       "ISC-278",
       "ISC-279",
-      "ISC-280",
-      "ISC-280.2",
       "ISC-281",
       "ISC-282",
       "ISC-283",
@@ -286,7 +288,7 @@
     "wave": "requested-incomplete-draft-portal-setup",
     "tier": "E3",
     "session_budget": "native goal default budget; user did not request a token budget",
-    "checkpoint_commit": "c5c1c4e3f18f25c4ea9e28f7e3fdac6257a45de5",
+    "checkpoint_commit": "1ee6eb9a",
     "checkpoint_workspace_clean": true,
     "source_workers": {
       "backend_contract": "complete: exact tracked-main commit/images/health receipt",
@@ -310,7 +312,7 @@
       }
     },
     "public_state": "draft_uploaded_not_submitted_not_approved_not_published",
-    "stage_manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
+    "stage_manifest_sha256": "45c0f8b43efaff4ffc1710ba6ce432f0d556e8f16645b7609f7fc30721279c29",
     "blocked_at": "2026-10-08T13:15:07.704149+00:00",
     "blocking_audit": "Fresh resumed turns1-3 each retain country/demo blockers. Earlier source/deployment and host recovery progress are preserved; current independent preparation is exhausted. Root inspected both prior checkpoints, unchanged current manifest and current Personal portal; independent ops audit agrees. update_goal returned blocked.",
     "resume_audit": {
@@ -355,7 +357,10 @@
       "vedic-math-live-2026-10-08.json",
       "restored-host-rehearsals-2026-10-08.json",
       "calculation-repair-pr-2026-10-08.json",
-      "tracked-main-live-2026-10-08.json"
+      "tracked-main-live-2026-10-08.json",
+      "requested-draft-upload-2026-10-08.json",
+      "descriptor-live-2026-10-08.json",
+      "saved-draft-readback-2026-10-08.json"
     ],
     "current_calculation_regression": {
       "typescript_deployment": "702d3862-4bba-4aff-89d1-29a68a330e50",
@@ -370,7 +375,7 @@
     "native_goal_status": "blocked",
     "source_repair_pr_state": "MERGED",
     "source_repair_merge": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
-    "updated_at": "2026-10-08T16:01:45.515774+00:00",
+    "updated_at": "2026-10-08T16:27:51.258599+00:00",
     "updated": "2026-10-08T16:01:45.515774+00:00",
     "current_host_acceptance": {
       "isc_296": "closed_observable_development_scope",
@@ -385,7 +390,16 @@
     "public_plugin_id": "plugin_asdk_app_6ac7bdc177548191b18f16f891c77d00",
     "public_draft_version_id": "appsub_6ac7bdc1777c819185a7a780b9e09f55",
     "public_portal_url": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6ac7bdc177548191b18f16f891c77d00?tab=details&version=appsub_6ac7bdc1777c819185a7a780b9e09f55",
-    "current_public_receipt": "requested-draft-upload-2026-10-08.json"
+    "current_public_receipt": "requested-draft-upload-2026-10-08.json",
+    "mcp_state": {
+      "configuration": "Configured",
+      "authentication": "No authentication",
+      "domain": "Domain verified",
+      "tool_count": 8,
+      "initial_scan_findings": 4,
+      "remediation": "descriptor_fix_deployed_rescan_findings_persist_explicit_operations_required",
+      "scan_findings_block_submission": false
+    }
   },
   "publication_owned_main_files": [
     "ISA.md",
@@ -435,12 +449,11 @@
     "ISC-273.2",
     "ISC-278",
     "ISC-279",
-    "ISC-280",
-    "ISC-280.2",
     "ISC-281",
+    "ISC-281.1",
+    "ISC-281.2",
+    "ISC-281.3",
     "ISC-282",
-    "ISC-283",
-    "ISC-284",
     "ISC-286"
   ],
   "publication_isc_open": [
@@ -448,15 +461,14 @@
     "ISC-273.2",
     "ISC-278",
     "ISC-279",
-    "ISC-280",
-    "ISC-280.2",
     "ISC-281",
+    "ISC-281.1",
+    "ISC-281.2",
+    "ISC-281.3",
     "ISC-282",
-    "ISC-283",
-    "ISC-284",
     "ISC-286"
   ],
-  "updated_at": "2026-10-08T16:01:45.515774+00:00",
+  "updated_at": "2026-10-08T16:27:51.258599+00:00",
   "native_goal_status": "previous_goal_remains_blocked_new_user_action_in_progress",
   "active_witness_plugin_design": {
     "request": "Explain reuse of existing Witness agents, skills and MCPs in the free plugin with user ChatGPT limits",
@@ -487,7 +499,7 @@
     "tier": "E4",
     "artifact": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md"
   },
-  "updated": "2026-10-08T16:01:45.515774+00:00",
+  "updated": "2026-10-08T16:27:51.258599+00:00",
   "historical_witness_goal": "Repair the witness reading system and deliver eight detailed English/French readings for Gary, Mohan, Sheshnarayan, and their business triad, grounded in the recovered engine fact to interpretation to symbolic meaning matrix, with private evidence sidecars and verified DOCX/PDF outputs.",
   "recording_question": "Already queued recorder-start question remains pending; do not infer recording from elapsed time or screenshots",
   "country_question": "Already queued explicit targeting question remains pending; do not infer All countries from the preselected option"
