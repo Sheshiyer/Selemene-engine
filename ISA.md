@@ -7,7 +7,7 @@ phase: verify
 progress: 245/294
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T09:03:58.342151+00:00
+updated: 2026-10-08T09:23:01.504057+00:00
 ---
 
 ## Problem
@@ -761,3 +761,13 @@ NotebookLM generation requests were attempted once per planned artifact; most re
 - refuted_by: Portable package/tool contracts expose no dashboard agent dispatcher; existing runners invoke external models; pure QA probes demonstrate failure-field and empty-evidence acceptance gaps. Official docs also distinguish native subscription hosts from API/gateway billing and provide a separately eligible OAuth Responses route.
 - learned: Reuse generic Witness instructions and evidence/mode contracts in the host, preserve deterministic calculation boundaries, and test any new runtime/billing/QA integration independently.
 - criterion_now: ISC-287..292 close the architecture investigation only; full mode parity, helper tools, OAuth admission and public publication retain their separate acceptance requirements.
+
+
+### Resumed publication evidence (2026-10-08)
+
+- Previous goal turn classification: progress; reviewed Witness source integration architecture was written and committed as e2683c99 without redefining publication completion.
+- Current goal turn classification: progress; candidate-aware demo guidance, current source/runtime hash boundary and fresh portal/recorder capability evidence are committed in isolated worktree4766f7e2.
+- ISC-271 remains verified by fresh Plugin Creator metadata and complete release list: same USER/PRIVATE v0.2.0 plugin and current release. Fresh Personal portal listing has no visible Selemene public submission. No upload, submission or publication occurred.
+- ISC-278 remains open. Walkthrough now describes repaired I Ching and bounded Gene Keys sources and requires loaded candidate instruction proof. Installed native/CLI recorder capabilities exist; QuickTime recording menu was observed, but Screenshot-app capture-controls lookup timed out. No Record action, saved playback or reviewer URL is established.
+- ISC-273..275 and ISC-286 remain open: publisher/country/policy handling and complete authorized meaning-source facts are still missing. A factual publisher/country question is queued; prior publication authorization persists. No answers are inferred.
+- Three JSON receipts parse and candidate manifest/reading-file hashes match actual staged bytes. Independent review found no actionable inaccuracies in the corrected walkthrough or binding record. Package/runtime files remain unchanged; original Witness WIP preserved.

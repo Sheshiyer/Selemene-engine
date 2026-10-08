@@ -7,7 +7,7 @@
   "plan": null,
   "task": 4,
   "total_tasks": 6,
-  "status": "blocked",
+  "status": "active",
   "goal": "Repair the witness reading system and deliver eight detailed English/French readings for Gary, Mohan, Sheshnarayan, and their business triad, grounded in the recovered engine fact to interpretation to symbolic meaning matrix, with private evidence sidecars and verified DOCX/PDF outputs.",
   "completed_tasks": [
     "Private identity, saved release and installed connector verified",
@@ -19,7 +19,8 @@
     "Gene Keys real birth lines/canonical spheres tested and deployed",
     "Installed I Ching, Human Design/Gene Keys comparison and five-engine workflow regressions passed",
     "Staged runtime instructions preserve source quality and host synthesis; credential/format guards rechecked",
-    "Witness plugin integration architecture documented and independently reviewed; implementation/release unchanged"
+    "Witness plugin integration architecture documented and independently reviewed; implementation/release unchanged",
+    "Resumed publication: current portal/private release checked and candidate-aware demo preparation committed4766f7e2"
   ],
   "remaining_tasks": [
     "Receive intended verified publisher, explicit countries, private contact and retention/deletion facts",
@@ -46,10 +47,9 @@
   ],
   "uncommitted_files": [
     "ISA.md",
-    ".planning/HANDOFF.json",
-    "docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md"
+    ".planning/HANDOFF.json"
   ],
-  "next_action": "Continue public publication when the existing pending publisher, countries, contact/retention, source-permission and demo facts are supplied; use the reviewed Witness integration plan for a future scoped plugin update",
+  "next_action": "Receive the queued publisher/country facts and prior policy/source answers; establish actual candidate instruction loading and usable capture controls, then produce/play back/host the real demo before final packaging",
   "context_notes": "Current publication task supersedes historical witness next actions. Preserve unrelated witness WIP and its open acceptance criteria. Both exact technical services are now deployed and live-verified; do not repeat unchanged builds/tests. No publisher/legal/country facts may be inferred from elapsed time or private metadata.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
@@ -137,13 +137,14 @@
     "ISC-286"
   ],
   "isc_done_count": 245,
-  "wave": "publication-witness-design-reviewed",
+  "wave": "resumed-publication-demo-binding",
   "tier": "E4",
   "session_budget": {
-    "context_checkpoint": "completed architecture atomic step; preserve blocked publication",
-    "native_goal_status": "blocked"
+    "native_goal_status": "active",
+    "fresh_resumed_audit_turn": 1,
+    "last_goal_turn": "progress"
   },
-  "next_command": "Read active_publication blockers before any release mutation; architecture plan is docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md",
+  "next_command": "Incorporate queued factual answers if received; read isolated candidate binding/capture receipts before any real demo or release action",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -185,7 +186,7 @@
     "goal": "Publish existing free Selemene plugin through verified public review and approval gates",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
     "branch": "codex/selemene-free-plugin",
-    "status": "blocked",
+    "status": "waiting_required_facts",
     "completed_tasks": [
       "Private identity, saved release and installed connector verified",
       "Public staging copy and policy drafts prepared; private source preserved",
@@ -195,7 +196,11 @@
       "I Ching mapping/casting and scan-reviewed 64 judgment/image corpus tested and deployed",
       "Gene Keys real birth lines/canonical spheres tested and deployed",
       "Installed I Ching, Human Design/Gene Keys comparison and five-engine workflow regressions passed",
-      "Staged runtime instructions preserve source quality and host synthesis; credential/format guards rechecked"
+      "Staged runtime instructions preserve source quality and host synthesis; credential/format guards rechecked",
+      "Fresh saved metadata/release and Personal portal reads confirm private current state and no visible public submission",
+      "Candidate-aware demo walkthrough repaired and independently reviewed",
+      "Current staged manifest/reading hashes recorded; final runtime/recording remain unproven",
+      "Installed recorder capabilities and current native control-access limitation recorded"
     ],
     "remaining_tasks": [
       "Receive intended verified publisher, explicit countries, private contact and retention/deletion facts",
@@ -208,9 +213,9 @@
       "Submit for authorized review; publish only approved release and verify public targeting"
     ],
     "blockers": [
-      "Publisher/countries/private contact/retention facts await existing unanswered user questions",
-      "Complete authorized verified Gene Keys source data and permission basis await user answer",
-      "A real recorder and reviewer-accessible verified demo have not been established"
+      "Publisher/countries/private contact/retention facts remain unanswered",
+      "Complete authorized verified Gene Keys meaning dataset and permission basis remain unresolved",
+      "Actual candidate runtime binding, usable capture controls, saved demo playback and reviewer-accessible URL remain unestablished"
     ],
     "decisions": [
       "Public publication is authorized; no repeated publication permission request",
@@ -220,7 +225,7 @@
       "Public stage has two repaired runtime instruction files; original private files/release remain preserved"
     ],
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
-    "next_action": "Incorporate existing pending factual answers, complete verified Gene Keys meanings and effective policies, then record actual final host demo and continue authorized portal publication.",
+    "next_action": "Receive the queued publisher/country facts and prior policy/source answers; establish actual candidate instruction loading and usable capture controls, then produce/play back/host the real demo before final packaging",
     "next_command": "Read docs/plans/free-plugin/publication/PUBLICATION-STATUS.md and pending user answers; no deploy/test retry is required for unchanged verified code.",
     "uncommitted_files": [],
     "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md",
@@ -266,7 +271,16 @@
     "public_state": "not_uploaded_not_submitted_not_approved_not_published",
     "stage_manifest_sha256": "2311edeb97e0daf3d539abddd45eae7d4097cd144f0472c0291b48301c2209d4",
     "blocked_at": "2026-10-07T20:18:40.712367+00:00",
-    "blocking_audit": "Same required factual answers and recording/source dependencies remain unanswered across original publication turn and multiple continuations. All independent engine/source repair, deployment, installed checks and staging instruction work is now complete; remaining work depends on those answers or external review."
+    "blocking_audit": "Fresh resumed audit begins at turn1. This turn made concrete preparation progress. Do not reuse the earlier blocked threshold for the resumed run.",
+    "resume_audit": {
+      "resumed_goal_turns": 1,
+      "previous_goal_turn_classification": "progress",
+      "current_goal_turn_classification": "progress",
+      "same_required_facts_missing": true,
+      "meaningful_progress": "Corrected candidate-aware demo/source instructions and identified installed recorder capabilities; actual private/portal state revalidated",
+      "blocked_threshold_reached": false
+    },
+    "worktree_head": "4766f7e2a6b66e6bd49327a241542ec4ae4a46e3"
   },
   "publication_owned_main_files": [
     "ISA.md",
@@ -337,8 +351,8 @@
     "284",
     "286"
   ],
-  "updated_at": "2026-10-08T09:03:58.342151+00:00",
-  "native_goal_status": "blocked",
+  "updated_at": "2026-10-08T09:23:01.504057+00:00",
+  "native_goal_status": "active",
   "active_witness_plugin_design": {
     "request": "Explain reuse of existing Witness agents, skills and MCPs in the free plugin with user ChatGPT limits",
     "status": "complete",
