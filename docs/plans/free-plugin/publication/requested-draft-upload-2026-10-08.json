@@ -1,0 +1,79 @@
+{
+  "schema": "selemene.portal-draft.v1",
+  "observed_at": "2026-10-08T16:01:17.142629+00:00",
+  "method": "Computer CUA actual portal UI",
+  "authorization": "User explicitly requested upload and review submission; incomplete draft upload permitted by submission lifecycle",
+  "archive": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine/docs/plans/free-plugin/publication/archives/selemene-engine-0.2.4-requested-draft-2026-10-08.zip",
+  "archive_sha256": "81fddc16619ea0b1430a2aec10f4d66b449b1f71c415b54dbd3e298f74386650",
+  "archive_bytes": 74031,
+  "entries": [
+    {
+      "path": "selemene-engine/assets/icon.png",
+      "sha256": "7a9b053b7e7fce21aa0aa4c460dabd5465c2510b97672f434adfa7e401bf5d9f"
+    },
+    {
+      "path": "selemene-engine/mcp.json",
+      "sha256": "1203b35853b8dd6c85897ca57793106216ca6b485acd2e3d2d3e954d4c6afcfb"
+    },
+    {
+      "path": "selemene-engine/plugin.json",
+      "sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45"
+    },
+    {
+      "path": "selemene-engine/skills/selemene-onboarding/SKILL.md",
+      "sha256": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0"
+    },
+    {
+      "path": "selemene-engine/skills/selemene-reading/SKILL.md",
+      "sha256": "83e4fb53ee5cfdf9390ded43e76bc9be9d4f3f15fde3a56af85d577095c2e938"
+    },
+    {
+      "path": "selemene-engine/skills/selemene-reading/references/host-reading-flow.md",
+      "sha256": "513f9954d654098fe61b4bfb8429b50891754b5ab3c3cf786126c30d0c2d4980"
+    }
+  ],
+  "uploaded_manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45",
+  "organization": "Personal",
+  "project": "thewhychromosome",
+  "developer": "SHESHNARAYAN CUMBIPURAM NATESHAN",
+  "package_name": "selemene-engine",
+  "version": "0.2.4",
+  "plugin_id": "plugin_asdk_app_6ac7bdc177548191b18f16f891c77d00",
+  "draft_version_id": "appsub_6ac7bdc1777c819185a7a780b9e09f55",
+  "url": "https://platform.openai.com/plugins/manage/plugin_asdk_app_6ac7bdc177548191b18f16f891c77d00?tab=details&version=appsub_6ac7bdc1777c819185a7a780b9e09f55",
+  "state": "DRAFT_UPLOADED",
+  "review_status": "Not submitted",
+  "publication_status": "Not published",
+  "mcp_configuration": "Configuration incomplete",
+  "category_imported": "Other",
+  "skills_imported": [
+    "selemene-onboarding",
+    "selemene-reading"
+  ],
+  "skill_checks": "Checking at initial read",
+  "listing_urls_imported": [
+    "https://www.tryambakam.space/selemene/",
+    "https://www.tryambakam.space/selemene/support/",
+    "https://www.tryambakam.space/selemene/privacy/",
+    "https://www.tryambakam.space/selemene/terms/"
+  ],
+  "initial_issues": [
+    "Remove pricing, subscription offers, and temporary promotions from the description.",
+    "We couldn\u2019t confirm the selected category. Review the category and make sure the listing clearly explains the plugin\u2019s main purpose.",
+    "Incomplete review information"
+  ],
+  "countries_in_uploaded_manifest": "absent",
+  "demo_recording_url_in_uploaded_manifest": "absent",
+  "final_saved_version_case_status": "All eight Not run",
+  "attestations": "not completed",
+  "public_mcp_connection": "not configured",
+  "private_identity": {
+    "id": "plugins_6ac68a62e61081918179487264135f28",
+    "version": "0.2.4",
+    "release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96",
+    "fresh_read": "USER/PRIVATE retained before upload",
+    "personal_portal": "Plugin not found in this organization; original private record preserved"
+  },
+  "proof_image": "portal-draft-upload-2026-10-08.jpg",
+  "proof_sha256": "54aca6256a9c6784d9f794fab1c619eae571ec442d5ed87a1e873612d09fcf76"
+}
