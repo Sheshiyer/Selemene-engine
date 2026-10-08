@@ -82,5 +82,10 @@
   "deployment_for_new_contract": "not done",
   "portal_scan_for_new_contract": "not run",
   "submitted": false,
-  "published": false
+  "published": false,
+  "current_portal_proof": {
+    "image": "portal-operation-findings-before-fix-2026-10-08.jpg",
+    "sha256": "ce3348522649dd2a885024d99a8046c446df05a1c8325d06d5779c27c9859daf",
+    "state": "Configured; domain verified; four operation findings; Not submitted; Not published"
+  }
 }
