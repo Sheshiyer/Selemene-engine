@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 256/304
+progress: 257/306
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T13:15:07.704149+00:00
+updated: 2026-10-08T16:01:17.142629+00:00
 ---
 
 ## Problem
@@ -416,6 +416,8 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-278.1: The actual selected browser candidate completes the authorized personal reading from a live calculation (probe: personal-host-rehearsal-2026-10-08.json).
 - [ ] ISC-279: Public ZIP contains verified listing, review and publication fields.
 - [ ] ISC-280: Saved portal draft imports the intended package and MCP connection.
+- [x] ISC-280.1: Actual Personal portal saves the inspected v0.2.4 draft with intended publisher, metadata and both skills (probe: requested-draft-upload-2026-10-08.json and portal UI).
+- [ ] ISC-280.2: The saved public draft connects its intended free MCP endpoint (probe: actual saved draft MCP setup and connection test).
 - [ ] ISC-281: Authorized submission completes all required scans and attestations.
 - [ ] ISC-282: Approved release is publicly published with verified targeting.
 - [ ] ISC-283: Anti: no credential or unverified policy claim enters the public upload.
@@ -517,6 +519,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 | PublicSelemenePlugin | Complete public listing, policy, demo and portal release gates for the existing free plugin | ISC-271..284 | FreeChatGPTPlugin | true |
 
 ## Decisions
+
+- 2026-10-08T16:01:17.142629+00:00 refined: User explicitly requests Computer upload and review submission. Lifecycle permits requested incomplete draft upload. Saved Personal v0.2.4 draft plugin_asdk_app_6ac7bdc177548191b18f16f891c77d00/appsub_6ac7bdc1777c819185a7a780b9e09f55 imports intended publisher/listing/skills; original USER/PRIVATE identity preserved. Close ISC-280.1 only; MCP setup, demo/country facts, final cases, attestations, review and publication stay open. Earlier blocked audit is historical; this new request provides meaningful draft-upload progress.
 
 - 2026-10-08T13:15:07.704149+00:00 refined: Resumed turns1-3 retain the same explicit-country and real-reviewer-video gaps. Preserve verified source/deployment and P4/P5 progress from turns1/2. Current manifest still omits countries/demo URL, current Personal portal has no Selemene draft, and independent audit finds no remaining preparation before those facts. Native update_goal returned blocked; public submission/publication remains unachieved. Resume on factual answers or an explicit new capture method, without repeating completed tests or existing questions.
 
@@ -667,6 +671,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
   criterion now: ISC-278.1 verifies actual own-profile host execution; ISC-278 remains open until a real accessible recording is verified
 
 ## Verification
+
+- ISC-280.1: Actual Computer filechooser sets the inspected six-file ZIP (81fddc16619ea0b1430a2aec10f4d66b449b1f71c415b54dbd3e298f74386650); resulting Personal page shows v0.2.4 Draft, selected verified individual, package name, Other category, both skills and four liveURLs. Review is Not submitted, publication Not published, MCP Configuration incomplete. Initial pricing/category/review-information issues remain. Receipt and screenshot are in isolated publication/requested-draft-upload-2026-10-08.json and portal-draft-upload-2026-10-08.jpg.
 
 - Publication blocked audit: current staged manifest cb4966fc remains v0.2.4 with countries absent and demo_recording_url null; Personal portal table shows no Selemene draft. Prior canonical checkpoints a212bbd4 and6c58d1db preserve the same country/video blockers across resumed turns1/2; current turn3 supplies no factual answer. Independent ops audit confirms no remaining independent preparation. update_goal returns blocked, while ISC296 remains closed and all final saved-public cases remain Not run.
 
