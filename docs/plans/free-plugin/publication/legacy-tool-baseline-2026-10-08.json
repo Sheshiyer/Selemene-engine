@@ -1,0 +1,441 @@
+{
+  "schema": "selemene.private-mcp-baseline.v1",
+  "observed_at": "2026-10-08T16:33:06.336Z",
+  "endpoint": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+  "method": "Official MCP SDK initialize and tools/list only",
+  "tool_count": 8,
+  "tool_definitions_sha256": "93dadff279dc8fa5a2357644b933ac2455fbaeaa72bd33585d5730609a3cc92c",
+  "tools": [
+    {
+      "name": "selemene_list_engines",
+      "description": "Return the reviewed Selemene engine catalog and capability/readiness metadata only. Catalog membership is not proof of operational readiness. Interpretation is composed in the user's current host ChatGPT conversation. This connector makes no hosted inference calls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "include_denied": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "List engines",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ]
+      }
+    },
+    {
+      "name": "selemene_engine_info",
+      "description": "Return input requirements and metadata for exactly one reviewed engine selected by engine_id. Use these requirements to supply the required birth_data, options, and parameters. Interpretation is composed in the user's current host ChatGPT conversation. This connector makes no hosted inference calls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "engine_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "engine_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Engine info",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ]
+      }
+    },
+    {
+      "name": "selemene_prepare_reading",
+      "description": "Validate inputs locally for the selected reviewed engine_id and report missing or invalid fields. This tool makes no upstream call and executes or saves nothing. It uses the same input validation rules as selemene_calculate. For a later calculation only: Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history. Interpretation is composed in the user's current host ChatGPT conversation. This connector makes no hosted inference calls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "engine_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "birth_data": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "current_time": {
+            "type": "string"
+          },
+          "location": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "question": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "engine_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Prepare reading",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ]
+      }
+    },
+    {
+      "name": "selemene_calculate",
+      "description": "Execute exactly one calculation for the selected reviewed engine_id using its validated input. Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history. Interpretation is composed in the user's current host ChatGPT conversation. This connector makes no hosted inference calls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "engine_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "birth_data": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "current_time": {
+            "type": "string"
+          },
+          "location": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "question": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "engine_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Calculate",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ]
+      }
+    },
+    {
+      "name": "selemene_list_workflows",
+      "description": "List reviewed, safe Selemene workflows. Only decision-support is currently in the reviewed allowlist. Interpretation is composed in the user's current host ChatGPT conversation. This connector makes no hosted inference calls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "List workflows",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ]
+      }
+    },
+    {
+      "name": "selemene_workflow_info",
+      "description": "Retrieve live metadata for a workflow. Engine IDs are cross-checked against the reviewed safe set; tainted workflows are refused. Interpretation is composed in the user's current host ChatGPT conversation. This connector makes no hosted inference calls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "workflow_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "workflow_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Workflow info",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ]
+      }
+    },
+    {
+      "name": "selemene_run_workflow",
+      "description": "Execute a reviewed, safe Selemene workflow. Validates live metadata against the reviewed engine allowlist before POST. Persistent side effects apply. Free readings use a shared Selemene administrator account. Birth inputs and calculated results may be stored there; usage, profile, XP and phase may change. There is no separate private user history. Interpretation is composed in the user's current host ChatGPT conversation. This connector makes no hosted inference calls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "workflow_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "current_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "birth_data": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "date": {
+                "type": "string"
+              },
+              "time": {
+                "type": "string"
+              },
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "timezone": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "date",
+              "latitude",
+              "longitude",
+              "timezone"
+            ],
+            "additionalProperties": false
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude"
+            ],
+            "additionalProperties": false
+          },
+          "options": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "spread": {
+                "type": "string",
+                "enum": [
+                  "single_card",
+                  "three_card",
+                  "celtic_cross"
+                ]
+              },
+              "method": {
+                "type": "string",
+                "const": "three_coins"
+              },
+              "type": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9
+              },
+              "wing": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "workflow_id",
+          "options"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Run workflow",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ]
+      }
+    },
+    {
+      "name": "selemene_vedic_chart",
+      "description": "Calculate natal Vedic D1 Rasi and D9 Navamsa facts using Swiss Ephemeris planetary positions, an approximate linear Lahiri ayanamsa formula, and whole-sign houses. Requires verified birth date, time, coordinates, and IANA timezone. Interpretation is composed by ChatGPT. Combustion, dignities, yogas, Atmakaraka, and Darakaraka are unavailable. The chart handler does not save charts; service authentication, rate limits, and operational logs still apply. Interpretation is composed in the user's current host ChatGPT conversation. This connector makes no hosted inference calls.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "birth_data": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "time": {
+                "type": "string",
+                "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?$"
+              },
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "timezone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "date",
+              "time",
+              "latitude",
+              "longitude",
+              "timezone"
+            ],
+            "additionalProperties": false
+          },
+          "current_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "birth_data"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Vedic Chart (D1/D9)",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "securitySchemes": [
+          {
+            "type": "noauth"
+          }
+        ]
+      }
+    }
+  ],
+  "reading_calls": 0
+}
