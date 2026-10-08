@@ -1,13 +1,13 @@
 ---
 project: Selemene-engine
 task: "Free Selemene plugin public publication"
-effort: E4
+effort: E3
 effort_source: continuity-restore
-phase: verify
-progress: 245/294
+phase: build
+progress: 246/296
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T09:27:50.904592+00:00
+updated: 2026-10-08T10:22:53.088054+00:00
 ---
 
 ## Problem
@@ -406,6 +406,8 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-271: Current saved plugin identity, version and private scope are verified.
 - [x] ISC-272: Installed connector returns real catalog and preflight results.
 - [ ] ISC-273: User confirms the intended verified publisher and countries.
+- [x] ISC-273.1: User selects the verified personal publisher.
+- [ ] ISC-273.2: User explicitly selects public country targeting.
 - [ ] ISC-274: Published privacy policy covers actual free shared-service storage.
 - [ ] ISC-275: Published terms and support identify the selected publisher and contact.
 - [x] ISC-276: Five positive and three negative review cases cover all eight tools.
@@ -576,6 +578,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 - 2026-10-07: refined: Continue correcting the affected engines and source datasets without narrowing the intended public reading scope. Fix I Ching casting/mapping and Gene Keys birth-derived lines at ingestion; keep full source and deployed acceptance unproven until verified.
 
 - 2026-10-07 refined: Publication retains the full reviewed engine scope. I Ching cast mapping and Gene Keys birth lines are being corrected in the isolated worktree, with source provenance and live deployment checks required before their public criteria close. Two routed code attempts produced invalid or incomplete output and were rejected; bounded corrective work and actual compiler tests continue.
+
+- 2026-10-08 10:22: refined: User selected the verified personal publisher, authorized Selemene website updates at tryambakam.space and local/online data research with necessary DB/Cloudflare updates, and authorized own profile for candidate-host demo. Country targeting remains an explicit pending fact. Work resumes with parallel source, website and candidate lanes; prior publication authorization persists.
 
 ## Changelog
 
@@ -778,3 +782,5 @@ NotebookLM generation requests were attempted once per planned artifact; most re
 - Three consecutive resumed goal turns retain the same missing publisher/country/policy/source facts and final candidate/demo evidence. Turn1 completed bounded demo preparation; turn2 and turn3 are no progress after direct source revalidation. Independent review confirmed no remaining concrete preparation that removes the impasse without input or external-state change.
 - Current public stage still has no developerName, countries, effective privacy URL or demo URL. Candidate runtime/recording status remains not_established, and the isolated worktree is clean at4766f7e2. Publication criteria remain unchecked.
 - Native goal update returned blocked. The full public publication objective and prior publication authorization are preserved; no completion, upload, submission, approval or public release is claimed. Resume after the queued factual answers and required evidence become available.
+
+- ISC-273.1: direct user choice — "im am the pusblished personal" selects the verified personal identity observed in the publisher portal; country targeting remains open under ISC-273.2.
