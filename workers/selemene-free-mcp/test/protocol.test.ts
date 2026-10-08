@@ -3,6 +3,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import worker from "../src/index.js";
 import { PUBLIC_ORIGIN } from "../src/env.js";
+import { FREE_TOOLS } from "../src/mcp.js";
 import { SHARED_STORAGE_DISCLOSURE } from "../src/sanitize.js";
 import { API_ORIGIN, SYNTHETIC_KEY, call, init, makeEnv, request } from "./helpers.js";
 
@@ -57,6 +58,32 @@ describe("official stateless MCP protocol", () => {
     expect(listed.tools.find((tool) => tool.name === "selemene_calculate")?.description).toContain(SHARED_STORAGE_DISCLOSURE);
     expect(upstream).not.toHaveBeenCalled();
     await client.close();
+  });
+  it("describes catalog, metadata, local preflight and single-engine execution accurately", async () => {
+    const listed = await rpc({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} });
+    const tools = listed.data.result.tools as Array<{ name: string; description: string; annotations: unknown }>;
+    expect(tools.map((tool) => tool.name)).toEqual(FREE_TOOLS.map((tool) => tool.name));
+    for (const tool of tools) {
+      expect(tool.annotations).toEqual(FREE_TOOLS.find((registered) => registered.name === tool.name)!.annotations);
+      expect(tool.description).toContain("current host ChatGPT conversation");
+      expect(tool.description).toContain("no hosted inference calls");
+      expect(tool.description).not.toContain("returns engine calculations and local symbolic draws");
+    }
+    const description = (name: string) => tools.find((tool) => tool.name === name)!.description;
+    expect(description("selemene_list_engines")).toContain("catalog and capability/readiness metadata only");
+    expect(description("selemene_engine_info")).toContain("input requirements and metadata for exactly one reviewed engine selected by engine_id");
+    for (const name of ["selemene_list_engines", "selemene_engine_info"]) {
+      expect(description(name)).not.toContain(SHARED_STORAGE_DISCLOSURE);
+    }
+    const preflight = description("selemene_prepare_reading");
+    expect(preflight).toContain("Validate inputs locally");
+    expect(preflight).toContain("missing or invalid fields");
+    expect(preflight).toContain("no upstream call and executes or saves nothing");
+    expect(preflight).toContain("For a later calculation only: " + SHARED_STORAGE_DISCLOSURE);
+    expect(description("selemene_calculate")).toContain("Execute exactly one calculation for the selected reviewed engine_id");
+    expect(description("selemene_calculate")).toContain(SHARED_STORAGE_DISCLOSURE);
+    expect(description("selemene_run_workflow")).toContain(SHARED_STORAGE_DISCLOSURE);
+    expect(upstream).not.toHaveBeenCalled();
   });
   it("initializes and advertises both server-owned noauth scheme locations", async () => {
     expect((await rpc(init)).response.status).toBe(200);
@@ -122,7 +149,8 @@ describe("free service tool boundaries", () => {
     upstream.mockClear();
     const prepared = await rpc(call("selemene_prepare_reading", { engine_id: "numerology" }));
     expect(prepared.data.result.structuredContent.can_calculate).toBe(false);
-    expect(prepared.data.result.structuredContent.shared_storage_disclosure).toBe(SHARED_STORAGE_DISCLOSURE);
+    expect(prepared.data.result.structuredContent.shared_storage_disclosure).toBe("For a later calculation only: " + SHARED_STORAGE_DISCLOSURE);
+    expect(prepared.data.result.structuredContent.interpretation_policy).not.toContain("returns engine calculations and local symbolic draws");
     expect(upstream).not.toHaveBeenCalled();
   });
   it("uses server-derived phase, sponsor header and fixed ordinary calculation path", async () => {

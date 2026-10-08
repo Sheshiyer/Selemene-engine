@@ -1,0 +1,135 @@
+{
+  "schema": "selemene.descriptor-live.v1",
+  "observed_at": "2026-10-08T16:18:27.927Z",
+  "endpoint": "https://selemene-free-mcp.sheshnarayan-iyer.workers.dev/mcp",
+  "deployed_worker_version": "8cfd3d2b-97ef-4b19-998f-52b8751fa498",
+  "previous_worker_version": "9a711b10-e904-4601-8793-f48df7f1d0be",
+  "method": "Official MCP Client initialize and tools/list; no reading execution",
+  "tool_count": 8,
+  "checks": [
+    {
+      "name": "selemene_list_engines",
+      "annotations": {
+        "title": "List engines",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "host_interpretation": true,
+      "no_hosted_inference": true,
+      "inaccurate_common_prose_absent": true
+    },
+    {
+      "name": "selemene_engine_info",
+      "annotations": {
+        "title": "Engine info",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "host_interpretation": true,
+      "no_hosted_inference": true,
+      "inaccurate_common_prose_absent": true
+    },
+    {
+      "name": "selemene_prepare_reading",
+      "annotations": {
+        "title": "Prepare reading",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "host_interpretation": true,
+      "no_hosted_inference": true,
+      "inaccurate_common_prose_absent": true
+    },
+    {
+      "name": "selemene_calculate",
+      "annotations": {
+        "title": "Calculate",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "host_interpretation": true,
+      "no_hosted_inference": true,
+      "inaccurate_common_prose_absent": true
+    },
+    {
+      "name": "selemene_list_workflows",
+      "annotations": {
+        "title": "List workflows",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "host_interpretation": true,
+      "no_hosted_inference": true,
+      "inaccurate_common_prose_absent": true
+    },
+    {
+      "name": "selemene_workflow_info",
+      "annotations": {
+        "title": "Workflow info",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "host_interpretation": true,
+      "no_hosted_inference": true,
+      "inaccurate_common_prose_absent": true
+    },
+    {
+      "name": "selemene_run_workflow",
+      "annotations": {
+        "title": "Run workflow",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "host_interpretation": true,
+      "no_hosted_inference": true,
+      "inaccurate_common_prose_absent": true
+    },
+    {
+      "name": "selemene_vedic_chart",
+      "annotations": {
+        "title": "Vedic Chart (D1/D9)",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "host_interpretation": true,
+      "no_hosted_inference": true,
+      "inaccurate_common_prose_absent": true
+    }
+  ],
+  "local_checks": {
+    "worker_tests": 90,
+    "typecheck": "pass",
+    "wrangler_dry_run": "pass"
+  },
+  "portal_rescan": {
+    "state": "completed_with_same_four_operation_findings",
+    "scanned_definition": "Current corrected descriptor confirmed in actual tool findings",
+    "reviewed_at_portal": "08/10/2026, 18:18:27",
+    "findings_block_submission": false,
+    "portal_explanation": "These issues do not block submission, but unresolved issues may lead to rejection during review.",
+    "user_required_gate": "Fix before submission",
+    "flagged_tools": [
+      "selemene_list_engines",
+      "selemene_engine_info",
+      "selemene_prepare_reading",
+      "selemene_calculate"
+    ]
+  },
+  "final_saved_public_host_cases": "all eight Not run"
+}

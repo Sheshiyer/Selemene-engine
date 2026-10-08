@@ -102,5 +102,27 @@
     "supporting_content_blocker": "No video walkthrough URL provided. Add a video walkthrough URL to extensions.com.openai.review.demo_recording_url in plugin.json, then upload your plugin ZIP again before submitting for review.",
     "submission_dialog": "Incomplete review information; Submit disabled; all six attestations unchecked",
     "proof_image": "portal-listing-validated-2026-10-08.jpg"
+  },
+  "mcp_current": {
+    "configuration": "Configured",
+    "authentication": "No authentication",
+    "domain": "Domain verified",
+    "discovered_tools_count": 8,
+    "scan": "complete_with_four_operation_findings",
+    "final_saved_cases": "Not run",
+    "submitted": false
+  },
+  "current_submission_gate": {
+    "observed_at": "2026-10-08T16:27:51.258599+00:00",
+    "state": "Submit disabled: Incomplete review information",
+    "mcp_findings": "Four operation findings are advisory in portal; user requires fix before submission",
+    "attestations_checked": 0,
+    "attestations_count": 6,
+    "demo_recording_url": "absent",
+    "countries": "pending explicit user choice",
+    "submitted": false,
+    "published": false,
+    "proof_image": "portal-submission-gate-2026-10-08.jpg",
+    "proof_sha256": "33831e0545f9b79379fa0a21e2bf437e991cd064aebd5e2aedd4dac5a04465cd"
   }
 }

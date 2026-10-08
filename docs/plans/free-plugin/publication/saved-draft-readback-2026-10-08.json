@@ -1,0 +1,69 @@
+{
+  "schema": "selemene.saved-draft-readback.v1",
+  "observed_at": "2026-10-08T16:16:43.059738+00:00",
+  "method": "Actual portal More plugin actions > Download draft ZIP through CUA",
+  "draft_id": "appsub_6ac7bdc1777c819185a7a780b9e09f55",
+  "plugin_id": "plugin_asdk_app_6ac7bdc177548191b18f16f891c77d00",
+  "version": "0.2.4",
+  "download": "/Users/sheshnarayaniyer/Downloads/selemene-engine-0.2.4.zip",
+  "archive_sha256": "eb0e2fbf2ef497b606b930405380ef9f6b8147769aa7c61dacd7dd962af84a12",
+  "inventory": [
+    "mcp.json",
+    "plugin.json",
+    "assets/icon.png",
+    "skills/selemene-onboarding/SKILL.md",
+    "skills/selemene-reading/SKILL.md",
+    "skills/selemene-reading/references/host-reading-flow.md"
+  ],
+  "file_matches": [
+    {
+      "file": "mcp.json",
+      "sha256": "1203b35853b8dd6c85897ca57793106216ca6b485acd2e3d2d3e954d4c6afcfb",
+      "equality": "semantic",
+      "matches_stage": true
+    },
+    {
+      "file": "plugin.json",
+      "sha256": "45c0f8b43efaff4ffc1710ba6ce432f0d556e8f16645b7609f7fc30721279c29",
+      "equality": "semantic",
+      "matches_stage": true
+    },
+    {
+      "file": "assets/icon.png",
+      "sha256": "7a9b053b7e7fce21aa0aa4c460dabd5465c2510b97672f434adfa7e401bf5d9f",
+      "equality": "byte",
+      "matches_stage": true
+    },
+    {
+      "file": "skills/selemene-onboarding/SKILL.md",
+      "sha256": "b8842b59b2f6340321527abfa514e0ff301d48449add772f6b9b7a5c46bd41e0",
+      "equality": "byte",
+      "matches_stage": true
+    },
+    {
+      "file": "skills/selemene-reading/SKILL.md",
+      "sha256": "83e4fb53ee5cfdf9390ded43e76bc9be9d4f3f15fde3a56af85d577095c2e938",
+      "equality": "byte",
+      "matches_stage": true
+    },
+    {
+      "file": "skills/selemene-reading/references/host-reading-flow.md",
+      "sha256": "513f9954d654098fe61b4bfb8429b50891754b5ab3c3cf786126c30d0c2d4980",
+      "equality": "byte",
+      "matches_stage": true
+    }
+  ],
+  "manifest_semantic_match": true,
+  "all_six_files_match": true,
+  "countries": "absent",
+  "demo_recording_url": "absent",
+  "private_current_metadata": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "version": "0.2.4",
+    "current_release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96",
+    "scope": "USER",
+    "discoverability": "PRIVATE",
+    "fresh_after_public_upload": "verified by Plugin Creator metadata tool"
+  },
+  "credential_boundary": "Six-file public source passed unchanged credential exporter; saved manifest/MCP match that source; no private app binding or environment file"
+}

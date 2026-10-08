@@ -14,7 +14,13 @@ import { VEDIC_CHART_TOOL } from "./vedic-chart.js";
 
 export const FREE_TOOLS: readonly ToolRegistration[] = [...ALL_TOOLS, VEDIC_CHART_TOOL];
 const MAX_BYTES = 32 * 1024;
-const INTERPRETATION = "Interpretation uses the user's host ChatGPT session. This connector returns engine calculations and local symbolic draws; it makes no hosted inference calls.";
+const INTERPRETATION = "Interpretation is composed in the user's current host ChatGPT conversation. This connector makes no hosted inference calls.";
+const OPERATION_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  selemene_list_engines: "Return the reviewed Selemene engine catalog and capability/readiness metadata only. Catalog membership is not proof of operational readiness.",
+  selemene_engine_info: "Return input requirements and metadata for exactly one reviewed engine selected by engine_id. Use these requirements to supply the required birth_data, options, and parameters.",
+  selemene_prepare_reading: "Validate inputs locally for the selected reviewed engine_id and report missing or invalid fields. This tool makes no upstream call and executes or saves nothing. It uses the same input validation rules as selemene_calculate.",
+  selemene_calculate: "Execute exactly one calculation for the selected reviewed engine_id using its validated input.",
+};
 const error = (status: number, message: string, id: string | number | null = null, code = -32600) =>
   Response.json({ jsonrpc: "2.0", id, error: { code, message } }, { status, headers: { "cache-control": "no-store" } });
 function failed(message: string): ToolResult {
@@ -76,8 +82,14 @@ async function serviceProps(service: FreeContext): Promise<ToolContext["props"] 
   return { userId: "shared-service", tier: data.tier, consciousnessLevel: phase,
     apiKey: service.apiKey, linkedAt: 0 };
 }
-function needsDisclosure(tool: ToolRegistration): boolean {
-  return tool.annotations.readOnlyHint === false || tool.name === "selemene_prepare_reading";
+function storageDisclosure(tool: ToolRegistration): string | undefined {
+  if (tool.name === "selemene_prepare_reading") return "For a later calculation only: " + SHARED_STORAGE_DISCLOSURE;
+  return tool.annotations.readOnlyHint === false ? SHARED_STORAGE_DISCLOSURE : undefined;
+}
+function publicDescription(tool: ToolRegistration): string {
+  const operation = OPERATION_DESCRIPTIONS[tool.name] ?? tool.description.replace(/Requires mcp:[a-z]+ scope\./g, "").trim();
+  const disclosure = storageDisclosure(tool);
+  return operation + (disclosure ? " " + disclosure : "") + " " + INTERPRETATION;
 }
 function publicResult(result: ToolResult, tool: ToolRegistration, secret: string): ToolResult {
   if (result._meta?.["mcp/www_authenticate"]) result = failed("The sponsored Selemene service is unavailable. Try again later.");
@@ -86,12 +98,13 @@ function publicResult(result: ToolResult, tool: ToolRegistration, secret: string
   });
   if (denied) result = failed("The sponsored Selemene service cannot run this calculation.");
   const clean = sanitizeValue(result, secret) as ToolResult;
+  const disclosure = storageDisclosure(tool);
   const structured = { ...(clean.structuredContent ?? {}), interpretation_policy: INTERPRETATION,
-    ...(needsDisclosure(tool) ? { shared_storage_disclosure: SHARED_STORAGE_DISCLOSURE } : {}) };
+    ...(disclosure ? { shared_storage_disclosure: disclosure } : {}) };
   clean.structuredContent = structured;
   clean.content = [...clean.content, { type: "text", text: JSON.stringify({
     interpretation_policy: INTERPRETATION,
-    ...(needsDisclosure(tool) ? { shared_storage_disclosure: SHARED_STORAGE_DISCLOSURE } : {}),
+    ...(disclosure ? { shared_storage_disclosure: disclosure } : {}),
   }) }];
   return clean;
 }
@@ -130,8 +143,7 @@ export async function handleMcp(request: Request, ctx: McpContext): Promise<Resp
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: FREE_TOOLS.map((tool) => ({
       name: tool.name,
-      description: tool.description.replace(/Requires mcp:[a-z]+ scope\./g, "").trim() +
-        (needsDisclosure(tool) ? " " + SHARED_STORAGE_DISCLOSURE : "") + " " + INTERPRETATION,
+      description: publicDescription(tool),
       inputSchema: zodToJsonSchema(tool.inputSchema, { $refStrategy: "none" }) as { type: "object"; [key: string]: unknown },
       annotations: tool.annotations, securitySchemes: schemes, _meta: { securitySchemes: schemes },
     })),

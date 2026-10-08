@@ -32,8 +32,31 @@
     "typecheck": "pass",
     "wrangler_dry_run": "pass"
   },
-  "portal_domain_verification": "pending",
+  "portal_domain_verification": "Domain verified",
   "secret_updates": "none",
   "oauth_worker_changes": "none",
-  "quota_or_upstream_calls_for_challenge": "none by focused local test"
+  "quota_or_upstream_calls_for_challenge": "none by focused local test",
+  "portal_connection": "Configured, No authentication",
+  "discovered_tools": [
+    "selemene_list_engines",
+    "selemene_engine_info",
+    "selemene_prepare_reading",
+    "selemene_calculate",
+    "selemene_list_workflows",
+    "selemene_workflow_info",
+    "selemene_run_workflow",
+    "selemene_vedic_chart"
+  ],
+  "scan_completed": true,
+  "initial_scan_findings": {
+    "tools": [
+      "selemene_list_engines",
+      "selemene_engine_info",
+      "selemene_prepare_reading",
+      "selemene_calculate"
+    ],
+    "finding": "This tool appears to execute operations that are not individually exposed. Please expose each model-callable operation upfront as a separate tool with a clear description, input schema, and annotations.",
+    "count_per_tool": 1
+  },
+  "metadata_remediation": "Tool-specific description accuracy correction underway; schemas/handlers unchanged"
 }
