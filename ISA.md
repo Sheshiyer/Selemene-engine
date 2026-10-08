@@ -7,7 +7,7 @@ phase: build
 progress: 261/309
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T16:27:51.258599+00:00
+updated: 2026-10-08T16:41:30.587679+00:00
 ---
 
 ## Problem
@@ -522,6 +522,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 | PublicSelemenePlugin | Complete public listing, policy, demo and portal release gates for the existing free plugin | ISC-271..284 | FreeChatGPTPlugin | true |
 
 ## Decisions
+
+- 2026-10-08T16:41:30.587679+00:00 refined: Explicit39-tool contract and acceptance packet are prepared, but both hosted Build and one authorized process-local loopback retry were held before generation. Read-only macOS admission confirms elevated memory pressure. No source implementation, deployment, upload or clean rescan exists. Existing AGENTS native-headroom constraint retained; root asks the user to choose scoped native production or retain the routed Build path, without bypassing admission or mutating shared routing.
 
 - 2026-10-08T16:27:51.258599+00:00 refined: User requires all four operation findings fixed before submission. Descriptor-only correction deployed and current rescan still flags the four tools. Actual Submit modal classifies these as nonblocking Other issues, but user makes clearance an acceptance gate. Implement individually exposed strict public tools, preserve the original private compatibility endpoint, update only the public stage and verify a fresh portal rescan. ISC-283/284 close for completed v0.2.4 draft upload/setup from exact saved-source readback and fresh private metadata; future updates retain these anti-constraints.
 

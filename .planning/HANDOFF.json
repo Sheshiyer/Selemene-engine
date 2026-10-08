@@ -1,13 +1,13 @@
 {
   "version": "2",
-  "timestamp": "2026-10-08T16:27:51.258599+00:00",
-  "phase": "build",
-  "phase_name": "Explicit public MCP operation remediation",
+  "timestamp": "2026-10-08T16:41:30.587679+00:00",
+  "phase": "plan",
+  "phase_name": "Explicit MCP contract prepared; production admission held",
   "phase_dir": null,
   "plan": null,
   "task": null,
   "total_tasks": null,
-  "status": "in_progress",
+  "status": "awaiting_input",
   "goal": "Publish existing free Selemene plugin through verified public review and approval gates",
   "completed_tasks": [
     "Private identity, saved release and installed connector verified",
@@ -45,7 +45,10 @@
     "Explicit requested incomplete draft ZIP inspected and uploaded; saved Personal v0.2.4 publisher/listing/skills verified; ISC280.1 closed",
     "Saved draft six-file readback verified; original private metadata remains unchanged",
     "Listing checks pass and domain ownership accepted; MCP configured8tools",
-    "Accurate descriptor deployment passed90tests/typecheck; actual rescan retains4advisory operation findings; final submission gate inspected"
+    "Accurate descriptor deployment passed90tests/typecheck; actual rescan retains4advisory operation findings; final submission gate inspected",
+    "Explicit39public-tool design and compatible8private-tool isolation contract prepared",
+    "Hosted and one process-local loopback Build held before generation; no provider/edits; actualmemorypressure readback recorded",
+    "Fresh officialSDK legacy discovery baseline retained for subsequentexactcomparison"
   ],
   "remaining_tasks": [
     "Fix generic public operation contract and verify zero corresponding portal findings",
@@ -55,10 +58,12 @@
     "Authorized developer completes six declarations; submit, then publish only an approved release"
   ],
   "blockers": [
+    "New public39 implementation held before generation by routed producer admission; explicit native-vs-routed preference pending",
     "Country targeting pending explicit user answer",
     "Real recorder start/save/playback and reviewer URL pending"
   ],
   "human_actions_pending": [
+    "Answer existing scoped native-versus-routed implementation preference",
     "Reply to already queued publication-country question",
     "Start recorder on visible Selemene candidate and reply to already queued recording-start question"
   ],
@@ -71,13 +76,15 @@
     "2026-10-08 user selected verified personal publisher and authorized website/data updates and own-profile candidate demo",
     "Explicit incomplete draft upload authorized and completed without weakening readiness guard or supplying missing facts",
     "User requires four operation findings fixed although portal classifies them as advisory; do not submit with known findings",
-    "Original private /mcp contract should remain compatible while new public route exposes explicit operations"
+    "Original private /mcp contract should remain compatible while new public route exposes explicit operations",
+    "Do not bypass Build host pressure or hostedcredit/evidenceholds; no shared routing changes",
+    "Native-headroom exception not inferred from task authorization or elapsedtime; explicit preference asked"
   ],
   "uncommitted_files": [
     "ISA.md",
     ".planning/HANDOFF.json"
   ],
-  "next_action": "Implement strict individually named public MCP operations on a compatibility-preserving public endpoint, update only the public stage and review cases, deploy, upload to the same saved public plugin and verify a fresh rescan clears user-reported findings. Then resume genuine recording, country, final host cases and developer declarations; never infer submission from upload.",
+  "next_action": "Use the prepared39-tool contract. Await the existing routing-preference answer: if scoped native implementation is explicitly selected, dispatch existing agents with original ownership; otherwise retain routed Build and retry only after pressure admission changes to normal. Never bypass pressure/credit holds or change shared config. Current public draft remains v0.2.4 with4findings and Not submitted/Not published.",
   "context_notes": "Draft uploaded/configured, listing/skills pass, domain accepted. Descriptor-only rescan completed with same4advisory findings. User explicitly requires fixing them before submission. Prior blocked audit historical; current new request supports meaningful work.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
@@ -164,14 +171,14 @@
     "ISC-286"
   ],
   "isc_done_count": 261,
-  "wave": "public-explicit-operation-contract",
+  "wave": "public-explicit-operation-production-held",
   "tier": "E3",
   "session_budget": {
     "window": 258400,
     "rollover_at": 180880,
     "used_at_handoff": 224427
   },
-  "next_command": "Review mcp_scan_contract and plugin_package maps; dispatch bounded backend implementation on noesis-build.",
+  "next_command": "Read docs/plans/free-plugin/publication/PUBLIC-TOOL-CONTRACT.md and operation-remediation-2026-10-08.json; incorporate routing-preference answer before production.",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -375,7 +382,7 @@
     "native_goal_status": "blocked",
     "source_repair_pr_state": "MERGED",
     "source_repair_merge": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
-    "updated_at": "2026-10-08T16:27:51.258599+00:00",
+    "updated_at": "2026-10-08T16:41:30.587679+00:00",
     "updated": "2026-10-08T16:01:45.515774+00:00",
     "current_host_acceptance": {
       "isc_296": "closed_observable_development_scope",
@@ -399,6 +406,20 @@
       "initial_scan_findings": 4,
       "remediation": "descriptor_fix_deployed_rescan_findings_persist_explicit_operations_required",
       "scan_findings_block_submission": false
+    },
+    "operation_remediation": {
+      "contract": "PUBLIC-TOOL-CONTRACT.md",
+      "receipt": "operation-remediation-2026-10-08.json",
+      "implementation": "not_started_producer_held",
+      "intended_version": "0.2.5",
+      "public_tools": 39,
+      "private_tools": 8,
+      "current_scan_findings": 4,
+      "routing_question": "pending",
+      "native_permission": "not inferred",
+      "source_changes": false,
+      "deployment": false,
+      "upload": false
     }
   },
   "publication_owned_main_files": [
@@ -468,7 +489,7 @@
     "ISC-282",
     "ISC-286"
   ],
-  "updated_at": "2026-10-08T16:27:51.258599+00:00",
+  "updated_at": "2026-10-08T16:41:30.587679+00:00",
   "native_goal_status": "previous_goal_remains_blocked_new_user_action_in_progress",
   "active_witness_plugin_design": {
     "request": "Explain reuse of existing Witness agents, skills and MCPs in the free plugin with user ChatGPT limits",
@@ -499,8 +520,14 @@
     "tier": "E4",
     "artifact": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md"
   },
-  "updated": "2026-10-08T16:27:51.258599+00:00",
+  "updated": "2026-10-08T16:41:30.587679+00:00",
   "historical_witness_goal": "Repair the witness reading system and deliver eight detailed English/French readings for Gary, Mohan, Sheshnarayan, and their business triad, grounded in the recovered engine fact to interpretation to symbolic meaning matrix, with private evidence sidecars and verified DOCX/PDF outputs.",
   "recording_question": "Already queued recorder-start question remains pending; do not infer recording from elapsed time or screenshots",
-  "country_question": "Already queued explicit targeting question remains pending; do not infer All countries from the preselected option"
+  "country_question": "Already queued explicit targeting question remains pending; do not infer All countries from the preselected option",
+  "producer_packets": {
+    "backend": "/tmp/selemene-public-tools-build-1791477137350.md",
+    "package": "/tmp/selemene-public025-package-build.prompt.txt",
+    "backend_owned": "freeWorker index/mcp/new public-tools and focused tests only",
+    "package_owned": "publicstage manifest/MCP/3instructionfiles and review-cases only"
+  }
 }
