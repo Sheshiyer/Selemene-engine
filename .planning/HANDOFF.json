@@ -1,6 +1,6 @@
 {
   "version": "2",
-  "timestamp": "2026-10-08T12:09:00.004921+00:00",
+  "timestamp": "2026-10-08T12:32:17.746019+00:00",
   "phase": "build",
   "phase_name": "Free Selemene public publication preparation",
   "phase_dir": null,
@@ -33,10 +33,13 @@
     "Same private cloud plugin v0.2.4 saved; author restored, all3instruction byte/readback comparisons pass",
     "Actual own-profile v0.2.4 browser host reading completed with source-qualified Aletheios/Pichet/integrated reflection",
     "Supported Other category confirmed in official public enum; actual icon light/dark inspection and protocol/tool source continuity verified",
-    "Current package format/credential guard PASS; publicNOTREADY exactly demoURL/countries; noarchive"
+    "Current package format/credential guard PASS; publicNOTREADY exactly demoURL/countries; noarchive",
+    "TS restoration8b212532 SUCCESS; fresh standalone/workflow connector coherence passes",
+    "PR1494 prepared from clean main with preserved GK and phase authority; local TS/Rust targeted checks pass",
+    "Corrected Rust deployment89624097 SUCCESS; installed synthetic D1/D9 math and node checks pass"
   ],
   "remaining_tasks": [
-    "Integrate repaired calculation sources into deployed branch and verify current I Ching/D1/D9 regressions",
+    "Complete fresh corrected P4/P5 host rehearsals and durable tracked-main PR1494 integration",
     "Receive explicit country targeting",
     "Record/play back/host real reviewer demo",
     "Build inspected final publicZIP after actual videoURL/countries are verified",
@@ -44,9 +47,9 @@
     "Complete developer legal attestations/scans, authorized review submission, and publish only approved release"
   ],
   "blockers": [
-    "Confirmed current I Ching deployment regression and D9/node math defects",
+    "Durable tracked-main source integration remains unmerged PR1494",
     "Country targeting pending explicit user answer",
-    "Recorder start/save/playback and reviewerURL pending; UI recording controls unavailable"
+    "Real recorder start/save/playback and reviewer URL pending"
   ],
   "human_actions_pending": [
     "Reply to already queued publication-country question",
@@ -64,8 +67,8 @@
     "ISA.md",
     ".planning/HANDOFF.json"
   ],
-  "next_action": "Finish narrow TS integration and D9/node correction tests; create concrete source repair PR, restore corrected services within release authority, then rerun current host cases. Pending countries and recorder-start facts remain required for final public ZIP.",
-  "context_notes": "Current publication task supersedes historical witness next actions. Preserve unrelated witness WIP and its open acceptance criteria. Both exact technical services are now deployed and live-verified; do not repeat unchanged builds/tests. No publisher/legal/country facts may be inferred from elapsed time or private metadata.",
+  "next_action": "Verify terminal restored P4 and fresh Hindi P5 host outputs after live corrected TS/Rust connector checks; then record reviewable PR and publication receipts. Country targeting and real recording remain unanswered required facts.",
+  "context_notes": "Current source repairs are deployed and installed connector facts pass. Completed host prose and durable main integration remain separate; do not repeat unchanged builds/tests. Unrelated witness WIP and historic ISCs remain preserved.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
     "manifest": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/delivery-manifest.json",
@@ -150,21 +153,18 @@
     "ISC-284",
     "ISC-285",
     "ISC-285.1",
-    "ISC-285.2",
     "ISC-286",
-    "ISC-294",
-    "ISC-295",
     "ISC-296"
   ],
-  "isc_done_count": 250,
-  "wave": "publication-calculation-regression-repair",
+  "isc_done_count": 253,
+  "wave": "publication-installed-calculation-repair",
   "tier": "E3",
   "session_budget": {
     "window": 258400,
     "rollover_at": 167960,
-    "used_at_handoff": 228110
+    "used_at_handoff": 218362
   },
-  "next_command": "Inspect chart/source agent diffs and focused tests in selemene-public-calculations; retain original failed host cases separately.",
+  "next_command": "Read current repaired host chats and installed-vedic-math-2026-10-08.json; preserve original failures and private release0.2.4.",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -232,10 +232,12 @@
       "Actual own-profile v0.2.4 browser host reading completed with source-qualified Aletheios/Pichet/integrated reflection",
       "Supported Other category confirmed in official public enum; actual icon light/dark inspection and protocol/tool source continuity verified",
       "Current package format/credential guard PASS; publicNOTREADY exactly demoURL/countries; noarchive",
-      "Actual v0.2.4 P4/P5 browser rehearsals completed; defects preserved and independently diagnosed"
+      "TS restoration8b212532 SUCCESS; fresh standalone/workflow connector coherence passes",
+      "PR1494 prepared from clean main with preserved GK and phase authority; local TS/Rust targeted checks pass",
+      "Corrected Rust deployment89624097 SUCCESS; installed synthetic D1/D9 math and node checks pass"
     ],
     "remaining_tasks": [
-      "Integrate repaired calculation sources into deployed branch and verify current I Ching/D1/D9 regressions",
+      "Complete fresh corrected P4/P5 host rehearsals and durable tracked-main PR1494 integration",
       "Receive explicit country targeting",
       "Record/play back/host real reviewer demo",
       "Build inspected final publicZIP after actual videoURL/countries are verified",
@@ -243,9 +245,9 @@
       "Complete developer legal attestations/scans, authorized review submission, and publish only approved release"
     ],
     "blockers": [
-      "Confirmed current I Ching deployment regression and D9/node math defects",
+      "Durable tracked-main source integration remains unmerged PR1494",
       "Country targeting pending explicit user answer",
-      "Recorder start/save/playback and reviewerURL pending; UI recording controls unavailable"
+      "Real recorder start/save/playback and reviewer URL pending"
     ],
     "decisions": [
       "Public publication is authorized; no repeated publication permission request",
@@ -256,8 +258,8 @@
       "2026-10-08 user selected verified personal publisher and authorized website/data updates and own-profile candidate demo"
     ],
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
-    "next_action": "Finish narrow TS integration and D9/node correction tests; create concrete source repair PR, restore corrected services within release authority, then rerun current host cases. Pending countries and recorder-start facts remain required for final public ZIP.",
-    "next_command": "Inspect chart/source agent diffs and focused tests in selemene-public-calculations; retain original failed host cases separately.",
+    "next_action": "Verify terminal restored P4 and fresh Hindi P5 host outputs after live corrected TS/Rust connector checks; then record reviewable PR and publication receipts. Country targeting and real recording remain unanswered required facts.",
+    "next_command": "Read current repaired host chats and installed-vedic-math-2026-10-08.json; preserve original failures and private release0.2.4.",
     "uncommitted_files": [],
     "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md",
     "isc_open": [
@@ -272,10 +274,7 @@
       "ISC-284",
       "ISC-285",
       "ISC-285.1",
-      "ISC-285.2",
       "ISC-286",
-      "ISC-294",
-      "ISC-295",
       "ISC-296"
     ],
     "isc_done_count": 12,
@@ -285,22 +284,22 @@
     "checkpoint_commit": "30382db1991837e4e6ac9668de357ad9b64d6b58",
     "checkpoint_workspace_clean": true,
     "source_workers": {
-      "backend_contract": "complete: source/annotation/protocol continuity receipt",
-      "ops_contract": "complete: effective website and current publication status",
-      "source_review": "complete: two stale status claims corrected; current/historical hash and runtime limitations reviewed"
+      "backend_contract": "read-only merge-risk review running",
+      "source_review": "completed focused math and preserved phase-authority checks",
+      "ops_contract": "successful corrected Rust deployment; collecting bounded health receipt"
     },
     "technical_deployments": {
       "typescript": {
-        "id": "702d3862-4bba-4aff-89d1-29a68a330e50",
-        "status": "SUCCESS_OLD_SOURCE_REGRESSION",
-        "source": "063cf9a75991b4f261dd08ebab24082860291dd4",
-        "previous_corrected_deployment": "98d5b4f9-4834-4e7d-a81c-1a30e6806059"
+        "id": "8b212532-e1ad-4c95-aebc-f724fe2a4155",
+        "status": "SUCCESS",
+        "source": "3b03bda6288d2df680f6af8ae3456a7a08b188aa",
+        "installed_check": "standalone and workflow each8/8PASS"
       },
       "rust": {
-        "id": "00d91add-f75e-40f9-af9d-ddefa4873fcd",
+        "id": "89624097-a5a9-4e4b-85a2-0604d901d04b",
         "status": "SUCCESS",
-        "source": "ebf4368df79ca0ddbf350a891d8d520c70a40af8",
-        "installed_check": "GK still current; D1/D9 math defects newly source confirmed"
+        "source": "89da83fc9f74cfd256f39308ce48e2cbe349193a",
+        "installed_check": "D1/D9 mapping/node/persistence10/10PASS"
       }
     },
     "public_state": "not_uploaded_not_submitted_not_approved_not_published",
@@ -319,7 +318,7 @@
       "turn": 1,
       "classification": "progress",
       "same_blocking_condition": false,
-      "progress": "Two completed development host cases expose two backend defects and deployment overwrite; independent source lanes now correcting."
+      "progress": "Concrete source PR, two deployed service corrections and installed connector checks pass."
     },
     "source_limitations": [
       "Gene Keys full author meanings/biological correspondences and corpus permission unavailable; bounded verified public labels only; parent ISC-286 open",
@@ -333,7 +332,10 @@
       "private-candidate/final-live-readback-2026-10-08.json",
       "personal-host-rehearsal-2026-10-08.json",
       "package-validation-2026-10-08.json",
-      "additional-development-rehearsals-2026-10-08.json"
+      "additional-development-rehearsals-2026-10-08.json",
+      "iching-restoration-2026-10-08.json",
+      "negative-host-rehearsals-2026-10-08.json",
+      "installed-vedic-math-2026-10-08.json"
     ],
     "current_calculation_regression": {
       "typescript_deployment": "702d3862-4bba-4aff-89d1-29a68a330e50",
@@ -342,7 +344,10 @@
       "vedic": "Navamsa discards D1 sign; SouthNode speed incorrectly negated; source confirmed"
     },
     "repair_workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-public-calculations/Selemene-engine",
-    "repair_branch": "codex/selemene-public-calculations"
+    "repair_branch": "codex/selemene-public-calculations",
+    "source_repair_pr": "https://github.com/Sheshiyer/Selemene-engine/pull/1494",
+    "repair_source": "89da83fc9f74cfd256f39308ce48e2cbe349193a",
+    "native_goal_status": "active_fresh_get_goal_verified"
   },
   "publication_owned_main_files": [
     "ISA.md",

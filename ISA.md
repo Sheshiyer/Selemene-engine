@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 250/304
+progress: 253/304
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T12:09:00.004921+00:00
+updated: 2026-10-08T12:32:17.746019+00:00
 ---
 
 ## Problem
@@ -423,7 +423,7 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 
 - [ ] ISC-285: Public I Ching casting and textual sources are verified end to end.
 - [ ] ISC-285.1: The verified TypeScript repair is integrated into the branch tracked by production auto-deployment.
-- [ ] ISC-285.2: Fresh installed standalone/workflow checks verify coherent casts and sourced text after the deployment regression is repaired.
+- [x] ISC-285.2: Fresh installed standalone/workflow checks verify coherent casts and sourced text after the deployment regression is repaired.
 - [ ] ISC-286: Public Gene Keys activation lines and meanings are verified end to end.
 - [x] ISC-286.1: Installed Gene Keys canonical spheres match actual Human Design gates, lines and sources.
 - [x] ISC-286.2: Staged reading instructions explicitly preserve incomplete meanings and source limits.
@@ -432,8 +432,8 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 ### Current browser calculation regressions — 2026-10-08
 
 - [x] ISC-293: Actual v0.2.4 P4/P5 development rehearsals and calculation defects are recorded with their source/deployment boundaries.
-- [ ] ISC-294: D9 preserves all12 D1 signs and node opposition, with meaningful local regression coverage.
-- [ ] ISC-295: Ketu preserves Rahu longitudinal speed and consistent retrograde flags.
+- [x] ISC-294: D9 preserves all12 D1 signs and node opposition, with meaningful local regression coverage.
+- [x] ISC-295: Ketu preserves Rahu longitudinal speed and consistent retrograde flags.
 - [ ] ISC-296: Fresh installed D1/D9 and actual host P4/P5 rehearsals pass after the corrections are deployed.
 
 ## Test Strategy
@@ -518,6 +518,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 
 ## Decisions
 
+- 2026-10-08 12:32: refined: Actual P4/P5 browser outputs exposed production TS auto-deploy drift and two independent D9/node math errors. Restore exact verified TS source and deploy the narrow reviewed Rust corrections; preserve original failed cases, shared-service boundaries, and incomplete corpus limits. PR #1494 is reviewable but not merged, so durable tracked-main integration remains ISC-285.1.
+
 - 2026-10-07: User authorized a free plugin backed by the Claude environment Selemene service key; clarified shared admin persistence is acceptable. All interpretation and narrative belong to the user's ChatGPT session. Deploy a separate bounded anonymous MCP Worker, preserve OAuth and Rust production, keep the service credential server-side, and create a private plugin without claiming public directory publication.
 
 
@@ -597,6 +599,11 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 
 ## Changelog
 
+- 2026-10-08 | conjectured: prior corrected live service checks establish the current combined/chart calculations.
+  refuted_by: TS main auto-deployment 702d3862 replaced the corrected image; the actual D9 source discarded D1 sign and inverted Ketu speed.
+  learned: source ancestry, deployment image, connector facts and completed host prose require separate current checks.
+  criterion_now: ISC-285.2 closes on fresh installed casts; ISC-294/295 close on local meaningful tests; ISC-285.1 and ISC-296 remain open for durable integration and completed repaired host flows.
+
 - 2026-07-18 | conjectured: the OpenCode handoff accurately described the current stopping point
   refuted_by: live git ancestry shows main and Sankalpa already contain several commits the handoff still described as pending
   learned: cold-start continuation must compare narrative state with repository state before dispatching or merging
@@ -642,6 +649,10 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
   criterion now: ISC-278.1 verifies actual own-profile host execution; ISC-278 remains open until a real accessible recording is verified
 
 ## Verification
+
+- ISC-285.2: Restored TS deployment 8b212532 SUCCESS from 3b03bda6; fresh installed standalone and decision-support workflow both pass eight casting/source consistency checks at 12:12–12:13 UTC. Algorithm1.1.0 and Legge1882 page provenance are returned. Changing-line passages remain unavailable.
+- ISC-294/295: Reviewed source89da83fc includes all12x9 Navamsa sectors,108 opposed pairs, lagna/degree/vargottama fixtures and same-node-speed regression. Four focused Rust tests pass. TS14 tests/1914 assertions and typecheck pass; report phase-authority test passes ten mocked requests.
+- Current installed chart: Rust deployment89624097 reached SUCCESS at12:29 UTC; one synthetic installed connector request passes all ten mapping/node/persistence/host-inference checks. D9 lagnaLibra, opposed Cancer/Capricorn nodes, equal node speeds, and actual Mars/Mercury vargottama are returned. Completed fresh host P4/P5 proof is still pending.
 
 - ISC-132..137: Production Vite build emitted `index-CYgISPpb.js` at 249,275 raw/79,819 gzip bytes and `DepthGallery-5EhUnFqv.js` at 515,503 raw/129,200 gzip bytes; `npm run check:renderer-budget` proved Three.js is absent from entry and present in the single async depth chunk.
 - ISC-138..147: Focused loader tests prove hash/cache/remote provenance, malformed-hash fallback, 404 not-found, typed failure, safe rejected-IPC conversion, legacy nullable compatibility, and the deferred-promise gate rejects stale completions.
