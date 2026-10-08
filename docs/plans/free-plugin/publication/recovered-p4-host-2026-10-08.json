@@ -1,0 +1,201 @@
+{
+  "schema": "selemene.recovered-development-p4-host.v1",
+  "verified_at": "2026-10-08T13:02:15.283652+00:00",
+  "candidate": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "version": "0.2.4",
+    "release_id": "pluginrel_6ac779e2df3c8191821ce4e791d16a96",
+    "scope": "USER",
+    "discoverability": "PRIVATE",
+    "portable_manifest_sha256": "cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45"
+  },
+  "case": {
+    "id": "P4-recovered",
+    "url": "https://chatgpt.com/c/6ac79316-87e8-83ed-9ec8-3783b706a5f0",
+    "title": "Decision Reflection Writing Coding",
+    "prompt": "unchanged exact staged P4 synthetic decision-support prompt",
+    "visible_prompt_matches_staged_prompt": true,
+    "host_model_visible": "GPT-6.1 Sol Light",
+    "state": "response_complete_observed",
+    "worked_duration_visible": "2m 18s",
+    "terminal_evidence": {
+      "response_complete_status": true,
+      "copy_response_visible": true,
+      "share_response_visible": true,
+      "stop_button_absent": true,
+      "natural_completion_without_stop_or_reload": true
+    },
+    "trace": {
+      "expanded": true,
+      "integration": "Selemene Free Calculations (development)",
+      "initial_expanded_integration_entries": 5,
+      "subsequent_integration_entry": true,
+      "exact_tool_names": "unexposed",
+      "raw_arguments_and_results": "unexposed",
+      "one_workflow_execution": "report states once; raw call-level trace cannot independently certify the count"
+    },
+    "returned_anchors_observable_in_report": {
+      "engines": [
+        "tarot",
+        "i-ching",
+        "human-design",
+        "enneagram",
+        "gene-keys"
+      ],
+      "missing_engines": [],
+      "tarot": {
+        "card": "Seven of Swords",
+        "orientation": "upright",
+        "spread": "single_card"
+      },
+      "i_ching": {
+        "cast_bottom_to_top": [
+          8,
+          7,
+          9,
+          6,
+          7,
+          8
+        ],
+        "primary": 48,
+        "relating": 47,
+        "changing_lines": [
+          3,
+          4
+        ],
+        "primary_lines": [
+          "yin",
+          "yang",
+          "yang",
+          "yin",
+          "yang",
+          "yin"
+        ],
+        "relating_lines": [
+          "yin",
+          "yang",
+          "yin",
+          "yang",
+          "yang",
+          "yin"
+        ],
+        "algorithm_version": "1.1.0",
+        "selection_mode": "seeded_coin_simulation",
+        "seed": 2450949507,
+        "source": "James Legge, The Yi King, 1882",
+        "primary_judgment_printed_pages": [
+          164,
+          165
+        ],
+        "primary_image_printed_pages": [
+          327
+        ],
+        "relating_judgment_printed_pages": [
+          161,
+          162
+        ],
+        "relating_image_printed_pages": [
+          325
+        ],
+        "changing_line_passages": "unavailable",
+        "transcription": "scan_reviewed_normalized_transcription; no independent second proofread"
+      },
+      "human_design": {
+        "type": "Generator",
+        "authority": "Emotional",
+        "profile": "2/4",
+        "definition": "Single",
+        "centers": [
+          "SolarPlexus",
+          "Root",
+          "Sacral"
+        ],
+        "channels": [
+          "39-55",
+          "41-30",
+          "9-52"
+        ],
+        "detailed_channel_and_profile_meanings": "unavailable"
+      },
+      "enneagram": {
+        "type": 5,
+        "mode": "self_report_lookup",
+        "assessment_performed": false,
+        "wing": "not selected"
+      },
+      "gene_keys": {
+        "lifes_work": {
+          "coordinate": "38.2",
+          "source": "PersonalitySun"
+        },
+        "evolution": {
+          "coordinate": "39.2",
+          "source": "PersonalityEarth"
+        },
+        "radiance": {
+          "coordinate": "48.4",
+          "source": "DesignSun"
+        },
+        "purpose": {
+          "coordinate": "21.4",
+          "source": "DesignEarth"
+        },
+        "data_version": "2026-10-08.1",
+        "meaning_source_quality": "verified_public_labels_only",
+        "line_provenance": "preserved_human_design_activations",
+        "full_author_descriptions_line_teachings_biological_correspondences": "unavailable",
+        "measurement_status": "not_measured"
+      },
+      "service_synthesis": null,
+      "persistence_status": "not_confirmed",
+      "requested_reference_timestamp": "2026-10-07T12:00:00Z",
+      "execution_timestamp_reported_approximately": "2026-10-08T12:57:46Z"
+    },
+    "observable_report_checks": {
+      "all_five_engines_present": true,
+      "coin_values_changing_lines_and_patterns_consistent": true,
+      "judgment_image_page_references_match_committed_dataset": true,
+      "source_gaps_preserved_without_invented_line_passages": true,
+      "gene_keys_canonical_sources_and_short_label_limits_preserved": true,
+      "self_report_enneagram_without_inferred_wing_or_diagnosis": true,
+      "host_aletheios_pichet_and_integrated_reflection": true,
+      "null_service_synthesis_distinguished_from_host_interpretation": true,
+      "no_claim_of_measured_consciousness_or_predetermined_project_winner": true,
+      "requested_and_execution_times_distinguished": true,
+      "unconfirmed_best_effort_storage_distinguished": true
+    },
+    "acceptance": "Passed observable development behavior. Raw argument/result, exact tool-name/count and runtime instruction-file evidence remain unexposed."
+  },
+  "production_context": {
+    "merged_commit": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
+    "typescript_deployment": "1e269664-5089-43fd-9929-9b26ed566d7d",
+    "rust_deployment": "8161b09b-4b7e-42ce-899b-28e060d116a3",
+    "source_runtime_receipt": "tracked-main-live-2026-10-08.json",
+    "new_redeploy_or_direct_connector_call_for_this_recovery": false
+  },
+  "historical_attempts_preserved": [
+    "additional-development-rehearsals-2026-10-08.json",
+    "restored-host-rehearsals-2026-10-08.json"
+  ],
+  "isc_296": "Closed with this completed P4, prior completed repaired P5, and ten installed D1/D9 checks; development scope only.",
+  "final_saved_public_cases": {
+    "P1": "Not run",
+    "P2": "Not run",
+    "P3": "Not run",
+    "P4": "Not run",
+    "P5": "Not run",
+    "N1": "Not run",
+    "N2": "Not run",
+    "N3": "Not run"
+  },
+  "recording": {
+    "saved_file": false,
+    "playback_verified": false,
+    "reviewer_accessible_url": null
+  },
+  "limits": [
+    "Owner conversation URLs are not reviewer-accessible recording URLs.",
+    "Logical witness perspectives are host writing stages, not proof of independent dashboard-agent dispatch.",
+    "This private development rehearsal does not establish final saved-public case execution, submission, approval or publication."
+  ]
+}
