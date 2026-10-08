@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 250/298
+progress: 250/304
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T11:32:00.581659+00:00
+updated: 2026-10-08T12:09:00.004921+00:00
 ---
 
 ## Problem
@@ -421,11 +421,20 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [ ] ISC-283: Anti: no credential or unverified policy claim enters the public upload.
 - [ ] ISC-284: Anti: private plugin identity and unrelated witness WIP are preserved.
 
-- [x] ISC-285: Public I Ching casting and textual sources are verified end to end.
+- [ ] ISC-285: Public I Ching casting and textual sources are verified end to end.
+- [ ] ISC-285.1: The verified TypeScript repair is integrated into the branch tracked by production auto-deployment.
+- [ ] ISC-285.2: Fresh installed standalone/workflow checks verify coherent casts and sourced text after the deployment regression is repaired.
 - [ ] ISC-286: Public Gene Keys activation lines and meanings are verified end to end.
 - [x] ISC-286.1: Installed Gene Keys canonical spheres match actual Human Design gates, lines and sources.
 - [x] ISC-286.2: Staged reading instructions explicitly preserve incomplete meanings and source limits.
 - [x] ISC-286.3: Installed Gene Keys returns verified public labels dataset2026-10-08.1 with provenance, null author descriptions and an unmeasured lens (probe: installed-gene-keys-public-labels-2026-10-08.json).
+
+### Current browser calculation regressions — 2026-10-08
+
+- [x] ISC-293: Actual v0.2.4 P4/P5 development rehearsals and calculation defects are recorded with their source/deployment boundaries.
+- [ ] ISC-294: D9 preserves all12 D1 signs and node opposition, with meaningful local regression coverage.
+- [ ] ISC-295: Ketu preserves Rahu longitudinal speed and consistent retrograde flags.
+- [ ] ISC-296: Fresh installed D1/D9 and actual host P4/P5 rehearsals pass after the corrections are deployed.
 
 ## Test Strategy
 
@@ -807,3 +816,5 @@ NotebookLM generation requests were attempted once per planned artifact; most re
 - ISC-286.3: deployed-source plus installed connector probe — exact Rust source ebf4368df79ca0ddbf350a891d8d520c70a40af8 deployed as00d91add-f75e-40f9-af9d-ddefa4873fcd SUCCESS with healthcheck and RUNNING instance. Actual installed own-profile GeneKeys/HD comparison matches all four spheres; dataset2026-10-08.1 status verified_public_labels_only, per-key provenance, descriptions null, lens not_measured, persistence not_confirmed. Full teachings/biological data and corpus permission remain unavailable. Receipts: rust-labels-live-2026-10-08.json and installed-gene-keys-public-labels-2026-10-08.json.
 - ISC-279 remains open: current public v0.2.4 manifest cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45 has verified Other category, selected publisher, four liveURLs, 5positive/3negative exact cases and free commerce declaration. Unchanged format/credential guard passes; public guard returns NOT READY only for missing recorded-demoURL/countries and their evidence. No archive/upload created. Protocol/annotation source continuity and actual icon visual checks are scoped in package-validation-2026-10-08.json; current raw urllib initialize returned HTTP403/Cloudflare1010, distinct from successful installed connector calls.
 - ISC-278/273.2 remain open: recording-start and country questions are pending user replies. Recorder controls are unavailable to the agent; actual IAB candidate is visible with unrelated chats collapsed. No recording/playback/reviewerURL, public draft, saved-public cases, scans/attestations, review approval or publication has been completed.
+
+- 2026-10-08T12:09:00.004921+00:00: Actual current private v0.2.4 P4/P5 browser responses completed. P4 preserves and excludes a defective I Ching record; separate raw connector regression confirms old stub source. TS auto-deployment702d3862 from main063cf9a at11:57:18UTC overwrote prior repaired98d5b4f9, reopening ISC-285. GK Rust00d91add still returns current verified labels. P5 reveals backend Navamsa indexing and Ketu speed defects; Worker passes backend fields unchanged. Receipt additional-development-rehearsals-2026-10-08.json. New attached source-integration worktree selemene-public-calculations starts from current main; TS repair/source corpus/tests preserved through exact cherry-picks, chart correction in progress. No public upload or recording/country answer.

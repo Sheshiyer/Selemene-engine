@@ -1,6 +1,6 @@
 {
   "version": "2",
-  "timestamp": "2026-10-08T11:35:35.734077+00:00",
+  "timestamp": "2026-10-08T12:09:00.004921+00:00",
   "phase": "build",
   "phase_name": "Free Selemene public publication preparation",
   "phase_dir": null,
@@ -36,6 +36,7 @@
     "Current package format/credential guard PASS; publicNOTREADY exactly demoURL/countries; noarchive"
   ],
   "remaining_tasks": [
+    "Integrate repaired calculation sources into deployed branch and verify current I Ching/D1/D9 regressions",
     "Receive explicit country targeting",
     "Record/play back/host real reviewer demo",
     "Build inspected final publicZIP after actual videoURL/countries are verified",
@@ -43,6 +44,7 @@
     "Complete developer legal attestations/scans, authorized review submission, and publish only approved release"
   ],
   "blockers": [
+    "Confirmed current I Ching deployment regression and D9/node math defects",
     "Country targeting pending explicit user answer",
     "Recorder start/save/playback and reviewerURL pending; UI recording controls unavailable"
   ],
@@ -62,7 +64,7 @@
     "ISA.md",
     ".planning/HANDOFF.json"
   ],
-  "next_action": "Finish actual screen recording once creator confirms recorder start; verify playback and host video, receive explicit countries, then finalize ZIP and saved public portal setup",
+  "next_action": "Finish narrow TS integration and D9/node correction tests; create concrete source repair PR, restore corrected services within release authority, then rerun current host cases. Pending countries and recorder-start facts remain required for final public ZIP.",
   "context_notes": "Current publication task supersedes historical witness next actions. Preserve unrelated witness WIP and its open acceptance criteria. Both exact technical services are now deployed and live-verified; do not repeat unchanged builds/tests. No publisher/legal/country facts may be inferred from elapsed time or private metadata.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
@@ -146,16 +148,23 @@
     "ISC-282",
     "ISC-283",
     "ISC-284",
-    "ISC-286"
+    "ISC-285",
+    "ISC-285.1",
+    "ISC-285.2",
+    "ISC-286",
+    "ISC-294",
+    "ISC-295",
+    "ISC-296"
   ],
   "isc_done_count": 250,
-  "wave": "publication-live-source-personal-rehearsal",
+  "wave": "publication-calculation-regression-repair",
   "tier": "E3",
   "session_budget": {
-    "requested_token_budget": null,
-    "note": "User did not request a token budget; context rollover does not change task status"
+    "window": 258400,
+    "rollover_at": 167960,
+    "used_at_handoff": 228110
   },
-  "next_command": "Inspect actual candidate chat c/6ac77a16-bf8c-83eb-a7f2-88988bbc10bb; continue only when pending recorder/country answers arrive; do not repeat builds/deployments",
+  "next_command": "Inspect chart/source agent diffs and focused tests in selemene-public-calculations; retain original failed host cases separately.",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -222,9 +231,11 @@
       "Same private cloud plugin v0.2.4 saved; author restored, all3instruction byte/readback comparisons pass",
       "Actual own-profile v0.2.4 browser host reading completed with source-qualified Aletheios/Pichet/integrated reflection",
       "Supported Other category confirmed in official public enum; actual icon light/dark inspection and protocol/tool source continuity verified",
-      "Current package format/credential guard PASS; publicNOTREADY exactly demoURL/countries; noarchive"
+      "Current package format/credential guard PASS; publicNOTREADY exactly demoURL/countries; noarchive",
+      "Actual v0.2.4 P4/P5 browser rehearsals completed; defects preserved and independently diagnosed"
     ],
     "remaining_tasks": [
+      "Integrate repaired calculation sources into deployed branch and verify current I Ching/D1/D9 regressions",
       "Receive explicit country targeting",
       "Record/play back/host real reviewer demo",
       "Build inspected final publicZIP after actual videoURL/countries are verified",
@@ -232,6 +243,7 @@
       "Complete developer legal attestations/scans, authorized review submission, and publish only approved release"
     ],
     "blockers": [
+      "Confirmed current I Ching deployment regression and D9/node math defects",
       "Country targeting pending explicit user answer",
       "Recorder start/save/playback and reviewerURL pending; UI recording controls unavailable"
     ],
@@ -244,8 +256,8 @@
       "2026-10-08 user selected verified personal publisher and authorized website/data updates and own-profile candidate demo"
     ],
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
-    "next_action": "Finish actual screen recording once creator confirms recorder start; verify playback and host video, receive explicit countries, then finalize ZIP and saved public portal setup",
-    "next_command": "Inspect actual candidate chat c/6ac77a16-bf8c-83eb-a7f2-88988bbc10bb; continue only when pending recorder/country answers arrive; do not repeat builds/deployments",
+    "next_action": "Finish narrow TS integration and D9/node correction tests; create concrete source repair PR, restore corrected services within release authority, then rerun current host cases. Pending countries and recorder-start facts remain required for final public ZIP.",
+    "next_command": "Inspect chart/source agent diffs and focused tests in selemene-public-calculations; retain original failed host cases separately.",
     "uncommitted_files": [],
     "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md",
     "isc_open": [
@@ -258,7 +270,13 @@
       "ISC-282",
       "ISC-283",
       "ISC-284",
-      "ISC-286"
+      "ISC-285",
+      "ISC-285.1",
+      "ISC-285.2",
+      "ISC-286",
+      "ISC-294",
+      "ISC-295",
+      "ISC-296"
     ],
     "isc_done_count": 12,
     "wave": "publication-authorized-source-policy-candidate",
@@ -273,16 +291,16 @@
     },
     "technical_deployments": {
       "typescript": {
-        "id": "98d5b4f9-4834-4e7d-a81c-1a30e6806059",
-        "status": "SUCCESS",
-        "source": "62b4a087ae62dc37e4e8ae6b877339c9aa4047b2",
-        "installed_check": "passed"
+        "id": "702d3862-4bba-4aff-89d1-29a68a330e50",
+        "status": "SUCCESS_OLD_SOURCE_REGRESSION",
+        "source": "063cf9a75991b4f261dd08ebab24082860291dd4",
+        "previous_corrected_deployment": "98d5b4f9-4834-4e7d-a81c-1a30e6806059"
       },
       "rust": {
         "id": "00d91add-f75e-40f9-af9d-ddefa4873fcd",
         "status": "SUCCESS",
         "source": "ebf4368df79ca0ddbf350a891d8d520c70a40af8",
-        "installed_check": "all4canonical sphere/source and verified label limits passed"
+        "installed_check": "GK still current; D1/D9 math defects newly source confirmed"
       }
     },
     "public_state": "not_uploaded_not_submitted_not_approved_not_published",
@@ -300,7 +318,8 @@
     "resumed_blocked_audit": {
       "turn": 1,
       "classification": "progress",
-      "same_blocking_condition": false
+      "same_blocking_condition": false,
+      "progress": "Two completed development host cases expose two backend defects and deployment overwrite; independent source lanes now correcting."
     },
     "source_limitations": [
       "Gene Keys full author meanings/biological correspondences and corpus permission unavailable; bounded verified public labels only; parent ISC-286 open",
@@ -313,8 +332,17 @@
       "rust-labels-live-2026-10-08.json",
       "private-candidate/final-live-readback-2026-10-08.json",
       "personal-host-rehearsal-2026-10-08.json",
-      "package-validation-2026-10-08.json"
-    ]
+      "package-validation-2026-10-08.json",
+      "additional-development-rehearsals-2026-10-08.json"
+    ],
+    "current_calculation_regression": {
+      "typescript_deployment": "702d3862-4bba-4aff-89d1-29a68a330e50",
+      "source": "063cf9a75991b4f261dd08ebab24082860291dd4",
+      "i_ching": "old stub regression confirmed in current actual host and independent raw connector response",
+      "vedic": "Navamsa discards D1 sign; SouthNode speed incorrectly negated; source confirmed"
+    },
+    "repair_workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-public-calculations/Selemene-engine",
+    "repair_branch": "codex/selemene-public-calculations"
   },
   "publication_owned_main_files": [
     "ISA.md",
@@ -369,7 +397,13 @@
     "ISC-282",
     "ISC-283",
     "ISC-284",
-    "ISC-286"
+    "ISC-285",
+    "ISC-285.1",
+    "ISC-285.2",
+    "ISC-286",
+    "ISC-294",
+    "ISC-295",
+    "ISC-296"
   ],
   "publication_isc_open": [
     "ISC-273",
@@ -381,10 +415,16 @@
     "ISC-282",
     "ISC-283",
     "ISC-284",
-    "ISC-286"
+    "ISC-285",
+    "ISC-285.1",
+    "ISC-285.2",
+    "ISC-286",
+    "ISC-294",
+    "ISC-295",
+    "ISC-296"
   ],
-  "updated_at": "2026-10-08T11:35:35.734077+00:00",
-  "native_goal_status": "blocked_from_prior_audit; no tool resume available; current authorized work has progressed and remains in_progress in ISA",
+  "updated_at": "2026-10-08T12:09:00.004921+00:00",
+  "native_goal_status": "active_fresh_get_goal_verified",
   "active_witness_plugin_design": {
     "request": "Explain reuse of existing Witness agents, skills and MCPs in the free plugin with user ChatGPT limits",
     "status": "complete",
@@ -414,7 +454,7 @@
     "tier": "E4",
     "artifact": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md"
   },
-  "updated": "2026-10-08T11:35:35.734077+00:00",
+  "updated": "2026-10-08T12:09:00.004921+00:00",
   "historical_witness_goal": "Repair the witness reading system and deliver eight detailed English/French readings for Gary, Mohan, Sheshnarayan, and their business triad, grounded in the recovered engine fact to interpretation to symbolic meaning matrix, with private evidence sidecars and verified DOCX/PDF outputs.",
   "recording_question": "Already queued recorder-start question remains pending; do not infer recording from elapsed time or screenshots",
   "country_question": "Already queued explicit targeting question remains pending; do not infer All countries from the preselected option"
