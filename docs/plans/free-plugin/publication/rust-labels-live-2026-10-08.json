@@ -1,0 +1,214 @@
+{
+  "schema": "selemene.publication.rust-labels-live.v1",
+  "recorded_at": "2026-10-08T11:06:25.548483+00:00",
+  "state": "deployed_success_healthcheck_passed",
+  "source_commit": "ebf4368df79ca0ddbf350a891d8d520c70a40af8",
+  "source_commit_scope": "Exactly ten reviewed Gene Keys source/data/test paths; no publication package or website WIP in uploaded context",
+  "prepared_packet": {
+    "path": "docs/plans/free-plugin/publication/rust-labels-deployment-packet-2026-10-08.json",
+    "commit": "e138900e8d38d00b1ae62bdf74d0ea13f4a3b523",
+    "sha256": "07a748cb784f42e027613915b8223700f755c2a98174453fd9973eb8747ebba4",
+    "state_preserved": "prepared_not_deployed historical packet unchanged"
+  },
+  "upload_binding": {
+    "uploaded_by": "root",
+    "deployment_id_basis": "Root reported completed upload and Railway deployment ID; independent monitor verified exact service deployment metadata and matching source commit CLI message",
+    "context": "/tmp/selemene-rust-labels-ebf4368d-iojiw1nw",
+    "git_archive_sha256": "ec93820e052f559b2424667939d6756de79c7059ea1e035088513a1fcd2b8ebc",
+    "context_tree_sha256": "0ba5ff70fe47cdbaf27ccfdc9a161ae9451d7bfdcc0f1dfcce477e392ef38356",
+    "file_count": 621,
+    "top_level_inputs": [
+      "Cargo.toml",
+      "Cargo.lock",
+      "Dockerfile.prod",
+      ".dockerignore",
+      "railway.toml",
+      "crates",
+      "data",
+      "migrations"
+    ],
+    "command": "railway up /tmp/selemene-rust-labels-ebf4368d-iojiw1nw --path-as-root --project 11eedde4-41e6-4f51-b86b-cf77111cf592 --environment 702b945e-2c66-4d5a-bae1-4c67ea14c3bb --service 48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4 --detach --message 'Gene Keys verified public labels ebf4368df79ca0ddbf350a891d8d520c70a40af8'",
+    "remote_mutation_by_receipt_author": false
+  },
+  "railway": {
+    "observed_at": "2026-10-08T11:05:35.715015+00:00",
+    "project_id": "11eedde4-41e6-4f51-b86b-cf77111cf592",
+    "project_name": "robust-adventure",
+    "environment_id": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
+    "environment_name": "production",
+    "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+    "service_name": "Selemene-engine",
+    "deployment_id": "00d91add-f75e-40f9-af9d-ddefa4873fcd",
+    "status": "SUCCESS",
+    "created_at": "2026-10-08T10:56:23.447Z",
+    "instances": [
+      {
+        "id": "7aa1e9b8-1ad0-4509-b1bb-880f96aedc83",
+        "status": "RUNNING"
+      }
+    ],
+    "active_deployments": [
+      {
+        "id": "00d91add-f75e-40f9-af9d-ddefa4873fcd",
+        "status": "SUCCESS"
+      }
+    ],
+    "meta": {
+      "cli_message": "Gene Keys verified public labels ebf4368df79ca0ddbf350a891d8d520c70a40af8",
+      "config_file": "/railway.toml",
+      "image_digest": "sha256:46a7fccd3275378ad48deab03664448ef9796ffcbdd6dddc9130a87312e9c77d",
+      "root_directory": null,
+      "builder": "DOCKERFILE",
+      "dockerfile_path": "Dockerfile.prod",
+      "healthcheck_path": "/health/live",
+      "healthcheck_timeout": 300,
+      "restart_policy_type": "ON_FAILURE",
+      "restart_policy_max_retries": 3
+    }
+  },
+  "production_build": {
+    "result": "success",
+    "evidence_basis": "Finite build logs explicitly selected by exact deployment/project/environment/service IDs",
+    "observed_at": "2026-10-08T11:05:36.730979+00:00",
+    "query": "exact deployment build logs, finite60, phase/health/image filter",
+    "events": [
+      {
+        "timestamp": "2026-10-08T10:56:47.378322264Z",
+        "message": "[builder  1/37] FROM docker.io/library/rust:1.89-slim-bookworm@sha256:d7fc7de78bb8c1469933aeecbf801314d30d7d6e9f0578bba4cfa285bfa37fe6"
+      },
+      {
+        "timestamp": "2026-10-08T10:58:16.065383467Z",
+        "message": "Finished `release` profile [optimized] target(s) in 52.84s"
+      },
+      {
+        "timestamp": "2026-10-08T11:03:26.748589139Z",
+        "message": "Finished `release` profile [optimized] target(s) in 5m 06s"
+      },
+      {
+        "timestamp": "2026-10-08T11:03:55.119866698Z",
+        "message": "containerimage.digest: sha256:902a3d49a13d5c2547680f71453a4f3088dae02517e897922e70a25b44699ad1"
+      },
+      {
+        "timestamp": "2026-10-08T11:03:55.119882058Z",
+        "message": "containerimage.config.digest: sha256:3a26cecf9dee79c8b720771eac30ad6c7c9c644ca1b25d0af83bc5d95d77a7d7"
+      },
+      {
+        "timestamp": "2026-10-08T11:04:00.061108358Z",
+        "message": "====================\nStarting Healthcheck\n===================="
+      },
+      {
+        "timestamp": "2026-10-08T11:04:01.338484630Z",
+        "message": "[1/1] Healthcheck succeeded!"
+      }
+    ],
+    "deployed_image_digest": "sha256:46a7fccd3275378ad48deab03664448ef9796ffcbdd6dddc9130a87312e9c77d",
+    "image_digest_note": "Railway active deployment metadata and build output report different digest values; both are preserved with their original evidence scope. No equivalence or cause is assumed."
+  },
+  "health": {
+    "result": "passed",
+    "basis": "Exact deployment build log Healthcheck succeeded and Railway SUCCESS with RUNNING instance",
+    "path": "/health/live",
+    "timeout_seconds": 300,
+    "events": [
+      {
+        "timestamp": "2026-10-08T11:04:00.061108358Z",
+        "message": "====================\nStarting Healthcheck\n===================="
+      },
+      {
+        "timestamp": "2026-10-08T11:04:01.338484630Z",
+        "message": "[1/1] Healthcheck succeeded!"
+      }
+    ],
+    "separate_public_http_probe": "not performed by this lane"
+  },
+  "monitor": {
+    "read_only": true,
+    "poll_interval_seconds_minimum": 45,
+    "observations": [
+      {
+        "observed_at": "2026-10-08T10:59:01.656857+00:00",
+        "status": "BUILDING"
+      },
+      {
+        "observed_at": "2026-10-08T11:00:54.317248+00:00",
+        "status": "BUILDING"
+      },
+      {
+        "observed_at": "2026-10-08T11:02:11.781136+00:00",
+        "status": "BUILDING"
+      },
+      {
+        "observed_at": "2026-10-08T11:03:40.929439+00:00",
+        "status": "BUILDING"
+      },
+      {
+        "observed_at": "2026-10-08T11:04:54.607204+00:00",
+        "status": "SUCCESS",
+        "running_instance_count": 1
+      }
+    ],
+    "status_commands": "railway status --json captured and filtered locally to exact IDs, status, instance and build/health/image metadata; no full variables or credential output"
+  },
+  "reported_source_verification": {
+    "gene_keys": {
+      "source": "data/gene-keys/source-provenance.json#/verification",
+      "passed": 78,
+      "failed": 0,
+      "command": "cargo test -p engine-gene-keys --lib --tests --jobs 1 --offline",
+      "toolchain": "1.99.0 (b940084d7 2026-09-28)",
+      "rerun_by_packet_author": false
+    },
+    "noesis_api_check": {
+      "reported_by": "root",
+      "package": "noesis-api",
+      "result": "passed",
+      "command_options": "not supplied to packet author",
+      "rerun_by_packet_author": false
+    },
+    "independent_source_audit": {
+      "result": "GO",
+      "scope": "runtime/null/schema/cache/source boundaries plus independently fetched64official public label triplets",
+      "rights_certified": false
+    },
+    "local_docker_build": "not run; prior Docker daemon limitation not re-probed"
+  },
+  "verification_note": "Source test/API check evidence remains reported from the prepared packet and was not rerun. This receipt independently adds only exact Railway production build and health evidence.",
+  "meaning_source_contract": {
+    "status": "verified_public_labels_only",
+    "data_version": "2026-10-08.1",
+    "full_wisdom": "unavailable",
+    "author_descriptions": "null in calculation frequency assessments",
+    "biological_correspondences": "unavailable",
+    "reflection_prompts": "Selemene original questions, not author text",
+    "measurement_status": "not_measured configured lens",
+    "rights": {
+      "status": "no_open_licence_or_written_permission_established",
+      "scope": "short public terminology and numerical coordinates only; no copyrighted passages, course materials or images included",
+      "official_terms_url": "https://genekeys.com/terms-and-conditions/",
+      "official_corpus_licence_claimed": false
+    },
+    "dataset_sha256": "a6a4761ae31ab8ac25fe996209a7e6ca4cc01637dfeddd3ca11fb924f57c42af"
+  },
+  "rollback": {
+    "deployment_id": "04d7fea4-ff2b-4459-a057-77269a041f1a",
+    "service_id": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
+    "source_commit": "9300ad41860d111b8595bd46c802699cb287901b",
+    "image_digest": "sha256:41524bde7f1a17381296694fd601d7f81c6c192e940299db8416cd291277d6b0",
+    "basis": "Prepared packet plus observed preceding SUCCESS active deployment during build; no rollback action performed",
+    "post_success_redeploy_availability": "not separately queried by this lane"
+  },
+  "scope_limits": {
+    "installed_mcp_reading": "Root owns fresh actual installed MCP calculation verification; not performed or claimed by this receipt author",
+    "candidate_host_demo": "not established by build or health evidence",
+    "public_submission": "not established by build or health evidence",
+    "source_publication_permission": "No open licence or written Gene Keys permission established; source correctness and live calculation do not certify publication rights",
+    "full_meanings": "unavailable; no author description, physiology or consciousness measurement claim"
+  },
+  "guardrails": {
+    "database_target_changed_by_lane": false,
+    "variables_or_domains_changed_by_lane": false,
+    "config_changed_by_lane": false,
+    "personal_reports_or_birth_data_read_by_lane": false,
+    "prepared_packet_modified": false
+  }
+}
