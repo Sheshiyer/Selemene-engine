@@ -4,10 +4,10 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 248/296
+progress: 250/298
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T10:58:16.111450+00:00
+updated: 2026-10-08T11:32:00.581659+00:00
 ---
 
 ## Problem
@@ -413,6 +413,7 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-276: Five positive and three negative review cases cover all eight tools.
 - [x] ISC-277: Current host produces a reading from a real synthetic calculation.
 - [ ] ISC-278: Reviewer-accessible demo recording shows the actual host flow.
+- [x] ISC-278.1: The actual selected browser candidate completes the authorized personal reading from a live calculation (probe: personal-host-rehearsal-2026-10-08.json).
 - [ ] ISC-279: Public ZIP contains verified listing, review and publication fields.
 - [ ] ISC-280: Saved portal draft imports the intended package and MCP connection.
 - [ ] ISC-281: Authorized submission completes all required scans and attestations.
@@ -424,6 +425,7 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [ ] ISC-286: Public Gene Keys activation lines and meanings are verified end to end.
 - [x] ISC-286.1: Installed Gene Keys canonical spheres match actual Human Design gates, lines and sources.
 - [x] ISC-286.2: Staged reading instructions explicitly preserve incomplete meanings and source limits.
+- [x] ISC-286.3: Installed Gene Keys returns verified public labels dataset2026-10-08.1 with provenance, null author descriptions and an unmeasured lens (probe: installed-gene-keys-public-labels-2026-10-08.json).
 
 ## Test Strategy
 
@@ -581,6 +583,9 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 
 - 2026-10-08 10:22: refined: User selected the verified personal publisher, authorized Selemene website updates at tryambakam.space and local/online data research with necessary DB/Cloudflare updates, and authorized own profile for candidate-host demo. Country targeting remains an explicit pending fact. Work resumes with parallel source, website and candidate lanes; prior publication authorization persists.
 
+- 2026-10-08 11:32: refined: The existing private browser candidate is now v0.2.4 on its preserved identity; all three saved instruction files equal the public stage. Actual own-profile Gene Keys host execution closes ISC-278.1, while video playback/hosting and all saved-public cases remain separate. Supported Other category added only to the unuploaded public manifest after primary-source verification; countries remain pending.
+- 2026-10-08 11:32: Full author Gene Keys teachings/biological correspondences remain unavailable. Verified public label facts and explicit null/source boundaries close ISC-286.3 without closing parent ISC-286 or certifying corpus permission. Sponsor credentials remain server-side and no DB/R2 rewrite is needed for the compiled verified-label loader.
+
 ## Changelog
 
 - 2026-07-18 | conjectured: the OpenCode handoff accurately described the current stopping point
@@ -621,6 +626,11 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 - [x] ISC-290: A source-linked reuse architecture specifies host execution, deterministic tools, evidence boundaries and mode limitations.
 - [x] ISC-291: An independent review checks the recommendation for unsupported runtime, source-quality and usage claims.
 - [x] ISC-292: The investigation preserves existing package/runtime identities and unrelated Witness WIP.
+
+- 2026-10-08 | conjectured: a saved version and connected MCP alone could demonstrate the full staged reading flow
+  refuted by: the raw-MCP private bundle opened only native Codex until the verified app-only cloud binding enabled actual Try in chat execution
+  learned: saved-source equality, selected-host execution and recorded reviewer playback are distinct evidence boundaries
+  criterion now: ISC-278.1 verifies actual own-profile host execution; ISC-278 remains open until a real accessible recording is verified
 
 ## Verification
 
@@ -792,3 +802,8 @@ NotebookLM generation requests were attempted once per planned artifact; most re
 - Actual cloud candidate onboardingP1 completed in ChatGPT c/6ac7763e-158c-83eb-9ac0-301281256fed: direct plugin mention, GPT-6.1Sol Light observed, actual three discovery tool titles,11engines/one decision-support workflow, catalog distinct from readiness, no reading execution. This proves private-cloud development flow, not saved public-portal candidate or recorded own-profile demo.
 - Gene Keys all64 public label triplets independently fetched/confirmed;78 local tests and root noesis-api check passed. Frozen source ebf4368df79ca0ddbf350a891d8d520c70a40af8 contains source-qualified short labels, derived reciprocal partners, unavailable author descriptions as null and unmeasured lens. Exact narrow621-file context uploaded to verified owning Railway service; deployment00d91add-f75e-40f9-af9d-ddefa4873fcd BUILDING at last observation. Full wisdom corpus/licence remains unavailable; ISC-286 remains open.
 - Countries remain a pending explicit question. Video recording/playback/reviewerURL, final public-package/portal cases/scans/legal attestations/review/public publication remain open. QuickTime screen command observed but capture controls not established; browser screencast probe stopped without saved recording.
+
+- ISC-278.1: actual browser UI trace — current private v0.2.4 pluginrel_6ac779e2df3c8191821ce4e791d16a96 selected via Try in chat; GPT-6.1Sol Light observed; expanded trace includes requirements/catalog/preparation and one Calculating Gene Keys Profile event, followed by Response complete. Own report preserves Life'sWork4.2/Evolution49.2/Radiance23.4/Purpose43.4 and both time notes, omits raw birth prose, and attributes Aletheios/Pichet/integrated perspectives to the host. Raw tool JSON and exact runtime read-file paths remain unexposed. Receipt: isolated publication/personal-host-rehearsal-2026-10-08.json.
+- ISC-286.3: deployed-source plus installed connector probe — exact Rust source ebf4368df79ca0ddbf350a891d8d520c70a40af8 deployed as00d91add-f75e-40f9-af9d-ddefa4873fcd SUCCESS with healthcheck and RUNNING instance. Actual installed own-profile GeneKeys/HD comparison matches all four spheres; dataset2026-10-08.1 status verified_public_labels_only, per-key provenance, descriptions null, lens not_measured, persistence not_confirmed. Full teachings/biological data and corpus permission remain unavailable. Receipts: rust-labels-live-2026-10-08.json and installed-gene-keys-public-labels-2026-10-08.json.
+- ISC-279 remains open: current public v0.2.4 manifest cb4966fc878d6678f8cd9e893e14066a60bf3b14eb6a6a63c6d6b9f21d5c7b45 has verified Other category, selected publisher, four liveURLs, 5positive/3negative exact cases and free commerce declaration. Unchanged format/credential guard passes; public guard returns NOT READY only for missing recorded-demoURL/countries and their evidence. No archive/upload created. Protocol/annotation source continuity and actual icon visual checks are scoped in package-validation-2026-10-08.json; current raw urllib initialize returned HTTP403/Cloudflare1010, distinct from successful installed connector calls.
+- ISC-278/273.2 remain open: recording-start and country questions are pending user replies. Recorder controls are unavailable to the agent; actual IAB candidate is visible with unrelated chats collapsed. No recording/playback/reviewerURL, public draft, saved-public cases, scans/attestations, review approval or publication has been completed.
