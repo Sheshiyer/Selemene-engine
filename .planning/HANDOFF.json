@@ -81,10 +81,7 @@
     "Do not bypass Build host pressure or hostedcredit/evidenceholds; no shared routing changes",
     "Native-headroom exception not inferred from task authorization or elapsedtime; explicit preference asked"
   ],
-  "uncommitted_files": [
-    "ISA.md",
-    ".planning/HANDOFF.json"
-  ],
+  "uncommitted_files": [],
   "next_action": "Continue the same publication objective: finalize the explicit public39 tool implementation using the pending routing preference or admitted routed producer, then migrate and verify the development candidate and rescan the saved public draft. Use the prepared real-host walkthrough for the matching version. Creator starts/stops screen recording; Computer performs real prompts. Verify saved playback and reviewer URL before updating the ZIP. Do not submit with the four known findings or invented recording/country facts.",
   "context_notes": "Latest user request is to create the required video walkthrough. Actual v0.2.4 demo chat is prepared; planned v0.2.5 public39 contract remains unimplemented and the final recording must match submitted behavior. No capture/export/URL exists. Read-only Oct9 host pressure check still denies admission. Existing native-routing and country questions remain unanswered.",
   "native_report_delivery": {
@@ -331,7 +328,7 @@
       "meaningful_progress": "Explicit requested incomplete draft ZIP built and actual public portal upload saved; original private preserved.",
       "blocked_threshold_reached": false
     },
-    "worktree_head": "c5c1c4e3f18f25c4ea9e28f7e3fdac6257a45de5",
+    "worktree_head": "74c7fda0",
     "resumed_blocked_audit": {
       "turn": 3,
       "classification": "no_progress",
@@ -460,7 +457,9 @@
       "demo_tab_id": "17",
       "portal_tab_id": "7",
       "next_action": "Record actual matching candidate after MCP fix; human starts/stops recorder while Computer runs demo",
-      "tier": "E4"
+      "tier": "E4",
+      "source_commit": "74c7fda0",
+      "validation": "Receipt JSON and screenshot hash match; document local links resolve; git diff --check passes; isolated source clean after exact three-file commit"
     }
   },
   "publication_owned_main_files": [
@@ -605,6 +604,8 @@
     "demo_tab_id": "17",
     "portal_tab_id": "7",
     "next_action": "Record actual matching candidate after MCP fix; human starts/stops recorder while Computer runs demo",
-    "tier": "E4"
+    "tier": "E4",
+    "source_commit": "74c7fda0",
+    "validation": "Receipt JSON and screenshot hash match; document local links resolve; git diff --check passes; isolated source clean after exact three-file commit"
   }
 }
