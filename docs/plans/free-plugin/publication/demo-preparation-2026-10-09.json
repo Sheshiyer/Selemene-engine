@@ -1,0 +1,78 @@
+{
+  "schema": "selemene.demo-preparation.v1",
+  "observed_at": "2026-10-09T08:35:38Z",
+  "request": "Help create a real video walkthrough for public plugin review",
+  "state": "script_and_actual_host_chat_prepared_recording_not_started",
+  "candidate": {
+    "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
+    "version": "0.2.4",
+    "scope": "existing_private_development_installation",
+    "observed_listing_url": "https://chatgpt.com/plugins/plugins_6ac68a62e61081918179487264135f28",
+    "app_name": "Selemene Free Calculations (development)",
+    "connection_status": "Connected",
+    "skills": [
+      "selemene-onboarding",
+      "selemene-reading"
+    ],
+    "actual_host": "ChatGPT Work, GPT-6.1 Sol Light",
+    "setup": "Try in chat opened a fresh composer with the Selemene Engine mention and discovery starter",
+    "prompt_sent": false,
+    "calculation_performed": false,
+    "retained_browser_id": "3",
+    "retained_tab_id": "17"
+  },
+  "public_draft": {
+    "plugin_id": "plugin_asdk_app_6ac7bdc177548191b18f16f891c77d00",
+    "version_id": "appsub_6ac7bdc1777c819185a7a780b9e09f55",
+    "version": "0.2.4",
+    "review": "Not submitted",
+    "publication": "Not published",
+    "metadata": "No Issues",
+    "skills": "Checks passed",
+    "mcp_configuration": "Configured",
+    "review_information": "Incomplete review information",
+    "four_operation_findings": "pending substantive fix; current turn did not rerun scan"
+  },
+  "package_manifest_sha256": "45c0f8b43efaff4ffc1710ba6ce432f0d556e8f16645b7609f7fc30721279c29",
+  "recording": {
+    "tool_capability": "Available Computer APIs control apps and capture screenshots; no video recorder exposed",
+    "fallback": "Creator starts and stops Mac screen recorder; Computer operates the visible real-host walkthrough",
+    "saved_file": null,
+    "playback_verified": false,
+    "reviewer_accessible_url": null,
+    "manifest_field": "extensions.com.openai.review.demo_recording_url",
+    "version_dependency": "Final footage must match submitted behavior; planned v0.2.5 public39 endpoint not implemented yet",
+    "current_v024_use": "Development rehearsal only for the planned v0.2.5 submission",
+    "minimum_sequence": [
+      "candidate identity and shared-storage disclosure",
+      "one real prepared numerology calculation and source-qualified host reflection",
+      "unsupported media/purchase request with no paid generation"
+    ],
+    "optional_sequence": [
+      "catalog/onboarding without calculation",
+      "incomplete input preparation without calculation"
+    ]
+  },
+  "production_admission": {
+    "observed_at": "2026-10-09T08:35:38Z",
+    "pressure": "host_pressure_elevated",
+    "admitted": false,
+    "reservation": false,
+    "new_provider_dispatch": false
+  },
+  "evidence": {
+    "ready_chat_screenshot": "demo-chat-ready-2026-10-09.png",
+    "screenshot_sha256": "06fc1651e19b7b1bf32ac97a8c32f87d4e07ff195e3855c7a9f3a4eaebb493a2",
+    "script": "demo-walkthrough.md"
+  },
+  "remaining": [
+    "Implement and verify the explicit public tools and migrated candidate",
+    "Capture and play back a real walkthrough",
+    "Host actual video and verify reviewer playback",
+    "Populate verified recording URL and rebuild/read back ZIP"
+  ],
+  "limits": [
+    "No capture/export, hosting, source runtime change, package update, scan, submission or publication was performed this turn",
+    "Existing routing and country questions remain unanswered; the video request does not supply those facts"
+  ]
+}
