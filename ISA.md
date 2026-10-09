@@ -7,7 +7,7 @@ phase: build
 progress: 261/309
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
-updated: 2026-10-08T16:41:30.587679+00:00
+updated: 2026-10-09T08:35:38+00:00
 ---
 
 ## Problem
@@ -412,7 +412,7 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-275: Published terms and support identify the selected publisher and contact.
 - [x] ISC-276: Five positive and three negative review cases cover all eight tools.
 - [x] ISC-277: Current host produces a reading from a real synthetic calculation.
-- [ ] ISC-278: Reviewer-accessible demo recording shows the actual host flow.
+- [ ] ISC-278: Reviewer-accessible demo recording shows the actual submitted host flow; Oct9 script and fresh development chat are prepared, but capture, playback and a verified URL remain absent.
 - [x] ISC-278.1: The actual selected browser candidate completes the authorized personal reading from a live calculation (probe: personal-host-rehearsal-2026-10-08.json).
 - [ ] ISC-279: Public ZIP contains verified listing, review and publication fields.
 - [x] ISC-280: Saved portal draft imports the intended package and MCP connection.
@@ -522,6 +522,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 | PublicSelemenePlugin | Complete public listing, policy, demo and portal release gates for the existing free plugin | ISC-271..284 | FreeChatGPTPlugin | true |
 
 ## Decisions
+
+- 2026-10-09T08:35:38+00:00 refined: User asks for the required video walkthrough. Current Plugin Creator recording guidance reviewed; actual v0.2.4 listing shows two skills and Connected development app, and Try in chat opens a fresh Selemene-attached composer in visible IAB tab17. No prompt sent or recording started. Script and screenshot are prepared in the isolated publication workspace; final footage must match the submitted tool contract after the pending public39 migration. Available Computer APIs expose no recorder, so the creator must start/stop capture while Computer performs the walkthrough. Read-only host admission still reports elevated memory pressure; no new producer dispatch or native exception inferred. ISC-278 and all operation/submission gates remain open. Evidence: demo-preparation-2026-10-09.json and demo-walkthrough.md.
 
 - 2026-10-08T16:41:30.587679+00:00 refined: Explicit39-tool contract and acceptance packet are prepared, but both hosted Build and one authorized process-local loopback retry were held before generation. Read-only macOS admission confirms elevated memory pressure. No source implementation, deployment, upload or clean rescan exists. Existing AGENTS native-headroom constraint retained; root asks the user to choose scoped native production or retain the routed Build path, without bypassing admission or mutating shared routing.
 

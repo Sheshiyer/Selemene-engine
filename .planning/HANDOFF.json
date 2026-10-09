@@ -1,8 +1,8 @@
 {
   "version": "2",
-  "timestamp": "2026-10-08T16:41:30.587679+00:00",
+  "timestamp": "2026-10-09T08:35:38+00:00",
   "phase": "plan",
-  "phase_name": "Explicit MCP contract prepared; production admission held",
+  "phase_name": "Real-host walkthrough prepared; final MCP candidate and capture pending",
   "phase_dir": null,
   "plan": null,
   "task": null,
@@ -48,7 +48,8 @@
     "Accurate descriptor deployment passed90tests/typecheck; actual rescan retains4advisory operation findings; final submission gate inspected",
     "Explicit39public-tool design and compatible8private-tool isolation contract prepared",
     "Hosted and one process-local loopback Build held before generation; no provider/edits; actualmemorypressure readback recorded",
-    "Fresh officialSDK legacy discovery baseline retained for subsequentexactcomparison"
+    "Fresh officialSDK legacy discovery baseline retained for subsequentexactcomparison",
+    "Current recording guidance verified; actual v0.2.4 Connected development plugin opens a fresh Selemene-attached demo composer; no prompt sent or capture started"
   ],
   "remaining_tasks": [
     "Fix generic public operation contract and verify zero corresponding portal findings",
@@ -64,8 +65,8 @@
   ],
   "human_actions_pending": [
     "Answer existing scoped native-versus-routed implementation preference",
-    "Reply to already queued publication-country question",
-    "Start recorder on visible Selemene candidate and reply to already queued recording-start question"
+    "Reply to existing publication-country question",
+    "Start and stop a recorder for the actual matching candidate when ready; no capture is inferred"
   ],
   "decisions": [
     "Public publication is authorized; no repeated publication permission request",
@@ -84,8 +85,8 @@
     "ISA.md",
     ".planning/HANDOFF.json"
   ],
-  "next_action": "Use the prepared39-tool contract. Await the existing routing-preference answer: if scoped native implementation is explicitly selected, dispatch existing agents with original ownership; otherwise retain routed Build and retry only after pressure admission changes to normal. Never bypass pressure/credit holds or change shared config. Current public draft remains v0.2.4 with4findings and Not submitted/Not published.",
-  "context_notes": "Draft uploaded/configured, listing/skills pass, domain accepted. Descriptor-only rescan completed with same4advisory findings. User explicitly requires fixing them before submission. Prior blocked audit historical; current new request supports meaningful work.",
+  "next_action": "Continue the same publication objective: finalize the explicit public39 tool implementation using the pending routing preference or admitted routed producer, then migrate and verify the development candidate and rescan the saved public draft. Use the prepared real-host walkthrough for the matching version. Creator starts/stops screen recording; Computer performs real prompts. Verify saved playback and reviewer URL before updating the ZIP. Do not submit with the four known findings or invented recording/country facts.",
+  "context_notes": "Latest user request is to create the required video walkthrough. Actual v0.2.4 demo chat is prepared; planned v0.2.5 public39 contract remains unimplemented and the final recording must match submitted behavior. No capture/export/URL exists. Read-only Oct9 host pressure check still denies admission. Existing native-routing and country questions remain unanswered.",
   "native_report_delivery": {
     "index": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/INDEX.md",
     "manifest": "tools/humdes-extractor/output/gary-abitbol-2026-09-28/completion-2026-10-04/delivery-manifest.json",
@@ -171,14 +172,14 @@
     "ISC-286"
   ],
   "isc_done_count": 261,
-  "wave": "public-explicit-operation-production-held",
-  "tier": "E3",
+  "wave": "review-video-prepared-awaiting-final-tool-contract",
+  "tier": "E4",
   "session_budget": {
     "window": 258400,
-    "rollover_at": 180880,
+    "rollover_at": 167960,
     "used_at_handoff": 224427
   },
-  "next_command": "Read docs/plans/free-plugin/publication/PUBLIC-TOOL-CONTRACT.md and operation-remediation-2026-10-08.json; incorporate routing-preference answer before production.",
+  "next_command": "Read isolated publication/demo-preparation-2026-10-09.json and demo-walkthrough.md; incorporate existing routing-preference answer before dispatching production. Retain IAB tab17 for demo and tab7 for existing draft.",
   "active_free_plugin": {
     "goal": "Deliver free Selemene onboarding and readings as a private plugin; narration uses the host ChatGPT model and limits, with no hosted inference calls.",
     "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
@@ -254,16 +255,18 @@
       "Both tracked-main automatic deployments SUCCESS from4cadb617; identical corrected images and healthchecks verified",
       "IChing end-to-end bounded cast/judgment-image source acceptance verified",
       "One fresh exact P4 retry completes naturally after2m18s; all-five-engine/source-qualified report verified; ISC296 closes for observable development behavior",
-      "Explicit requested incomplete draft ZIP inspected and uploaded; saved Personal v0.2.4 publisher/listing/skills verified; ISC280.1 closed"
+      "Explicit requested incomplete draft ZIP inspected and uploaded; saved Personal v0.2.4 publisher/listing/skills verified; ISC280.1 closed",
+      "Current recording guidance verified; actual v0.2.4 Connected development plugin opens a fresh Selemene-attached demo composer; no prompt sent or capture started"
     ],
     "remaining_tasks": [
-      "Resolve actual saved-draft listing/skill checks and MCP connection requirements",
-      "Supply genuine review demo/country facts as required",
-      "Run five positive/three negative cases on saved public draft",
-      "Authorized developer completes actual attestations; run scans and submit for review",
-      "Publish only approved release with verified targeting"
+      "Fix generic public operation contract and verify zero corresponding portal findings",
+      "Adapt public-only skills/review cases and upload saved identity",
+      "Supply genuine reviewer recording and explicit countries",
+      "Run final saved-public review cases",
+      "Authorized developer completes six declarations; submit, then publish only an approved release"
     ],
     "blockers": [
+      "New public39 implementation held before generation by routed producer admission; explicit native-vs-routed preference pending",
       "Country targeting pending explicit user answer",
       "Real recorder start/save/playback and reviewer URL pending"
     ],
@@ -276,8 +279,8 @@
       "2026-10-08 user selected verified personal publisher and authorized website/data updates and own-profile candidate demo"
     ],
     "plugin_id": "plugins_6ac68a62e61081918179487264135f28",
-    "next_action": "Review the pending free Worker descriptor accuracy fix, deploy and rescan the configured public draft. Preserve exact draft IDs and original private release. Submission is disabled for absent real video; actual countries/developer attestations remain pending. Final saved-public host cases remain unrun and no preview action was exposed by the inspected portal menus.",
-    "next_command": "Review backend_contract descriptor patch; then scoped Wrangler deploy and CUA Rescan on tab7.",
+    "next_action": "Continue the same publication objective: finalize the explicit public39 tool implementation using the pending routing preference or admitted routed producer, then migrate and verify the development candidate and rescan the saved public draft. Use the prepared real-host walkthrough for the matching version. Creator starts/stops screen recording; Computer performs real prompts. Verify saved playback and reviewer URL before updating the ZIP. Do not submit with the four known findings or invented recording/country facts.",
+    "next_command": "Read isolated publication/demo-preparation-2026-10-09.json and demo-walkthrough.md; incorporate existing routing-preference answer before dispatching production. Retain IAB tab17 for demo and tab7 for existing draft.",
     "uncommitted_files": [],
     "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md",
     "isc_open": [
@@ -286,14 +289,15 @@
       "ISC-278",
       "ISC-279",
       "ISC-281",
+      "ISC-281.1",
+      "ISC-281.2",
+      "ISC-281.3",
       "ISC-282",
-      "ISC-283",
-      "ISC-284",
       "ISC-286"
     ],
     "isc_done_count": 24,
-    "wave": "requested-incomplete-draft-portal-setup",
-    "tier": "E3",
+    "wave": "review-video-prepared-awaiting-final-tool-contract",
+    "tier": "E4",
     "session_budget": "native goal default budget; user did not request a token budget",
     "checkpoint_commit": "1ee6eb9a",
     "checkpoint_workspace_clean": true,
@@ -379,10 +383,10 @@
     "repair_branch": "codex/selemene-public-calculations",
     "source_repair_pr": "https://github.com/Sheshiyer/Selemene-engine/pull/1494",
     "repair_source": "89da83fc9f74cfd256f39308ce48e2cbe349193a",
-    "native_goal_status": "blocked",
+    "native_goal_status": "previous_goal_blocked; current video preparation is meaningful new work",
     "source_repair_pr_state": "MERGED",
     "source_repair_merge": "4cadb6177c4a4f59d739a890b0cb6f204e62d6c5",
-    "updated_at": "2026-10-08T16:41:30.587679+00:00",
+    "updated_at": "2026-10-09T08:35:38+00:00",
     "updated": "2026-10-08T16:01:45.515774+00:00",
     "current_host_acceptance": {
       "isc_296": "closed_observable_development_scope",
@@ -419,7 +423,44 @@
       "native_permission": "not inferred",
       "source_changes": false,
       "deployment": false,
-      "upload": false
+      "upload": false,
+      "latest_host_pressure": "2026-10-09 read-only check: elevated, admitted=false, reservation=false; no producer dispatched"
+    },
+    "recording": {
+      "request": "Help create required public-review video walkthrough",
+      "status": "prepared_not_recorded",
+      "completed_tasks": [
+        "Current Plugin Creator recording guidance read",
+        "Actual v0.2.4 listing, two skills and Connected development app verified",
+        "Try in chat opened fresh Selemene-attached composer without sending prompt",
+        "Current script and preparation receipt saved with screenshot"
+      ],
+      "remaining_tasks": [
+        "Finish explicit public contract and matching candidate",
+        "Creator starts capture; Computer performs actual walkthrough",
+        "Save/play back video and check readability/privacy",
+        "Host actual file and verify reviewer access",
+        "Write verified URL and rebuild/read back ZIP"
+      ],
+      "blockers": [
+        "Matching public39 candidate not implemented",
+        "Available Computer APIs do not expose video recording; creator capture start/stop needed",
+        "No recorded file or reviewer-accessible video URL"
+      ],
+      "decisions": [
+        "Use actual ChatGPT interactions and synthetic sample profile by default",
+        "Preserve prior authorized personal rehearsal as historical evidence",
+        "Do not present v0.2.4 footage as proof of planned v0.2.5 operations"
+      ],
+      "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
+      "receipt": "docs/plans/free-plugin/publication/demo-preparation-2026-10-09.json",
+      "script": "docs/plans/free-plugin/publication/demo-walkthrough.md",
+      "screenshot": "docs/plans/free-plugin/publication/demo-chat-ready-2026-10-09.png",
+      "browser_id": "3",
+      "demo_tab_id": "17",
+      "portal_tab_id": "7",
+      "next_action": "Record actual matching candidate after MCP fix; human starts/stops recorder while Computer runs demo",
+      "tier": "E4"
     }
   },
   "publication_owned_main_files": [
@@ -489,7 +530,7 @@
     "ISC-282",
     "ISC-286"
   ],
-  "updated_at": "2026-10-08T16:41:30.587679+00:00",
+  "updated_at": "2026-10-09T08:35:38+00:00",
   "native_goal_status": "previous_goal_remains_blocked_new_user_action_in_progress",
   "active_witness_plugin_design": {
     "request": "Explain reuse of existing Witness agents, skills and MCPs in the free plugin with user ChatGPT limits",
@@ -520,14 +561,50 @@
     "tier": "E4",
     "artifact": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/docs/plans/free-plugin/witness-plugin-integration-2026-10-08.md"
   },
-  "updated": "2026-10-08T16:41:30.587679+00:00",
+  "updated": "2026-10-09T08:35:38+00:00",
   "historical_witness_goal": "Repair the witness reading system and deliver eight detailed English/French readings for Gary, Mohan, Sheshnarayan, and their business triad, grounded in the recovered engine fact to interpretation to symbolic meaning matrix, with private evidence sidecars and verified DOCX/PDF outputs.",
-  "recording_question": "Already queued recorder-start question remains pending; do not infer recording from elapsed time or screenshots",
+  "recording_question": "Existing recorder-start question remains unanswered. Do not infer recording. Final capture should follow the public39 implementation so it matches the submitted version; current v0.2.4 is available for rehearsal.",
   "country_question": "Already queued explicit targeting question remains pending; do not infer All countries from the preselected option",
   "producer_packets": {
     "backend": "/tmp/selemene-public-tools-build-1791477137350.md",
     "package": "/tmp/selemene-public025-package-build.prompt.txt",
     "backend_owned": "freeWorker index/mcp/new public-tools and focused tests only",
     "package_owned": "publicstage manifest/MCP/3instructionfiles and review-cases only"
+  },
+  "active_video_walkthrough": {
+    "request": "Help create required public-review video walkthrough",
+    "status": "prepared_not_recorded",
+    "completed_tasks": [
+      "Current Plugin Creator recording guidance read",
+      "Actual v0.2.4 listing, two skills and Connected development app verified",
+      "Try in chat opened fresh Selemene-attached composer without sending prompt",
+      "Current script and preparation receipt saved with screenshot"
+    ],
+    "remaining_tasks": [
+      "Finish explicit public contract and matching candidate",
+      "Creator starts capture; Computer performs actual walkthrough",
+      "Save/play back video and check readability/privacy",
+      "Host actual file and verify reviewer access",
+      "Write verified URL and rebuild/read back ZIP"
+    ],
+    "blockers": [
+      "Matching public39 candidate not implemented",
+      "Available Computer APIs do not expose video recording; creator capture start/stop needed",
+      "No recorded file or reviewer-accessible video URL"
+    ],
+    "decisions": [
+      "Use actual ChatGPT interactions and synthetic sample profile by default",
+      "Preserve prior authorized personal rehearsal as historical evidence",
+      "Do not present v0.2.4 footage as proof of planned v0.2.5 operations"
+    ],
+    "workspace": "/Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine",
+    "receipt": "docs/plans/free-plugin/publication/demo-preparation-2026-10-09.json",
+    "script": "docs/plans/free-plugin/publication/demo-walkthrough.md",
+    "screenshot": "docs/plans/free-plugin/publication/demo-chat-ready-2026-10-09.png",
+    "browser_id": "3",
+    "demo_tab_id": "17",
+    "portal_tab_id": "7",
+    "next_action": "Record actual matching candidate after MCP fix; human starts/stops recorder while Computer runs demo",
+    "tier": "E4"
   }
 }
