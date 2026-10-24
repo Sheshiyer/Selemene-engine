@@ -4,7 +4,7 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 281/329
+progress: 291/339
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
 updated: 2026-10-09T08:35:38+00:00
@@ -469,12 +469,12 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-317: Scoped engine source commit contains only reviewed fix files.
 - [x] ISC-318: Deployment source preserves current production HD/Gene Keys.
 - [x] ISC-319: Exact Railway deployment reaches SUCCESS.
-- [ ] ISC-320: Hosted Vimshottari reports full Lahiri backend and corrected boundary.
-- [ ] ISC-321: Fresh hosted temporal packet preserves all four authorized engine results.
+- [x] ISC-320: Hosted Vimshottari reports full Lahiri backend and corrected boundary.
+- [x] ISC-321: Fresh hosted temporal packet preserves all four authorized engine results.
 - [x] ISC-322: Daily context publisher validates freshness and rejects partial/old-method data.
 - [x] ISC-323: Agent daily context reader detects stale, failed or tampered snapshots.
 - [x] ISC-324: Daily refresh schedule is created and verified.
-- [ ] ISC-325: SOUL and folder entry points use dynamic daily context with provenance.
+- [x] ISC-325: SOUL and folder entry points use dynamic daily context with provenance.
 - [x] ISC-326: Anti: fixed profiles and unrelated dirty work remain unchanged.
 
 ## Test Strategy
@@ -928,3 +928,6 @@ Evidence: crates/engine-vimshottari/tests/lahiri_regression.rs; docs/plans/2026-
 ISC-317/318/322/323/324 continuation evidence: scoped commitd70f41cf merged ascb8ce56a through PR1495; production HD/GK code+data treeIDs unchanged; dailycontext19tests pass; ACTIVE heartbeat entrodromia-daily-agent-context saved and viewed at06:00IST. Railway uploadbd619b46 still BUILDING; merge-triggered0de8f01d WAITING; no hosted success claimed yet.
 
 Release checkpoint2026-10-24: Railway uploadbd619b46 SUCCESS; main-source auto-deployment0de8f01d building with identical treecb8ce56a. FixedHD/GK production trees and55protected localhashes preserved; dailycontext29tests and independent re-review PASS. Pending only installed-hosted verification, firstreal dailypublication and SOUL/latest-evidence update.
+
+### Vimshottari hosted release and daily agent context — final verification
+ISC-317–326:10/10 passed. PR1495 mergedcb8ce56a on exactproduction4cadb617 baseline; HD/Gene Keys code/data treeIDs unchanged. Railway0de8f01d SUCCESS with commitHashcb8ce56a, live/readinessHTTP200. Installedconnector post-main rollout returns full-Lahiri Moshier, Jupiterstart2026-09-13T23:31:43Z and nextPD2026-12-26T20:58:07Z; no localSwiss-file result substituted for hosted values. Fourfresh temporalresults published to realdailygeneration6199104d5ae04681adf838d6e79feb16 and read back. Publisher/reader29tests and independent re-review PASS. ACTIVEheartbeat entrodromia-daily-agent-context at06:00IST; rootagent entry andSOULsection13 point through verifiedreader. Originalrawpackets retained,55protected source/data hashes match, unrelated tracked diff preserved. Futurejobexecution is not asserted in advance. Evidence: privatevault10_GOVERNANCE/DEPLOYMENT-HOSTED-VERIFICATION-2026-10-24.json and DAILY-CONTEXT-SCHEDULE-2026-10-24.json.
