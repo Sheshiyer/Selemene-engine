@@ -4,7 +4,7 @@ task: "Free Selemene plugin public publication"
 effort: E3
 effort_source: continuity-restore
 phase: build
-progress: 261/309
+progress: 281/329
 mode: algorithm
 started: 2026-07-18T15:00:00+05:30
 updated: 2026-10-09T08:35:38+00:00
@@ -441,7 +441,45 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 - [x] ISC-295: Ketu preserves Rahu longitudinal speed and consistent retrograde flags.
 - [x] ISC-296: Fresh installed D1/D9 and actual host P4/P5 rehearsals pass after the corrections are deployed (probe: recovered-p4-host-2026-10-08.json, restored-host-rehearsals-2026-10-08.json and installed-vedic-math-2026-10-08.json; observable development scope, raw arguments unexposed).
 
+### Full Lahiri Vimshottari correction — 24 October 2026
+
+- [x] ISC-297: Vimshottari birth-data path uses full Lahiri sidereal flags instead of a fixed subtraction.
+- [x] ISC-298: Swiss mode selection and Moon calculation occur under shared EPHE_MUTEX.
+- [x] ISC-299: Exported calculate_birth_nakshatra uses the same sidereal helper.
+- [x] ISC-300: Canonical Moon longitude matches full Lahiri reference within documented precision.
+- [x] ISC-301: Canonical Jupiter boundary matches corrected full Lahiri regression.
+- [x] ISC-302: Distinct epoch regression rejects a fixed ayanamsha implementation.
+- [x] ISC-303: Timezone-equivalent birth instants produce equivalent dasha output.
+- [x] ISC-304: Direct sidereal moon_longitude input retains its existing behavior.
+- [x] ISC-305: Raw tropical Moon is invariant before and after sidereal calls.
+- [x] ISC-306: Concurrent/interleaved Swiss calls preserve deterministic results.
+- [x] ISC-307: Vimshottari cache keys invalidate previous approximate birth results.
+- [x] ISC-308: Failing numerical regression is observed before implementation.
+- [x] ISC-309: Focused Vimshottari tests pass on patched Rust source.
+- [x] ISC-310: Formatting and focused lint or equivalent diagnostic checks are recorded.
+- [x] ISC-311: Patched Rust engine emits a saved deterministic temporal JSON packet.
+- [x] ISC-312: Temporal evidence labels local patched execution separately from hosted service.
+- [x] ISC-313: SOUL and integration companion cite verified patched results and method.
+- [x] ISC-314: Anti: HD and Gene Keys source/data hashes remain unchanged.
+- [x] ISC-315: Anti: unrelated pre-existing dirty changes remain intact.
+- [x] ISC-316: Historical service packet and archived date evidence remain preserved.
+
+### Vimshottari release and daily agent context — 24 October 2026
+
+- [x] ISC-317: Scoped engine source commit contains only reviewed fix files.
+- [x] ISC-318: Deployment source preserves current production HD/Gene Keys.
+- [x] ISC-319: Exact Railway deployment reaches SUCCESS.
+- [ ] ISC-320: Hosted Vimshottari reports full Lahiri backend and corrected boundary.
+- [ ] ISC-321: Fresh hosted temporal packet preserves all four authorized engine results.
+- [x] ISC-322: Daily context publisher validates freshness and rejects partial/old-method data.
+- [x] ISC-323: Agent daily context reader detects stale, failed or tampered snapshots.
+- [x] ISC-324: Daily refresh schedule is created and verified.
+- [ ] ISC-325: SOUL and folder entry points use dynamic daily context with provenance.
+- [x] ISC-326: Anti: fixed profiles and unrelated dirty work remain unchanged.
+
 ## Test Strategy
+
+Vimshottari continuation: TDD numerical regression; focused cargo tests; sequential ephemeris and cache checks; formatting/lints; patched Rust JSON execution at the preserved as-of instant; SHA-256 protection and diff comparison. Source/tests are verified locally. Deployment is outside this request.
 
 | isc | type | check | threshold | tool |
 |---|---|---|---|---|
@@ -472,6 +510,8 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
 | ISC-217..234 | eight-report delivery | per-report acceptance, DOCX/PDF parity, page QA, corrections, release boundaries | 8/8 reports and 16/16 artifacts pass | report-set audit, DOCX/PDF render, process/remote audit |
 
 ## Features
+
+Full Lahiri Vimshottari: scoped helper, birth ingestion and cache revision (ISC-297–307); numerical regression and diagnostics (ISC-308–310); patched temporal evidence/SOUL integration and preservation (ISC-311–316).
 
 | name | description | satisfies | depends_on | parallelizable |
 |---|---|---|---|---|
@@ -522,6 +562,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 | PublicSelemenePlugin | Complete public listing, policy, demo and portal release gates for the existing free plugin | ISC-271..284 | FreeChatGPTPlugin | true |
 
 ## Decisions
+
+2026-10-24: User authorizes full Lahiri engine correction, regression tests and temporal/SOUL evidence refresh; HD/Gene Keys remain unchanged. New scope supersedes any earlier task-local no-source-change wording, without reopening publication, paid providers or deployment. Keep current dirty checkout; code targets were clean. Rust toolchain installed only under /tmp/vimshottari-toolchain; target under /tmp/vimshottari-target. OmniRoute Build prelaunch rejected host_pressure_elevated before inference; bounded in-session worker fallback used. Interview workflow review finds scope/method/constraints already answered by this conversation, so no extra user question is necessary.
 
 - 2026-10-09T08:35:38+00:00 refined: User asks for the required video walkthrough. Current Plugin Creator recording guidance reviewed; actual v0.2.4 listing shows two skills and Connected development app, and Try in chat opens a fresh Selemene-attached composer in visible IAB tab17. No prompt sent or recording started. Script and screenshot are prepared in the isolated publication workspace; final footage must match the submitted tool contract after the pending public39 migration. Available Computer APIs expose no recorder, so the creator must start/stop capture while Computer performs the walkthrough. Read-only host admission still reports elevated memory pressure; no new producer dispatch or native exception inferred. ISC-278 and all operation/submission gates remain open. Evidence: demo-preparation-2026-10-09.json and demo-walkthrough.md.
 
@@ -619,6 +661,8 @@ _Last refreshed: 2026-09-08T18:24:20.320Z_
 - 2026-10-08 11:32: Full author Gene Keys teachings/biological correspondences remain unavailable. Verified public label facts and explicit null/source boundaries close ISC-286.3 without closing parent ISC-286 or certifying corpus permission. Sponsor credentials remain server-side and no DB/R2 rewrite is needed for the compiled verified-label loader.
 
 ## Changelog
+
+2026-10-24 — conjectured: fixed ayanamsha approximates the full sidereal boundary. Refuted by: reproduced four-day date discrepancy and full sidereal reference. Learned: fix upstream Moon ingestion in Vimshottari while preserving shared tropical calculations. Criterion now: method, numerical and isolation regressions ISC-297–316.
 
 - 2026-10-08 | conjectured: the first repaired P4's stalled terminal prevents completed observable combined-reading acceptance.
   refuted_by: one fresh exact-prompt private v0.2.4 conversation completes naturally, shows Copy/Share and no Stop, and preserves all five anchors and source limits.
@@ -876,3 +920,11 @@ NotebookLM generation requests were attempted once per planned artifact; most re
 - ISC-278/273.2 remain open: recording-start and country questions are pending user replies. Recorder controls are unavailable to the agent; actual IAB candidate is visible with unrelated chats collapsed. No recording/playback/reviewerURL, public draft, saved-public cases, scans/attestations, review approval or publication has been completed.
 
 - 2026-10-08T12:09:00.004921+00:00: Actual current private v0.2.4 P4/P5 browser responses completed. P4 preserves and excludes a defective I Ching record; separate raw connector regression confirms old stub source. TS auto-deployment702d3862 from main063cf9a at11:57:18UTC overwrote prior repaired98d5b4f9, reopening ISC-285. GK Rust00d91add still returns current verified labels. P5 reveals backend Navamsa indexing and Ketu speed defects; Worker passes backend fields unchanged. Receipt additional-development-rehearsals-2026-10-08.json. New attached source-integration worktree selemene-public-calculations starts from current main; TS repair/source corpus/tests preserved through exact cherry-picks, chart correction in progress. No public upload or recording/country answer.
+
+### Full Lahiri correction verification — 24 October 2026
+Scope ISC-297–316: 20/20 passed. Source birth path + exported helper use full Lahiri flags under shared EPHE_MUTEX; new method/cache revision validated. RED5fail/2pass precedes implementation; GREEN63unit+8integration tests pass in separate Swiss-file and Moshier processes. Package fmt, strict all-target Clippy and git diff checks pass. Actual patched Rust examples preserve both backends and match the independent Python oracle; source/ephemeris hashes identify the uncommitted revision. All55protected source/data hashes and pre-existing tracked diff are unchanged. Private Entrodromia temporal-state index and SOUL section13 updated, with original hosted packet and app transcription retained. No deployment/publication or fixed-chart recalculation performed. Independent code review PASS; final evidence audit recorded separately in the vault receipt. This closes only this correction lane; prior publication/project criteria remain open.
+Evidence: crates/engine-vimshottari/tests/lahiri_regression.rs; docs/plans/2026-10-24-vimshottari-full-lahiri.md; private vault _System/entrodromia/10_GOVERNANCE/VIMSHOTTARI-ENGINE-FIX-VERIFICATION-2026-10-24.json.
+
+ISC-317/318/322/323/324 continuation evidence: scoped commitd70f41cf merged ascb8ce56a through PR1495; production HD/GK code+data treeIDs unchanged; dailycontext19tests pass; ACTIVE heartbeat entrodromia-daily-agent-context saved and viewed at06:00IST. Railway uploadbd619b46 still BUILDING; merge-triggered0de8f01d WAITING; no hosted success claimed yet.
+
+Release checkpoint2026-10-24: Railway uploadbd619b46 SUCCESS; main-source auto-deployment0de8f01d building with identical treecb8ce56a. FixedHD/GK production trees and55protected localhashes preserved; dailycontext29tests and independent re-review PASS. Pending only installed-hosted verification, firstreal dailypublication and SOUL/latest-evidence update.
