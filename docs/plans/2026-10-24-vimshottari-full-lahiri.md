@@ -1,0 +1,11 @@
+# Full Lahiri sidereal Vimshottari correction
+
+The birth-data engine and exported birth-nakshatra helper used inconsistent approximate/tropical Moon ingestion. A fixed23.72° subtraction shifted the reviewed period boundary by several days. Both paths now use a Vimshottari-owned full Lahiri helper with atomic shared-mutex mode selection/calculation. HD/Gene Keys source is unchanged.
+
+`libswisseph-sys` was already locked; only its dependency entry for this crate was added. Explicit longitude input is already sidereal and remains unconverted. Method-specific birth cache keys invalidate old results; both input modes now distinguish temporal targets and relevant birth time/timezone. Backend metadata distinguishes actual Swiss-file and Moshier results without changing the EngineOutput shape.
+
+Verification: baseline63unit tests; new regressions first failed5/7; corrected suite63unit+8integration passes in separate Swiss-file and Moshier processes; focused formatting, strict all-target Clippy and diff checks pass. Independent backend-specific Python references cover three epochs; integration regressions exercise exact period ranges, equivalent timezones, helper parity, direct input and concurrent sidereal/tropical state isolation.
+
+With repository Swiss files, the canonical regression fixture produces Moon159.80574124986052° and Jupiter start2026-09-14T00:18:33Z. With Moshier fallback it produces159.80593912600676° and2026-09-13T23:31:43Z. The backend difference explains the prior comparison residual; full flags alone do not force identical ephemeris sources. Example: `SWISS_EPHE_PATH="$PWD/data/ephemeris" cargo run --locked -q -p engine-vimshottari --example lahiri_temporal_evidence` emits JSON with actual method/flags/path. For fallback tests use an existing empty directory and a fresh process.
+
+Run `cargo test --locked -p engine-vimshottari`, `cargo fmt -p engine-vimshottari --check`, and `cargo clippy --locked -p engine-vimshottari --all-targets --no-deps -- -D warnings`. No hosted calculation, deployment, public release or fixed-chart refresh is included. Personal temporal evidence/SOUL integration remains in the private Entrodromia vault with source and ephemeris hashes.

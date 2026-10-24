@@ -8,6 +8,7 @@ pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutpu
 // Core modules
 pub mod calculator;
 pub mod engine;
+mod ephemeris;
 pub mod models;
 pub mod wisdom;
 pub mod wisdom_data;
