@@ -49,14 +49,6 @@ impl VimshottariEngine {
         }
     }
 
-    /// Approximate Lahiri ayanamsa used to convert tropical Moon longitude to sidereal.
-    const LAHIRI_AYANAMSA_DEGREES: f64 = 23.72;
-
-    /// Convert tropical longitude to sidereal (Lahiri).
-    fn to_sidereal_longitude(tropical_longitude: f64) -> f64 {
-        (tropical_longitude - Self::LAHIRI_AYANAMSA_DEGREES).rem_euclid(360.0)
-    }
-
     /// Parse timezone offsets from either IANA shortcuts or explicit +HH:MM format.
     fn tz_offset_from_string(tz: &str) -> f64 {
         if tz.starts_with('+') || tz.starts_with('-') {
@@ -250,13 +242,8 @@ impl ConsciousnessEngine for VimshottariEngine {
                 Some(&birth_data.timezone),
             )?;
 
-            // Get precise Moon longitude from Swiss Ephemeris
-            let ephe = engine_human_design::ephemeris::EphemerisCalculator::new("");
-            let moon_pos =
-                ephe.get_planet_position(engine_human_design::ephemeris::HDPlanet::Moon, &utc_dt)?;
-            let sidereal_moon_longitude = Self::to_sidereal_longitude(moon_pos.longitude);
-
-            (sidereal_moon_longitude, utc_dt, "swiss-ephemeris-sidereal")
+            let moon = crate::ephemeris::lahiri_moon(&utc_dt, "")?;
+            (moon.longitude, utc_dt, moon.backend())
         } else if input.options.contains_key("moon_longitude") {
             // Mode 2: Moon longitude provided directly
             let longitude = Self::extract_moon_longitude(&input.options)?;
@@ -439,11 +426,13 @@ impl ConsciousnessEngine for VimshottariEngine {
     fn cache_key(&self, input: &EngineInput) -> String {
         if let Some(ref birth_data) = input.birth_data {
             format!(
-                "vim:{}:{}:{:.4}:{:.4}",
+                "vim:lahiri-full-v1:{}:{}:{:.4}:{:.4}:{}:{}",
                 birth_data.date,
                 birth_data.time.as_ref().unwrap_or(&"12:00".to_string()),
                 birth_data.latitude,
-                birth_data.longitude
+                birth_data.longitude,
+                birth_data.timezone,
+                input.current_time.to_rfc3339()
             )
         } else if let Ok(lng) = Self::extract_moon_longitude(&input.options) {
             let date = input
@@ -451,7 +440,22 @@ impl ConsciousnessEngine for VimshottariEngine {
                 .get("birth_date")
                 .and_then(|v| v.as_str())
                 .unwrap_or("unknown");
-            format!("vim:moon:{:.6}:{}", lng, date)
+            format!(
+                "vim:moon:{:.6}:{}:{}:{}:{}",
+                lng,
+                date,
+                input
+                    .options
+                    .get("birth_time")
+                    .and_then(Value::as_str)
+                    .unwrap_or("12:00"),
+                input
+                    .options
+                    .get("timezone")
+                    .and_then(Value::as_str)
+                    .unwrap_or("UTC"),
+                input.current_time.to_rfc3339()
+            )
         } else {
             format!("vim:invalid:{}", Utc::now().timestamp())
         }
@@ -657,7 +661,8 @@ mod tests {
     async fn test_cache_key_deterministic() {
         let engine = VimshottariEngine::new();
         let input1 = create_test_input_with_moon_longitude(125.0);
-        let input2 = create_test_input_with_moon_longitude(125.0);
+        let mut input2 = create_test_input_with_moon_longitude(125.0);
+        input2.current_time = input1.current_time;
 
         let key1 = engine.cache_key(&input1);
         let key2 = engine.cache_key(&input2);

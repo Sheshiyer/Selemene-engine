@@ -7,7 +7,6 @@
 
 use crate::models::{Mahadasha, Nakshatra, Pratyantardasha, VedicPlanet};
 use chrono::{DateTime, Duration, Utc};
-use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
 use lazy_static::lazy_static;
 use noesis_core::EngineError;
 
@@ -326,12 +325,10 @@ pub fn calculate_birth_nakshatra(
     birth_time: DateTime<Utc>,
     ephe_path: &str,
 ) -> Result<Nakshatra, EngineError> {
-    // Get Moon longitude using Swiss Ephemeris from HD engine
-    let ephe = EphemerisCalculator::new(ephe_path);
-    let moon_position = ephe.get_planet_position(HDPlanet::Moon, &birth_time)?;
+    let moon = crate::ephemeris::lahiri_moon(&birth_time, ephe_path)?;
 
     // Determine nakshatra: floor(longitude / 13.333) gives index 0-26
-    let moon_longitude = moon_position.longitude;
+    let moon_longitude = moon.longitude;
     let nakshatra = get_nakshatra_from_longitude(moon_longitude);
 
     Ok(nakshatra.clone())
