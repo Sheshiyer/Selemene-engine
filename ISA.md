@@ -508,3 +508,7 @@ Ship Phase 6 Wave 2 as a resilient, accessible, performance-bounded Noesis route
   repository and current billing/distribution boundary.
 - Root README and release templates now point to the external-release
   candidate checklist and distinguish public contract from runtime records.
+
+## Status note 2026-10-26 (somatic lanes run)
+
+This ISA predates the somatic-engines run. Its live criteria and receipts are in `docs/plans/somatic-ralph-state.json` and `docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md`. State: PRs #1496, #1497, #1498, #1499, #1500 merged; production on `main@5da8f8d2` with all four somatic engines and both sidecars reporting ready. Remaining items are operator-gated (R2 token, production migration adoption, NVIDIA NIM failures, scope enforce flip, consumer lane S6); see `.planning/HANDOFF.json`.

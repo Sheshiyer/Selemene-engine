@@ -1,33 +1,27 @@
 {
   "schema": "temperance.handoff.v2",
   "project": "Selemene-engine",
-  "written_at": "2026-10-25T21:01:08Z",
-  "tier": "E3",
-  "wave": "S2-S4 somatic lanes: merged; prod readback; operator blockers",
+  "written_at": "2026-10-25T21:10:11.415737+00:00",
+  "tier": "E5",
+  "wave": "somatic lanes S2-S4 complete; operator-gated follow-ups",
   "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/.worktrees/ralph-s0-plan/ISA.md",
-  "isa_note": "ISA.md in this repo is a stale earlier task (free plugin publication) and is fully checked; it carries no open ISC for this run. The live queue and receipts for this run are docs/plans/somatic-ralph-state.json + docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md on branch ralph/s0-plan.",
+  "isa_note": "ISA.md holds an earlier task (free plugin publication). This run's criteria live in docs/plans/somatic-ralph-state.json (lanes s1-s5 receipts) and docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md. A dated status note was appended to ISA.md.",
   "isc_open": [],
-  "isc_done_count": 170,
+  "isc_done_count": 0,
   "completed_tasks": [
-    "Reconciliation + plan (docs/plans/2026-10-25-somatic-engines-reconciliation-and-ralph-plan.md)",
-    "S0: rust toolchain, colima docker, Railway staging env (id 3397696a-39fd-455d-8d78-5136ad883c7d) with own Postgres/Redis, migrations applied, staging keys ralph-s1-staging and ralph-s5-narrow",
-    "S1 face reading: PR #1496 merged 7d833ac9; prod mediapipe-service live; prod proof landmark_source=mediapipe-facemesh",
-    "S5 engine scopes: PR #1497 merged 0f39cd07; prod ENGINE_SCOPE_MODE audit (unset), staging enforce; operator hold on prod flip",
-    "S2-S4 kickoff: lane branches on main, staging ts-engines has R2_* vars + RAAGA_CLIP_MODE=r2; three lane sessions ran and opened PRs #1499 (S4), #1498 (S3), #1500 (S2), all MERGEABLE/CLEAN, local suites green per lane reports",
-    "S4 sigil (#1499 ca993f7e): staged on staging Selemene-engine + ts-engines, probes (fallback path + consent gate + kimi note) pass, merged d5729652, prod readback ok on fallback path; real image blocked by NVIDIA NIM 500 + 30s TS_BRIDGE_TIMEOUT (recorded)",
-    "S2 biofield (#1500 a6d8b2d1): staged, all 6 staging probes pass (201 reading, 422 CONSENT_REQUIRED, honest mock provenance, vedic-ephemeris), merged 2d6514e1; prod biofield sessions 500 due to pre-existing prod schema drift (recorded)",
-    "S3 raaga (#1498 rebased 1bd12d8d by lane session): migration 039 applied to staging DB, staged, consent_missing + upload_failed paths honest, merged 5da8f8d2; https clip blocked by invalid R2 token (recorded)",
-    "Staging Selemene-engine + ts-engines sources returned to main (patch 22e58400 accepted)",
-    "Receipts committed on ralph/s0-plan: ac9960e9, 77742dd7, 20e5608f, 4fdb51bc; S6 consumer lane proposed as a session card (task_44597657)",
-    "S3 prod readback: raaga envelope provenance in prod, clip mode off (honest); prod proof key ralph-s4-prod revoked and deleted",
-    "Prod readback final: Selemene-engine and ts-engines production both SUCCESS on main@5da8f8d2; /health/dependencies ready for all four engines and both sidecars"
+    "S1 face reading: PR #1496 merged 7d833ac9; prod proof landmark_source=mediapipe-facemesh",
+    "S5 engine scopes: PR #1497 merged 0f39cd07; prod audit mode, staging enforce",
+    "S4 sigil provenance: PR #1499 merged d5729652; staging+prod readback (honest path proven)",
+    "S2 biofield consent: PR #1500 merged 2d6514e1; staging probes all pass",
+    "S3 raaga r2 clips: PR #1498 merged 5da8f8d2; honest fallback paths proven; migration 039 on staging",
+    "Production on main@5da8f8d2: /health/dependencies ready for biofield, face-reading, raaga, sigil-forge and both sidecars; staging services back on main; prod proof keys revoked; receipts pushed on ralph/s0-plan (b7e0dff1)"
   ],
   "remaining_tasks": [
-    "OPERATOR: re-issue Cloudflare R2 S3 token for bucket selemene-raga-clips; set R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY (+R2_ACCOUNT_ID, R2_PUBLIC_BASE_URL, R2_RAGA_CLIPS_BUCKET, RAAGA_CLIP_MODE=r2) on staging AND prod ts-engines; then re-run raaga probe (expect https clip_url, status uploaded then reused, curl -I 200 audio/wav)",
-    "OPERATOR: production Postgres migrations: back up, then railway run -s Postgres -e production -- bash scripts/apply-migrations.sh --adopt-through <NNN> -- \"$DATABASE_URL\" (no noesis_migration_journal exists; biofield_readings missing; biofield_sessions pre-017). Then re-run biofield prod probe (POST /biofield/sessions 201, capture 201)",
-    "Set TS_BRIDGE_TIMEOUT (e.g. 90) on Selemene-engine staging+prod or make sigil image generation async; re-probe sigil generate_image:true when NVIDIA NIM flux.1-dev stops returning 500 (expect provenance.provider_id nvidia, fallback_used false, confidence 0.9)",
-    "S6 consumer lane: start the proposed session card (Sankalpa provenance badges, audio player, loadReading route)",
-    "Held: prod ENGINE_SCOPE_MODE enforce flip after audit-log review with operator; scripts/sql/backfill-engine-scopes.sql"
+    "OPERATOR: issue new Cloudflare R2 API token (object read/write on selemene-raga-clips only); copy R2_* vars to ts-engines in staging and production; set RAAGA_CLIP_MODE=r2 in prod; then re-probe raaga for an https clip_url",
+    "OPERATOR: production Postgres migration adoption (backup first; scripts/apply-migrations.sh --adopt-through per docs); verify POST /api/v1/biofield/sessions stops returning 500 in prod",
+    "Investigate NVIDIA NIM flux.1-dev 500s and raise bridge TS_BRIDGE_TIMEOUT for image engines so a provider failure surfaces as the engine's declared fallback rather than BRIDGE_ERROR",
+    "OPERATOR: review audit warnings, run scripts/sql/backfill-engine-scopes.sql, set ENGINE_SCOPE_MODE=enforce in prod",
+    "S6 consumer lane: Sankalpa loadReading route, default host selemene.tryambakam.space, provenance badges, audio player"
   ],
   "blockers": [
     "Staging R2 token invalid (401 on HEAD/ListBucket via curl --aws-sigv4); prod ts-engines has no R2_* vars at all",
@@ -36,40 +30,14 @@
     "Prod scope enforce flip is an operator decision"
   ],
   "decisions": [
-    "No GitHub CI; verify local -> Railway staging -> prod readback",
-    "Merge order S4 -> S3 (rebased) -> S2",
+    "No GitHub CI; local -> Railway staging -> prod readback",
+    "Provenance is the exact 7-field contract block",
     "Consumer repos untouched until S6",
-    "Railway config via MCP update-service/connect-service-source; config-as-code railway.toml shared via Dockerfile.sidecar + SIDECAR_SERVICE",
-    "Provenance must be exactly the 7-field contract block",
-    "Merged S4/S3 on proven honest-failure paths when the success path was blocked by external credentials/providers; blockers recorded with evidence rather than faking a receipt",
-    "Did not apply migrations to production (pre-journal nonempty DB needs --adopt-through; operator call)"
+    "Prod variable writes and DB migrations are operator-gated"
   ],
   "uncommitted_files": [],
-  "next_action": "Operator: fix R2 token and prod migrations (see remaining_tasks), then re-run probe scripts; start S6 card",
+  "next_action": "Operator decision: prod Postgres migration adoption or new R2 token first; no agent work is unblocked until one is chosen",
   "next_command": "gh pr list --state merged --limit 5 && git -C .worktrees/ralph-s0-plan log --oneline -6",
-  "session_budget": {
-    "window": 1000000,
-    "rollover_at": 800000,
-    "used_at_handoff": 890246
-  },
-  "session_start_prompt": "Selemene somatic lanes S2-S4 are merged (d5729652, 2d6514e1, 5da8f8d2). Remaining work is operator-gated (R2 token, prod migrations) plus S6 consumers; read .planning/HANDOFF.json remaining_tasks and docs/plans/somatic-ralph-state.json blockers before acting.",
-  "references": {
-    "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
-    "state": "docs/plans/somatic-ralph-state.json",
-    "memory": "~/.claude/projects/-Volumes-madara-2026-Projects-tryambakam-noesis-Selemene-engine/memory/selemene-staging-and-non-gh-ci-flow.md",
-    "railway": {
-      "project": "11eedde4-41e6-4f51-b86b-cf77111cf592",
-      "prod_env": "702b945e-2c66-4d5a-bae1-4c67ea14c3bb",
-      "staging_env": "3397696a-39fd-455d-8d78-5136ad883c7d",
-      "api_service": "48b3bd23-5620-4f7b-8e5d-96bc5c5d7fc4",
-      "ts_engines_service": "see railway service list",
-      "mediapipe_service": "b91085ba-e1f3-47dc-bb63-ec6dee54c932",
-      "biofield_service": "f596e31b-e190-409c-993d-a3b618d29a73"
-    },
-    "staging_keys": "plaintext in session scratchpad only; re-mint via psql through railway run if lost",
-    "probe_scripts": "session scratchpad probe-s4.sh / probe-s2.sh / probe-s3.sh / probe-s2-prod.sh (recreate from PR bodies if lost; keys never stored in repo)"
-  },
-  "extends": "gsd.pause-work.v1",
-  "harness": "claude",
-  "session_ref": "754e2b0f-e398-418c-aa6f-7e7993f31e14"
+  "session_budget": "predecessor rolled over at 89% of 1M context; everything committed and pushed",
+  "session_start_prompt": "All somatic lane work is merged and verified; remaining queue is operator-gated. Confirm prod health, refresh this handoff, and end with SUCCESSOR_DONE unless the operator has chosen a blocker to work."
 }
