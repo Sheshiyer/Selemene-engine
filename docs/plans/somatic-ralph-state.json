@@ -1,8 +1,19 @@
 {
   "version": 1,
   "plan": "docs/plans/2026-10-25-somatic-engines-reconciliation-and-ralph-plan.md",
-  "axes": ["Declared", "Implemented", "Executable", "Integrated", "Deployed", "Operational"],
-  "tiers": {"T1": "local gate", "T2": "railway staging", "T3": "prod readback"},
+  "axes": [
+    "Declared",
+    "Implemented",
+    "Executable",
+    "Integrated",
+    "Deployed",
+    "Operational"
+  ],
+  "tiers": {
+    "T1": "local gate",
+    "T2": "railway staging",
+    "T3": "prod readback"
+  },
   "lock_zones": [
     "crates/noesis-core/src/types.rs",
     "Cargo.lock",
@@ -11,17 +22,68 @@
     "sankalpa/src/main/engineGateway.ts"
   ],
   "lanes": {
-    "s1-face":     {"branch": "ralph/s1-face",     "worktree": ".worktrees/ralph-s1-face",     "iteration": 0, "cap": 12, "status": "pending", "axis_reached": "Implemented", "blocked_on_human": null, "receipts": []},
-    "s2-biofield": {"branch": "ralph/s2-biofield", "worktree": ".worktrees/ralph-s2-biofield", "iteration": 0, "cap": 12, "status": "pending", "axis_reached": "Implemented", "blocked_on_human": null, "receipts": []},
-    "s3-audio":    {"branch": "ralph/s3-audio",    "worktree": ".worktrees/ralph-s3-audio",    "iteration": 0, "cap": 12, "status": "pending", "axis_reached": "Implemented", "blocked_on_human": null, "receipts": []},
-    "s4-sigil":    {"branch": "ralph/s4-sigil",    "worktree": ".worktrees/ralph-s4-sigil",    "iteration": 0, "cap": 12, "status": "pending", "axis_reached": "Implemented", "blocked_on_human": null, "receipts": []}
+    "s1-face": {
+      "branch": "ralph/s1-face",
+      "worktree": ".worktrees/ralph-s1-face",
+      "iteration": 0,
+      "cap": 12,
+      "status": "pending",
+      "axis_reached": "Implemented",
+      "blocked_on_human": null,
+      "receipts": []
+    },
+    "s2-biofield": {
+      "branch": "ralph/s2-biofield",
+      "worktree": ".worktrees/ralph-s2-biofield",
+      "iteration": 0,
+      "cap": 12,
+      "status": "pending",
+      "axis_reached": "Implemented",
+      "blocked_on_human": null,
+      "receipts": []
+    },
+    "s3-audio": {
+      "branch": "ralph/s3-audio",
+      "worktree": ".worktrees/ralph-s3-audio",
+      "iteration": 0,
+      "cap": 12,
+      "status": "pending",
+      "axis_reached": "Implemented",
+      "blocked_on_human": null,
+      "receipts": []
+    },
+    "s4-sigil": {
+      "branch": "ralph/s4-sigil",
+      "worktree": ".worktrees/ralph-s4-sigil",
+      "iteration": 0,
+      "cap": 12,
+      "status": "pending",
+      "axis_reached": "Implemented",
+      "blocked_on_human": null,
+      "receipts": []
+    }
   },
   "s0": {
-    "rust_toolchain": {"status": "done", "receipt": "rustc 1.99.1; cargo test 4 somatic crates 147/147 pass 2026-10-25"},
-    "docker": {"status": "done", "receipt": "colima start; docker info ok 2026-10-25"},
-    "railway_staging": {"status": "pending", "receipt": null},
-    "mediapipe_service_staging": {"status": "pending", "receipt": null},
-    "lane_worktrees": {"status": "pending", "receipt": null}
+    "rust_toolchain": {
+      "status": "done",
+      "receipt": "rustc 1.99.1; cargo test 4 somatic crates 147/147 pass 2026-10-25"
+    },
+    "docker": {
+      "status": "done",
+      "receipt": "colima start; docker info ok 2026-10-25"
+    },
+    "railway_staging": {
+      "status": "blocked_on_human",
+      "receipt": "environment create failed with name clash after delete; rerun: railway environment new staging --duplicate production"
+    },
+    "mediapipe_service_staging": {
+      "status": "pending",
+      "receipt": null
+    },
+    "lane_worktrees": {
+      "status": "done",
+      "receipt": "4 worktrees at .worktrees/ralph-s{1..4}-* on origin/main cb8ce56a; wip/witness-reference-tooling 2076eb6b parks the witness diff; PRs 886/907/1488 commented superseded 2026-10-25"
+    }
   },
   "sentinel": "COMPLETE when every lane axis_reached == Operational, or any lane blocked_on_human != null"
 }

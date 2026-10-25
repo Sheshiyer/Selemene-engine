@@ -329,7 +329,8 @@ Expect `selemene-raga-clips` present.
 ### S0 receipts (live log)
 - 2026-10-25 S0.1 ✅ rustup stable 1.99.1 installed. T1: `cargo test -p engine-face-reading -p engine-nadabrahman -p engine-biofield -p engine-biofield-capture --locked` → biofield 65/65, biofield-capture 6/6, face-reading 46/46, nadabrahman 30/30, 0 failed.
 - 2026-10-25 S0.2 ✅ Docker via Colima (`colima start`), `docker info` ok. Note: no Docker Desktop on this Mac.
-- 2026-10-25 S0.3 🟡 `staging` environment created; wizard not yet finished, 0 services present.
+- 2026-10-25 S0.3 ❌ staging delete succeeded; recreate hit a name clash. Environment does not exist. Rerun `railway environment new staging --duplicate production`.
+- 2026-10-25 S0.7 ✅ witness diff parked on `wip/witness-reference-tooling` (2076eb6b); plan + state on `ralph/s0-plan`; lane worktrees `ralph/s1-face s2-biofield s3-audio s4-sigil` from origin/main cb8ce56a; PRs #886 #907 #1488 commented superseded. This branch already has PR #1491, so no new review PR opened.
 
 ### S0 exit criteria
 - `cargo --version` works and the four somatic crates' tests pass locally (T1).
