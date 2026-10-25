@@ -1,5 +1,13 @@
 # Python Sidecar Services — Integration Guide
 
+> **Deployment note (2026-10-25):** on Railway both sidecars build `python-services/Dockerfile.sidecar`
+> from the shared `python-services/railway.toml`; `SIDECAR_SERVICE` selects the app (`biofield_cv_service`
+> default, `mediapipe_service` for the face-mesh service). `mediapipe` is pinned to `0.10.18`: later
+> wheels remove `mediapipe.solutions`, and the face service then falls back to deterministic landmarks
+> while reporting `capability_status: degraded` and `facemesh_ready: false` on `/health`.
+> See `docs/deployment/RAILWAY.md`.
+
+
 These sidecars extend the reflection stack with specialized perception capabilities while keeping the core orchestration model consistent.
 
 ## Architecture
