@@ -209,10 +209,10 @@
     "s5-rbac": {
       "branch": "ralph/s5-rbac",
       "worktree": ".worktrees/ralph-s5-rbac",
-      "iteration": 3,
+      "iteration": 4,
       "cap": 12,
       "status": "in_progress",
-      "axis_reached": "Implemented",
+      "axis_reached": "Operational (staging, enforce)",
       "blocked_on_human": null,
       "origin": "cross_cutting_findings[0] 2026-10-25 (W3E slot 20, #913)",
       "design": "API-key principals need <engine>:read (or engines:*/admin:*/*) on calculate, face upload, and every engine of a workflow; JWT/CF Access principals stay tier-governed; ENGINE_SCOPE_MODE off|audit(default)|enforce; check runs before quota",
@@ -240,6 +240,18 @@
           "tier": "T1",
           "cmd": "Codex P1 #2: assets/generate and witness/interpret dispatch engines unchecked. commit 13e1fb1f: engine_scope_allows() shared boundary; assets (6 engines) + witness (11) gated; legacy routes gated but unauthenticated by design. engine_scope_tests 10/10; lib 111/111; assets_generate_contract 13/13; integration 43/43; p4_media 25/25",
           "result": "green; both review threads resolved"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "staging API 13e1fb1f with ENGINE_SCOPE_MODE=enforce; narrow key [basic:access, face-reading:read] and S1 key [.., panchanga:read, no human-design]",
+          "result": "narrow->panchanga 403 ENGINE_SCOPE_FORBIDDEN {engine_id:panchanga, required_permission:panchanga:read}; narrow->face-reading 200 mediapipe-face-cv; narrow->workflow daily-practice 403; narrow->witness/interpret 200 engines_used=[biofield] only; S1->panchanga 200; S1->human-design 403. Staging left in enforce as canary."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T1",
+          "cmd": "Codex P1 #3: tier-wide backfill would widen narrow keys. Backfill rewritten to legacy full-bundle keys only (jsonb ?& 17 scopes), adds raaga/biofield-capture/financial-biosensor",
+          "result": "thread resolved"
         }
       ],
       "remaining": [
