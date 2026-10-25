@@ -25,7 +25,7 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 6,
+      "iteration": 7,
       "cap": 12,
       "status": "in_progress",
       "axis_reached": "Deployed",
@@ -100,6 +100,18 @@
           "tier": "T2",
           "cmd": "push 0c30e2e4 (<1.0 pin) -> staging deployment 309af0c0 SUCCESS; /health/dependencies mediapipe ready; calculate x3",
           "result": "still backend=heuristic. Build log: x86_64 resolved mediapipe-0.10.35 (py3-none wheel, no solutions API); arm64 locally had resolved 0.10.18. Pinned ==0.10.18 (x86_64 cp311 wheel verified via pip download) and pushed."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "temporary domain mediapipe-service-staging.up.railway.app; GET /health; POST /analyze",
+          "result": "service identified as biofield-cv (opencv/numpy/mediapipe flags), /analyze returned biofield shape. ROOT CAUSE 2: config-as-code python-services/railway.toml (dockerfilePath=Dockerfile.biofield) overrides the dockerfilePath set via API, so mediapipe-service built and ran the biofield sidecar. Rust engine got 200 with wrong shape -> decode fail -> silent heuristic."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "git mv railway.toml railway.biofield.toml; git mv railway.mediapipe.toml railway.toml; push ralph/s1-face",
+          "result": "rebuild in progress"
         }
       ],
       "findings": [
@@ -110,7 +122,9 @@
         "ROOT CAUSE face CV: mediapipe>=0.10 unpinned resolved to 1.1.1 which has no solutions API; fix = pin <1.0 (0.10.18 has cp311 wheels) + honest health",
         "Rust /health/dependencies marks a sidecar ready on HTTP 200 alone; it ignores capability_status, so a degraded face-mesh reports ready",
         "Rust analysis_from_landmark_hook swallows Ok(fallback) and Err(...) with no log line; add tracing::warn and expose in provenance",
-        "railway ssh needs a registered key (railway ssh keys add); not set up on this Mac"
+        "railway ssh needs a registered key (railway ssh keys add); not set up on this Mac",
+        "MERGE PREREQ: before ralph/s1-face merges to main, set biofield-cv-service config path to /python-services/railway.biofield.toml in prod and staging (config-as-code deprecated 2026-12-01; migrate to .railway/railway.ts later)",
+        "Rust face engine accepted a 200 from the wrong service silently; decode errors must be logged and surfaced as provenance"
       ]
     },
     "s2-biofield": {
