@@ -25,10 +25,10 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 12,
+      "iteration": 13,
       "cap": 12,
-      "status": "prod-deployed; prod end-to-end call pending a production API key",
-      "axis_reached": "Deployed (prod) / Operational (staging)",
+      "status": "prod-proven",
+      "axis_reached": "Operational (prod)",
       "blocked_on_human": null,
       "receipts": [
         {
@@ -148,6 +148,12 @@
           "tier": "T3",
           "cmd": "prod readback: list-deployments Selemene-engine e12c463e main@7d833ac9 SUCCESS; mediapipe-service 3ead646b main@7d833ac9 SUCCESS; GET selemene.tryambakam.space/health/live; GET /health/dependencies",
           "result": "live ok v3.3.1 19 engines; dependencies status=ready, biofield-cv ready, mediapipe-face-mesh ready. biofield-cv-service prod still on its July image (no rebuild triggered yet); safe, default mode unchanged."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T3",
+          "cmd": "prod key ralph-s1-prod (face-reading:read + basic:access, expires 2026-11-01) minted in prod Postgres via railway run; POST selemene.tryambakam.space/api/v1/engines/face-reading/calculate (v1 contract, synthetic portrait, consent face-image); POST /upload; POST /upload consent=false",
+          "result": "calculate 200: metadata.backend=mediapipe-face-cv precision=cv-468-landmarks computation_mode=image-cv-capture provenance.landmark_source=mediapipe-facemesh fallback_used=false num_landmarks=468 (364ms). upload: backend=mediapipe-face-cv fallback_used=false. consent=false: 422. FIRST REAL FACE READING IN PRODUCTION."
         }
       ],
       "findings": [
@@ -163,7 +169,6 @@
         "Rust face engine accepted a 200 from the wrong service silently; decode errors must be logged and surfaced as provenance"
       ],
       "remaining": [
-        "prod: one authenticated face-reading calculate to prove landmark_source=mediapipe-facemesh (needs a production API key)",
         "prod: biofield-cv-service rebuild from main (unified image) on next trigger; verify default mode",
         "staging: Selemene-engine/biofield back on main (accepted)",
         "golden fixture slot 27: commit synthetic-face fixture",
