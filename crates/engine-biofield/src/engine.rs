@@ -113,45 +113,134 @@ impl BiofieldEngine {
         areas
     }
 
-    /// Perform biofield analysis — routes to Vedic or mock path
-    /// T-026: added capture result mapping branch for frozen contracts (11 metrics, consent)
-    /// refs p1-w1-worker-bootstrap-packet + 3 extraction + FROZEN + detailed-task-list T-026 + EXECUTION-STATUS. Keep is_mock.
+    /// Perform biofield analysis. Three explicit paths:
+    ///
+    /// * [`Self::analyze_vedic`] — real ephemeris-backed analysis when `birth_data` is present.
+    /// * [`Self::analyze_capture`] — capture-shaped request (`image_data` / `consent` /
+    ///   `capture` / `biofield_capture` in options). This engine has no readings
+    ///   repository, so it always returns the 11-metric mock and declares it; the real
+    ///   persisted capture result is served by the `biofield-capture` engine.
+    /// * [`Self::analyze_mock`] — plain simulated metrics.
+    ///
+    /// Every path returns a [`Provenance`] that `calculate` writes to `result.provenance`.
     fn analyze(&self, input: &EngineInput) -> Result<AnalysisOutcome, EngineError> {
-        // If birth_data is provided, use real Vedic analysis (T-026 Vedic path harden)
-        if let Some(birth_data) = &input.birth_data {
-            let result = self.analyzer.analyze(birth_data, input.current_time)?;
-            return Ok(AnalysisOutcome::Vedic(result));
+        if input.birth_data.is_some() {
+            return self.analyze_vedic(input);
         }
 
-        // T-026 capture mapping: if consent or image_data-like in options, map to 11-metric frozen shape (biofield-capture contract)
-        let has_capture = input.options.contains_key("image_data")
+        if Self::is_capture_request(input) {
+            return Ok(self.analyze_capture(input));
+        }
+
+        Ok(self.analyze_mock(input))
+    }
+
+    fn is_capture_request(input: &EngineInput) -> bool {
+        input.options.contains_key("image_data")
             || input.options.contains_key("consent")
-            || input.options.contains_key("capture");
-        if has_capture {
-            // minimal capture mock mapping to 11 metrics per FROZEN (from py: light_quanta... pattern_regularity) + consent echo; keep is_mock
-            let seed = input
-                .options
-                .get("seed")
-                .and_then(|v| v.as_u64())
-                .unwrap_or(42);
-            let m = generate_mock_metrics(Some(seed));
-            // extend to 11 via placeholders matching frozen contract example
-            let consent_val = input.options.get("consent").cloned();
-            let qual = input.options.get("quality").cloned();
-            // for result we'll special case in serialize; here return mock with flags
-            let interpretation = "Capture-mapped (11 metrics per frozen; T-026)".to_string();
-            let areas = vec!["see result.metrics for 11 fields".to_string()];
-            return Ok(AnalysisOutcome::Mock(BiofieldAnalysis {
-                metrics: m,
-                interpretation,
-                areas_of_attention: areas,
-                is_mock_data: true,
-                consent: consent_val,
-                quality: qual,
-            }));
-        }
+            || input.options.contains_key("capture")
+            || input.options.contains_key("biofield_capture")
+    }
 
-        // Fall back to mock data
+    fn consent_granted(input: &EngineInput) -> bool {
+        input
+            .options
+            .get("consent")
+            .and_then(|c| c.get("granted"))
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+    }
+
+    fn capture_reading_id(input: &EngineInput) -> Option<String> {
+        input
+            .options
+            .get("biofield_capture")
+            .and_then(|v| v.get("reading_id"))
+            .and_then(Value::as_str)
+            .map(str::to_string)
+    }
+
+    /// Real path: Vedic planetary analysis from birth data.
+    fn analyze_vedic(&self, input: &EngineInput) -> Result<AnalysisOutcome, EngineError> {
+        let birth_data = input
+            .birth_data
+            .as_ref()
+            .ok_or_else(|| EngineError::ValidationError("birth_data is required".to_string()))?;
+        let result = self.analyzer.analyze(birth_data, input.current_time)?;
+        let provenance = Provenance {
+            backend: "vedic-ephemeris",
+            precision: format!("{:?}", input.precision),
+            fallback_used: false,
+            fallback_reason: None,
+            birth_data_provided: true,
+            consent_granted: Self::consent_granted(input),
+            capture_reading_id: None,
+            mock_reason: None,
+        };
+        Ok(AnalysisOutcome::Vedic(result, provenance))
+    }
+
+    /// Capture-shaped request. Maps the simulated metrics onto the frozen 11-metric
+    /// `biofield-capture` shape and echoes consent/quality, but is always mock:
+    /// the standalone `biofield` engine has no readings repository, so it cannot
+    /// resolve `options.biofield_capture.reading_id`. Callers who want the real
+    /// persisted capture result must calculate engine `biofield-capture` with the
+    /// same `reading_id`.
+    fn analyze_capture(&self, input: &EngineInput) -> AnalysisOutcome {
+        let seed = input
+            .options
+            .get("seed")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(42);
+        let metrics = generate_mock_metrics(Some(seed));
+        let consent_val = input.options.get("consent").cloned();
+        let quality = input.options.get("quality").cloned();
+        let reading_id = Self::capture_reading_id(input);
+
+        let fallback_reason = match &reading_id {
+            Some(id) => format!(
+                "reading_id {id} supplied, but the `biofield` engine has no readings repository; \
+                 the persisted capture result is served by engine `biofield-capture` \
+                 (options.biofield_capture.reading_id). This result is simulated."
+            ),
+            None => "no biofield_capture.reading_id supplied; capture-shaped request served with \
+                     simulated metrics"
+                .to_string(),
+        };
+        let mock_reason = if reading_id.is_some() {
+            "biofield-engine-cannot-resolve-reading"
+        } else {
+            "no-reading-id"
+        };
+
+        let analysis = BiofieldAnalysis {
+            metrics,
+            interpretation:
+                "Simulated capture-shaped metrics (11-metric frozen contract). Not derived from an image."
+                    .to_string(),
+            areas_of_attention: vec![
+                "Simulated data: calculate engine `biofield-capture` with a reading_id for real metrics"
+                    .to_string(),
+            ],
+            is_mock_data: true,
+            consent: consent_val,
+            quality,
+        };
+        let provenance = Provenance {
+            backend: "mock",
+            precision: "simulated".to_string(),
+            fallback_used: true,
+            fallback_reason: Some(fallback_reason),
+            birth_data_provided: false,
+            consent_granted: Self::consent_granted(input),
+            capture_reading_id: reading_id,
+            mock_reason: Some(mock_reason),
+        };
+        AnalysisOutcome::Mock(analysis, provenance)
+    }
+
+    /// Plain simulated metrics, declared as such.
+    fn analyze_mock(&self, input: &EngineInput) -> AnalysisOutcome {
         let seed = input.options.get("seed").and_then(|v| v.as_u64());
         let metrics = if let Some(user_id) = input.options.get("user_id").and_then(|v| v.as_str()) {
             generate_metrics_for_user(user_id)
@@ -162,14 +251,27 @@ impl BiofieldEngine {
         let interpretation = Self::generate_mock_interpretation(&metrics);
         let areas_of_attention = Self::identify_mock_areas_of_attention(&metrics);
 
-        Ok(AnalysisOutcome::Mock(BiofieldAnalysis {
+        let analysis = BiofieldAnalysis {
             metrics,
             interpretation,
             areas_of_attention,
             is_mock_data: true,
             consent: None,
             quality: None,
-        }))
+        };
+        let provenance = Provenance {
+            backend: "mock",
+            precision: "simulated".to_string(),
+            fallback_used: true,
+            fallback_reason: Some(
+                "no birth_data provided; biofield metrics are simulated".to_string(),
+            ),
+            birth_data_provided: false,
+            consent_granted: Self::consent_granted(input),
+            capture_reading_id: None,
+            mock_reason: Some("no-birth-data"),
+        };
+        AnalysisOutcome::Mock(analysis, provenance)
     }
 
     /// Serialize analysis result to JSON
@@ -240,10 +342,44 @@ impl BiofieldEngine {
     }
 }
 
-/// Internal enum to carry analysis result + optional Vedic context
+/// Where the result came from. Written verbatim to `result.provenance` so a
+/// consumer can never mistake simulated metrics for a real reading.
+#[derive(Debug, Clone)]
+struct Provenance {
+    /// `vedic-ephemeris` | `mock`. (`biofield-capture` is only ever emitted by the
+    /// `biofield-capture` engine, which owns the persisted reading.)
+    backend: &'static str,
+    precision: String,
+    /// `true` whenever the result is simulated.
+    fallback_used: bool,
+    fallback_reason: Option<String>,
+    birth_data_provided: bool,
+    consent_granted: bool,
+    /// `options.biofield_capture.reading_id` as received, if any.
+    capture_reading_id: Option<String>,
+    /// Short machine-readable reason the result is mock (`None` on the real path).
+    mock_reason: Option<&'static str>,
+}
+
+impl Provenance {
+    fn to_json(&self) -> Value {
+        json!({
+            "backend": self.backend,
+            "precision": self.precision,
+            "fallback_used": self.fallback_used,
+            "fallback_reason": self.fallback_reason,
+            "birth_data_provided": self.birth_data_provided,
+            "consent_granted": self.consent_granted,
+            "capture_reading_id": self.capture_reading_id,
+            "real_capture_engine": "biofield-capture",
+        })
+    }
+}
+
+/// Internal enum to carry analysis result + provenance
 enum AnalysisOutcome {
-    Vedic(VedicAnalysisResult),
-    Mock(BiofieldAnalysis),
+    Vedic(VedicAnalysisResult, Provenance),
+    Mock(BiofieldAnalysis, Provenance),
 }
 
 impl Default for BiofieldEngine {
@@ -271,22 +407,19 @@ impl ConsciousnessEngine for BiofieldEngine {
 
         let outcome = self.analyze(&input)?;
 
-        let (analysis, witness_prompt, backend, precision) = match &outcome {
-            AnalysisOutcome::Vedic(vedic_result) => {
+        let (analysis, witness_prompt, provenance) = match &outcome {
+            AnalysisOutcome::Vedic(vedic_result, provenance) => {
                 let prompt =
                     generate_vedic_witness_prompt(&vedic_result.analysis, &vedic_result.context);
-                (
-                    &vedic_result.analysis,
-                    prompt,
-                    "vedic-ephemeris",
-                    format!("{:?}", input.precision),
-                )
+                (&vedic_result.analysis, prompt, provenance)
             }
-            AnalysisOutcome::Mock(mock_analysis) => {
+            AnalysisOutcome::Mock(mock_analysis, provenance) => {
                 let prompt = generate_witness_prompt(mock_analysis);
-                (mock_analysis, prompt, "mock", "simulated".to_string())
+                (mock_analysis, prompt, provenance)
             }
         };
+        let backend = provenance.backend;
+        let precision = provenance.precision.clone();
 
         if witness_prompt.is_empty() {
             return Err(EngineError::CalculationError(
@@ -304,6 +437,11 @@ impl ConsciousnessEngine for BiofieldEngine {
         let elapsed = start.elapsed();
 
         let mut result = Self::serialize_result(analysis);
+
+        if let Some(reason) = provenance.mock_reason {
+            result["mock_reason"] = json!(reason);
+        }
+        result["provenance"] = provenance.to_json();
 
         if analysis.consent.is_some() {
             // T-026 capture: preserve 11-metric + consent from serialize (frozen contract); no full mock notice
@@ -375,6 +513,44 @@ impl ConsciousnessEngine for BiofieldEngine {
         if output.result.get("is_mock_data").is_none() {
             messages.push("Missing 'is_mock_data' flag".to_string());
             valid = false;
+        }
+
+        match output.result.get("provenance") {
+            Some(provenance) if provenance.is_object() => {
+                let backend_ok = matches!(
+                    provenance.get("backend").and_then(Value::as_str),
+                    Some("vedic-ephemeris" | "biofield-capture" | "mock")
+                );
+                if !backend_ok {
+                    messages.push(
+                        "provenance.backend must be vedic-ephemeris | biofield-capture | mock"
+                            .to_string(),
+                    );
+                    valid = false;
+                }
+                let fallback_used = provenance.get("fallback_used").and_then(Value::as_bool);
+                if fallback_used.is_none() {
+                    messages.push("provenance.fallback_used must be a boolean".to_string());
+                    valid = false;
+                }
+                let is_mock = output.result.get("is_mock_data").and_then(Value::as_bool);
+                if is_mock == Some(true) && fallback_used != Some(true) {
+                    messages.push(
+                        "is_mock_data is true but provenance.fallback_used is not".to_string(),
+                    );
+                    valid = false;
+                }
+                for key in ["precision", "birth_data_provided", "consent_granted"] {
+                    if provenance.get(key).is_none() {
+                        messages.push(format!("provenance.{key} is missing"));
+                        valid = false;
+                    }
+                }
+            }
+            _ => {
+                messages.push("Missing 'provenance' object in result".to_string());
+                valid = false;
+            }
         }
 
         if let Some(metrics) = output.result.get("metrics") {
@@ -815,5 +991,118 @@ mod tests {
             res.get("computation_mode").and_then(|v| v.as_str()),
             Some("capture-mock")
         );
+        // honesty: capture-shaped without a reading id is declared mock
+        assert_eq!(res["is_mock_data"], json!(true));
+        assert_eq!(res["mock_reason"], json!("no-reading-id"));
+        assert_eq!(res["provenance"]["fallback_used"], json!(true));
+        assert_eq!(res["provenance"]["backend"], json!("mock"));
+        assert_eq!(res["provenance"]["consent_granted"], json!(true));
+        assert!(res["provenance"]["capture_reading_id"].is_null());
+    }
+
+    #[tokio::test]
+    async fn test_provenance_vedic_path_is_real() {
+        let engine = BiofieldEngine::new();
+        let output = engine.calculate(create_vedic_input()).await.unwrap();
+        let prov = &output.result["provenance"];
+        assert_eq!(prov["backend"], json!("vedic-ephemeris"));
+        assert_eq!(prov["fallback_used"], json!(false));
+        assert!(prov["fallback_reason"].is_null());
+        assert_eq!(prov["birth_data_provided"], json!(true));
+        assert_eq!(prov["consent_granted"], json!(false));
+        assert_eq!(prov["precision"], json!("Standard"));
+        assert!(output.result.get("mock_reason").is_none());
+        assert_eq!(output.result["is_mock_data"], json!(false));
+        assert_eq!(output.metadata.backend, "vedic-ephemeris");
+        let validation = engine.validate(&output).await.unwrap();
+        assert!(validation.valid, "{:?}", validation.messages);
+    }
+
+    #[tokio::test]
+    async fn test_provenance_mock_path_declares_fallback() {
+        let engine = BiofieldEngine::new();
+        let output = engine.calculate(create_test_input()).await.unwrap();
+        let prov = &output.result["provenance"];
+        assert_eq!(prov["backend"], json!("mock"));
+        assert_eq!(prov["precision"], json!("simulated"));
+        assert_eq!(prov["fallback_used"], json!(true));
+        assert_eq!(
+            prov["fallback_reason"],
+            json!("no birth_data provided; biofield metrics are simulated")
+        );
+        assert_eq!(prov["birth_data_provided"], json!(false));
+        assert_eq!(prov["consent_granted"], json!(false));
+        assert_eq!(output.result["mock_reason"], json!("no-birth-data"));
+        assert_eq!(output.result["is_mock_data"], json!(true));
+        assert_eq!(output.result["computation_mode"], json!("mock"));
+        let validation = engine.validate(&output).await.unwrap();
+        assert!(validation.valid, "{:?}", validation.messages);
+    }
+
+    #[tokio::test]
+    async fn test_provenance_capture_with_reading_id_is_declared_mock() {
+        let engine = BiofieldEngine::new();
+        let mut options = HashMap::new();
+        options.insert(
+            "biofield_capture".to_string(),
+            json!({"reading_id": "11111111-2222-3333-4444-555555555555"}),
+        );
+        options.insert(
+            "consent".to_string(),
+            json!({"granted": true, "scopes": ["biofield-capture"]}),
+        );
+        let input = EngineInput {
+            birth_data: None,
+            current_time: Utc::now(),
+            location: None,
+            precision: Precision::Standard,
+            options,
+        };
+
+        let output = engine.calculate(input).await.unwrap();
+        let res = &output.result;
+        assert_eq!(res["is_mock_data"], json!(true));
+        assert_eq!(
+            res["mock_reason"],
+            json!("biofield-engine-cannot-resolve-reading")
+        );
+        assert_eq!(res["computation_mode"], json!("capture-mock"));
+        let prov = &res["provenance"];
+        assert_eq!(prov["backend"], json!("mock"));
+        assert_eq!(prov["fallback_used"], json!(true));
+        assert_eq!(
+            prov["capture_reading_id"],
+            json!("11111111-2222-3333-4444-555555555555")
+        );
+        assert_eq!(prov["real_capture_engine"], json!("biofield-capture"));
+        let reason = prov["fallback_reason"].as_str().unwrap();
+        assert!(reason.contains("biofield-capture"), "reason was {reason}");
+        assert!(reason.contains("11111111-2222-3333-4444-555555555555"));
+        assert_eq!(prov["consent_granted"], json!(true));
+        let validation = engine.validate(&output).await.unwrap();
+        assert!(validation.valid, "{:?}", validation.messages);
+    }
+
+    #[tokio::test]
+    async fn test_validate_rejects_missing_provenance() {
+        let engine = BiofieldEngine::new();
+        let mut output = engine.calculate(create_test_input()).await.unwrap();
+        output.result.as_object_mut().unwrap().remove("provenance");
+        let validation = engine.validate(&output).await.unwrap();
+        assert!(!validation.valid);
+        assert!(validation.messages.iter().any(|m| m.contains("provenance")));
+    }
+
+    #[tokio::test]
+    async fn test_validate_rejects_mock_without_fallback_flag() {
+        let engine = BiofieldEngine::new();
+        let mut output = engine.calculate(create_test_input()).await.unwrap();
+        output.result["provenance"]["fallback_used"] = json!(false);
+        let validation = engine.validate(&output).await.unwrap();
+        assert!(!validation.valid);
+        assert!(validation
+            .messages
+            .iter()
+            .any(|m| m.contains("fallback_used")));
     }
 }

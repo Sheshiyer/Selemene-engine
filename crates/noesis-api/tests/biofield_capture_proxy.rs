@@ -219,6 +219,27 @@ struct MultipartField<'a> {
     content_type: Option<&'a str>,
 }
 
+/// Frozen consent payload every capture must carry (`capture_metadata.consent`).
+/// Mirrors what the SDK and Sankalpa send today.
+fn consent_metadata_json() -> &'static str {
+    r#"{"platform":"test","consent":{"granted":true,"scopes":["biofield-capture"],"timestamp":"2026-07-17T12:00:00Z"}}"#
+}
+
+/// `capture_metadata` multipart field carrying granted `biofield-capture` consent.
+fn consent_field() -> MultipartField<'static> {
+    MultipartField {
+        name: "capture_metadata",
+        body: consent_metadata_json().as_bytes().to_vec(),
+        file_name: None,
+        content_type: None,
+    }
+}
+
+fn fixture_portrait_bytes() -> Vec<u8> {
+    let path = repo_root().join("tests/fixtures/images/biofield-portrait-256.jpg");
+    std::fs::read(&path).unwrap_or_else(|err| panic!("read {}: {err}", path.display()))
+}
+
 fn build_multipart_body(fields: Vec<MultipartField<'_>>) -> (Vec<u8>, String) {
     let boundary = format!("----bf1-{}", Uuid::new_v4().simple());
     let mut body = Vec::new();
@@ -645,12 +666,15 @@ async fn biofield_capture_rejects_missing_or_inactive_sessions() {
     let user_id = harness.create_user_id("session-errors").await;
     let token = harness.token_for_user(user_id);
 
-    let (body, boundary) = build_multipart_body(vec![MultipartField {
-        name: "image",
-        body: b"\xff\xd8\xff\xe0fake-jpeg".to_vec(),
-        file_name: Some("capture.jpg"),
-        content_type: Some("image/jpeg"),
-    }]);
+    let (body, boundary) = build_multipart_body(vec![
+        MultipartField {
+            name: "image",
+            body: b"\xff\xd8\xff\xe0fake-jpeg".to_vec(),
+            file_name: Some("capture.jpg"),
+            content_type: Some("image/jpeg"),
+        },
+        consent_field(),
+    ]);
 
     let missing_id = Uuid::new_v4();
     let (missing_status, missing_payload) = harness
@@ -684,6 +708,255 @@ async fn biofield_capture_rejects_missing_or_inactive_sessions() {
         inactive_payload["error_code"],
         "BIOFIELD_SESSION_NOT_ACTIVE"
     );
+
+    harness.delete_user(user_id).await;
+}
+
+#[tokio::test]
+#[serial]
+async fn capture_rejects_missing_consent() {
+    let Some(harness) = BiofieldCaptureHarness::new().await else {
+        return;
+    };
+
+    let user_id = harness.create_user_id("no-consent").await;
+    let session_id = harness.create_session_for_user(user_id).await;
+    let token = harness.token_for_user(user_id);
+
+    // The sidecar must never be called when consent is missing.
+    let sidecar = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/analyze"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({})))
+        .expect(0)
+        .mount(&sidecar)
+        .await;
+    let _env = EnvGuard::set(&[
+        ("PYTHON_BIOFIELD_URL", sidecar.uri()),
+        ("PYTHON_BIOFIELD_TIMEOUT_MS", "1000".to_string()),
+    ]);
+
+    let (body, boundary) = build_multipart_body(vec![
+        MultipartField {
+            name: "image",
+            body: fixture_portrait_bytes(),
+            file_name: Some("biofield-portrait-256.jpg"),
+            content_type: Some("image/jpeg"),
+        },
+        MultipartField {
+            name: "capture_metadata",
+            body: br#"{"platform":"web"}"#.to_vec(),
+            file_name: None,
+            content_type: None,
+        },
+    ]);
+
+    let (status, payload) = harness
+        .send_authenticated_multipart(
+            &format!("/api/v1/biofield/sessions/{session_id}/captures"),
+            &token,
+            body,
+            &boundary,
+        )
+        .await;
+
+    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{payload}");
+    assert_eq!(payload["error_code"], "CONSENT_REQUIRED");
+    assert_eq!(payload["details"]["engine_id"], "biofield-capture");
+    assert_eq!(payload["details"]["required_scope"], "biofield-capture");
+
+    let readings = harness
+        .readings_repository
+        .list_readings(user_id, Some("biofield-capture"), 10, 0)
+        .await
+        .expect("readings list should load");
+    assert!(
+        readings.is_empty(),
+        "no reading may be persisted without consent"
+    );
+
+    harness.delete_user(user_id).await;
+}
+
+#[tokio::test]
+#[serial]
+async fn capture_rejects_wrong_scope() {
+    let Some(harness) = BiofieldCaptureHarness::new().await else {
+        return;
+    };
+
+    let user_id = harness.create_user_id("wrong-scope").await;
+    let session_id = harness.create_session_for_user(user_id).await;
+    let token = harness.token_for_user(user_id);
+
+    let sidecar = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/analyze"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({})))
+        .expect(0)
+        .mount(&sidecar)
+        .await;
+    let _env = EnvGuard::set(&[
+        ("PYTHON_BIOFIELD_URL", sidecar.uri()),
+        ("PYTHON_BIOFIELD_TIMEOUT_MS", "1000".to_string()),
+    ]);
+
+    for (label, metadata) in [
+        (
+            "face-image scope",
+            r#"{"consent":{"granted":true,"scopes":["face-image"]}}"#,
+        ),
+        (
+            "granted false",
+            r#"{"consent":{"granted":false,"scopes":["biofield-capture"]}}"#,
+        ),
+    ] {
+        let (body, boundary) = build_multipart_body(vec![
+            MultipartField {
+                name: "image",
+                body: fixture_portrait_bytes(),
+                file_name: Some("biofield-portrait-256.jpg"),
+                content_type: Some("image/jpeg"),
+            },
+            MultipartField {
+                name: "capture_metadata",
+                body: metadata.as_bytes().to_vec(),
+                file_name: None,
+                content_type: None,
+            },
+        ]);
+
+        let (status, payload) = harness
+            .send_authenticated_multipart(
+                &format!("/api/v1/biofield/sessions/{session_id}/captures"),
+                &token,
+                body,
+                &boundary,
+            )
+            .await;
+
+        assert_eq!(
+            status,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "{label}: {payload}"
+        );
+        assert_eq!(payload["error_code"], "CONSENT_REQUIRED", "{label}");
+    }
+
+    harness.delete_user(user_id).await;
+}
+
+#[tokio::test]
+#[serial]
+async fn capture_accepts_frozen_consent() {
+    let Some(harness) = BiofieldCaptureHarness::new().await else {
+        return;
+    };
+
+    let user_id = harness.create_user_id("frozen-consent").await;
+    let session_id = harness.create_session_for_user(user_id).await;
+    let token = harness.token_for_user(user_id);
+
+    let sidecar = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/analyze"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "contract_version": "biofield-cv/v1",
+            "analysis_version": "stub-metrics/v1",
+            "metrics": {
+                "light_quanta_density": 42.5,
+                "normalized_area": 0.67,
+                "average_intensity": 0.51,
+                "inner_noise": 0.11,
+                "energy_analysis": {"low": 0.2, "medium": 0.5, "high": 0.3, "total": 1.0},
+                "entropy_form_coefficient": 2.7,
+                "fractal_dimension": 1.42,
+                "correlation_dimension": 1.95,
+                "body_symmetry": 0.33,
+                "contour_complexity": 1.8,
+                "pattern_regularity": 0.76
+            },
+            "quality_assessment": {
+                "sharpness": 0.88,
+                "contrast": 0.82,
+                "noise_level": 0.08,
+                "exposure": 0.54,
+                "sufficient_quality": true
+            },
+            "algorithms_run": ["fractal_dimension"],
+            "processing_time_ms": 12.5
+        })))
+        .expect(2)
+        .mount(&sidecar)
+        .await;
+
+    let artifacts_dir = artifact_dir("frozen-consent");
+    let _env = EnvGuard::set(&[
+        ("PYTHON_BIOFIELD_URL", sidecar.uri()),
+        ("PYTHON_BIOFIELD_TIMEOUT_MS", "1000".to_string()),
+        (
+            "BIOFIELD_ARTIFACTS_DIR",
+            artifacts_dir.display().to_string(),
+        ),
+    ]);
+
+    // (1) consent inside capture_metadata — what the SDK and Sankalpa send today.
+    let (body, boundary) = build_multipart_body(vec![
+        MultipartField {
+            name: "image",
+            body: fixture_portrait_bytes(),
+            file_name: Some("biofield-portrait-256.jpg"),
+            content_type: Some("image/jpeg"),
+        },
+        consent_field(),
+    ]);
+    let (status, payload) = harness
+        .send_authenticated_multipart(
+            &format!("/api/v1/biofield/sessions/{session_id}/captures"),
+            &token,
+            body,
+            &boundary,
+        )
+        .await;
+    assert_eq!(status, StatusCode::CREATED, "{payload}");
+    let reading_id = Uuid::parse_str(payload["reading_id"].as_str().expect("reading id string"))
+        .expect("valid reading uuid");
+    let reading = harness
+        .readings_repository
+        .get_reading(reading_id, user_id)
+        .await
+        .expect("reading fetch should succeed")
+        .expect("reading should exist");
+    assert_eq!(
+        reading.input_data["capture_metadata"]["consent"]["granted"],
+        true
+    );
+
+    // (2) consent as a top-level `consent` multipart field (forward-compatible).
+    let (body, boundary) = build_multipart_body(vec![
+        MultipartField {
+            name: "image",
+            body: fixture_portrait_bytes(),
+            file_name: Some("biofield-portrait-256.jpg"),
+            content_type: Some("image/jpeg"),
+        },
+        MultipartField {
+            name: "consent",
+            body: br#"{"granted":true,"scopes":["biofield-capture"]}"#.to_vec(),
+            file_name: None,
+            content_type: None,
+        },
+    ]);
+    let (status, payload) = harness
+        .send_authenticated_multipart(
+            &format!("/api/v1/biofield/sessions/{session_id}/captures"),
+            &token,
+            body,
+            &boundary,
+        )
+        .await;
+    assert_eq!(status, StatusCode::CREATED, "{payload}");
+    assert!(payload["reading_id"].as_str().is_some());
 
     harness.delete_user(user_id).await;
 }
@@ -767,7 +1040,7 @@ async fn biofield_capture_proxies_to_sidecar_and_persists_reading() {
         },
         MultipartField {
             name: "capture_metadata",
-            body: br#"{"platform":"web","viewport":{"width":1440,"height":900}}"#.to_vec(),
+            body: br#"{"platform":"web","viewport":{"width":1440,"height":900},"consent":{"granted":true,"scopes":["biofield-capture"],"timestamp":"2026-07-17T12:00:00Z"}}"#.to_vec(),
             file_name: None,
             content_type: None,
         },
@@ -879,12 +1152,15 @@ async fn biofield_capture_normalizes_quality_rejection() {
         ),
     ]);
 
-    let (body, boundary) = build_multipart_body(vec![MultipartField {
-        name: "image",
-        body: b"\xff\xd8\xff\xe0tiny-jpeg".to_vec(),
-        file_name: Some("tiny.jpg"),
-        content_type: Some("image/jpeg"),
-    }]);
+    let (body, boundary) = build_multipart_body(vec![
+        MultipartField {
+            name: "image",
+            body: b"\xff\xd8\xff\xe0tiny-jpeg".to_vec(),
+            file_name: Some("tiny.jpg"),
+            content_type: Some("image/jpeg"),
+        },
+        consent_field(),
+    ]);
 
     let (status, payload) = harness
         .send_authenticated_multipart(
@@ -975,12 +1251,15 @@ async fn biofield_readings_history_and_detail_are_user_scoped() {
         ),
     ]);
 
-    let (body, boundary) = build_multipart_body(vec![MultipartField {
-        name: "image",
-        body: b"\xff\xd8\xff\xe0history-jpeg".to_vec(),
-        file_name: Some("history.jpg"),
-        content_type: Some("image/jpeg"),
-    }]);
+    let (body, boundary) = build_multipart_body(vec![
+        MultipartField {
+            name: "image",
+            body: b"\xff\xd8\xff\xe0history-jpeg".to_vec(),
+            file_name: Some("history.jpg"),
+            content_type: Some("image/jpeg"),
+        },
+        consent_field(),
+    ]);
 
     let (owner_status, owner_payload) = harness
         .send_authenticated_multipart(
@@ -1125,12 +1404,15 @@ async fn biofield_reprocess_uses_stored_source_artifact_and_creates_new_reading(
         ),
     ]);
 
-    let (body, boundary) = build_multipart_body(vec![MultipartField {
-        name: "image",
-        body: b"\xff\xd8\xff\xe0reprocess-jpeg".to_vec(),
-        file_name: Some("reprocess.jpg"),
-        content_type: Some("image/jpeg"),
-    }]);
+    let (body, boundary) = build_multipart_body(vec![
+        MultipartField {
+            name: "image",
+            body: b"\xff\xd8\xff\xe0reprocess-jpeg".to_vec(),
+            file_name: Some("reprocess.jpg"),
+            content_type: Some("image/jpeg"),
+        },
+        consent_field(),
+    ]);
 
     let (capture_status, capture_payload) = harness
         .send_authenticated_multipart(
@@ -1260,12 +1542,15 @@ async fn biofield_baselines_create_and_list_are_user_scoped() {
         ),
     ]);
 
-    let (body, boundary) = build_multipart_body(vec![MultipartField {
-        name: "image",
-        body: b"\xff\xd8\xff\xe0baseline-jpeg".to_vec(),
-        file_name: Some("baseline.jpg"),
-        content_type: Some("image/jpeg"),
-    }]);
+    let (body, boundary) = build_multipart_body(vec![
+        MultipartField {
+            name: "image",
+            body: b"\xff\xd8\xff\xe0baseline-jpeg".to_vec(),
+            file_name: Some("baseline.jpg"),
+            content_type: Some("image/jpeg"),
+        },
+        consent_field(),
+    ]);
 
     let mut owner_reading_ids = Vec::new();
     for _ in 0..2 {
