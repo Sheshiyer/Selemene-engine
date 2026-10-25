@@ -36,7 +36,7 @@ The check runs before the free-tier quota, so a forbidden call never consumes an
 ## Rollout
 
 1. Deploy with the default `audit` mode. Read the warning lines for a few days to see which keys and engines would be blocked.
-2. Backfill scopes that existing premium/enterprise keys were never issued (raaga, transits, biofield-capture, financial-biosensor, sigil-forge) with `scripts/sql/backfill-engine-scopes.sql`. Free and basic keys keep the engines they were issued.
+2. Backfill the newer engine scopes (raaga, biofield-capture, financial-biosensor) onto keys that hold the complete **legacy full-access bundle** with `scripts/sql/backfill-engine-scopes.sql`. Authorization is per key, not per tier: a key issued with a deliberately narrow list keeps that list whatever its tier. Review the script's preview counts inside the transaction before committing.
 3. Set `ENGINE_SCOPE_MODE=enforce` and redeploy. Verify with a key scoped to one engine: another engine must return 403.
 
 ## Why the finding existed

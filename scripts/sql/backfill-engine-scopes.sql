@@ -1,59 +1,57 @@
--- Backfill per-engine permission scopes on existing API keys.
+-- Backfill per-engine permission scopes on legacy FULL-ACCESS API keys only.
 --
 -- Context: engine routes now check "<engine_id>:read" on API-key principals
 -- (ENGINE_SCOPE_MODE=audit|enforce). Keys issued by scripts/generate_api_keys.py
--- predate several runtime engines, so premium/enterprise keys lack scopes for
--- engines they are entitled to. Free and basic tiers are intentionally left as
--- issued. Idempotent; safe to re-run. Review the SELECT before the UPDATE.
+-- with the legacy ALL_ENGINE_PERMS bundle predate several runtime engines
+-- (raaga, transits, biofield-capture, financial-biosensor, sigil-forge).
 --
--- Usage (read-only preview):
---   psql "$DATABASE_URL" -c "\i scripts/sql/backfill-engine-scopes.sql" -v dry_run=1
--- The UPDATE is guarded by a transaction; COMMIT only after reviewing counts.
+-- Authorization is per key, never per tier: this script expands ONLY keys that
+-- hold the complete legacy full-access bundle (all 17 legacy scopes below),
+-- i.e. keys that were clearly issued as "all engines". A key that was issued
+-- with a deliberately narrow list (for example basic:access + face-reading:read)
+-- is left exactly as it is, whatever its tier. Idempotent; wrapped in a
+-- transaction. Review the preview counts, then COMMIT or ROLLBACK.
 
 BEGIN;
 
-WITH full_set AS (
-  SELECT jsonb_agg(to_jsonb(p)) AS perms FROM unnest(ARRAY[
-    'basic:access',
-    'panchanga:read','panchanga:batch','numerology:read','biorhythm:read',
-    'human-design:read','gene-keys:read','vimshottari:read','vedic-clock:read',
-    'biofield:read','biofield-capture:read','face-reading:read','nadabrahman:read',
-    'transits:read','financial-biosensor:read',
-    'tarot:read','i-ching:read','enneagram:read','sacred-geometry:read',
-    'sigil-forge:read','raaga:read'
-  ]) AS p
-),
-candidates AS (
-  SELECT k.id, k.tier, k.permissions,
-         (SELECT jsonb_agg(DISTINCT e) FROM jsonb_array_elements(k.permissions || (SELECT perms FROM full_set)) e) AS merged
-  FROM api_keys k
-  WHERE k.is_active
-    AND k.tier IN ('premium','enterprise')
-    AND NOT (k.permissions ? 'engines:*')
-    AND NOT (k.permissions ? 'admin:*')
-)
-SELECT tier, count(*) AS keys_to_update,
-       count(*) FILTER (WHERE merged <> permissions) AS keys_actually_changing
-FROM candidates GROUP BY tier;
+-- The legacy "all engines" bundle as generate_api_keys.py issued it.
+CREATE TEMP TABLE legacy_full_bundle (perm text) ON COMMIT DROP;
+INSERT INTO legacy_full_bundle VALUES
+  ('basic:access'),
+  ('panchanga:read'),('panchanga:batch'),('numerology:read'),('biorhythm:read'),
+  ('human-design:read'),('gene-keys:read'),('vimshottari:read'),('vedic-clock:read'),
+  ('biofield:read'),('face-reading:read'),('nadabrahman:read'),('transits:read'),
+  ('tarot:read'),('i-ching:read'),('enneagram:read'),('sacred-geometry:read'),
+  ('sigil-forge:read');
+
+-- Engine scopes added to the runtime after the bundle was defined.
+CREATE TEMP TABLE newer_engine_scopes (perm text) ON COMMIT DROP;
+INSERT INTO newer_engine_scopes VALUES
+  ('raaga:read'),('biofield-capture:read'),('financial-biosensor:read');
+
+-- Candidates: active keys holding EVERY legacy bundle scope (jsonb ?& = contains all).
+CREATE TEMP TABLE candidates ON COMMIT DROP AS
+SELECT k.id, k.tier, k.name, k.permissions,
+       (SELECT jsonb_agg(DISTINCT e)
+          FROM jsonb_array_elements(k.permissions || (SELECT jsonb_agg(to_jsonb(perm)) FROM newer_engine_scopes)) e) AS merged
+FROM api_keys k
+WHERE k.is_active
+  AND k.permissions ?& (SELECT array_agg(perm) FROM legacy_full_bundle)
+  AND NOT (k.permissions ? 'engines:*')
+  AND NOT (k.permissions ? 'admin:*');
+
+-- Preview: what would change. Narrow keys never appear here.
+SELECT tier, count(*) AS full_bundle_keys,
+       count(*) FILTER (WHERE merged <> permissions) AS keys_changing
+FROM candidates GROUP BY tier ORDER BY tier;
+
+SELECT tier, name, jsonb_array_length(permissions) AS before_count,
+       jsonb_array_length(merged) AS after_count
+FROM candidates WHERE merged <> permissions ORDER BY tier, name;
 
 UPDATE api_keys k
 SET permissions = c.merged
-FROM (
-  SELECT k2.id,
-         (SELECT jsonb_agg(DISTINCT e) FROM jsonb_array_elements(k2.permissions || (
-            SELECT jsonb_agg(to_jsonb(p)) FROM unnest(ARRAY[
-              'basic:access',
-              'panchanga:read','panchanga:batch','numerology:read','biorhythm:read',
-              'human-design:read','gene-keys:read','vimshottari:read','vedic-clock:read',
-              'biofield:read','biofield-capture:read','face-reading:read','nadabrahman:read',
-              'transits:read','financial-biosensor:read',
-              'tarot:read','i-ching:read','enneagram:read','sacred-geometry:read',
-              'sigil-forge:read','raaga:read'
-            ]) AS p)) e) AS merged
-  FROM api_keys k2
-  WHERE k2.is_active AND k2.tier IN ('premium','enterprise')
-    AND NOT (k2.permissions ? 'engines:*') AND NOT (k2.permissions ? 'admin:*')
-) c
+FROM candidates c
 WHERE k.id = c.id AND c.merged <> k.permissions;
 
--- Inspect, then COMMIT; or ROLLBACK.
+-- Inspect the preview above, then: COMMIT;  -- or ROLLBACK;
