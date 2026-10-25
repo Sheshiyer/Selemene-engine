@@ -34,7 +34,6 @@ import type {
   AdminSession,
   AdminSidecarDetail,
   AdminSkillsEcosystemStatus,
-  AdminSunoBridgeStatus,
   AdminSystemCacheResponse,
   AdminSystemEngineItem,
   AdminSystemEnginesResponse,
@@ -829,10 +828,6 @@ export async function getAdminBridgeHealth(token: string | undefined): Promise<A
 
 export async function getAdminHermesBridgeStatus(token: string | undefined): Promise<AdminHermesBridgeStatus> {
   return request<AdminHermesBridgeStatus>("/api/v1/admin/bridge/hermes/status", { token });
-}
-
-export async function getAdminSunoBridgeStatus(token: string | undefined): Promise<AdminSunoBridgeStatus> {
-  return request<AdminSunoBridgeStatus>("/api/v1/admin/bridge/suno/status", { token });
 }
 
 export async function getAdminLlmProxyStatus(token: string | undefined): Promise<AdminLlmProxyStatus> {

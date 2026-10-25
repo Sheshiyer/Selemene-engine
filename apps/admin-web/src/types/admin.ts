@@ -777,15 +777,6 @@ export interface AdminHermesBridgeStatus {
   health: { status: string; model_reachable: boolean; noesis_reachable: boolean; latency_ms: number } | null;
 }
 
-// ─── Suno Bridge ─────────────────────────────────────────────────────────────
-
-export interface AdminSunoBridgeStatus {
-  configured: boolean;
-  base_url: string | null;
-  health: { status: string; reachable: boolean } | null;
-  credit_info: Record<string, unknown> | null;
-}
-
 // ─── LLM Proxy ───────────────────────────────────────────────────────────────
 
 export interface AdminLlmProxyStatus {

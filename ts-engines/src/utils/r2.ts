@@ -1,7 +1,7 @@
 /**
  * Cloudflare R2 helper — SigV4-signed S3 API access via aws4fetch.
  *
- * Shared by the raaga `r2` clip mode and `scripts/r2-upload.ts`. aws4fetch is
+ * Used by the raaga `r2` clip mode. aws4fetch is
  * fetch + WebCrypto based, so it runs unchanged under Bun; the AWS SDK's Node
  * stream adapters do not.
  *

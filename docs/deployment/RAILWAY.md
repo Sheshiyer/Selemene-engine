@@ -14,8 +14,13 @@ The Selemene Engine consists of three separate services that must be deployed to
 2.  **`ts-engines` (TypeScript Sidecar)**
     *   **Repo Root:** `ts-engines/` (Uses `railway.ts-engines.toml`)
     *   **Port:** 3001
-    *   **Role:** Handles Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge.
+    *   **Role:** Handles Tarot, I-Ching, Enneagram, Sacred Geometry, Sigil Forge, Raaga.
     *   **Dependency:** The Rust API *depends* on this service being available at startup.
+    *   **Raaga clips:** rendered in-process and uploaded to Cloudflare R2 when
+        `RAAGA_CLIP_MODE=r2` (`R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`,
+        `R2_PUBLIC_BASE_URL`, bucket `selemene-raga-clips`). No separate audio service
+        is part of this topology; the former `suno-bridge` service and its `SUNO_COOKIE`
+        variable are retired and must not be re-added.
 
 3.  **`biofield-cv-service` and `mediapipe-service` (Python sidecars)**
     *   **Repo Root:** `python-services/` for both. They share `python-services/railway.toml`

@@ -6,7 +6,6 @@
  *   - requested + granted consent (local) → clip_url populated + WAV stored + served by /clips/raaga/:file
  *   - requested, consent missing          → clip_url null + metadata.clip note (consent_missing)
  *   - mode off, requested + consent       → clip_url null + skipped_off note
- *   - service mode unreachable            → graceful null + service_unavailable note
  *
  * Cites: p1-w1-worker-bootstrap-packet.md, resources-and-assets.md, gaps-and-improvements.md (§4),
  * goal-understanding.md (local-first + consent), EXECUTION-STATUS.md, P1W1-W2-HANDOFF.md,
@@ -37,7 +36,6 @@ const CLIP_ENV_KEYS = [
   'RAAGA_CLIP_MODE',
   'RAAGA_CLIP_DIR',
   'RAAGA_CLIP_BASE_URL',
-  'RAAGA_CLIP_SERVICE_URL',
   'TS_ENGINES_PUBLIC_URL',
   'RAILWAY_PUBLIC_DOMAIN',
   'R2_ACCOUNT_ID',
@@ -109,7 +107,7 @@ describe('raaga clip config', () => {
     expect(resolveClipMode({})).toBe('off')
     expect(resolveClipMode({ RAAGA_CLIP_MODE: 'local' })).toBe('local')
     expect(resolveClipMode({ RAAGA_CLIP_MODE: 'r2' })).toBe('r2')
-    expect(resolveClipMode({ RAAGA_CLIP_MODE: 'service' })).toBe('service')
+    expect(resolveClipMode({ RAAGA_CLIP_MODE: 'service' })).toBe('off')
     expect(resolveClipMode({ RAAGA_CLIP_MODE: 'bogus' })).toBe('off')
   })
 
@@ -418,34 +416,6 @@ describe('RaagaEngine clip generation (generated_audio.clip_url)', () => {
     expect(audio.metadata?.clip?.status).toBe('generated')
     expect(audio.clip_url).toMatch(/^\/clips\/raaga\/raaga-m29-r220-[a-f0-9]{10}\.wav$/)
   })
-
-  it('service mode degrades gracefully when the endpoint is unreachable', async () => {
-    process.env.RAAGA_CLIP_MODE = 'service'
-    process.env.RAAGA_CLIP_SERVICE_URL = 'http://127.0.0.1:1/unreachable'
-    const output = await engine.calculate({
-      consciousness_level: 0,
-      parameters: { melakarta: 15, request_clip: true },
-      consent: grantedConsent,
-    })
-    const audio = output.generated_audio as GeneratedAudio
-    expect(audio.clip_url).toBeNull()
-    expect(audio.metadata?.clip?.status).toBe('service_unavailable')
-    expect(audio.metadata?.clip?.mode).toBe('service')
-  }, 15000)
-
-  it('service mode returns clip_url from a reachable endpoint', async () => {
-    const result = await generateRaagaClip({
-      melakarta: 15,
-      ratios: [1, 2],
-      rootHz: 220,
-      env: {
-        RAAGA_CLIP_MODE: 'service',
-        RAAGA_CLIP_SERVICE_URL: 'data:,{"clip_url":"https://clips.example/raaga-m15.wav"}',
-      },
-    })
-    // data: URLs are not POST-able; assert graceful handling instead of a hang
-    expect(['generated', 'service_unavailable']).toContain(result.status)
-  }, 15000)
 })
 
 describe('raaga clip HTTP surface', () => {

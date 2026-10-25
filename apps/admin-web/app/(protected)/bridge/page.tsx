@@ -10,7 +10,6 @@ import {
   ApiClientError,
   getAdminBridgeHealth,
   getAdminHermesBridgeStatus,
-  getAdminSunoBridgeStatus,
   getAdminLlmProxyStatus
 } from "@/lib/api";
 import { statusPillClass } from "@/lib/status";
@@ -18,7 +17,6 @@ import { buildQueryString, getNumberParam } from "@/lib/url-query";
 import type {
   AdminBridgeHealthResponse,
   AdminHermesBridgeStatus,
-  AdminSunoBridgeStatus,
   AdminLlmProxyStatus
 } from "@/types/admin";
 
@@ -61,7 +59,6 @@ export default function BridgePage() {
 
   const [bridgeHealth, setBridgeHealth] = useState<AdminBridgeHealthResponse | null>(null);
   const [hermesStatus, setHermesStatus] = useState<AdminHermesBridgeStatus | null>(null);
-  const [sunoStatus, setSunoStatus] = useState<AdminSunoBridgeStatus | null>(null);
   const [llmProxyStatus, setLlmProxyStatus] = useState<AdminLlmProxyStatus | null>(null);
 
   const updateQuery = useCallback(
@@ -77,14 +74,13 @@ export default function BridgePage() {
   const loadBridge = useCallback(async () => {
     const token = getAuthToken() ?? undefined;
 
-    const [bridgeResponse, hermesResponse, sunoResponse, llmProxyResponse] = await Promise.all([
+    const [bridgeResponse, hermesResponse, llmProxyResponse] = await Promise.all([
       getAdminBridgeHealth(token),
       getAdminHermesBridgeStatus(token),
-      getAdminSunoBridgeStatus(token),
       getAdminLlmProxyStatus(token)
     ]);
 
-    return { bridgeResponse, hermesResponse, sunoResponse, llmProxyResponse };
+    return { bridgeResponse, hermesResponse, llmProxyResponse };
   }, []);
 
   const handleFetch = useCallback(
@@ -92,17 +88,15 @@ export default function BridgePage() {
       promise: Promise<{
         bridgeResponse: AdminBridgeHealthResponse;
         hermesResponse: AdminHermesBridgeStatus;
-        sunoResponse: AdminSunoBridgeStatus;
         llmProxyResponse: AdminLlmProxyStatus;
       }>
     ) => {
       setLoading(true);
       setError(null);
       promise
-        .then(({ bridgeResponse, hermesResponse, sunoResponse, llmProxyResponse }) => {
+        .then(({ bridgeResponse, hermesResponse, llmProxyResponse }) => {
           setBridgeHealth(bridgeResponse);
           setHermesStatus(hermesResponse);
-          setSunoStatus(sunoResponse);
           setLlmProxyStatus(llmProxyResponse);
           setLastUpdatedAt(new Date().toISOString());
         })
@@ -366,54 +360,6 @@ export default function BridgePage() {
                 </article>
               </div>
             ) : null}
-          </SurfaceCard>
-
-          {/* Suno Bridge Card */}
-          <SurfaceCard
-            eyebrow="Audio Bridge"
-            title="Suno Bridge"
-            summary="Music generation gateway connectivity, credit posture, and service reachability."
-          >
-            <div className="grid metrics">
-              <article className="metric">
-                <div className="label">Configured</div>
-                <div className="value">
-                  <span className={statusPillClass(sunoStatus?.configured ? "healthy" : "unavailable")}>
-                    {sunoStatus?.configured ? "Yes" : "No"}
-                  </span>
-                </div>
-              </article>
-              <article className="metric">
-                <div className="label">Base URL</div>
-                <div className="value helper">{sunoStatus?.base_url ?? "--"}</div>
-              </article>
-              {sunoStatus?.health ? (
-                <>
-                  <article className="metric">
-                    <div className="label">Health Status</div>
-                    <div className="value">
-                      <span className={statusPillClass(sunoStatus.health.status)}>
-                        {sunoStatus.health.status}
-                      </span>
-                    </div>
-                  </article>
-                  <article className="metric">
-                    <div className="label">Reachable</div>
-                    <div className="value">
-                      <span className={statusPillClass(sunoStatus.health.reachable ? "healthy" : "unavailable")}>
-                        {sunoStatus.health.reachable ? "Yes" : "No"}
-                      </span>
-                    </div>
-                  </article>
-                </>
-              ) : null}
-              <article className="metric">
-                <div className="label">Credit Info</div>
-                <div className="value">
-                  {sunoStatus?.credit_info ? "Available" : "--"}
-                </div>
-              </article>
-            </div>
           </SurfaceCard>
 
           {/* LLM Proxy Card */}
