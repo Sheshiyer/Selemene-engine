@@ -1,0 +1,37 @@
+// Selemene MCP Worker — Cloudflare Workers configuration.
+//
+// Dedicated OAuth namespace provisioned 2026-09-30 in the scoped 9d9d account.
+// This Worker is separate from the existing owner-key gateway.
+// Keep PUBLIC_ORIGIN aligned with the deployed canonical hostname.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "selemene-mcp",
+  "account_id": "9d9d23b27f32e70ae3afb6a1aa2c0f10",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "kv_namespaces": [
+    {
+      // OAuth provider persistence (grants, tokens, consent handles, upstream tx).
+      "binding": "OAUTH_KV",
+      "id": "7f42c45d5e6843f892c5d2af84c7e12f"
+    }
+  ],
+  "vars": {
+    // Canonical public origin of this worker (the MCP resource identifier is
+    // `${PUBLIC_ORIGIN}/mcp`). MUST match the deployed hostname exactly, HTTPS only.
+    // The workers.dev account subdomain was verified before deployment.
+    "PUBLIC_ORIGIN": "https://selemene-mcp.sheshnarayan-iyer.workers.dev",
+    // Fixed HTTPS allowlist for the Selemene Rust API upstream.
+    // Only two verified origins are accepted:
+    //   https://selemene-engine-production.up.railway.app  (default Railway)
+    //   https://selemene.tryambakam.space                  (custom domain)
+    // Speculative or unverified hosts are rejected at startup.
+    "SELEMENE_API_ORIGIN": "https://selemene-engine-production.up.railway.app"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

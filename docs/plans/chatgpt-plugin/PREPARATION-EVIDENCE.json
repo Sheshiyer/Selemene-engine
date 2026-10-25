@@ -1,0 +1,30 @@
+{
+  "manifest_sha256": "7eb9d97355707549dc94d92fa76d27809cf37d7af451075a124cd96e8b368a24",
+  "checks": {
+    "websiteURL": {
+      "value": "https://www.tryambakam.space/selemene/",
+      "verified_at": "2026-09-30T08:23:16.899092+00:00",
+      "evidence": "Website PR13 merged as df7ced81b80cc7a76e3b4f3c353468124db2a8c8; Ready production dpl_Ct5sR7cWonh36vyyree5qj3jTerE; twelve public HTTP200/source-equality checks in website-main-live-checks.json. Earlier IAB desktop/mobile rendering evidence retained; policy drafts remain drafts."
+    },
+    "endpoint": {
+      "value": "https://selemene-mcp.sheshnarayan-iyer.workers.dev/mcp",
+      "verified_at": "2026-09-29T23:22:22.395275+00:00",
+      "evidence": "DEPLOYMENT-RECEIPT.md; version e8d38136-faa5-426f-abcd-63a5e56d76b7; live discovery and browser denial only, real-account calls pending."
+    },
+    "protocol_contract_tests": {
+      "value": "passed",
+      "verified_at": "2026-09-29T23:22:22.395275+00:00",
+      "evidence": "workers/selemene-mcp tests:18 passing real SDK/OAuth synthetic tests, not connected ChatGPT proof."
+    },
+    "tool_annotations": {
+      "value": "passed",
+      "verified_at": "2026-09-29T23:22:22.395275+00:00",
+      "evidence": "Independent security-protocol.test.ts serialized all seven tools and checked boolean annotations."
+    },
+    "icon_visual_inspection": {
+      "value": "passed",
+      "verified_at": "2026-09-29T23:22:22.395275+00:00",
+      "evidence": "ICON-REVIEW.md parent IAB light/dark256px and48px; actual host listing remains unverified."
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "verified_at": "2026-09-30T08:23:16.899092+00:00",
+  "deployment": "dpl_Ct5sR7cWonh36vyyree5qj3jTerE",
+  "merge_commit": "df7ced81b80cc7a76e3b4f3c353468124db2a8c8",
+  "website_pr": "https://github.com/Sheshiyer/tryambakam-space/pull/13",
+  "origin": "https://www.tryambakam.space",
+  "checks": [
+    {
+      "path": "/selemene/",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "matches_source": true,
+      "sha256": "8e87d0f509b692ad976a7b1abc44f61f92954690c1ca364dcd2b07074675c679"
+    },
+    {
+      "path": "/selemene/readings/",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "matches_source": true,
+      "sha256": "851a68c0344e2b3ad65a716f18509f3af5083163165383d5a0cb86453fd8235a"
+    },
+    {
+      "path": "/selemene/privacy/",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "matches_source": true,
+      "sha256": "754b8349e597d84a2501d9c2f427494037096c58b61959dc1fed95e7a47b3d31"
+    },
+    {
+      "path": "/selemene/terms/",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "matches_source": true,
+      "sha256": "cf14d7b7b06d0ccbaf3c593f98170eb2696144ee161b913eb16b98277739ec88"
+    },
+    {
+      "path": "/selemene/support/",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "matches_source": true,
+      "sha256": "d22b3fb81553f90c6a08b722d2d8a9a2902a9807c594434665ea40710321a6f6"
+    },
+    {
+      "path": "/selemene/js/motion.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "matches_source": true,
+      "sha256": "96ead80133838ab2643e1b798a08c40ef40117c666e9c456a69bc02236cd38ba"
+    },
+    {
+      "path": "/selemene/styles.css",
+      "status": 200,
+      "mime": "text/css; charset=utf-8",
+      "matches_source": true,
+      "sha256": "203d87ec163d60f38b9b43c518410b185eed4ed28f3d0c171700a75b3d393322"
+    },
+    {
+      "path": "/selemene/js/shell.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "matches_source": true,
+      "sha256": "59b377d26ca0003cda82379019c087ffb988637c854d9d8f469e6f84f03330bc"
+    },
+    {
+      "path": "/selemene/lib/lenis/lenis.mjs",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "matches_source": true,
+      "sha256": "e57cedd1acaa124891c66da5af116d7d9d8dac473ad443f989f23ee583256e64"
+    },
+    {
+      "path": "/selemene/lib/three/three.module.min.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "matches_source": true,
+      "sha256": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6"
+    },
+    {
+      "path": "/selemene/lib/three/three.core.min.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "matches_source": true,
+      "sha256": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90"
+    },
+    {
+      "path": "/selemene/assets/tryambakam-sigil.svg",
+      "status": 200,
+      "mime": "image/svg+xml",
+      "matches_source": true,
+      "sha256": "d91649d203a81d258fb6f256b0719e800c20cf8ab188c34b23ea23223512f9fe"
+    }
+  ]
+}

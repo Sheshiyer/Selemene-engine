@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "selemene": {
+      "type": "streamable-http",
+      "url": "https://selemene-mcp.sheshnarayan-iyer.workers.dev/mcp"
+    }
+  }
+}

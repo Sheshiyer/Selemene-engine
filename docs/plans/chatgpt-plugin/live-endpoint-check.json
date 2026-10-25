@@ -1,0 +1,82 @@
+{
+  "source_commit": "c79806c0",
+  "worker_version": "e8d38136-faa5-426f-abcd-63a5e56d76b7",
+  "origin": "https://selemene-mcp.sheshnarayan-iyer.workers.dev",
+  "observed_utc": "2026-09-29T23:14Z",
+  "client": "curl default user agent",
+  "checks": [
+    {
+      "path": "/health",
+      "status": 200,
+      "challenge": null,
+      "body": {
+        "status": "ok",
+        "service": "selemene-mcp",
+        "version": "0.1.0"
+      }
+    },
+    {
+      "path": "/.well-known/oauth-authorization-server",
+      "status": 200,
+      "challenge": null,
+      "body": {
+        "issuer": "https://selemene-mcp.sheshnarayan-iyer.workers.dev",
+        "authorization_endpoint": "https://selemene-mcp.sheshnarayan-iyer.workers.dev/authorize",
+        "token_endpoint": "https://selemene-mcp.sheshnarayan-iyer.workers.dev/oauth/token",
+        "protected_resources": [
+          "https://selemene-mcp.sheshnarayan-iyer.workers.dev/mcp"
+        ],
+        "registration_endpoint": "https://selemene-mcp.sheshnarayan-iyer.workers.dev/oauth/register",
+        "scopes_supported": [
+          "mcp:read",
+          "mcp:calculate"
+        ],
+        "response_types_supported": [
+          "code"
+        ],
+        "response_modes_supported": [
+          "query"
+        ],
+        "grant_types_supported": [
+          "authorization_code",
+          "refresh_token"
+        ],
+        "token_endpoint_auth_methods_supported": [
+          "client_secret_basic",
+          "client_secret_post",
+          "none"
+        ],
+        "revocation_endpoint": "https://selemene-mcp.sheshnarayan-iyer.workers.dev/oauth/token",
+        "code_challenge_methods_supported": [
+          "S256"
+        ],
+        "authorization_response_iss_parameter_supported": true,
+        "client_id_metadata_document_supported": false
+      }
+    },
+    {
+      "path": "/.well-known/oauth-protected-resource/mcp",
+      "status": 200,
+      "challenge": null,
+      "body": {
+        "resource": "https://selemene-mcp.sheshnarayan-iyer.workers.dev/mcp",
+        "authorization_servers": [
+          "https://selemene-mcp.sheshnarayan-iyer.workers.dev"
+        ],
+        "scopes_supported": [
+          "mcp:read"
+        ],
+        "bearer_methods_supported": [
+          "header"
+        ],
+        "resource_name": "Selemene Engine"
+      }
+    },
+    {
+      "path": "/mcp",
+      "status": 401,
+      "challenge": "Bearer realm=\"OAuth\", resource_metadata=\"https://selemene-mcp.sheshnarayan-iyer.workers.dev/.well-known/oauth-protected-resource/mcp\", scope=\"mcp:read\"",
+      "body": null
+    }
+  ]
+}
