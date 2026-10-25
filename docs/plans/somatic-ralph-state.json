@@ -25,7 +25,7 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 10,
+      "iteration": 11,
       "cap": 12,
       "status": "staging-proven",
       "axis_reached": "Operational (staging)",
@@ -136,6 +136,12 @@
           "tier": "T2",
           "cmd": "staging: Selemene-engine 826ef662, biofield-cv-service + mediapipe-service rebuilt from Dockerfile.sidecar (6a5c01d8); GET /health/dependencies; POST upload; POST upload consent=false; POST calculate",
           "result": "status=ready, both sidecars ready (capability-aware); upload keys now include computation_mode/backend/provenance/landmark_analysis with backend=mediapipe-face-cv fallback_used=false landmark_source=mediapipe-facemesh 468; consent=false -> 422 CONSENT_REQUIRED; calculate provenance identical. Biofield build log: load build definition from python-services/Dockerfile.sidecar."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T3",
+          "cmd": "PR #1496 opened from ralph/s1-face (6244da31); mergeable CLEAN; gh pr merge --merge --match-head-commit 6244da31",
+          "result": "MERGED 2026-10-25T13:04:30Z merge commit 7d833ac9. Production: mediapipe-service instance created via staged config + accept-deploy (root /python-services, /health, ON_FAILURE x3), vars PORT=8001 SIDECAR_SERVICE=mediapipe_service; Selemene-engine prod SELEMENE_FACE_CV_URL set to private domain :8001. Prod API, biofield, mediapipe rebuilding from main."
         }
       ],
       "findings": [
