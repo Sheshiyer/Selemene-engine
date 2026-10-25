@@ -25,7 +25,7 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 5,
+      "iteration": 6,
       "cap": 12,
       "status": "in_progress",
       "axis_reached": "Deployed",
@@ -94,6 +94,12 @@
           "tier": "T1",
           "cmd": "commit 0c30e2e4 (pin mediapipe<1.0, honest health); docker build selemene-mediapipe:fix; /health; /analyze synthetic face; pytest 4 sidecar test files in image",
           "result": "mediapipe 0.10.18 solutions=True; /health capability_status=available facemesh_ready=true; /analyze landmark_source=mediapipe-facemesh 468 landmarks 44.7ms; 31 passed"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "push 0c30e2e4 (<1.0 pin) -> staging deployment 309af0c0 SUCCESS; /health/dependencies mediapipe ready; calculate x3",
+          "result": "still backend=heuristic. Build log: x86_64 resolved mediapipe-0.10.35 (py3-none wheel, no solutions API); arm64 locally had resolved 0.10.18. Pinned ==0.10.18 (x86_64 cp311 wheel verified via pip download) and pushed."
         }
       ],
       "findings": [
@@ -101,7 +107,10 @@
         "calculate route rejects {image_data:{b64_json,mime_type}} shape with VALIDATION_ERROR; contract shape TBD",
         "no real face fixture exists in any repo",
         "Rust engine labels sidecar deterministic-fallback as backend=heuristic-image-landmark-hook with is_mock_data=false; should be degraded/provenance.fallback_used=true (slot 07/09)",
-        "ROOT CAUSE face CV: mediapipe>=0.10 unpinned resolved to 1.1.1 which has no solutions API; fix = pin <1.0 (0.10.18 has cp311 wheels) + honest health"
+        "ROOT CAUSE face CV: mediapipe>=0.10 unpinned resolved to 1.1.1 which has no solutions API; fix = pin <1.0 (0.10.18 has cp311 wheels) + honest health",
+        "Rust /health/dependencies marks a sidecar ready on HTTP 200 alone; it ignores capability_status, so a degraded face-mesh reports ready",
+        "Rust analysis_from_landmark_hook swallows Ok(fallback) and Err(...) with no log line; add tracing::warn and expose in provenance",
+        "railway ssh needs a registered key (railway ssh keys add); not set up on this Mac"
       ]
     },
     "s2-biofield": {
