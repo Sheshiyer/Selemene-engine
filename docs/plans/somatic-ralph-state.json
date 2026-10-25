@@ -209,10 +209,10 @@
     "s5-rbac": {
       "branch": "ralph/s5-rbac",
       "worktree": ".worktrees/ralph-s5-rbac",
-      "iteration": 5,
+      "iteration": 6,
       "cap": 12,
-      "status": "in_progress",
-      "axis_reached": "Operational (staging, enforce)",
+      "status": "prod-deployed-audit",
+      "axis_reached": "Deployed (prod, audit) / Operational (staging, enforce)",
       "blocked_on_human": null,
       "origin": "cross_cutting_findings[0] 2026-10-25 (W3E slot 20, #913)",
       "design": "API-key principals need <engine>:read (or engines:*/admin:*/*) on calculate, face upload, and every engine of a workflow; JWT/CF Access principals stay tier-governed; ENGINE_SCOPE_MODE off|audit(default)|enforce; check runs before quota",
@@ -258,11 +258,16 @@
           "tier": "T3",
           "cmd": "PR #1497 CLEAN (Vercel, Railway checks green; 3 Codex P1 threads resolved); gh pr merge --merge --match-head-commit 3edcb3f9",
           "result": "MERGED 2026-10-25T18:04:44Z merge commit 0f39cd07. Production deploys in ENGINE_SCOPE_MODE audit (unset). Staging returned to main, stays enforce as canary."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T3",
+          "cmd": "prod readback: Selemene-engine dcafb300 main@0f39cd07 SUCCESS; /health/live ok 19 engines; /health/dependencies ready; ENGINE_SCOPE_MODE unset (audit); test key ralph-s1-prod rotated+activated for one call then deactivated: face-reading-only key -> panchanga",
+          "result": "200 in audit mode (logged, not blocked); probe key deactivated"
         }
       ],
       "remaining": [
-        "prod: verify audit-mode deploy (commit 0f39cd07, one warn line)",
-        "prod rollout (operator decision): run scripts/sql/backfill-engine-scopes.sql preview, review audit warnings for a few days, then set ENGINE_SCOPE_MODE=enforce",
+        "prod rollout (operator decision): run scripts/sql/backfill-engine-scopes.sql preview+commit, review audit warnings, set ENGINE_SCOPE_MODE=enforce",
         "separate decision: /api/legacy routes are unauthenticated"
       ]
     }
