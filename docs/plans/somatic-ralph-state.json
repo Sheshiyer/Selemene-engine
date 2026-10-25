@@ -88,8 +88,8 @@
       "receipt": "staging created via dashboard 2026-10-25T11:30Z duplicating production: 7 services, root service 60+ vars copied; Selemene-engine/ts-engines/biofield-cv building at readback"
     },
     "mediapipe_service_staging": {
-      "status": "blocked_on_human",
-      "receipt": "config + Dockerfile fix on ralph/s1-face (617e928b, +fix). Local T1: image builds, /health capability_status=available, mediapipe_available=true. Awaiting staging service."
+      "status": "done",
+      "receipt": "2026-10-25 mediapipe-service created in staging from Sheshiyer/Selemene-engine@main (building); SELEMENE_FACE_CV_URL set on Selemene-engine; RAAGA_CLIP_MODE=local on ts-engines. Needs root dir /python-services + config path + branch ralph/s1-face once pushed."
     },
     "lane_worktrees": {
       "status": "done",
