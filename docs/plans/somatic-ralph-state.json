@@ -25,7 +25,7 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 2,
+      "iteration": 3,
       "cap": 12,
       "status": "in_progress",
       "axis_reached": "Deployed",
@@ -64,7 +64,24 @@
           "tier": "T2",
           "cmd": "railway variables --service mediapipe-service --environment staging --set PORT=8001; redeploy; GET selemene-engine-staging.up.railway.app/health/dependencies",
           "result": "sidecars: biofield-cv ready, mediapipe-face-mesh ready. First Deployed-axis receipt for face reading."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "railway run Postgres: bash scripts/apply-migrations.sh (36 applied); minted staging-only key nk_1LY\u2026 (premium, face-reading:read); GET /api/v1/engines 200 with X-API-Key",
+          "result": "staging DB migrated and authenticated"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "POST /api/v1/engines/face-reading/upload with a PIL-drawn non-photo face + consent face-image",
+          "result": "200; mediapipe-service deploy log shows POST /analyze 200 x2, so API->sidecar wiring is live. BUT FaceUploadResponse returns only engine_id/witness_prompt/analysis/is_mock_data: metadata.backend, computation_mode, notice, landmark_analysis are dropped, so a consumer cannot distinguish CV from heuristic. is_mock_data=false on a non-face. Defect for slot W3E:face-reading:07."
         }
+      ],
+      "findings": [
+        "upload route strips provenance (backend/computation_mode/landmark_analysis)",
+        "calculate route rejects {image_data:{b64_json,mime_type}} shape with VALIDATION_ERROR; contract shape TBD",
+        "no real face fixture exists in any repo"
       ]
     },
     "s2-biofield": {
