@@ -7,8 +7,11 @@ Engine routes check that an **API-key principal** holds `"<engine_id>:read"`
 - `POST /api/v1/engines/face-reading/upload`
 - `POST /api/v1/workflows/{workflow_id}/execute` (every engine the workflow composes)
 
-JWT and Cloudflare Access principals carry only `basic:access` by design and are
-governed by tier and quota; the scope rule does not apply to them.
+An API-key principal is one that authenticated through the `X-API-Key` header;
+the middleware marks that request explicitly (`ApiKeyPrincipal`). JWT and
+Cloudflare Access principals carry only `basic:access` by design and are
+governed by tier and quota; the scope rule does not apply to them, and the
+check never infers the auth method from token fields such as `jti`.
 
 ## Mode
 

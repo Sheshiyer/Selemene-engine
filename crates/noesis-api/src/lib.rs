@@ -16,6 +16,7 @@ mod handlers;
 mod living_reading_publication;
 mod logging;
 mod middleware;
+pub use middleware::ApiKeyPrincipal;
 pub mod workflow_parity;
 
 pub use billing::{
@@ -1820,10 +1821,16 @@ pub(crate) fn engine_scope_permission(engine_id: &str) -> String {
 /// Whether `user` may execute `engine_id` under the scope rule.
 ///
 /// Returns `Ok(())` when allowed and `Err(required_permission)` when an API-key
-/// principal lacks the scope. JWT principals (`jti` present) are always allowed
-/// here; their access is governed by tier and quota, not engine scopes.
-pub(crate) fn check_engine_scope(user: &AuthUser, engine_id: &str) -> Result<(), String> {
-    if user.jti.is_some() {
+/// principal lacks the scope. `is_api_key` comes from the middleware's
+/// [`ApiKeyPrincipal`] marker, never from `AuthUser` fields: JWT and Cloudflare
+/// Access principals (which may also have no `jti`) are tier-governed and always
+/// allowed here.
+pub(crate) fn check_engine_scope(
+    user: &AuthUser,
+    engine_id: &str,
+    is_api_key: bool,
+) -> Result<(), String> {
+    if !is_api_key {
         return Ok(());
     }
     let required = engine_scope_permission(engine_id);
@@ -1840,14 +1847,16 @@ pub(crate) fn check_engine_scope(user: &AuthUser, engine_id: &str) -> Result<(),
 /// Apply the scope rule for one engine under the configured mode.
 fn enforce_engine_scope(
     user: &AuthUser,
+    is_api_key: bool,
     engine_id: &str,
     route: &'static str,
 ) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
-    enforce_engine_scope_with_mode(user, engine_id, route, EngineScopeMode::from_env())
+    enforce_engine_scope_with_mode(user, is_api_key, engine_id, route, EngineScopeMode::from_env())
 }
 
 fn enforce_engine_scope_with_mode(
     user: &AuthUser,
+    is_api_key: bool,
     engine_id: &str,
     route: &'static str,
     mode: EngineScopeMode,
@@ -1855,7 +1864,7 @@ fn enforce_engine_scope_with_mode(
     if mode == EngineScopeMode::Off {
         return Ok(());
     }
-    match check_engine_scope(user, engine_id) {
+    match check_engine_scope(user, engine_id, is_api_key) {
         Ok(()) => Ok(()),
         Err(required) => {
             tracing::warn!(
@@ -2888,6 +2897,7 @@ fn increment_free_tier_counter(state: &AppState, user: &AuthUser) {
 async fn calculate_handler(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Path(engine_id): Path<String>,
     api_input: Result<Json<ApiEngineInput>, JsonRejection>,
 ) -> Result<Json<ApiEngineOutputResponse>, (StatusCode, Json<ErrorResponse>)> {
@@ -2911,7 +2921,12 @@ async fn calculate_handler(
 
     // Per-engine permission scope (API-key principals). Checked before quota so
     // a forbidden call never consumes the caller's allowance.
-    enforce_engine_scope(&user, &engine_id, "engines/calculate")?;
+    enforce_engine_scope(
+        &user,
+        api_key_principal.is_some(),
+        &engine_id,
+        "engines/calculate",
+    )?;
 
     // Free-tier monthly cap. 402 with upgrade hint when exceeded.
     enforce_free_tier_quota(&state, &user).await?;
@@ -3079,6 +3094,7 @@ async fn calculate_handler(
 async fn face_reading_upload_handler(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     mut multipart: Multipart,
 ) -> Result<Json<FaceUploadResponse>, (StatusCode, Json<ErrorResponse>)> {
     let mut image_bytes: Option<Vec<u8>> = None;
@@ -3138,7 +3154,12 @@ async fn face_reading_upload_handler(
     })?;
 
     require_consent_scope("face-reading", "face-image", consent.as_ref())?;
-    enforce_engine_scope(&user, "face-reading", "engines/face-reading/upload")?;
+    enforce_engine_scope(
+        &user,
+        api_key_principal.is_some(),
+        "face-reading",
+        "engines/face-reading/upload",
+    )?;
 
     let mut options = std::collections::HashMap::new();
     options.insert(
@@ -3330,15 +3351,17 @@ async fn list_engines_handler(State(state): State<AppState>) -> Json<EngineListR
 async fn workflow_execute_handler(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Path(workflow_id): Path<String>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, workflow_id, input).await
+    execute_workflow_by_id(state, user, api_key_principal.is_some(), workflow_id, input).await
 }
 
 async fn execute_workflow_by_id(
     state: AppState,
     user: AuthUser,
+    is_api_key: bool,
     workflow_id: String,
     input: EngineInput,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
@@ -3350,7 +3373,7 @@ async fn execute_workflow_by_id(
     // Per-engine permission scope for every engine the workflow composes.
     if let Some(definition) = state.orchestrator.get_workflow(&workflow_id) {
         for engine_id in definition.engine_ids.clone() {
-            enforce_engine_scope(&user, &engine_id, "workflows/execute")?;
+            enforce_engine_scope(&user, is_api_key, &engine_id, "workflows/execute")?;
         }
     }
 
@@ -3514,9 +3537,10 @@ async fn execute_workflow_by_id(
 async fn birth_blueprint_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "birth-blueprint".to_string(), input).await
+    execute_workflow_by_id(state, user, api_key_principal.is_some(), "birth-blueprint".to_string(), input).await
 }
 
 /// POST /api/v1/workflows/daily-practice/execute -- workflow-specific OpenAPI shape
@@ -3539,9 +3563,10 @@ async fn birth_blueprint_execute_doc(
 async fn daily_practice_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "daily-practice".to_string(), input).await
+    execute_workflow_by_id(state, user, api_key_principal.is_some(), "daily-practice".to_string(), input).await
 }
 
 /// POST /api/v1/workflows/decision-support/execute -- workflow-specific OpenAPI shape
@@ -3564,9 +3589,10 @@ async fn daily_practice_execute_doc(
 async fn decision_support_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "decision-support".to_string(), input).await
+    execute_workflow_by_id(state, user, api_key_principal.is_some(), "decision-support".to_string(), input).await
 }
 
 /// POST /api/v1/workflows/self-inquiry/execute -- workflow-specific OpenAPI shape
@@ -3589,9 +3615,10 @@ async fn decision_support_execute_doc(
 async fn self_inquiry_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "self-inquiry".to_string(), input).await
+    execute_workflow_by_id(state, user, api_key_principal.is_some(), "self-inquiry".to_string(), input).await
 }
 
 /// POST /api/v1/workflows/creative-expression/execute -- workflow-specific OpenAPI shape
@@ -3614,9 +3641,10 @@ async fn self_inquiry_execute_doc(
 async fn creative_expression_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "creative-expression".to_string(), input).await
+    execute_workflow_by_id(state, user, api_key_principal.is_some(), "creative-expression".to_string(), input).await
 }
 
 /// POST /api/v1/workflows/full-spectrum/execute -- workflow-specific OpenAPI shape
@@ -3639,9 +3667,10 @@ async fn creative_expression_execute_doc(
 async fn full_spectrum_execute_doc(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, "full-spectrum".to_string(), input).await
+    execute_workflow_by_id(state, user, api_key_principal.is_some(), "full-spectrum".to_string(), input).await
 }
 
 /// GET /api/v1/workflows -- list all workflow IDs
@@ -4722,14 +4751,14 @@ mod p4_contract_tests {
         );
     }
 
-    fn scope_user(permissions: &[&str], jti: Option<&str>) -> AuthUser {
+    fn scope_user(permissions: &[&str]) -> AuthUser {
         AuthUser {
             user_id: "user-1".to_string(),
             tier: "premium".to_string(),
             permissions: permissions.iter().map(|p| p.to_string()).collect(),
             rate_limit: 60,
             consciousness_level: 2,
-            jti: jti.map(str::to_string),
+            jti: None,
             token_exp: None,
         }
     }
@@ -4748,13 +4777,14 @@ mod p4_contract_tests {
     fn api_key_without_engine_scope_is_denied_in_enforce_mode() {
         // Exactly the production finding: a key with only face-reading:read
         // must not execute panchanga.
-        let user = scope_user(&["basic:access", "face-reading:read"], None);
+        let user = scope_user(&["basic:access", "face-reading:read"]);
         assert_eq!(
-            check_engine_scope(&user, "panchanga"),
+            check_engine_scope(&user, "panchanga", true),
             Err("panchanga:read".to_string())
         );
         let err = enforce_engine_scope_with_mode(
             &user,
+            true,
             "panchanga",
             "engines/calculate",
             EngineScopeMode::Enforce,
@@ -4770,36 +4800,58 @@ mod p4_contract_tests {
 
     #[test]
     fn api_key_with_engine_scope_or_wildcard_is_allowed() {
-        let scoped = scope_user(&["basic:access", "face-reading:read"], None);
-        assert_eq!(check_engine_scope(&scoped, "face-reading"), Ok(()));
+        let scoped = scope_user(&["basic:access", "face-reading:read"]);
+        assert_eq!(check_engine_scope(&scoped, "face-reading", true), Ok(()));
         for wildcard in ["engines:*", "admin:*", "*"] {
-            let user = scope_user(&["basic:access", wildcard], None);
-            assert_eq!(check_engine_scope(&user, "panchanga"), Ok(()), "{wildcard}");
+            let user = scope_user(&["basic:access", wildcard]);
+            assert_eq!(
+                check_engine_scope(&user, "panchanga", true),
+                Ok(()),
+                "{wildcard}"
+            );
         }
     }
 
     #[test]
-    fn jwt_principals_are_not_scope_checked() {
-        // JWT / Cloudflare Access users carry only basic:access by design; their
-        // engine access is tier-governed, so the scope rule must not apply.
-        let user = scope_user(&["basic:access"], Some("jti-1"));
-        assert_eq!(check_engine_scope(&user, "panchanga"), Ok(()));
+    fn non_api_key_principals_are_not_scope_checked() {
+        // JWT and Cloudflare Access users carry only basic:access by design and
+        // may have no jti at all (cf_access::auth_user_from_parts); their engine
+        // access is tier-governed, so only the explicit API-key marker triggers
+        // the scope rule.
+        let user = scope_user(&["basic:access"]);
+        assert_eq!(check_engine_scope(&user, "panchanga", false), Ok(()));
         assert!(enforce_engine_scope_with_mode(
             &user,
+            false,
             "panchanga",
             "engines/calculate",
             EngineScopeMode::Enforce
         )
         .is_ok());
+        // The same principal *as an API key* is denied.
+        assert!(enforce_engine_scope_with_mode(
+            &user,
+            true,
+            "panchanga",
+            "engines/calculate",
+            EngineScopeMode::Enforce
+        )
+        .is_err());
     }
 
     #[test]
     fn audit_and_off_modes_never_block() {
-        let user = scope_user(&["basic:access"], None);
+        let user = scope_user(&["basic:access"]);
         for mode in [EngineScopeMode::Audit, EngineScopeMode::Off] {
             assert!(
-                enforce_engine_scope_with_mode(&user, "panchanga", "engines/calculate", mode)
-                    .is_ok(),
+                enforce_engine_scope_with_mode(
+                    &user,
+                    true,
+                    "panchanga",
+                    "engines/calculate",
+                    mode
+                )
+                .is_ok(),
                 "{mode:?}"
             );
         }
