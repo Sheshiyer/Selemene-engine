@@ -25,7 +25,7 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 9,
+      "iteration": 10,
       "cap": 12,
       "status": "staging-proven",
       "axis_reached": "Operational (staging)",
@@ -130,6 +130,12 @@
           "tier": "T2",
           "cmd": "Railway MCP: stage Selemene-engine source branch main->ralph/s1-face in staging only; get-staged-changes = 1 non-destructive update; accept-deploy",
           "result": "staging API rebuilding from the lane"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "staging: Selemene-engine 826ef662, biofield-cv-service + mediapipe-service rebuilt from Dockerfile.sidecar (6a5c01d8); GET /health/dependencies; POST upload; POST upload consent=false; POST calculate",
+          "result": "status=ready, both sidecars ready (capability-aware); upload keys now include computation_mode/backend/provenance/landmark_analysis with backend=mediapipe-face-cv fallback_used=false landmark_source=mediapipe-facemesh 468; consent=false -> 422 CONSENT_REQUIRED; calculate provenance identical. Biofield build log: load build definition from python-services/Dockerfile.sidecar."
         }
       ],
       "findings": [
@@ -145,11 +151,10 @@
         "Rust face engine accepted a 200 from the wrong service silently; decode errors must be logged and surfaced as provenance"
       ],
       "remaining": [
-        "prod: deploy ralph/s1-face after biofield-cv-service config path is switched to railway.biofield.toml",
-        "Rust: log/surface sidecar fallback+decode errors; /health/dependencies must read capability_status",
-        "upload route: return provenance (backend/computation_mode/landmark_analysis)",
-        "golden fixtures: synthetic face (mediapipe) + sidecar-down (degraded) [slot 27]",
-        "Sankalpa: drop is_mock_data shim, render provenance badge"
+        "prod: mediapipe-service (from lane, then main), SELEMENE_FACE_CV_URL on prod API, merge PR",
+        "golden fixtures slot 27 (sidecar-down degraded path has test; add committed synthetic-face fixture)",
+        "Sankalpa: drop is_mock_data shim, render provenance badge",
+        "docs/ENGINES.md face-reading entry: add provenance fields"
       ]
     },
     "s2-biofield": {
