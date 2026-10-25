@@ -181,30 +181,57 @@
       "worktree": ".worktrees/ralph-s2-biofield",
       "iteration": 0,
       "cap": 12,
-      "status": "pending",
+      "status": "proposed-session",
       "axis_reached": "Implemented",
       "blocked_on_human": null,
-      "receipts": []
+      "receipts": [
+        {
+          "date": "2026-10-26",
+          "tier": "prep",
+          "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
+          "result": "awaiting operator start"
+        }
+      ],
+      "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
+      "title": "Biofield capture consent + honest engine"
     },
     "s3-audio": {
       "branch": "ralph/s3-audio",
       "worktree": ".worktrees/ralph-s3-audio",
       "iteration": 0,
       "cap": 12,
-      "status": "pending",
+      "status": "proposed-session",
       "axis_reached": "Implemented",
       "blocked_on_human": null,
-      "receipts": []
+      "receipts": [
+        {
+          "date": "2026-10-26",
+          "tier": "prep",
+          "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
+          "result": "awaiting operator start"
+        }
+      ],
+      "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
+      "title": "Raaga r2-hosted clips + provenance + nadabrahman docs"
     },
     "s4-sigil": {
       "branch": "ralph/s4-sigil",
       "worktree": ".worktrees/ralph-s4-sigil",
       "iteration": 0,
       "cap": 12,
-      "status": "pending",
+      "status": "proposed-session",
       "axis_reached": "Implemented",
       "blocked_on_human": null,
-      "receipts": []
+      "receipts": [
+        {
+          "date": "2026-10-26",
+          "tier": "prep",
+          "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
+          "result": "awaiting operator start"
+        }
+      ],
+      "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
+      "title": "Sigil provenance + honest providers + truthful schema"
     },
     "s5-rbac": {
       "branch": "ralph/s5-rbac",
@@ -298,7 +325,11 @@
       "status": "done",
       "receipt": "2026-10-25 DATABASE_URL and REDIS_URL set to Railway references (hash differs from production); TS_ENGINES_URL and PYTHON_BIOFIELD_URL use *.railway.internal private domains (identical string to prod by design, resolves per-environment). API and ts-engines redeploy queued."
     },
-    "status": "complete"
+    "status": "complete",
+    "staging_ts_engines_r2": {
+      "status": "done",
+      "receipt": "2026-10-26 R2_ACCOUNT_ID/ACCESS_KEY_ID/SECRET/PUBLIC_BASE_URL/RAGA_CLIPS_BUCKET copied from staging root to staging ts-engines; RAAGA_CLIP_MODE=r2; public base is an r2.dev host"
+    }
   },
   "sentinel": "COMPLETE when every lane axis_reached == Operational, or any lane blocked_on_human != null",
   "cross_cutting_findings": [
@@ -308,5 +339,11 @@
       "area": "auth/RBAC (W3E slot 20, issue #913)",
       "finding": "A premium-tier key whose permissions JSON is only [basic:access, face-reading:read] successfully executed POST /api/v1/engines/panchanga/calculate in production (200 with full result). Per-engine permission scopes are not enforced on engine calculate; tier appears to grant access. Unauthenticated request correctly returns 401. Test key ralph-s1-prod was deactivated after the proof."
     }
+  ],
+  "merge_order": [
+    "s4-sigil",
+    "s3-audio (rebase on s4)",
+    "s2-biofield (any time)",
+    "s6-consumers (follow-up, after all three)"
   ]
 }
