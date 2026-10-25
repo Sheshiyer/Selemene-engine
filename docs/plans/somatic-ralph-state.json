@@ -25,7 +25,7 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 3,
+      "iteration": 4,
       "cap": 12,
       "status": "in_progress",
       "axis_reached": "Deployed",
@@ -76,12 +76,26 @@
           "tier": "T2",
           "cmd": "POST /api/v1/engines/face-reading/upload with a PIL-drawn non-photo face + consent face-image",
           "result": "200; mediapipe-service deploy log shows POST /analyze 200 x2, so API->sidecar wiring is live. BUT FaceUploadResponse returns only engine_id/witness_prompt/analysis/is_mock_data: metadata.backend, computation_mode, notice, landmark_analysis are dropped, so a consumer cannot distinguish CV from heuristic. is_mock_data=false on a non-face. Defect for slot W3E:face-reading:07."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "Higgsfield gpt_image_2_5 synthetic neutral portrait -> POST staging /api/v1/engines/face-reading/calculate with exact v1 contract {contract_version,consciousness_level,parameters,image_data{b64,mime_type,consent}}",
+          "result": "200 full envelope: metadata.backend=heuristic-image-landmark-hook, computation_mode=image-heuristic-capture. NOT mediapipe. Sidecar was reached but returned deterministic-fallback."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T1",
+          "cmd": "docker run selemene-mediapipe:local; POST /analyze synthetic face; python -c hasattr(mp,\"solutions\")",
+          "result": "landmark_source=deterministic-fallback with mediapipe_available=true. ROOT CAUSE: mediapipe 1.1.1 installed (pyproject allows >=0.10); legacy mp.solutions.face_mesh removed in 1.0; analyze.py except swallowed it. Health only tested import."
         }
       ],
       "findings": [
         "upload route strips provenance (backend/computation_mode/landmark_analysis)",
         "calculate route rejects {image_data:{b64_json,mime_type}} shape with VALIDATION_ERROR; contract shape TBD",
-        "no real face fixture exists in any repo"
+        "no real face fixture exists in any repo",
+        "Rust engine labels sidecar deterministic-fallback as backend=heuristic-image-landmark-hook with is_mock_data=false; should be degraded/provenance.fallback_used=true (slot 07/09)",
+        "ROOT CAUSE face CV: mediapipe>=0.10 unpinned resolved to 1.1.1 which has no solutions API; fix = pin <1.0 (0.10.18 has cp311 wheels) + honest health"
       ]
     },
     "s2-biofield": {
