@@ -25,10 +25,10 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 7,
+      "iteration": 8,
       "cap": 12,
-      "status": "in_progress",
-      "axis_reached": "Deployed",
+      "status": "staging-proven",
+      "axis_reached": "Operational (staging)",
       "blocked_on_human": null,
       "receipts": [
         {
@@ -112,6 +112,12 @@
           "tier": "T2",
           "cmd": "git mv railway.toml railway.biofield.toml; git mv railway.mediapipe.toml railway.toml; push ralph/s1-face",
           "result": "rebuild in progress"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "deployment f09e1a1f (railway.toml swap) SUCCESS; direct GET /health; direct POST /analyze; API /health/dependencies; API POST /api/v1/engines/face-reading/calculate (v1 contract, synthetic Higgsfield portrait, consent face-image)",
+          "result": "sidecar: service=mediapipe-face-mesh capability_status=available facemesh_ready=true; direct analyze landmark_source=mediapipe-facemesh 468 landmarks 69.8ms; API envelope: metadata.backend=mediapipe-face-cv precision_achieved=cv-468-landmarks computation_mode=image-cv-capture landmark_analysis.landmark_source=mediapipe-facemesh num_landmarks=468, calc 136ms. FIRST REAL FACE READING IN ANY SELEMENE ENVIRONMENT."
         }
       ],
       "findings": [
@@ -125,6 +131,13 @@
         "railway ssh needs a registered key (railway ssh keys add); not set up on this Mac",
         "MERGE PREREQ: before ralph/s1-face merges to main, set biofield-cv-service config path to /python-services/railway.biofield.toml in prod and staging (config-as-code deprecated 2026-12-01; migrate to .railway/railway.ts later)",
         "Rust face engine accepted a 200 from the wrong service silently; decode errors must be logged and surfaced as provenance"
+      ],
+      "remaining": [
+        "prod: deploy ralph/s1-face after biofield-cv-service config path is switched to railway.biofield.toml",
+        "Rust: log/surface sidecar fallback+decode errors; /health/dependencies must read capability_status",
+        "upload route: return provenance (backend/computation_mode/landmark_analysis)",
+        "golden fixtures: synthetic face (mediapipe) + sidecar-down (degraded) [slot 27]",
+        "Sankalpa: drop is_mock_data shim, render provenance badge"
       ]
     },
     "s2-biofield": {
