@@ -357,15 +357,99 @@ pub struct SacredGeometryResultSchema {
     pub symbolic_theme: String,
 }
 
+/// Sigil Forge — the selected creation method (what the TS producer emits).
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct SigilForgeMethodSchema {
+    #[schema(example = "word-elimination")]
+    pub id: String,
+    #[schema(example = "Word Elimination Method")]
+    pub name: String,
+    #[schema(
+        example = "Write the intention, strike repeated letters, fuse the remainder into one glyph."
+    )]
+    pub description: String,
+    #[schema(example = json!(["Write your intention as a present-tense statement", "Remove repeated letters"]))]
+    pub steps: Vec<String>,
+}
+
+/// Sigil Forge — server-side verdict on an optional caller-supplied SVG template.
+/// This is a status object, never the SVG markup itself.
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct SigilForgeSvgPreviewSchema {
+    /// `absent` (no template supplied), `accepted`, or `rejected`.
+    #[schema(example = "absent")]
+    pub status: String,
+    #[schema(nullable = true, example = "Template must be a complete SVG document.")]
+    pub reason: Option<String>,
+}
+
+/// Sigil Forge — provider metadata for an image attempt.
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct SigilForgeImageMetadataSchema {
+    /// Provider that handled the attempt: `nvidia`, `nano-banana`, `kimi`, or `mock` (tests only).
+    #[schema(example = "nvidia")]
+    pub provider: String,
+    #[schema(nullable = true, example = "black-forest-labs/flux.1-dev")]
+    pub model: Option<String>,
+    /// Provider completion status (`SUCCESS`, `PROVIDER_UNAVAILABLE`, `MOCK_NO_TOKEN`, `ERROR`, ...).
+    #[schema(nullable = true, example = "SUCCESS")]
+    pub finish_reason: Option<String>,
+    /// Set when `parameters.provider` asked for a different provider than the one used.
+    #[schema(nullable = true, example = "kimi")]
+    pub provider_requested: Option<String>,
+    /// Why the requested provider was not used.
+    #[schema(
+        nullable = true,
+        example = "Requested provider 'kimi' is not configured; using nvidia."
+    )]
+    pub provider_note: Option<String>,
+}
+
+/// Sigil Forge — the image attempt. Present only when `generate_image` or
+/// `edit_image_b64` was requested. A real image carries `b64_json`/`url`;
+/// a failed, unconfigured, or mock attempt carries `error` instead and the
+/// envelope-level `provenance.fallback_used` is `true`.
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct SigilForgeGeneratedImageSchema {
+    #[schema(nullable = true, example = "iVBORw0KGgo...")]
+    pub b64_json: Option<String>,
+    #[schema(nullable = true, example = "https://example.invalid/sigil.png")]
+    pub url: Option<String>,
+    #[schema(nullable = true, example = "Minimalist chaos-magick sigil ...")]
+    pub prompt_used: Option<String>,
+    #[schema(nullable = true, example = "chaos")]
+    pub style: Option<String>,
+    #[schema(nullable = true, example = "black-forest-labs/flux.1-dev")]
+    pub model: Option<String>,
+    #[schema(
+        nullable = true,
+        example = "nvidia not configured. Set provider credentials for image generation."
+    )]
+    pub error: Option<String>,
+    pub metadata: SigilForgeImageMetadataSchema,
+}
+
+/// Sigil Forge result as actually produced by the TypeScript engine
+/// (`ts-engines/src/engines/sigil-forge/engine.ts`). There is no `sigil_id`
+/// and no `vector_path`: the engine guides the practitioner through a
+/// method and optionally attaches an AI-generated raster image.
 #[cfg(feature = "openapi")]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct SigilForgeResultSchema {
-    #[schema(example = "SIG-20260303-9A7")]
-    pub sigil_id: String,
-    #[schema(example = "clarity")]
+    #[schema(example = "I attract peace and clarity")]
     pub intention: String,
-    #[schema(example = "M1 L10,2 L15,8 ...")]
-    pub vector_path: String,
+    pub method: SigilForgeMethodSchema,
+    pub svg_preview: SigilForgeSvgPreviewSchema,
+    #[schema(nullable = true)]
+    pub generated_image: Option<SigilForgeGeneratedImageSchema>,
+    /// Contract provenance as emitted by the engine (also lifted to the
+    /// envelope's top-level `provenance` by the API).
+    #[schema(nullable = true, inline)]
+    pub provenance: Option<crate::contract::Provenance>,
 }
 
 /// Financial Biosensor — a composed decision-reflection surface.

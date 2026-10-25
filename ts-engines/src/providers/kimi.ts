@@ -1,18 +1,17 @@
 /**
- * Kimi Image Provider Adapter (T-061)
+ * Kimi Image Provider Adapter (T-061, honesty pass in lane S4)
  *
  * Implements ImageProvider for Kimi (Moonshot AI) yantra / runic / vedic sigil generation.
  * Config-driven. Supports generate + edit.
- * Uses KIMI_API_KEY / KIMI_ENDPOINT (unresolved exacts per gaps; placeholder impl + mock fallback).
+ *
+ * Truth table (lane S4, 2026-10-26):
+ *   - `isAvailable()` is true ONLY when a key is configured (constructor `apiKey` or KIMI_API_KEY).
+ *   - The real Kimi image endpoint is still unresolved, so `generate`/`edit` NEVER
+ *     fabricate a placeholder PNG. They return `{ error, mock: true }` with a
+ *     `finish_reason` the engine maps to `fallback_used: true`.
+ *   - Use `MockImageProvider` (image-provider.ts) when a test needs an image.
  *
  * Prompt templates specialized for yantras (sacred geometry interlocking triangles, sri-yantra precision).
- *
- * Cites (MANDATORY): bootstrap p1-w1-worker-bootstrap-packet.md, 3 extraction (resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md),
- * EXECUTION-STATUS.md, P1W2-HANDOFF.md, FROZEN .worktrees/T-002-copilot/.../P1W1-CONTRACTS-FROZEN.md,
- * detailed-task-list.md (T-061), image-provider.ts, sigil-forge/engine.ts + prompt-builder.ts
- * Tags: phase:integration-p1 wave:integration-w2 engine-sigil
- * Worktree: .worktrees/T-061-codex branch swarm/engines/p3-w1/providers/T-061-codex
- * External unavailable; implement per spec. No push.
  */
 
 import type {
@@ -23,54 +22,42 @@ import type {
   ImageProviderConfig,
 } from './image-provider'
 
-const KIMI_BASE = 'https://api.moonshot.cn/v1' // placeholder; real yantra image may route via runcomfy/kimi or partner endpoint per unresolved gaps
+const KIMI_BASE = 'https://api.moonshot.cn/v1' // placeholder; real yantra image endpoint unresolved
+
+export const KIMI_FINISH_NO_KEY = 'MOCK_NO_KEY'
+export const KIMI_FINISH_UNIMPLEMENTED = 'KIMI_IMAGE_ENDPOINT_UNAVAILABLE'
 
 function getKimiKey(): string | undefined {
   return Bun.env.KIMI_API_KEY
 }
 
-function getKimiEndpoint(): string {
+export function getKimiEndpoint(): string {
   return Bun.env.KIMI_ENDPOINT || KIMI_BASE
 }
 
-/** Low-level generate (mock-first until kimi image endpoint confirmed) */
-async function kimiGenerate(
-  opts: ImageGenOptions & { apiKey?: string },
-): Promise<{ b64_json?: string; url?: string; model: string; finish_reason?: string }> {
-  const key = opts.apiKey || getKimiKey()
-  const model = opts.model ?? 'kimi-yantra-v1'
-  if (!key) {
-    // graceful mock for tests / unconfigured (matches nano stub pattern)
-    return {
-      b64_json:
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-      model,
-      finish_reason: 'MOCK_NO_KEY',
-    }
-  }
-  // Placeholder: when real kimi image API is known, POST to getKimiEndpoint() + /images or equiv
-  // For now, return deterministic mock to keep selectable + non-breaking (T-061 acceptance: integrated, selectable, tests)
-  // TODO: replace with actual fetch when "kimi code on api" details resolved (see gaps-and-improvements.md)
-  return {
-    b64_json:
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-    model,
-    finish_reason: 'SUCCESS_KIMI_PLACEHOLDER',
-  }
+/** True only when a Kimi key is configured (env or explicit). */
+export function isKimiAvailable(apiKey?: string): boolean {
+  return Boolean(apiKey || getKimiKey())
 }
 
-async function kimiEdit(
-  opts: ImageEditOptions & { apiKey?: string },
-): Promise<{ b64_json?: string; url?: string; model: string; finish_reason?: string }> {
-  // Edit re-uses generate with instruction-augmented (same as current nvidia fallback)
-  return kimiGenerate({
-    prompt: opts.instruction ? `${opts.prompt} [edit: ${opts.instruction}]` : opts.prompt,
-    model: opts.model,
-    width: opts.width,
-    height: opts.height,
-    seed: opts.seed,
-    apiKey: opts.apiKey,
-  })
+function kimiFailure(
+  opts: ImageGenOptions,
+  model: string,
+  finishReason: string,
+  error: string,
+): GeneratedImage {
+  return {
+    error,
+    mock: true,
+    metadata: {
+      model,
+      prompt: opts.prompt,
+      provider: 'kimi',
+      style: opts.style,
+      seed: opts.seed,
+      finish_reason: finishReason,
+    },
+  }
 }
 
 export class KimiImageProvider implements ImageProvider {
@@ -82,54 +69,33 @@ export class KimiImageProvider implements ImageProvider {
   }
 
   isAvailable(): boolean {
-    return true // T-061: mock-safe selectable (fallback inside generate if no KIMI_*); matches nano stub pattern for tests/integration
+    return isKimiAvailable(this.config.apiKey)
   }
 
   async generate(opts: ImageGenOptions): Promise<GeneratedImage> {
-    const res = await kimiGenerate({
-      prompt: opts.prompt,
-      model: opts.model,
-      width: opts.width,
-      height: opts.height,
-      seed: opts.seed,
-      apiKey: this.config.apiKey,
-    })
-    return {
-      b64_json: res.b64_json,
-      url: res.url,
-      metadata: {
-        model: res.model,
-        prompt: opts.prompt,
-        provider: this.name,
-        style: opts.style,
-        seed: opts.seed,
-        finish_reason: res.finish_reason,
-      },
+    const model = opts.model ?? this.config.defaultModel ?? 'kimi-yantra-v1'
+    if (!this.isAvailable()) {
+      return kimiFailure(
+        opts,
+        model,
+        KIMI_FINISH_NO_KEY,
+        'kimi not configured. Set KIMI_API_KEY to enable image generation.',
+      )
     }
+    // The Kimi image endpoint is not confirmed; refusing honestly beats a fake PNG.
+    return kimiFailure(
+      opts,
+      model,
+      KIMI_FINISH_UNIMPLEMENTED,
+      `kimi image generation is not implemented (endpoint ${getKimiEndpoint()} unverified).`,
+    )
   }
 
   async edit(opts: ImageEditOptions): Promise<GeneratedImage> {
-    const res = await kimiEdit({
-      image: opts.image,
-      prompt: opts.prompt,
-      instruction: opts.instruction,
-      model: opts.model,
-      width: opts.width,
-      height: opts.height,
-      seed: opts.seed,
-      apiKey: this.config.apiKey,
+    return this.generate({
+      ...opts,
+      prompt: opts.instruction ? `${opts.prompt} [edit: ${opts.instruction}]` : opts.prompt,
     })
-    return {
-      b64_json: res.b64_json,
-      url: res.url,
-      metadata: {
-        model: res.model,
-        prompt: opts.prompt,
-        provider: this.name,
-        style: opts.style,
-        seed: opts.seed,
-      },
-    }
   }
 }
 

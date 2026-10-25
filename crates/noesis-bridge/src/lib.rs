@@ -32,7 +32,7 @@ pub mod python_client;
 pub mod ts_client;
 pub use error::BridgeError;
 pub use python_client::PythonServiceClient;
-pub use ts_client::{TsHealthResponse, WitnessPrompt};
+pub use ts_client::{TsHealthResponse, WitnessPrompt, CONTRACT_PROVENANCE_KEY};
 
 pub use noesis_core::{
     CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
@@ -512,38 +512,7 @@ impl ConsciousnessEngine for BridgeEngine {
             "Bridge calculate succeeded"
         );
 
-        // Convert TsEngineResponse to EngineOutput. Preserve the TS timestamp;
-        // falling back to receipt time is only for malformed legacy sidecars.
-        let calculated_at = parse_ts_calculated_at(&ts_response.calculated_at);
-
-        let mut result = ts_response.result;
-        if let Some(object) = result.as_object_mut() {
-            if let Some(generated_image) = ts_response.generated_image {
-                object.insert("generated_image".to_string(), generated_image);
-            }
-            if let Some(generated_audio) = ts_response.generated_audio {
-                object.insert("generated_audio".to_string(), generated_audio);
-            }
-        }
-
-        Ok(EngineOutput {
-            engine_id: ts_response.engine_id,
-            result,
-            witness_prompt: ts_response
-                .witness_prompts
-                .first()
-                .map(|p| p.prompt.clone())
-                .unwrap_or_else(|| "What does this reveal to you?".to_string()),
-            consciousness_level: self.required_phase,
-            metadata: CalculationMetadata {
-                calculation_time_ms: ts_response.processing_time_ms as f64,
-                backend: "typescript".to_string(),
-                precision_achieved: "exact".to_string(),
-                cached: false,
-                timestamp: calculated_at,
-                engine_version: env!("CARGO_PKG_VERSION").to_string(),
-            },
-        })
+        Ok(ts_response_into_output(ts_response, self.required_phase))
     }
 
     async fn validate(&self, output: &EngineOutput) -> Result<ValidationResult, EngineError> {
@@ -798,6 +767,48 @@ pub struct BridgeCircuitBreakerSnapshot {
 // Tests
 // ===========================================================================
 
+/// Convert a sidecar response into the canonical `EngineOutput`.
+///
+/// Preserves the TS timestamp (falling back to receipt time only for malformed
+/// legacy sidecars), lifts FROZEN top-level media into `result`, and stashes the
+/// contracts/v1 provenance block under [`CONTRACT_PROVENANCE_KEY`] so the API
+/// envelope can lift it back out verbatim.
+pub fn ts_response_into_output(ts_response: TsEngineResponse, required_phase: u8) -> EngineOutput {
+    let calculated_at = parse_ts_calculated_at(&ts_response.calculated_at);
+
+    let mut result = ts_response.result;
+    if let Some(object) = result.as_object_mut() {
+        if let Some(generated_image) = ts_response.generated_image {
+            object.insert("generated_image".to_string(), generated_image);
+        }
+        if let Some(generated_audio) = ts_response.generated_audio {
+            object.insert("generated_audio".to_string(), generated_audio);
+        }
+        if let Some(provenance) = ts_response.provenance {
+            object.insert(CONTRACT_PROVENANCE_KEY.to_string(), provenance);
+        }
+    }
+
+    EngineOutput {
+        engine_id: ts_response.engine_id,
+        result,
+        witness_prompt: ts_response
+            .witness_prompts
+            .first()
+            .map(|p| p.prompt.clone())
+            .unwrap_or_else(|| "What does this reveal to you?".to_string()),
+        consciousness_level: required_phase,
+        metadata: CalculationMetadata {
+            calculation_time_ms: ts_response.processing_time_ms as f64,
+            backend: "typescript".to_string(),
+            precision_achieved: "exact".to_string(),
+            cached: false,
+            timestamp: calculated_at,
+            engine_version: env!("CARGO_PKG_VERSION").to_string(),
+        },
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1002,6 +1013,87 @@ mod tests {
         assert_eq!(request.quality, Some(json!({"sufficient": true})));
         assert!(request.consent.is_some());
         assert!(!request.parameters.contains_key("audio_ref"));
+    }
+
+    #[test]
+    fn sigil_seven_field_provenance_survives_contract_provenance_round_trip() {
+        // Lane S4: the sigil-forge sidecar emits the full seven-field contract
+        // provenance block. It must cross the bridge untouched (under the
+        // reserved key) and parse back into `noesis_core::contract::Provenance`
+        // without losing a field.
+        let provenance = json!({
+            "runtime_kind": "typescript",
+            "implementation_version": "2.0.0",
+            "cached": false,
+            "fallback_used": false,
+            "backend_id": "nim-flux",
+            "provider_id": "nvidia",
+            "confidence": 0.9
+        });
+        let response: crate::ts_client::TsEngineResponse = serde_json::from_value(json!({
+            "engine_id": "sigil-forge",
+            "result": {"intention": "I see clearly", "provider": "nvidia"},
+            "witness_prompts": [],
+            "calculated_at": "2026-10-26T00:00:00.000Z",
+            "processing_time_ms": 12.5,
+            "generated_image": {"b64_json": "iVBORw0KGgo=", "metadata": {"provider": "nvidia"}},
+            "provenance": provenance.clone()
+        }))
+        .expect("sigil response with provenance must deserialize");
+        assert_eq!(response.provenance, Some(provenance.clone()));
+
+        let output = ts_response_into_output(response, 1);
+        let stashed = output
+            .result
+            .get(CONTRACT_PROVENANCE_KEY)
+            .cloned()
+            .expect("bridge stashes provenance under the reserved key");
+        assert_eq!(stashed, provenance);
+        // Engine data is untouched and media still lands inside result.
+        assert_eq!(output.result["intention"], "I see clearly");
+        assert_eq!(output.result["generated_image"]["b64_json"], "iVBORw0KGgo=");
+        assert!(output.result.get("provenance").is_none());
+
+        let parsed: noesis_core::contract::Provenance = serde_json::from_value(stashed)
+            .expect("seven-field block parses under deny_unknown_fields");
+        assert_eq!(
+            parsed.runtime_kind,
+            noesis_core::contract::RuntimeKind::TypeScript
+        );
+        assert_eq!(parsed.implementation_version, "2.0.0");
+        assert!(!parsed.cached);
+        assert!(!parsed.fallback_used);
+        assert_eq!(parsed.backend_id.as_deref(), Some("nim-flux"));
+        assert_eq!(parsed.provider_id.as_deref(), Some("nvidia"));
+        assert_eq!(parsed.confidence, Some(0.9));
+        assert_eq!(serde_json::to_value(&parsed).unwrap(), provenance);
+    }
+
+    #[test]
+    fn sigil_fallback_provenance_omits_provider_id_and_round_trips() {
+        let provenance = json!({
+            "runtime_kind": "typescript",
+            "implementation_version": "2.0.0",
+            "cached": false,
+            "fallback_used": true,
+            "confidence": 0
+        });
+        let response: crate::ts_client::TsEngineResponse = serde_json::from_value(json!({
+            "engine_id": "sigil-forge",
+            "result": {"generated_image": {"error": "nvidia not configured"}},
+            "witness_prompts": [],
+            "calculated_at": "2026-10-26T00:00:00.000Z",
+            "processing_time_ms": 1.0,
+            "provenance": provenance.clone()
+        }))
+        .unwrap();
+        let output = ts_response_into_output(response, 1);
+        let parsed: noesis_core::contract::Provenance =
+            serde_json::from_value(output.result[CONTRACT_PROVENANCE_KEY].clone()).unwrap();
+        assert!(parsed.fallback_used);
+        assert!(parsed.provider_id.is_none());
+        assert_eq!(parsed.confidence, Some(0.0));
+        assert!(output.result.get("generated_image").unwrap()["error"].is_string());
     }
 
     #[test]

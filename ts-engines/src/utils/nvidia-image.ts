@@ -125,69 +125,7 @@ export function isImageGenAvailable(): boolean {
   return Boolean(Bun.env.NVIDIA_API_KEY)
 }
 
-// --- T-003 contract: implement ImageProvider interface (see ../providers/image-provider.ts) per FROZEN ---
-// Cites: resources-and-assets (sigil nvidia), gaps (provider abstraction), goal (T-003), P1W1-CONTRACTS-FROZEN, detailed T-003/T-028, bootstrap packet, EXECUTION-STATUS, ext-harness
-import type {
-  GeneratedImage,
-  ImageEditOptions,
-  ImageGenOptions,
-  ImageProvider,
-} from '../providers/image-provider'
-
-export class NvidiaImageProvider implements ImageProvider {
-  readonly name = 'nvidia'
-
-  isAvailable(): boolean {
-    return isImageGenAvailable()
-  }
-
-  async generate(opts: ImageGenOptions): Promise<GeneratedImage> {
-    const res = await generateImage({
-      prompt: opts.prompt,
-      // ImageGenOptions.model is a free-form string; the NIM client accepts only
-      // the known model ids.
-      model: opts.model as NvidiaImageModel | undefined,
-      width: opts.width,
-      height: opts.height,
-      seed: opts.seed,
-    })
-    return {
-      b64_json: res.b64_json,
-      metadata: {
-        model: opts.model ?? 'flux.1-dev',
-        prompt: opts.prompt,
-        provider: this.name,
-        style: opts.style,
-        seed: opts.seed,
-        finish_reason: res.finish_reason,
-      },
-    }
-  }
-
-  async edit(opts: ImageEditOptions): Promise<GeneratedImage> {
-    const res = await editImage({
-      image: opts.image,
-      prompt: opts.prompt,
-      // ImageGenOptions.model is a free-form string; the NIM client accepts only
-      // the known model ids.
-      model: opts.model as NvidiaImageModel | undefined,
-      width: opts.width,
-      height: opts.height,
-      seed: opts.seed,
-    })
-    return {
-      b64_json: res.b64_json,
-      metadata: {
-        model: opts.model ?? 'flux.1-dev',
-        prompt: opts.prompt,
-        provider: this.name,
-        style: opts.style,
-        seed: opts.seed,
-      },
-    }
-  }
-}
-
-export function createDefaultImageProvider(): ImageProvider {
-  return new NvidiaImageProvider()
-}
+// The canonical ImageProvider implementation for NVIDIA lives in
+// ../providers/image-provider.ts (lane S4 removed the duplicate class that used
+// to be defined here). Re-exported so existing `utils` importers keep working.
+export { NvidiaImageProvider, createDefaultImageProvider } from '../providers/image-provider'

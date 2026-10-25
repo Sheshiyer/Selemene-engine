@@ -64,7 +64,7 @@ The biggest outcome of this audit: **almost every engine renderer reads keys the
 | Tarot | `result.cards`, `result.spread` | `{spread, question, positions[], seed}` | cards don't render |
 | I Ching | flat `hexagram_number`, `lines`, `changing_lines` | nested `primary_hexagram.*`, `casting.line_values` | hexagram doesn't render |
 | Sacred Geometry | `meditation_guidance`, `svg_preview` (string) | `meditation.prompt`, `svg_preview{status}` | unwired / empty |
-| Sigil Forge | `vector_path` glyph | method/process text + optional base64 **PNG** (no `vector_path`) | glyph never renders; `dangerouslySetInnerHTML` XSS risk |
+| Sigil Forge | *(schema now matches runtime: `intention`, `method`, `svg_preview`, `generated_image?`, `provenance?`)* | method/process text + optional real image (`provenance.fallback_used === false`) | renderer still reads a third shape; `dangerouslySetInnerHTML` XSS risk |
 | Raaga | `mood`, `rasa`, `vadi`, `samvadi` | producer emits none of these | those cards always hidden |
 
 **Implication for Wave-2:** the engine renderers can't just be restyled to the brand archetypes — most must first be **re-keyed to the real runtime JSON** (and a few engine serializers enriched). Each doc's §4 (data→visual mapping) is written against the *correct* runtime shape, so it doubles as the fix spec.

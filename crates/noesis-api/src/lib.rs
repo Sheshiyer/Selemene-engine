@@ -172,6 +172,10 @@ use workflow_parity::log_workflow_registry_parity;
             IChingResultSchema,
             SacredGeometryResultSchema,
             SigilForgeResultSchema,
+            noesis_core::SigilForgeMethodSchema,
+            noesis_core::SigilForgeSvgPreviewSchema,
+            noesis_core::SigilForgeImageMetadataSchema,
+            noesis_core::SigilForgeGeneratedImageSchema,
             FinancialBiosensorResultSchema,
             ValidationResult,
             WorkflowResult,
@@ -1529,8 +1533,41 @@ fn validate_contract_consent(
     Ok(())
 }
 
+/// Remove the bridge's reserved contract-v1 provenance block from an engine
+/// output's `result` and parse it. Engine-owned `result["provenance"]` data is
+/// left untouched. An unparseable block is still removed (it must never leak
+/// into responses or persisted readings) and logged; `None` is returned.
+fn take_contract_provenance(
+    output: &mut EngineOutput,
+) -> Option<noesis_core::contract::Provenance> {
+    let raw = output
+        .result
+        .as_object_mut()
+        .and_then(|o| o.remove(noesis_bridge::CONTRACT_PROVENANCE_KEY))?;
+    match serde_json::from_value(raw) {
+        Ok(provenance) => Some(provenance),
+        Err(e) => {
+            tracing::warn!(
+                engine_id = %output.engine_id,
+                error = %e,
+                "sidecar provenance block failed contract-v1 parse; dropping it"
+            );
+            None
+        }
+    }
+}
+
+/// Strip the reserved provenance key from every engine output in a workflow
+/// result so it reaches neither workflow responses nor persisted readings.
+fn strip_workflow_contract_provenance(workflow: &mut WorkflowResult) {
+    for output in workflow.engine_outputs.values_mut() {
+        let _ = take_contract_provenance(output);
+    }
+}
+
 impl From<EngineOutput> for ApiEngineOutputResponse {
-    fn from(output: EngineOutput) -> Self {
+    fn from(mut output: EngineOutput) -> Self {
+        let provenance = take_contract_provenance(&mut output);
         let generated_image = output.result.get("generated_image").cloned();
         let generated_audio = output.result.get("generated_audio").cloned();
         let witness_prompts = vec![ApiWitnessPrompt {
@@ -1548,7 +1585,7 @@ impl From<EngineOutput> for ApiEngineOutputResponse {
             witness_prompts,
             calculated_at,
             processing_time_ms,
-            provenance: None,
+            provenance,
             generated_image,
             generated_audio,
         }
@@ -2979,6 +3016,11 @@ async fn calculate_handler(
 
             increment_free_tier_counter(&state, &user);
 
+            // Lift the bridge's reserved provenance block into the envelope now so
+            // the persisted reading never carries the scaffolding key.
+            let envelope = ApiEngineOutputResponse::from(output);
+            let output = &envelope.output;
+
             // Fire-and-forget: persist reading when appropriate, log usage, award XP
             if let Ok(uid) = uuid::Uuid::parse_str(&user_id_str) {
                 let should_persist = should_persist_engine_output(&engine_id);
@@ -2989,7 +3031,7 @@ async fn calculate_handler(
                     workflow_id: None,
                     input_hash,
                     input_data: input_json,
-                    result_data: serde_json::to_value(&output).unwrap_or_default(),
+                    result_data: serde_json::to_value(output).unwrap_or_default(),
                     witness_prompt: Some(output.witness_prompt.clone()),
                     consciousness_level: output.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
@@ -3049,7 +3091,7 @@ async fn calculate_handler(
                 });
             }
 
-            Ok(Json(output.into()))
+            Ok(Json(envelope))
         }
         Err(e) => {
             state.metrics.record_engine_calculation_with_status(
@@ -3416,12 +3458,13 @@ async fn execute_workflow_by_id(
     billing::emit_usage_event(&user_id_str, &workflow_label, &user.tier);
 
     match result {
-        Ok(workflow_result) => {
+        Ok(mut workflow_result) => {
             state.metrics.record_engine_calculation_with_status(
                 &workflow_label,
                 "success",
                 duration_secs,
             );
+            strip_workflow_contract_provenance(&mut workflow_result);
 
             increment_free_tier_counter(&state, &user);
 
@@ -4783,6 +4826,90 @@ mod p4_contract_tests {
             response["witness_prompts"][0]["prompt"],
             "What do you hear?"
         );
+    }
+
+    #[test]
+    fn sigil_contract_provenance_is_lifted_into_envelope_and_stripped_from_result() {
+        // Lane S4: a seven-field sigil provenance block stashed by the bridge
+        // under the reserved key becomes the envelope's top-level `provenance`
+        // and never appears inside `result` (which is what gets persisted).
+        let output = EngineOutput {
+            engine_id: "sigil-forge".to_string(),
+            result: serde_json::json!({
+                "intention": "I see clearly",
+                "generated_image": {"b64_json": "iVBORw0KGgo=", "metadata": {"provider": "nvidia"}},
+                (noesis_bridge::CONTRACT_PROVENANCE_KEY): {
+                    "runtime_kind": "typescript",
+                    "implementation_version": "2.0.0",
+                    "cached": false,
+                    "fallback_used": false,
+                    "backend_id": "nim-flux",
+                    "provider_id": "nvidia",
+                    "confidence": 0.9
+                }
+            }),
+            witness_prompt: "What does the glyph hold?".to_string(),
+            consciousness_level: 1,
+            metadata: CalculationMetadata {
+                calculation_time_ms: 1.5,
+                backend: "typescript".to_string(),
+                precision_achieved: "exact".to_string(),
+                cached: false,
+                timestamp: chrono::DateTime::parse_from_rfc3339("2026-10-26T00:00:00Z")
+                    .unwrap()
+                    .with_timezone(&chrono::Utc),
+                engine_version: "fixture".to_string(),
+            },
+        };
+        let envelope = ApiEngineOutputResponse::from(output);
+        let prov = envelope.provenance.as_ref().expect("lifted provenance");
+        assert_eq!(
+            prov.runtime_kind,
+            noesis_core::contract::RuntimeKind::TypeScript
+        );
+        assert_eq!(prov.provider_id.as_deref(), Some("nvidia"));
+        assert_eq!(prov.backend_id.as_deref(), Some("nim-flux"));
+        assert_eq!(prov.confidence, Some(0.9));
+        assert!(!prov.fallback_used);
+        assert!(envelope
+            .output
+            .result
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+        let wire = serde_json::to_value(&envelope).unwrap();
+        assert_eq!(wire["provenance"]["provider_id"], "nvidia");
+        assert_eq!(wire["provenance"]["confidence"], 0.9);
+        assert!(wire["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+        assert_eq!(wire["generated_image"]["b64_json"], "iVBORw0KGgo=");
+    }
+
+    #[test]
+    fn invalid_contract_provenance_is_dropped_not_leaked() {
+        let output = EngineOutput {
+            engine_id: "sigil-forge".to_string(),
+            result: serde_json::json!({
+                (noesis_bridge::CONTRACT_PROVENANCE_KEY): {"runtime_kind": "bogus", "extra": 1}
+            }),
+            witness_prompt: String::new(),
+            consciousness_level: 1,
+            metadata: CalculationMetadata {
+                calculation_time_ms: 0.0,
+                backend: "typescript".to_string(),
+                precision_achieved: "exact".to_string(),
+                cached: false,
+                timestamp: chrono::Utc::now(),
+                engine_version: "fixture".to_string(),
+            },
+        };
+        let envelope = ApiEngineOutputResponse::from(output);
+        assert!(envelope.provenance.is_none());
+        assert!(envelope
+            .output
+            .result
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
     }
 
     fn scope_user(permissions: &[&str]) -> AuthUser {
