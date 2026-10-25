@@ -287,14 +287,19 @@ The existing receipts (`docs/plans/somatic-ralph-state.json` on `origin/ralph/s0
 
 ```bash
 RAW_KEY="nk_$(openssl rand -hex 24)"
-KEY_HASH="$(printf '%s' "$RAW_KEY" | shasum -a 256 | awk '{print $1}')"
-railway run --service Postgres --environment production -- sh -c 'psql "$DATABASE_PUBLIC_URL" -X -v ON_ERROR_STOP=1 -v h='"$KEY_HASH"' -c "
+export OPERATOR_EMAIL="<operator account email>"
+export KEY_HASH="$(printf '%s' "$RAW_KEY" | shasum -a 256 | awk '{print $1}')"
+# SQL goes through stdin (not -c) so psql interpolates :'h' and :'e'.
+cat <<'SQL' | railway run --service Postgres --environment production -- \
+  sh -c 'psql "$DATABASE_PUBLIC_URL" -X -v ON_ERROR_STOP=1 -v h="$KEY_HASH" -v e="$OPERATOR_EMAIL"'
 INSERT INTO api_keys (key_hash, user_id, tier, permissions, consciousness_level, rate_limit, is_active, name, key_prefix, expires_at)
-SELECT :'"'"'h'"'"', id, '"'"'premium'"'"', '"'"'[\"basic:access\"]'"'"'::jsonb, 1, 120, true, '"'"'ops-prod-migration-probe'"'"', left(:'"'"'h'"'"',12), now() + interval '"'"'2 hours'"'"'
-FROM users WHERE email = '"'"'<OPERATOR_EMAIL>'"'"';"'
+SELECT :'h', id, 'premium', '["basic:access"]'::jsonb, 1, 120, true, 'ops-prod-migration-probe', left(:'h', 12), now() + interval '2 hours'
+FROM users WHERE email = :'e';
+SELECT name, is_active, expires_at FROM api_keys WHERE key_hash = :'h';
+SQL
 ```
 
-Keep `RAW_KEY` only in the shell; do not write it to disk or to any receipt. `<OPERATOR_EMAIL>` is the operator's own account (the probe session and reading will be owned by it and can be deleted afterwards).
+`railway run` passes the shell environment through, so `-v h="$KEY_HASH"` resolves inside the child shell). Keep `RAW_KEY` only in the shell; do not write it to disk or to any receipt. `OPERATOR_EMAIL` is the operator's own account (the probe session and reading will be owned by it and can be deleted afterwards).
 
 ### 7.3 Biofield probe set (the set that passed in staging on 2026-10-26)
 
@@ -331,11 +336,15 @@ Fixture: `tests/fixtures/images/biofield-portrait-256.jpg` exists on `origin/mai
 ### 7.4 Revoke and clean up
 
 ```bash
-railway run --service Postgres --environment production -- sh -c 'psql "$DATABASE_PUBLIC_URL" -X -v ON_ERROR_STOP=1 -v h='"$KEY_HASH"' -c "
-UPDATE api_keys SET is_active = false, revoked_at = now(), revoked_reason = '"'"'runbook probe complete'"'"' WHERE key_hash = :'"'"'h'"'"';
-SELECT is_active FROM api_keys WHERE key_hash = :'"'"'h'"'"';"'
+cat <<'SQL' | railway run --service Postgres --environment production -- \
+  sh -c 'psql "$DATABASE_PUBLIC_URL" -X -v ON_ERROR_STOP=1 -v h="$KEY_HASH"'
+UPDATE api_keys
+SET is_active = false, revoked_at = now(), revoked_reason = 'runbook probe complete'
+WHERE key_hash = :'h';
+SELECT is_active FROM api_keys WHERE key_hash = :'h';
+SQL
 curl -s -o /dev/null -w '%{http_code}\n' "$BASE/biofield/readings" -H "X-API-Key: $RAW_KEY"   # expect 401
-unset RAW_KEY
+unset RAW_KEY KEY_HASH
 ```
 
 Probe rows left behind: one `biofield_sessions` row, one `biofield_capture_artifacts` row, one `readings` row (engine `biofield-capture`) and the stored source image. Delete them only if the operator wants a clean table; they are owned by the operator account.
