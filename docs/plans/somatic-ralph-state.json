@@ -25,7 +25,7 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 8,
+      "iteration": 9,
       "cap": 12,
       "status": "staging-proven",
       "axis_reached": "Operational (staging)",
@@ -118,6 +118,18 @@
           "tier": "T2",
           "cmd": "deployment f09e1a1f (railway.toml swap) SUCCESS; direct GET /health; direct POST /analyze; API /health/dependencies; API POST /api/v1/engines/face-reading/calculate (v1 contract, synthetic Higgsfield portrait, consent face-image)",
           "result": "sidecar: service=mediapipe-face-mesh capability_status=available facemesh_ready=true; direct analyze landmark_source=mediapipe-facemesh 468 landmarks 69.8ms; API envelope: metadata.backend=mediapipe-face-cv precision_achieved=cv-468-landmarks computation_mode=image-cv-capture landmark_analysis.landmark_source=mediapipe-facemesh num_landmarks=468, calc 136ms. FIRST REAL FACE READING IN ANY SELEMENE ENVIRONMENT."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T1",
+          "cmd": "commit 99ef14c4: engine provenance block + tracing::warn on fallback; upload returns provenance/backend/computation_mode/landmark summary; /health/dependencies honours capability_status. cargo test engine 47/47, api probe test, p4_media 25/25, fixture_snapshot 4/4, openapi 5/5 (--locked)",
+          "result": "Rust hardening green locally"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "Railway MCP: stage Selemene-engine source branch main->ralph/s1-face in staging only; get-staged-changes = 1 non-destructive update; accept-deploy",
+          "result": "staging API rebuilding from the lane"
         }
       ],
       "findings": [
