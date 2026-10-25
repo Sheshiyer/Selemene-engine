@@ -1,13 +1,13 @@
 {
   "schema": "temperance.handoff.v2",
   "project": "Selemene-engine",
-  "written_at": "2026-10-25T21:10:11.415737+00:00",
+  "written_at": "2026-10-26",
   "tier": "E5",
   "wave": "somatic lanes S2-S4 complete; operator-gated follow-ups",
   "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/.worktrees/ralph-s0-plan/ISA.md",
   "isa_note": "ISA.md holds an earlier task (free plugin publication). This run's criteria live in docs/plans/somatic-ralph-state.json (lanes s1-s5 receipts) and docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md. A dated status note was appended to ISA.md.",
   "isc_open": [],
-  "isc_done_count": 0,
+  "isc_done_count": 170,
   "completed_tasks": [
     "S1 face reading: PR #1496 merged 7d833ac9; prod proof landmark_source=mediapipe-facemesh",
     "S5 engine scopes: PR #1497 merged 0f39cd07; prod audit mode, staging enforce",
@@ -38,6 +38,14 @@
   "uncommitted_files": [],
   "next_action": "Operator decision: prod Postgres migration adoption or new R2 token first; no agent work is unblocked until one is chosen",
   "next_command": "gh pr list --state merged --limit 5 && git -C .worktrees/ralph-s0-plan log --oneline -6",
-  "session_budget": "predecessor rolled over at 89% of 1M context; everything committed and pushed",
-  "session_start_prompt": "All somatic lane work is merged and verified; remaining queue is operator-gated. Confirm prod health, refresh this handoff, and end with SUCCESSOR_DONE unless the operator has chosen a blocker to work."
+  "session_budget": {
+    "window": 1000000,
+    "rollover_at": 750000,
+    "used_at_handoff": 903499
+  },
+  "session_start_prompt": "All somatic lane work is merged and verified; remaining queue is operator-gated. Confirm prod health, refresh this handoff, and end with SUCCESSOR_DONE unless the operator has chosen a blocker to work.",
+  "extends": "gsd.pause-work.v1",
+  "harness": "claude",
+  "session_ref": "754e2b0f-e398-418c-aa6f-7e7993f31e14",
+  "prod_health_check": "2026-10-26: GET /health 200 on selemene.tryambakam.space and ts-engines-production.up.railway.app; main PRs #1496-#1500 merged, no open ISCs"
 }
