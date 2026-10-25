@@ -205,6 +205,30 @@
       "axis_reached": "Implemented",
       "blocked_on_human": null,
       "receipts": []
+    },
+    "s5-rbac": {
+      "branch": "ralph/s5-rbac",
+      "worktree": ".worktrees/ralph-s5-rbac",
+      "iteration": 1,
+      "cap": 12,
+      "status": "in_progress",
+      "axis_reached": "Implemented",
+      "blocked_on_human": null,
+      "origin": "cross_cutting_findings[0] 2026-10-25 (W3E slot 20, #913)",
+      "design": "API-key principals need <engine>:read (or engines:*/admin:*/*) on calculate, face upload, and every engine of a workflow; JWT/CF Access principals stay tier-governed; ENGINE_SCOPE_MODE off|audit(default)|enforce; check runs before quota",
+      "receipts": [
+        {
+          "date": "2026-10-25",
+          "tier": "T1",
+          "cmd": "cargo build -p noesis-api --locked after patch",
+          "result": "clean"
+        }
+      ],
+      "remaining": [
+        "tests green",
+        "staging: deploy, verify audit then enforce with scoped keys",
+        "prod: deploy in audit; backfill scopes; flip to enforce after log review"
+      ]
     }
   },
   "s0": {
