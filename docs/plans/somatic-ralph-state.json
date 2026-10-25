@@ -25,10 +25,10 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 1,
+      "iteration": 2,
       "cap": 12,
       "status": "in_progress",
-      "axis_reached": "Executable",
+      "axis_reached": "Deployed",
       "blocked_on_human": null,
       "receipts": [
         {
@@ -52,6 +52,18 @@
           "tier": "T2",
           "cmd": "railway MCP connect-service-source branch=ralph/s1-face; update-service rootDirectory=/python-services dockerfilePath=Dockerfile.mediapipe healthcheckPath=/health timeout=120 restart ON_FAILURE x3",
           "result": "config applied; railwayConfigFile param refused as deprecated (config-as-code sunset 2026-12-01), so settings were applied directly instead of via railway.mediapipe.toml"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "railway up from worktree (snapshot build, no log) FAILED; empty trigger commit 19cc4700 pushed -> deployment 9b9f6cc4 SUCCESS building Dockerfile.mediapipe (mediapipe 1.1.1, opencv-contrib 5.0.0.93); uvicorn booted on injected PORT=8080",
+          "result": "sidecar healthy on its own /health but API reported unavailable: SELEMENE_FACE_CV_URL targets :8001"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "railway variables --service mediapipe-service --environment staging --set PORT=8001; redeploy; GET selemene-engine-staging.up.railway.app/health/dependencies",
+          "result": "sidecars: biofield-cv ready, mediapipe-face-mesh ready. First Deployed-axis receipt for face reading."
         }
       ]
     },
@@ -110,7 +122,8 @@
     "staging_rewire": {
       "status": "done",
       "receipt": "2026-10-25 DATABASE_URL and REDIS_URL set to Railway references (hash differs from production); TS_ENGINES_URL and PYTHON_BIOFIELD_URL use *.railway.internal private domains (identical string to prod by design, resolves per-environment). API and ts-engines redeploy queued."
-    }
+    },
+    "status": "complete"
   },
   "sentinel": "COMPLETE when every lane axis_reached == Operational, or any lane blocked_on_human != null"
 }
