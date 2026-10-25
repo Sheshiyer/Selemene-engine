@@ -163,31 +163,46 @@ impl FaceReadingEngine {
         mime_type: &str,
         consent: Option<&Value>,
         options: &std::collections::HashMap<String, Value>,
-    ) -> (FaceAnalysis, Option<Value>) {
+    ) -> (FaceAnalysis, Option<Value>, Option<String>) {
         let consent_granted = consent
             .and_then(|c| c.get("granted"))
             .and_then(|g| g.as_bool())
             .unwrap_or(false);
 
-        if consent_granted {
-            if let Some(config) = FaceCvConfig::resolve(options) {
-                let bytes = decode_image_bytes(image_data);
-                match fetch_face_landmarks(&config, bytes, mime_type, consent).await {
-                    Ok(resp) if is_real_landmark_response(&resp) => {
-                        let mut analysis = analysis_from_landmarks(&resp);
-                        analysis.consent = consent.cloned();
-                        return (analysis, Some(landmark_summary_json(&resp)));
-                    }
-                    Ok(_) => { /* service fell back deterministically; stay heuristic */ }
-                    Err(_) => { /* unreachable / timeout / bad status; stay heuristic */ }
+        // Why the CV path did not produce the result. Never silent: this reason is
+        // logged and surfaced in `result.provenance.fallback_reason`.
+        let fallback_reason: String = if !consent_granted {
+            "consent-not-granted".to_string()
+        } else if let Some(config) = FaceCvConfig::resolve(options) {
+            let bytes = decode_image_bytes(image_data);
+            match fetch_face_landmarks(&config, bytes, mime_type, consent).await {
+                Ok(resp) if is_real_landmark_response(&resp) => {
+                    let mut analysis = analysis_from_landmarks(&resp);
+                    analysis.consent = consent.cloned();
+                    return (analysis, Some(landmark_summary_json(&resp)), None);
                 }
+                Ok(resp) => format!(
+                    "sidecar-fallback: landmark_source={} face_detected={} landmarks={}",
+                    resp.landmark_source,
+                    resp.face_detected,
+                    resp.landmarks.len()
+                ),
+                Err(err) => format!("sidecar-error: {err}"),
             }
-        }
+        } else {
+            "sidecar-disabled".to_string()
+        };
+
+        tracing::warn!(
+            engine = "face-reading",
+            reason = %fallback_reason,
+            "face CV unavailable; using deterministic heuristic"
+        );
 
         // Graceful fallback: deterministic heuristic from image bytes.
         let mut analysis = Self::analysis_from_image_data(image_data);
         analysis.is_mock_data = false;
-        (analysis, None)
+        (analysis, None, Some(fallback_reason))
     }
 
     /// Serialize face analysis to JSON with additional metadata
@@ -316,19 +331,27 @@ impl ConsciousnessEngine for FaceReadingEngine {
 
         // face-cv-hook-p3: hook is async now — real CV via python face service
         // with consent gate + graceful heuristic fallback (see landmarks.rs).
-        let (mut analysis, landmark_summary) = if let Some(ref bytes) = image_bytes {
-            let (a, summary) = Self::analysis_from_landmark_hook(
+        let (mut analysis, landmark_summary, fallback_reason) = if let Some(ref bytes) = image_bytes
+        {
+            Self::analysis_from_landmark_hook(
                 bytes,
                 &mime_type,
                 consent_val.as_ref(),
                 &input.options,
             )
-            .await;
-            (a, summary)
+            .await
         } else if let Some(ref birth_data) = input.birth_data {
-            (Self::analysis_from_birth_data(birth_data), None)
+            (
+                Self::analysis_from_birth_data(birth_data),
+                None,
+                Some("no-image-data: birth-data physiognomy".to_string()),
+            )
         } else {
-            (generate_mock_analysis(seed), None)
+            (
+                generate_mock_analysis(seed),
+                None,
+                Some("no-input: simulated mock".to_string()),
+            )
         };
 
         // attach consent/quality if provided (frozen contract); CV path already
@@ -404,6 +427,27 @@ impl ConsciousnessEngine for FaceReadingEngine {
                 "CV landmark analysis: 468 MediaPipe face-mesh landmarks mapped to zones, elements, and indicators."
             );
         }
+
+        // W3E:face-reading:07 — provenance is always present and never implies CV
+        // ran when it did not. `fallback_used` is true for every non-CV path.
+        let landmark_source = landmark_summary
+            .as_ref()
+            .and_then(|s| s.get("landmark_source"))
+            .cloned()
+            .unwrap_or(Value::Null);
+        result["provenance"] = json!({
+            "backend": backend_name.clone(),
+            "precision": precision.clone(),
+            "landmark_source": landmark_source,
+            "fallback_used": landmark_summary.is_none(),
+            "fallback_reason": fallback_reason,
+            "image_provided": image_bytes.is_some(),
+            "consent_granted": consent_val
+                .as_ref()
+                .and_then(|c| c.get("granted"))
+                .and_then(Value::as_bool)
+                .unwrap_or(false),
+        });
 
         Ok(EngineOutput {
             engine_id: self.engine_id.clone(),
@@ -1043,6 +1087,45 @@ mod tests {
         let output = engine.calculate(input).await.unwrap();
         assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
         assert!(output.result.get("landmark_analysis").is_none());
+        // W3E:face-reading:07 — the fallback is declared, never implied.
+        let prov = &output.result["provenance"];
+        assert_eq!(prov["fallback_used"], json!(true));
+        assert_eq!(prov["backend"], json!("heuristic-image-landmark-hook"));
+        assert!(prov["landmark_source"].is_null());
+        assert!(
+            prov["fallback_reason"]
+                .as_str()
+                .unwrap()
+                .starts_with("sidecar-error:"),
+            "reason was {:?}",
+            prov["fallback_reason"]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_provenance_fallback_without_consent_does_not_call_sidecar() {
+        let engine = FaceReadingEngine::new();
+        let mut input = create_test_input();
+        input.options.insert(
+            "image_data".to_string(),
+            json!({"b64": "aGVsbG8taW1hZ2U=", "mime_type": "image/png"}),
+        );
+        input.options.insert(
+            "consent".to_string(),
+            json!({"granted": false, "scopes": ["face-image"]}),
+        );
+        // Unroutable address: if the engine tried the sidecar this would be a
+        // sidecar-error, not consent-not-granted.
+        input
+            .options
+            .insert("face_cv_url".to_string(), json!("http://127.0.0.1:9"));
+
+        let output = engine.calculate(input).await.unwrap();
+        let prov = &output.result["provenance"];
+        assert_eq!(prov["fallback_used"], json!(true));
+        assert_eq!(prov["fallback_reason"], json!("consent-not-granted"));
+        assert_eq!(prov["consent_granted"], json!(false));
+        assert_eq!(prov["image_provided"], json!(true));
     }
 
     #[tokio::test]

@@ -1,23 +1,30 @@
+# Default config-as-code for every Railway service rooted at /python-services
+# (biofield-cv-service and mediapipe-service). Both build Dockerfile.sidecar;
+# the service that runs is selected by the SIDECAR_SERVICE variable:
+#   biofield-cv-service : (unset) -> biofield_cv_service, PORT 8002
+#   mediapipe-service   : SIDECAR_SERVICE=mediapipe_service, PORT 8001
+# Config-as-code is deprecated by Railway after 2026-12-01; until the move to
+# .railway/railway.ts this file is the single source for both services.
+
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile.biofield"
+dockerfilePath = "Dockerfile.sidecar"
 
 [deploy]
 healthcheckPath = "/health"
-healthcheckTimeout = 60
+healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
 [deploy.watch]
 include = [
   "biofield_cv_service/**",
+  "mediapipe_service/**",
   "shared/**",
   "pyproject.toml",
-  "Dockerfile.biofield",
+  "Dockerfile.sidecar",
 ]
 exclude = [
   "*.md",
   "tests/**",
-  "mediapipe_service/**",
-  "Dockerfile.mediapipe",
 ]

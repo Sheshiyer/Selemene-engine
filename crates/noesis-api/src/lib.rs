@@ -1585,6 +1585,19 @@ struct FaceUploadResponse {
     witness_prompt: String,
     analysis: serde_json::Value,
     is_mock_data: bool,
+    /// `image-cv-capture` when MediaPipe landmarks drove the analysis,
+    /// `image-heuristic-capture` when the engine fell back.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    computation_mode: Option<String>,
+    /// Engine backend identifier (`mediapipe-face-cv`, `heuristic-image-landmark-hook`, ...).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    backend: Option<String>,
+    /// W3E:face-reading:07 provenance block emitted by the engine.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    provenance: Option<serde_json::Value>,
+    /// Landmark summary (source, version, count, timing); never the raw landmark array.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    landmark_analysis: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -2089,11 +2102,35 @@ async fn probe_dependency_sidecar(
 
     let health_url = format!("{}/health", base_url.trim_end_matches('/'));
     match client.get(health_url).send().await {
-        Ok(response) if response.status().is_success() => DependencyHealthEntry {
-            id: id.to_string(),
-            status: "ready".to_string(),
-            reason: "health check passed".to_string(),
-        },
+        Ok(response) if response.status().is_success() => {
+            // A 200 alone is not readiness: sidecars report their own
+            // `capability_status` (available | degraded | unavailable). A face
+            // service whose MediaPipe graph failed to initialise still answers
+            // 200, and must not be advertised as ready.
+            let body = response.json::<Value>().await.ok();
+            let capability = body
+                .as_ref()
+                .and_then(|b| b.get("capability_status"))
+                .and_then(Value::as_str)
+                .map(str::to_string);
+            match capability.as_deref() {
+                None | Some("available") => DependencyHealthEntry {
+                    id: id.to_string(),
+                    status: "ready".to_string(),
+                    reason: "health check passed".to_string(),
+                },
+                Some("degraded") => DependencyHealthEntry {
+                    id: id.to_string(),
+                    status: "degraded".to_string(),
+                    reason: "sidecar reports degraded capability".to_string(),
+                },
+                Some(_) => DependencyHealthEntry {
+                    id: id.to_string(),
+                    status: "unavailable".to_string(),
+                    reason: "sidecar reports capability unavailable".to_string(),
+                },
+            }
+        }
         Ok(_) => DependencyHealthEntry {
             id: id.to_string(),
             status: "unavailable".to_string(),
@@ -3016,12 +3053,23 @@ async fn face_reading_upload_handler(
         .get("is_mock_data")
         .and_then(|v| v.as_bool())
         .unwrap_or(true);
+    let computation_mode = output
+        .result
+        .get("computation_mode")
+        .and_then(Value::as_str)
+        .map(str::to_string);
+    let provenance = output.result.get("provenance").cloned();
+    let landmark_analysis = output.result.get("landmark_analysis").cloned();
 
     Ok(Json(FaceUploadResponse {
         engine_id: "face-reading".to_string(),
         witness_prompt: output.witness_prompt,
         analysis,
         is_mock_data,
+        computation_mode,
+        backend: Some(output.metadata.backend.clone()),
+        provenance,
+        landmark_analysis,
     }))
 }
 
@@ -4547,6 +4595,55 @@ mod p4_contract_tests {
             response["witness_prompts"][0]["prompt"],
             "What do you hear?"
         );
+    }
+
+    #[tokio::test]
+    async fn sidecar_probe_honours_capability_status() {
+        use wiremock::{
+            matchers::{method, path},
+            Mock, MockServer, ResponseTemplate,
+        };
+
+        async fn probe_with(body: serde_json::Value) -> DependencyHealthEntry {
+            let server = MockServer::start().await;
+            Mock::given(method("GET"))
+                .and(path("/health"))
+                .respond_with(ResponseTemplate::new(200).set_body_json(body))
+                .mount(&server)
+                .await;
+            probe_dependency_sidecar(
+                "mediapipe-face-mesh",
+                server.uri(),
+                Duration::from_millis(1_000),
+                false,
+            )
+            .await
+        }
+
+        // A 200 whose body says the capability is degraded must not read as ready:
+        // this is exactly the mediapipe-1.x case where the module imports but the
+        // face-mesh graph never initialises.
+        let degraded = probe_with(serde_json::json!({
+            "status": "healthy",
+            "capability_status": "degraded",
+            "facemesh_ready": false
+        }))
+        .await;
+        assert_eq!(degraded.status, "degraded");
+
+        let unavailable =
+            probe_with(serde_json::json!({"status": "healthy", "capability_status": "unavailable"}))
+                .await;
+        assert_eq!(unavailable.status, "unavailable");
+
+        let available =
+            probe_with(serde_json::json!({"status": "healthy", "capability_status": "available"}))
+                .await;
+        assert_eq!(available.status, "ready");
+
+        // Legacy sidecars without the field keep the old 200 == ready behaviour.
+        let legacy = probe_with(serde_json::json!({"status": "healthy"})).await;
+        assert_eq!(legacy.status, "ready");
     }
 
     #[test]
