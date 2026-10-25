@@ -31,6 +31,8 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 const BIOFIELD_ENGINE_ID: &str = "biofield-capture";
+/// Consent scope a client must grant before a capture frame is stored or analyzed.
+const BIOFIELD_CAPTURE_CONSENT_SCOPE: &str = "biofield-capture";
 const BIOFIELD_BASELINE_COMPARISON_VERSION: &str = "biofield-baseline-delta/v1";
 const BIOFIELD_EXPORT_CONTRACT_VERSION: &str = "biofield-export/v1";
 const DEFAULT_BIOFIELD_READINGS_LIMIT: u32 = 20;
@@ -213,6 +215,21 @@ struct ParsedBiofieldCapture {
     algorithms: Option<Vec<String>>,
     options: Option<Value>,
     capture_metadata: Option<Value>,
+    /// Consent sent as a top-level `consent` multipart field (forward-compatible shape).
+    /// Clients today send it inside `capture_metadata.consent`.
+    consent: Option<Value>,
+}
+
+impl ParsedBiofieldCapture {
+    /// Effective consent for this capture: the top-level `consent` field wins,
+    /// otherwise `capture_metadata.consent` (what the SDK and Sankalpa send today).
+    fn effective_consent(&self) -> Option<&Value> {
+        self.consent.as_ref().or_else(|| {
+            self.capture_metadata
+                .as_ref()
+                .and_then(|metadata| metadata.get("consent"))
+        })
+    }
 }
 
 fn json_error_response(
@@ -543,6 +560,18 @@ async fn parse_capture_multipart(
 
                 if !text.trim().is_empty() {
                     parsed.capture_metadata = Some(parse_json_object(&text, "capture_metadata")?);
+                }
+            }
+            "consent" => {
+                let text = field.text().await.map_err(|error| {
+                    capture_invalid_response(
+                        format!("Failed to read consent field: {error}"),
+                        Some(serde_json::json!({ "field": field_name })),
+                    )
+                })?;
+
+                if !text.trim().is_empty() {
+                    parsed.consent = Some(parse_json_object(&text, "consent")?);
                 }
             }
             _ => {}
@@ -1099,6 +1128,9 @@ fn parsed_capture_from_artifact(
         algorithms: reading_algorithms(source_reading),
         options: reading_options(source_reading),
         capture_metadata,
+        // Reprocessing reuses the stored frame; the consent that admitted it is
+        // persisted inside the original reading's capture_metadata.
+        consent: None,
     }
 }
 
@@ -1710,6 +1742,17 @@ pub async fn create_capture(
             "BIOFIELD_CAPTURE_INVALID",
             Some(serde_json::json!({ "content_type": content_type })),
         );
+    }
+
+    // Server-side consent gate: the image must not reach storage or the CV
+    // sidecar unless the client granted the `biofield-capture` scope. Same 422
+    // `CONSENT_REQUIRED` shape as the face-reading engine route.
+    if let Err((status, error)) = crate::require_consent_scope(
+        BIOFIELD_ENGINE_ID,
+        BIOFIELD_CAPTURE_CONSENT_SCOPE,
+        parsed_capture.effective_consent(),
+    ) {
+        return (status, error).into_response();
     }
 
     let source_artifact = match create_source_artifact(

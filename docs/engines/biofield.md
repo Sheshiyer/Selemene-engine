@@ -8,13 +8,30 @@ The energetic field around a person, read **two different ways**: a server-side 
 
 > ⚠️ Read [`README.md` §"Three schema layers"](README.md) first. Biofield additionally has **two engines**, so it has *two* domain structs to keep straight.
 
+## 0. Status matrix (2026-10-26, lane S2)
+
+What the two engines actually produce in production, and how each result declares itself. Every `biofield` result now carries `result.provenance` (`backend`, `precision`, `fallback_used`, `fallback_reason`, `birth_data_provided`, `consent_granted`, `capture_reading_id`, `real_capture_engine`) and `validate()` rejects output without it (`engine-biofield/src/engine.rs`).
+
+| Path | Engine / input | Real? | `provenance.backend` | `fallback_used` | `is_mock_data` | `mock_reason` |
+|---|---|---|---|---|---|---|
+| Vedic birth-data analysis | `biofield` with `birth_data` | **Real** (`VedicBiofieldAnalyzer`, Swiss Ephemeris) | `vedic-ephemeris` | `false` | `false` | — |
+| Camera capture | `POST /api/v1/biofield/sessions/{id}/captures` → Python CV sidecar → persisted reading → **`biofield-capture` engine** with `options.biofield_capture.reading_id` | **Real** (served by `biofield-capture`, not by `biofield`) | `biofield-capture` (on the `biofield-capture` engine's own output) | `false` | — | — |
+| `biofield` called capture-style (`image_data` / `consent` / `capture` / `biofield_capture` in options), with or without a `reading_id` | `biofield` | **Mock, declared.** The standalone `biofield` engine has no readings repository and cannot resolve a `reading_id`; it maps simulated metrics onto the frozen 11-metric shape (`computation_mode: "capture-mock"`) and says so. | `mock` | `true` | `true` | `biofield-engine-cannot-resolve-reading` (reading_id given) / `no-reading-id` |
+| `biofield` without `birth_data` | `biofield` | **Mock, declared** (`computation_mode: "mock"`) | `mock` | `true` | `true` | `no-birth-data` |
+
+**Capture consent is enforced server-side.** `create_capture` (`noesis-api/src/handlers/biofield.rs`) requires granted consent with scope `biofield-capture` *before* the frame is stored or the sidecar is called. Consent is read from `capture_metadata.consent` (what the SDK and Sankalpa send today) or from a top-level `consent` multipart field (forward-compatible). Missing or wrong-scope consent returns `422` with `error_code: "CONSENT_REQUIRED"` and `details: { engine_id: "biofield-capture", required_scope: "biofield-capture" }`, the same shape the face-reading route uses. The existing `sufficient_quality` gate is unchanged and runs after consent.
+
+**Decision — bv-pip stays a separate product.** The `bv-pip` consumer has its own response contract (live in-browser `CompositeScores`, not the `EngineOutput` envelope); no adapter is added in Selemene, and neither engine here is changed to mimic it.
+
+Test fixture for the capture probes: `tests/fixtures/images/biofield-portrait-256.jpg` (synthetic, AI-generated portrait; see `tests/fixtures/images/README.md`).
+
 ## 1. Identity
 
 | | (A) Server analysis | (B) Client live capture |
 |---|---|---|
 | `engine_id` | **`biofield`** (`engine-biofield/src/engine.rs:36`) | **`biofield-capture`** (`engine-biofield-capture/src/lib.rs:20`; `biofield-domain.ts:1`) |
 | Domain struct | `BiofieldAnalysis` (`engine-biofield/src/models.rs:98`) wrapping `BiofieldMetrics` (`models.rs:11`, **5 metrics**) | `BiofieldMetrics` (`biofield-domain.ts:63`, **11 metrics**) + `CompositeScores` (`pip/types.ts:27`, **5 live**) |
-| Runtime producer | **mock** today — `generate_mock_metrics` (`engine-biofield/src/mock.rs`); `is_mock_data:true` always (`engine.rs:133,137`). A Vedic path (`VedicBiofieldAnalyzer`, `engine.rs:18`) exists but the standalone engine still returns mock. | **Python CV sidecar** via `noesis-api/src/biofield_client.rs:15` (`BiofieldClient`, `python_biofield_url`) → persisted Reading → `engine-biofield-capture` re-exposes it by `reading_id` (`lib.rs:138`). Live in-browser metrics computed by `MetricsCalculator` (`pip/MetricsCalculator.ts:12`). |
+| Runtime producer | **Real when `birth_data` is supplied** (`VedicBiofieldAnalyzer`, `provenance.backend: "vedic-ephemeris"`); otherwise `generate_mock_metrics` (`engine-biofield/src/mock.rs`) with `is_mock_data:true`, `mock_reason`, and `provenance.fallback_used:true`. See §0. | **Python CV sidecar** via `noesis-api/src/biofield_client.rs:15` (`BiofieldClient`, `python_biofield_url`) → persisted Reading → `engine-biofield-capture` re-exposes it by `reading_id` (`lib.rs:138`). Live in-browser metrics computed by `MetricsCalculator` (`pip/MetricsCalculator.ts:12`). |
 | Renderer | `sankalpa/src/renderer/biofield/*.tsx` (historically `apps/noesis-web/src/components/engines/Biofield.tsx`) | `sankalpa/src/renderer/biofield/*.tsx` (historically `apps/biofield-web/src/components/BiofieldCosmogram.tsx` + `BiofieldLiveMetrics.tsx`) |
 | OpenAPI stub | `noesis-core/src/types.rs:258` (`BiofieldResultSchema` — `dominant_element`, `coherence_score 0.72`, `recommended_practice`) — **describes neither struct accurately** | — |
 | Brand / design (frozen) | [`docs/design/biofield-web/README.md`](../design/biofield-web/README.md) + sheets `02`,`04`,`05`,`06`,`07`,`08`,`09`,`10` | same — biofield design tokens are the primary target |
@@ -43,8 +60,19 @@ The energetic field around a person, read **two different ways**: a server-side 
   ],
   "interpretation": "…",            // human-readable string
   "areas_of_attention": ["…"],
-  "is_mock_data": true,             // ALWAYS true today (engine.rs:309 validates presence)
-  "witness_layer": { … }            // dyad, injected at engine.rs:267-268 (not in BiofieldAnalysis struct)
+  "is_mock_data": true,             // false on the Vedic path, true otherwise
+  "mock_reason": "no-birth-data",   // only when is_mock_data is true
+  "provenance": {                   // always present (§0); validate() requires it
+    "backend": "mock",              // vedic-ephemeris | mock
+    "precision": "simulated",
+    "fallback_used": true,
+    "fallback_reason": "no birth_data provided; biofield metrics are simulated",
+    "birth_data_provided": false,
+    "consent_granted": false,
+    "capture_reading_id": null,
+    "real_capture_engine": "biofield-capture"
+  },
+  "witness_layer": { … }            // dyad, injected post-serialize (not in BiofieldAnalysis struct)
 }
 ```
 `consciousness_level` (0–5) is read from `input.options.consciousness_level` (`engine.rs:236-238`) and rides the **envelope**, not `result`.
@@ -109,7 +137,7 @@ Wrapped as `BiofieldCaptureResult` (`biofield-domain.ts:126`): `{reading_id, ses
 | `QualityAssessment.*` (B) | 0–1 (assumed) + `sufficient_quality:bool` | `biofield-domain.ts:55` | the capture gate |
 | `consciousness_level` | **0–5** | envelope (README) | (A) from `options` (`engine.rs:236`); (B) from reading (`lib.rs:169`) |
 
-**Invariants:** (A) `vitality_index` is derived, not independent (`mock.rs:32`). (A) `is_mock_data` always `true` and **must be present** (`engine.rs:309`). (B) capture only persists when `sufficient_quality` passes the gate. `MetricInterpretation.optimal_range.0 < .1` (test `wisdom.rs:539`).
+**Invariants:** (A) `vitality_index` is derived, not independent (`mock.rs:32`). (A) `is_mock_data` and `result.provenance` **must be present**; `is_mock_data:true` implies `provenance.fallback_used:true` (`validate()` in `engine.rs`). (B) capture only persists when `sufficient_quality` passes the gate. `MetricInterpretation.optimal_range.0 < .1` (test `wisdom.rs:539`).
 
 ## 4. Component & brand archetype
 

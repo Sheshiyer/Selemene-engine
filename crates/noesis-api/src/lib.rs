@@ -1969,7 +1969,7 @@ fn effective_media_consent<'a>(input: &'a EngineInput, media_key: &str) -> Optio
 }
 
 #[allow(clippy::result_large_err)]
-fn require_consent_scope(
+pub(crate) fn require_consent_scope(
     engine_id: &str,
     required_scope: &str,
     consent: Option<&Value>,
