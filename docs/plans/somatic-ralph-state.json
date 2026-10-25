@@ -209,7 +209,7 @@
     "s5-rbac": {
       "branch": "ralph/s5-rbac",
       "worktree": ".worktrees/ralph-s5-rbac",
-      "iteration": 2,
+      "iteration": 3,
       "cap": 12,
       "status": "in_progress",
       "axis_reached": "Implemented",
@@ -228,6 +228,18 @@
           "tier": "T1",
           "cmd": "commit 611584ef (scope enforcement, tests, backfill SQL, runbook); PR #1497; Codex P1 review: jti-based API-key inference would deny Cloudflare Access users; fix commit adds ApiKeyPrincipal middleware marker; cargo test lib scope 5/5, engine_scope_tests 7/7, integration_tests 43/43",
           "result": "green; review thread resolved"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "staging API 86e068dd (audit default): narrow key ralph-s5-narrow [basic:access, face-reading:read] POST /engines/panchanga/calculate",
+          "result": "200 (audit proceeds); API deploy log: warn \"engine scope missing on API key\" with user_id, tier=premium, engine_id=panchanga, route=engines/calculate, required_permission=panchanga:read, mode=Audit"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T1",
+          "cmd": "Codex P1 #2: assets/generate and witness/interpret dispatch engines unchecked. commit 13e1fb1f: engine_scope_allows() shared boundary; assets (6 engines) + witness (11) gated; legacy routes gated but unauthenticated by design. engine_scope_tests 10/10; lib 111/111; assets_generate_contract 13/13; integration 43/43; p4_media 25/25",
+          "result": "green; both review threads resolved"
         }
       ],
       "remaining": [
