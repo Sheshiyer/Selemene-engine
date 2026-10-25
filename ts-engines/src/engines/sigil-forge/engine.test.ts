@@ -1,7 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import type { ImageProvider } from '../../providers/image-provider'
-import { MockImageProvider, createImageProvider } from '../../providers/image-provider' // T-035 provider tests
-import { buildYantraPrompt } from '../../providers/kimi' // T-061 yantra templates
+import {
+  type GeneratedImage,
+  type ImageGenOptions,
+  MockImageProvider,
+  createImageProvider,
+} from '../../providers/image-provider' // T-035 provider tests
+import { KimiImageProvider, buildYantraPrompt } from '../../providers/kimi' // T-061 yantra templates
 import {
   NanoBananaImageProvider,
   createNanoBananaProvider,
@@ -39,8 +44,40 @@ type SigilForgeResult = {
     error?: string
     prompt_used?: string
     style?: string
+    metadata?: {
+      provider?: string
+      finish_reason?: string
+      provider_requested?: string
+      provider_note?: string
+    }
   } | null
   image_gen_available?: boolean
+  provider_note?: string
+  guidance?: { note: string; next_steps: string[] }
+}
+
+const TINY_PNG =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+
+/** A stand-in for the real nvidia provider: available, returns a "real" image. */
+class FakeNvidiaProvider implements ImageProvider {
+  readonly name = 'nvidia'
+  isAvailable(): boolean {
+    return true
+  }
+  async generate(opts: ImageGenOptions): Promise<GeneratedImage> {
+    return {
+      b64_json: TINY_PNG,
+      metadata: {
+        model: opts.model ?? 'black-forest-labs/flux.1-dev',
+        prompt: opts.prompt,
+        provider: this.name,
+        style: opts.style,
+        seed: opts.seed,
+        finish_reason: 'SUCCESS',
+      },
+    }
+  }
 }
 
 describe('SigilForgeEngine input compatibility', () => {
@@ -105,6 +142,8 @@ describe('SigilForgeEngine image generation (isolated mock provider)', () => {
     // biome-ignore lint/style/noNonNullAssertion: asserted non-null above
     const img = result.generated_image!
     expect(img.b64_json !== undefined || img.url !== undefined).toBe(true)
+    // A mock image is never surfaced as a real top-level generated_image.
+    expect(output.generated_image).toBeUndefined()
   })
 
   it('engine version is 2.0.0', () => {
@@ -163,7 +202,8 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
     })
 
     expect(output.engine_id).toBe('sigil-forge')
-    expect(output.generated_image).toBeDefined() // FROZEN top-level
+    // Mock output is a test double: kept in result, never promoted to the FROZEN top-level slot.
+    expect(output.generated_image).toBeUndefined()
     const res = output.result as SigilForgeResult
     expect(res.generated_image).toBeDefined()
     expect(res.provider).toBe('mock')
@@ -172,6 +212,14 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
     }
     expect(res.generated_image.b64_json).toBeDefined()
     expect(res.image_gen_available).toBe(true)
+    expect(output.provenance).toEqual({
+      runtime_kind: 'typescript',
+      implementation_version: '2.0.0',
+      cached: false,
+      fallback_used: true,
+      provider_id: 'mock',
+      confidence: 0,
+    })
   })
 
   it('uses default nvidia provider when no arg (real path if key, else graceful)', async () => {
@@ -185,6 +233,10 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
     expect(output.result).toBeDefined()
     // when no gen, no top generated_image
     expect(output.generated_image).toBeUndefined()
+    // ...and provenance says so: nothing generated => fallback_used, no provider_id
+    expect(output.provenance?.fallback_used).toBe(true)
+    expect(output.provenance?.provider_id).toBeUndefined()
+    expect(output.provenance?.confidence).toBe(0)
   })
 
   it('supports edit path with mock provider', async () => {
@@ -207,20 +259,26 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
     expect(res.generated_image.b64_json).toBeDefined()
   })
 
-  it('config-only switch to nano-banana works (T-060)', async () => {
+  it('config-only switch to nano-banana is honest without RUNCOMFY_TOKEN (T-060)', async () => {
     const prov = createImageProvider({ provider: 'nano-banana' })
     const engine = new SigilForgeEngine(prov)
     const output = await engine.calculate({
       consciousness_level: 1,
       parameters: { intention: 'nano test', generate_image: true },
     })
-    expect((output.result as SigilForgeResult).provider).toBe('nano-banana')
-    expect(output.generated_image?.metadata?.provider).toBe('nano-banana')
+    const res = output.result as SigilForgeResult
+    expect(res.provider).toBe('nano-banana')
+    expect(res.image_gen_available).toBe(false)
+    expect(output.generated_image).toBeUndefined()
+    expect(res.generated_image?.error).toContain('not configured')
+    expect(output.provenance?.fallback_used).toBe(true)
+    expect(output.provenance?.provider_id).toBeUndefined()
   })
 
   // T-061 kimi provider + yantra prompt templates
-  it('config-only switch to kimi provider (selectable, mock-safe)', async () => {
+  it('config-only switch to kimi provider reports unavailable without KIMI_API_KEY', async () => {
     const prov = createImageProvider({ provider: 'kimi' })
+    expect(prov.isAvailable()).toBe(false)
     const engine = new SigilForgeEngine(prov)
     const output = await engine.calculate({
       consciousness_level: 1,
@@ -230,9 +288,23 @@ describe('SigilForgeEngine with ImageProvider (T-035)', () => {
         image_style: 'yantra',
       },
     })
-    expect((output.result as SigilForgeResult).provider).toBe('kimi')
-    expect(output.generated_image?.metadata?.provider).toBe('kimi')
-    expect(output.generated_image?.b64_json).toBeDefined()
+    const res = output.result as SigilForgeResult
+    expect(res.provider).toBe('kimi')
+    expect(output.generated_image).toBeUndefined()
+    expect(res.generated_image?.error).toBeDefined()
+    expect(res.generated_image?.b64_json).toBeUndefined()
+    expect(output.provenance?.fallback_used).toBe(true)
+  })
+
+  it('kimi never fabricates a placeholder PNG even with a key', async () => {
+    const prov = new KimiImageProvider({ provider: 'kimi', apiKey: 'test-key' })
+    expect(prov.isAvailable()).toBe(true)
+    const res = await prov.generate({ prompt: 'yantra' })
+    expect(res.b64_json).toBeUndefined()
+    expect(res.url).toBeUndefined()
+    expect(res.mock).toBe(true)
+    expect(res.error).toBeDefined()
+    expect(res.metadata.finish_reason).toBe('KIMI_IMAGE_ENDPOINT_UNAVAILABLE')
   })
 
   it('yantra prompt template produces precise sacred geometry (T-061)', () => {
@@ -258,47 +330,175 @@ describe('NanoBananaImageProvider (T-060)', () => {
     expect(typeof p.isAvailable).toBe('function')
   })
 
-  it('isAvailable true (mock path when no RUNCOMFY_TOKEN)', () => {
-    // in CI/test env without token, still true for contract (graceful)
-    expect(isNanoBananaAvailable() || true).toBeTruthy()
+  it('isAvailable is false without RUNCOMFY_TOKEN', () => {
+    expect(isNanoBananaAvailable()).toBe(false)
+    expect(createNanoBananaProvider().isAvailable()).toBe(false)
   })
 
-  it('generate returns b64_json + metadata with nano provider (working even no token)', async () => {
+  it('generate returns an honest error (no placeholder PNG) without a token', async () => {
     const p = new NanoBananaImageProvider()
     const res = await p.generate({ prompt: 'test sigil runic style', style: 'runic', seed: 42 })
     expect(res.metadata.provider).toBe('nano-banana')
     expect(res.metadata.model).toContain('nano')
-    expect(res.b64_json || res.url).toBeDefined()
-    expect(res.metadata.finish_reason).toBeDefined()
+    expect(res.b64_json).toBeUndefined()
+    expect(res.url).toBeUndefined()
+    expect(res.mock).toBe(true)
+    expect(res.error).toContain('RUNCOMFY_TOKEN')
+    expect(res.metadata.finish_reason).toBe('MOCK_NO_TOKEN')
   })
 
-  it('edit path returns result (falls back gracefully)', async () => {
+  it('edit path returns the same honest error without a token', async () => {
     const p = new NanoBananaImageProvider()
     const res = await p.edit({
-      image:
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      image: TINY_PNG,
       prompt: 'refine sigil',
       instruction: 'more geometric',
     })
     expect(res.metadata.provider).toBe('nano-banana')
-    expect(res.b64_json).toBeDefined()
+    expect(res.b64_json).toBeUndefined()
+    expect(res.mock).toBe(true)
   })
 
-  it('sigil engine + nano provider produces FROZEN shaped generated_image', async () => {
+  it('sigil engine + unconfigured nano provider keeps the error inside result', async () => {
     const prov = createNanoBananaProvider()
     const engine = new SigilForgeEngine(prov)
     const output = await engine.calculate({
       consciousness_level: 1,
       parameters: { intention: 'I seal the working', generate_image: true, image_style: 'runic' },
     })
-    const top = output.generated_image
-    expect(top).toBeDefined()
-    if (!top) {
-      throw new Error('nano provider did not return top-level generated_image')
-    }
-    expect(top.metadata?.provider).toBe('nano-banana')
+    expect(output.generated_image).toBeUndefined()
     const res = output.result as SigilForgeResult
     expect(res.provider).toBe('nano-banana')
-    expect(res.generated_image?.b64_json || top.b64_json).toBeDefined()
+    expect(res.generated_image?.error).toBeDefined()
+    expect(res.generated_image?.metadata?.finish_reason).toBe('PROVIDER_UNAVAILABLE')
+  })
+})
+
+// ============================================================================
+// Lane S4 (2026-10-26): provenance + honesty contract
+// ============================================================================
+
+describe('SigilForgeEngine provenance (lane S4)', () => {
+  const sevenFields = [
+    'runtime_kind',
+    'implementation_version',
+    'cached',
+    'fallback_used',
+    'backend_id',
+    'provider_id',
+    'confidence',
+  ]
+
+  it('mocked nvidia success: provider_id nvidia, fallback_used false, top-level image present', async () => {
+    const engine = new SigilForgeEngine(new FakeNvidiaProvider())
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: { intention: 'I see clearly', generate_image: true },
+      seed: 7,
+    })
+    expect(output.provenance).toEqual({
+      runtime_kind: 'typescript',
+      implementation_version: '2.0.0',
+      cached: false,
+      fallback_used: false,
+      provider_id: 'nvidia',
+      confidence: 0.9,
+    })
+    for (const key of Object.keys(output.provenance ?? {})) {
+      expect(sevenFields).toContain(key)
+    }
+    expect(output.generated_image?.b64_json).toBe(TINY_PNG)
+    expect(output.generated_image?.metadata?.provider).toBe('nvidia')
+    expect(output.generated_image?.metadata?.finish_reason).toBe('SUCCESS')
+    const res = output.result as SigilForgeResult
+    expect(res.generated_image?.metadata?.finish_reason).toBe('SUCCESS')
+    expect(res.generated_image?.error).toBeUndefined()
+    expect(res.guidance?.note).toContain('AI-generated sigil image included')
+    expect(res.guidance?.next_steps[0]).toContain('generated image')
+  })
+
+  it('no key: fallback_used true, no top-level image, error present, guidance is honest', async () => {
+    const engine = new SigilForgeEngine(createImageProvider({ provider: 'nvidia' }))
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: { intention: 'I see clearly', generate_image: true },
+      seed: 7,
+    })
+    expect(output.provenance?.fallback_used).toBe(true)
+    expect(output.provenance?.confidence).toBe(0)
+    expect(output.provenance?.provider_id).toBeUndefined()
+    expect(output.generated_image).toBeUndefined()
+    const res = output.result as SigilForgeResult
+    expect(res.generated_image?.error).toContain('not configured')
+    expect(res.generated_image?.metadata?.finish_reason).toBe('PROVIDER_UNAVAILABLE')
+    expect(res.guidance?.note).not.toContain('AI-generated sigil image included')
+    expect(res.guidance?.note).toContain('no real image was produced')
+    expect(res.guidance?.next_steps[0]).toContain('Gather your materials')
+  })
+
+  it('MockImageProvider: provider_id mock, fallback_used true', async () => {
+    const engine = new SigilForgeEngine(new MockImageProvider())
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: { intention: 'I see clearly', generate_image: true },
+    })
+    expect(output.provenance?.provider_id).toBe('mock')
+    expect(output.provenance?.fallback_used).toBe(true)
+    expect(output.provenance?.confidence).toBe(0)
+    expect(output.generated_image).toBeUndefined()
+    const res = output.result as SigilForgeResult
+    expect(res.generated_image?.metadata?.finish_reason).toBe('SUCCESS_MOCK')
+  })
+
+  it('provider error: fallback_used true and the error is kept under result.generated_image', async () => {
+    const failing: ImageProvider = {
+      name: 'nvidia',
+      isAvailable: () => true,
+      generate: async () => {
+        throw new Error('NVIDIA NIM image generation failed (503)')
+      },
+    }
+    const engine = new SigilForgeEngine(failing)
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: { intention: 'I see clearly', generate_image: true },
+    })
+    expect(output.generated_image).toBeUndefined()
+    expect(output.provenance?.fallback_used).toBe(true)
+    expect(output.provenance?.provider_id).toBeUndefined()
+    const res = output.result as SigilForgeResult
+    expect(res.generated_image?.error).toContain('503')
+    expect(res.generated_image?.metadata?.finish_reason).toBe('ERROR')
+  })
+
+  it('parameters.provider is honoured only when configured; otherwise default + note', async () => {
+    const engine = new SigilForgeEngine(new FakeNvidiaProvider())
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: { intention: 'I see clearly', generate_image: true, provider: 'kimi' },
+    })
+    const res = output.result as SigilForgeResult
+    expect(res.provider).toBe('nvidia')
+    expect(res.provider_note).toContain("'kimi' is not configured")
+    expect(res.generated_image?.metadata?.provider_requested).toBe('kimi')
+    expect(res.generated_image?.metadata?.provider_note).toContain('kimi')
+    expect(output.provenance?.provider_id).toBe('nvidia')
+    expect(output.provenance?.fallback_used).toBe(false)
+  })
+
+  it('unknown parameters.provider falls back to the default with a note', async () => {
+    const engine = new SigilForgeEngine(new FakeNvidiaProvider())
+    const output = await engine.calculate({
+      consciousness_level: 1,
+      parameters: { intention: 'I see clearly', generate_image: true, provider: 'dall-e' },
+    })
+    const res = output.result as SigilForgeResult
+    expect(res.provider).toBe('nvidia')
+    expect(res.provider_note).toContain("Unknown provider 'dall-e'")
+  })
+
+  it('metadata input_schema advertises the provider parameter', () => {
+    const schema = new SigilForgeEngine(new MockImageProvider()).metadata().input_schema
+    expect(schema.provider?.enum).toEqual(['nvidia', 'nano-banana', 'kimi'])
   })
 })

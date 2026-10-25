@@ -18,6 +18,16 @@
  * + prompt-builder + providers/image-provider.ts + nano-banana.ts (T-060) + kimi.ts (T-061, yantra prompts)
  * Tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-sigil
  * Tests: mock + real (nvidia if key). T-060 nano + T-061 kimi both integrated, provider config-selectable.
+ *
+ * Lane S4 (2026-10-26) — tell the truth about images:
+ * - Every output carries contract `provenance` (runtime_kind, implementation_version, cached,
+ *   fallback_used, provider_id?, confidence). `fallback_used` is true for mock/placeholder/error
+ *   results and whenever no generation happened; `provider_id` names the provider that actually
+ *   produced an image and is omitted otherwise.
+ * - Top-level `generated_image` is only surfaced for a real image; errors stay under
+ *   `result.generated_image.error`, with the provider `finish_reason` in its metadata.
+ * - `parameters.provider` is honoured only when that provider is configured + available;
+ *   otherwise the default provider is used and a note is recorded in metadata.
  */
 
 import type {
@@ -26,7 +36,13 @@ import type {
   ImageProviderConfig,
 } from '../../providers/image-provider'
 import { createDefaultImageProvider, createImageProvider } from '../../providers/image-provider'
-import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
+import type {
+  ConsciousnessEngine,
+  ContractProvenance,
+  EngineInput,
+  EngineMetadata,
+  EngineOutput,
+} from '../../types'
 import { EngineValidationError } from '../../utils'
 import { SeededRandom, getDefaultSeed } from '../../utils/random'
 import { type SigilStyle, buildSigilEditPrompt, buildSigilPrompt } from './prompt-builder'
@@ -38,6 +54,29 @@ import {
   processWordElimination,
 } from './wisdom'
 import { generateWitnessPrompts } from './witness'
+
+const SELECTABLE_PROVIDERS: ReadonlyArray<ImageProviderConfig['provider']> = [
+  'nvidia',
+  'nano-banana',
+  'kimi',
+]
+
+/** Raw provider result as stored under `result.generated_image`. */
+interface SigilGeneratedImage {
+  b64_json?: string
+  url?: string
+  prompt_used?: string
+  style?: string
+  model?: string
+  error?: string
+  metadata: {
+    provider: string
+    model?: string
+    finish_reason?: string
+    provider_requested?: string
+    provider_note?: string
+  }
+}
 
 export class SigilForgeEngine implements ConsciousnessEngine {
   private imageProvider: ImageProvider
@@ -72,6 +111,43 @@ export class SigilForgeEngine implements ConsciousnessEngine {
     return { status: 'accepted' }
   }
 
+  /**
+   * Resolve the provider for this request. `parameters.provider` is honoured only when it
+   * names a known provider that is configured and available; otherwise the engine's default
+   * provider is used and the reason is returned as a note.
+   */
+  private resolveProvider(requested: unknown): { provider: ImageProvider; note?: string } {
+    const fallback = this.imageProvider
+    if (requested === undefined || requested === null || requested === '') {
+      return { provider: fallback }
+    }
+    if (typeof requested !== 'string') {
+      return {
+        provider: fallback,
+        note: `parameters.provider must be a string; using ${fallback.name}.`,
+      }
+    }
+    if (requested === fallback.name) {
+      return { provider: fallback }
+    }
+    if (!SELECTABLE_PROVIDERS.includes(requested as ImageProviderConfig['provider'])) {
+      return {
+        provider: fallback,
+        note: `Unknown provider '${requested}' (supported: ${SELECTABLE_PROVIDERS.join(', ')}); using ${fallback.name}.`,
+      }
+    }
+    const candidate = createImageProvider({
+      provider: requested as ImageProviderConfig['provider'],
+    })
+    if (!candidate.isAvailable()) {
+      return {
+        provider: fallback,
+        note: `Requested provider '${requested}' is not configured; using ${fallback.name}.`,
+      }
+    }
+    return { provider: candidate }
+  }
+
   metadata(): EngineMetadata {
     const imageGenNote = this.imageProvider.isAvailable()
       ? `Set parameters.generate_image=true to receive an AI-generated sigil image via ${this.imageProvider.name}.`
@@ -102,6 +178,13 @@ export class SigilForgeEngine implements ConsciousnessEngine {
           description:
             'When true, generates an AI sigil image via the configured provider (config-only).',
           default: false,
+        },
+        provider: {
+          type: 'string',
+          required: false,
+          description:
+            'Image provider to use (nvidia | nano-banana | kimi). Honoured only when that provider is configured; otherwise the default is used and a note is recorded.',
+          enum: [...SELECTABLE_PROVIDERS],
         },
         image_style: {
           type: 'string',
@@ -204,41 +287,73 @@ export class SigilForgeEngine implements ConsciousnessEngine {
     const svgPreview = this.safeSvgPreview(svgTemplate)
 
     // --- Image generation/edit via provider abstraction (T-035) ---
-    let generatedImage: {
-      b64_json?: string
-      url?: string
-      prompt_used?: string
-      style?: string
-      model?: string
-      error?: string
-    } | null = null
+    const { provider, note: providerNote } = this.resolveProvider(input.parameters.provider)
+    const requestedProvider =
+      typeof input.parameters.provider === 'string' ? input.parameters.provider : undefined
+    const generationRequested = Boolean(editImageB64) || generateImageFlag
 
-    const provider = this.imageProvider
+    let generatedImage: SigilGeneratedImage | null = null
+
+    const baseMetadata = (
+      model?: string,
+      finishReason?: string,
+    ): SigilGeneratedImage['metadata'] => {
+      const meta: SigilGeneratedImage['metadata'] = { provider: provider.name }
+      if (model) meta.model = model
+      if (finishReason) meta.finish_reason = finishReason
+      if (requestedProvider && requestedProvider !== provider.name) {
+        meta.provider_requested = requestedProvider
+      }
+      if (providerNote) meta.provider_note = providerNote
+      return meta
+    }
+
+    const fromProviderResult = (
+      result: GeneratedImage,
+      promptUsed: string,
+      style?: string,
+    ): SigilGeneratedImage => {
+      const image: SigilGeneratedImage = {
+        prompt_used: promptUsed,
+        style: style ?? result.metadata.style,
+        model: result.metadata.model,
+        metadata: baseMetadata(result.metadata.model, result.metadata.finish_reason),
+      }
+      if (result.error || result.mock) {
+        image.error = result.error ?? `${provider.name} returned a mock/placeholder image.`
+      } else if (result.b64_json || result.url) {
+        image.b64_json = result.b64_json
+        image.url = result.url
+      } else {
+        image.error = `${provider.name} returned no image data.`
+      }
+      return image
+    }
 
     if (editImageB64) {
       // Edit mode
       if (!provider.isAvailable() || !provider.edit) {
-        generatedImage = { error: `${provider.name} not configured or does not support edit.` }
+        generatedImage = {
+          error: `${provider.name} not configured or does not support edit.`,
+          metadata: baseMetadata(undefined, 'PROVIDER_UNAVAILABLE'),
+        }
       } else {
+        const builtPrompt = buildSigilEditPrompt(cleanIntention, editInstruction, imageStyle)
         try {
-          const builtPrompt = buildSigilEditPrompt(cleanIntention, editInstruction, imageStyle)
           const result: GeneratedImage = await provider.edit({
             image: editImageB64,
             prompt: builtPrompt.prompt,
+            instruction: editInstruction,
             model: imageModel,
             seed,
             style: imageStyle,
           })
-          generatedImage = {
-            b64_json: result.b64_json,
-            url: result.url,
-            prompt_used: builtPrompt.prompt,
-            model: result.metadata.model,
-            style: result.metadata.style,
-          }
+          generatedImage = fromProviderResult(result, builtPrompt.prompt)
         } catch (err) {
           generatedImage = {
             error: err instanceof Error ? err.message : 'Image edit failed',
+            prompt_used: builtPrompt.prompt,
+            metadata: baseMetadata(imageModel, 'ERROR'),
           }
         }
       }
@@ -247,15 +362,16 @@ export class SigilForgeEngine implements ConsciousnessEngine {
       if (!provider.isAvailable()) {
         generatedImage = {
           error: `${provider.name} not configured. Set provider credentials for image generation.`,
+          metadata: baseMetadata(undefined, 'PROVIDER_UNAVAILABLE'),
         }
       } else {
+        const builtPrompt = buildSigilPrompt(
+          cleanIntention,
+          method,
+          processedLetters ?? undefined,
+          imageStyle,
+        )
         try {
-          const builtPrompt = buildSigilPrompt(
-            cleanIntention,
-            method,
-            processedLetters ?? undefined,
-            imageStyle,
-          )
           const result: GeneratedImage = await provider.generate({
             prompt: builtPrompt.prompt,
             model: imageModel,
@@ -264,22 +380,50 @@ export class SigilForgeEngine implements ConsciousnessEngine {
             seed,
             style: imageStyle,
           })
-          generatedImage = {
-            b64_json: result.b64_json,
-            url: result.url,
-            prompt_used: builtPrompt.prompt,
-            style: builtPrompt.style,
-            model: result.metadata.model,
-          }
+          generatedImage = fromProviderResult(result, builtPrompt.prompt, builtPrompt.style)
         } catch (err) {
           generatedImage = {
             error: err instanceof Error ? err.message : 'Image generation failed',
+            prompt_used: builtPrompt.prompt,
+            style: builtPrompt.style,
+            metadata: baseMetadata(imageModel, 'ERROR'),
           }
         }
       }
     }
 
+    // --- Truth: did a real image get produced? ---
+    const realImage =
+      generatedImage !== null &&
+      !generatedImage.error &&
+      provider.name !== 'mock' &&
+      Boolean(generatedImage.b64_json || generatedImage.url)
+    const fallbackUsed = !realImage
+
+    const provenance: ContractProvenance = {
+      runtime_kind: 'typescript',
+      implementation_version: this.metadata().version,
+      cached: false,
+      fallback_used: fallbackUsed,
+      confidence: realImage ? 0.9 : 0,
+    }
+    // provider_id names the provider that actually produced an image (mock included, so
+    // consumers can see a test double for what it is). Omitted when nothing was generated.
+    if (
+      generatedImage &&
+      !generatedImage.error &&
+      (generatedImage.b64_json || generatedImage.url)
+    ) {
+      provenance.provider_id = provider.name
+    }
+
     const endTime = performance.now()
+
+    const guidanceNote = realImage
+      ? 'AI-generated sigil image included. The symbol is a starting point — refine it intuitively or use it as-is in your practice.'
+      : generationRequested
+        ? `Image generation was requested but no real image was produced (${generatedImage?.error ?? 'no image data'}). Create the visual sigil yourself using the method steps below.`
+        : 'This engine provides the process for sigil creation. The actual visual sigil must be created by you — this personal investment is essential to the magic.'
 
     const result: Record<string, unknown> = {
       intention: cleanIntention,
@@ -302,25 +446,21 @@ export class SigilForgeEngine implements ConsciousnessEngine {
         description: c.description,
       })),
       guidance: {
-        note:
-          generateImageFlag || editImageB64
-            ? 'AI-generated sigil image included. The symbol is a starting point — refine it intuitively or use it as-is in your practice.'
-            : 'This engine provides the process for sigil creation. The actual visual sigil must be created by you — this personal investment is essential to the magic.',
-        next_steps:
-          generateImageFlag || generatedImage?.b64_json
-            ? [
-                'Contemplate the generated image — does it resonate with your intention?',
-                'You may print, trace, or redraw the sigil by hand to further charge it',
-                `Choose a charging method: ${chargingSuggestions.map((c) => c.name).join(' or ')}`,
-                'Release attachment to outcome after charging',
-              ]
-            : [
-                'Gather your materials (paper, pen, or digital canvas)',
-                `Follow the ${method.name} steps above`,
-                'Allow intuition to guide the final form',
-                'Choose a charging method that resonates',
-                'Release attachment to outcome',
-              ],
+        note: guidanceNote,
+        next_steps: realImage
+          ? [
+              'Contemplate the generated image — does it resonate with your intention?',
+              'You may print, trace, or redraw the sigil by hand to further charge it',
+              `Choose a charging method: ${chargingSuggestions.map((c) => c.name).join(' or ')}`,
+              'Release attachment to outcome after charging',
+            ]
+          : [
+              'Gather your materials (paper, pen, or digital canvas)',
+              `Follow the ${method.name} steps above`,
+              'Allow intuition to guide the final form',
+              'Choose a charging method that resonates',
+              'Release attachment to outcome',
+            ],
       },
       svg_preview: svgPreview,
       generated_image: generatedImage,
@@ -328,10 +468,14 @@ export class SigilForgeEngine implements ConsciousnessEngine {
       provider: provider.name,
       seed,
     }
+    if (providerNote) {
+      result.provider_note = providerNote
+    }
 
-    // Per FROZEN (T-002/T-003/T-035): surface generated_image at top-level EngineOutput when present (no error)
+    // Per FROZEN (T-002/T-003/T-035): surface generated_image at top-level EngineOutput ONLY
+    // for a real image. Mock/placeholder/error results stay inside result.generated_image.
     const topGenerated: GeneratedImage | undefined =
-      generatedImage && !generatedImage.error
+      realImage && generatedImage
         ? {
             b64_json: generatedImage.b64_json,
             url: generatedImage.url,
@@ -341,6 +485,7 @@ export class SigilForgeEngine implements ConsciousnessEngine {
               provider: provider.name,
               style: generatedImage.style,
               seed,
+              finish_reason: generatedImage.metadata.finish_reason,
             },
           }
         : undefined
@@ -351,6 +496,7 @@ export class SigilForgeEngine implements ConsciousnessEngine {
       witness_prompts: witnessPrompts,
       calculated_at: new Date().toISOString(),
       processing_time_ms: Math.round(endTime - startTime),
+      provenance,
     }
 
     if (topGenerated) {

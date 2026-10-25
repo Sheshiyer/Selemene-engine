@@ -48,6 +48,14 @@ export interface ImageEditOptions extends ImageGenOptions {
 export interface GeneratedImage {
   b64_json?: string
   url?: string
+  /**
+   * Set when the provider could not produce a real image. Honest providers
+   * (kimi, nano-banana) never fabricate a placeholder PNG: they return
+   * `{ error, mock: true }` and the engine records `fallback_used: true`.
+   */
+  error?: string
+  /** True when this result is not a real generation (unconfigured, failed, placeholder). */
+  mock?: boolean
   metadata: {
     model: string
     prompt: string
@@ -72,7 +80,11 @@ export interface ImageProviderConfig {
   defaultModel?: string
 }
 
-/** Mock provider for tests (no network, deterministic) */
+/**
+ * Mock provider for TESTS ONLY (no network, deterministic 1x1 PNG).
+ * Never wire this into production defaults: the engine marks every mock result
+ * with `fallback_used: true` / `provider_id: 'mock'`.
+ */
 export class MockImageProvider implements ImageProvider {
   readonly name = 'mock'
   private callCount = 0
@@ -170,7 +182,7 @@ export class NvidiaImageProvider implements ImageProvider {
   }
 }
 
-/** NanoBananaImageProvider — re-exported from T-060 impl (src/providers/nano-banana.ts). Real runcomfy when token, mock graceful else. */
+/** NanoBananaImageProvider — re-exported from T-060 impl (src/providers/nano-banana.ts). Real via runcomfy when RUNCOMFY_TOKEN; otherwise unavailable (no placeholder). */
 export { NanoBananaImageProvider } from './nano-banana'
 
 // KimiImageProvider now implemented in ./kimi.ts (T-061) — imported above for factory + re-export for back-compat
@@ -195,7 +207,7 @@ export function createImageProvider(config: Partial<ImageProviderConfig> = {}): 
   }
 }
 
-/** Default export for back-compat in registry etc. T-060: integrate nano — use nano-banana if RUNCOMFY_TOKEN present else nvidia (config-only). */
+/** Default provider: nano-banana when RUNCOMFY_TOKEN is present, otherwise nvidia (config-only). */
 export function createDefaultImageProvider(): ImageProvider {
   if (isNanoBananaAvailable()) {
     return createImageProvider({ provider: 'nano-banana' })
