@@ -1,35 +1,41 @@
 /**
- * Raaga clip generation — fills generated_audio.clip_url (T-031 left it null).
+ * Raaga clip generation — fills generated_audio.clip_url.
  *
- * Offline, local-first render of strudel_ratios (just-intonation swara set) into a
- * mono PCM16 WAV clip (arohana ascent, sine voices, short fades). No network, no
- * secrets — matches the goal-understanding.md local-first + explicit-consent model.
- * A config-driven `service` mode exists for a future external render service
- * (e.g. the Suno bridge already proxied in src/server/app.ts), and degrades
- * gracefully to null when unreachable.
+ * Renders strudel_ratios (just-intonation swara set) offline into a mono PCM16
+ * WAV clip (arohana ascent, sine voices, short fades) and delivers it through
+ * one of four modes:
+ *
+ *   off      — never render; clip_url stays null (default; backward compat).
+ *   local    — write the WAV under RAAGA_CLIP_DIR and serve it from this
+ *              process at /clips/raaga/<file>. Railway disks are ephemeral, so
+ *              these URLs die on redeploy; the URL is absolute only when a
+ *              public base for this service is known (see resolveClipBaseUrl).
+ *   r2       — upload the WAV to Cloudflare R2 (key raaga/<sha256>.wav, HEAD
+ *              before PUT so repeats are free) and return the absolute public
+ *              URL. Durable; the production path.
+ *   service  — POST to an external render endpoint (RAAGA_CLIP_SERVICE_URL,
+ *              historically the suno bridge) and relay its clip_url.
  *
  * Config (env):
- *   RAAGA_CLIP_MODE        — "off" | "local" | "service"   (default "off")
- *   RAAGA_CLIP_DIR         — clip store dir                (default <os-tmp>/raaga-clips)
- *   RAAGA_CLIP_BASE_URL    — public URL prefix for clips   (default "/clips/raaga")
- *   RAAGA_CLIP_SERVICE_URL — external render endpoint      (service mode only)
- *   RAAGA_CLIP_SECONDS_PER_NOTE — seconds per swara        (default 0.6)
- *
- * Cites (mandatory): p1-w1-worker-bootstrap-packet.md, resources-and-assets.md,
- * gaps-and-improvements.md (§4 audio clip path missing), goal-understanding.md
- * (local-first + consent; unresolved prod URLs), EXECUTION-STATUS.md,
- * P1W1-W2-HANDOFF.md, .worktrees/T-002-copilot/.../P1W1-CONTRACTS-FROZEN.md
- * (generated_audio: strudel_ratios + clip_url), detailed-task-list.md,
- * docs/plans/engine-integration/p5-p4-next-batch.json (raaga-clip-generation).
- * tags: phase:integration-p1 wave:integration-w2 area:engine-integration engine-raaga
+ *   RAAGA_CLIP_MODE             — "off" | "local" | "r2" | "service"  (default "off")
+ *   RAAGA_CLIP_DIR              — local clip store dir   (default <os-tmp>/raaga-clips)
+ *   RAAGA_CLIP_BASE_URL         — URL prefix for local clips (default "/clips/raaga",
+ *                                 or https://<TS_ENGINES_PUBLIC_URL|RAILWAY_PUBLIC_DOMAIN>/clips/raaga)
+ *   RAAGA_CLIP_SERVICE_URL      — external render endpoint (service mode only)
+ *   RAAGA_CLIP_SECONDS_PER_NOTE — seconds per swara (default 0.6)
+ *   R2_*                        — see src/utils/r2.ts (r2 mode only)
  */
 
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { missingR2Vars, putIfAbsent } from '../../utils/r2'
 
-export type RaagaClipMode = 'off' | 'local' | 'service'
+export type RaagaClipMode = 'off' | 'local' | 'r2' | 'service'
+
+/** Who actually produced the clip bytes (surfaces as provenance.provider_id). */
+export type RaagaClipProvider = 'selemene-wav-synth' | 'suno'
 
 export interface RaagaClipRequest {
   melakarta: number
@@ -38,19 +44,37 @@ export interface RaagaClipRequest {
   env?: Record<string, string | undefined>
 }
 
+export type RaagaClipStatus =
+  /** local/service: clip rendered and delivered */
+  | 'generated'
+  /** r2: HEAD 404 → PUT succeeded */
+  | 'uploaded'
+  /** r2: HEAD 200 → existing object reused, no PUT */
+  | 'reused'
+  /** r2: HEAD/PUT failed or R2 not configured */
+  | 'upload_failed'
+  | 'skipped_off'
+  | 'service_unavailable'
+  | 'error'
+
 export interface RaagaClipResult {
   clip_url: string | null
   mode: RaagaClipMode
-  status: 'generated' | 'skipped_off' | 'service_unavailable' | 'error'
+  status: RaagaClipStatus
+  /** Set whenever clip_url is non-null. */
+  provider?: RaagaClipProvider
   detail?: string
 }
 
 type Env = Record<string, string | undefined>
 
+export const R2_CLIP_CACHE_CONTROL = 'public, max-age=31536000, immutable'
+export const R2_CLIP_CONTENT_TYPE = 'audio/wav'
+
 /** Resolve the configured clip mode; defaults to "off" (backward compat per FROZEN). */
 export function resolveClipMode(env: Env = process.env): RaagaClipMode {
   const raw = (env.RAAGA_CLIP_MODE ?? 'off').trim().toLowerCase()
-  if (raw === 'local' || raw === 'service' || raw === 'off') return raw
+  if (raw === 'local' || raw === 'r2' || raw === 'service' || raw === 'off') return raw
   return 'off'
 }
 
@@ -58,12 +82,32 @@ export function resolveClipDir(env: Env = process.env): string {
   return env.RAAGA_CLIP_DIR ?? join(tmpdir(), 'raaga-clips')
 }
 
+/**
+ * Public base for this service, when known: TS_ENGINES_PUBLIC_URL (explicit)
+ * or Railway's auto-injected RAILWAY_PUBLIC_DOMAIN. null otherwise.
+ */
+export function resolvePublicServiceBase(env: Env = process.env): string | null {
+  const explicit = (env.TS_ENGINES_PUBLIC_URL ?? '').trim()
+  if (explicit) return explicit.replace(/\/+$/, '')
+  const domain = (env.RAILWAY_PUBLIC_DOMAIN ?? '').trim()
+  if (domain) return `https://${domain.replace(/^https?:\/\//, '').replace(/\/+$/, '')}`
+  return null
+}
+
+/**
+ * URL prefix for local-mode clips. RAAGA_CLIP_BASE_URL wins; otherwise an
+ * absolute prefix when a public base is known, else the relative
+ * "/clips/raaga" (resolved by whoever is talking to this process).
+ */
 export function resolveClipBaseUrl(env: Env = process.env): string {
-  return env.RAAGA_CLIP_BASE_URL ?? '/clips/raaga'
+  const explicit = (env.RAAGA_CLIP_BASE_URL ?? '').trim()
+  if (explicit) return explicit.replace(/\/+$/, '')
+  const base = resolvePublicServiceBase(env)
+  return base ? `${base}/clips/raaga` : '/clips/raaga'
 }
 
 // ---------------------------------------------------------------------------
-// WAV (PCM16 mono) synthesis — WebAudio-compatible offline render
+// WAV (PCM16 mono) synthesis — pure, deterministic
 // ---------------------------------------------------------------------------
 
 function secondsPerNote(env: Env): number {
@@ -71,15 +115,21 @@ function secondsPerNote(env: Env): number {
   return Number.isFinite(raw) && raw > 0.05 && raw <= 10 ? raw : 0.6
 }
 
+export interface RenderWavOptions {
+  sampleRate?: number
+  secondsPerNote?: number
+}
+
 /**
  * Render just-intonation ratios as an ascending sine-tone sequence.
  * Each swara gets a short raised-cosine fade to avoid clicks; a brief gap
- * separates notes so the arohana ladder is audible.
+ * separates notes so the arohana ladder is audible. Pure function of its
+ * arguments: same ratios/root/options → byte-identical WAV.
  */
-export function renderRaagaClipWav(
+export function renderWav(
   ratios: readonly number[],
   rootHz: number,
-  opts: { sampleRate?: number; secondsPerNote?: number } = {},
+  opts: RenderWavOptions = {},
 ): Uint8Array {
   const sampleRate = opts.sampleRate ?? 22050
   const perNote = opts.secondsPerNote ?? 0.6
@@ -132,8 +182,16 @@ export function renderRaagaClipWav(
   return new Uint8Array(buffer)
 }
 
+/** @deprecated alias kept for existing imports; use renderWav. */
+export const renderRaagaClipWav = renderWav
+
+/** Content-addressed R2 key for a rendered clip: raaga/<sha256 of bytes>.wav */
+export function r2ClipKey(wav: Uint8Array): string {
+  return `raaga/${createHash('sha256').update(wav).digest('hex')}.wav`
+}
+
 // ---------------------------------------------------------------------------
-// Clip store
+// Local clip store
 // ---------------------------------------------------------------------------
 
 /** Write WAV bytes to the clip store; returns the store-relative filename. */
@@ -156,6 +214,10 @@ export function resolveStoredClip(dir: string, filename: string): string | null 
 // Generation entry point
 // ---------------------------------------------------------------------------
 
+function errorDetail(err: unknown): string {
+  return err instanceof Error ? err.message : String(err)
+}
+
 export async function generateRaagaClip(request: RaagaClipRequest): Promise<RaagaClipResult> {
   const env = request.env ?? process.env
   const mode = resolveClipMode(env)
@@ -165,28 +227,55 @@ export async function generateRaagaClip(request: RaagaClipRequest): Promise<Raag
       clip_url: null,
       mode,
       status: 'skipped_off',
-      detail: 'RAAGA_CLIP_MODE=off (default); set to local or service to enable clip generation',
+      detail:
+        'RAAGA_CLIP_MODE=off (default); set to local, r2 or service to enable clip generation',
     }
   }
 
   if (mode === 'local') {
     try {
-      const wav = renderRaagaClipWav(request.ratios, request.rootHz, {
-        secondsPerNote: secondsPerNote(env),
-      })
+      const wav = renderWav(request.ratios, request.rootHz, { secondsPerNote: secondsPerNote(env) })
       const filename = storeClip(wav, request.melakarta, request.rootHz, resolveClipDir(env))
+      const base = resolveClipBaseUrl(env)
       return {
-        clip_url: `${resolveClipBaseUrl(env)}/${filename}`,
+        clip_url: `${base}/${filename}`,
         mode,
         status: 'generated',
+        provider: 'selemene-wav-synth',
+        ...(base.startsWith('/')
+          ? { detail: 'relative URL: local clip store is ephemeral (lost on redeploy)' }
+          : {}),
       }
     } catch (err) {
+      return { clip_url: null, mode, status: 'error', detail: errorDetail(err) }
+    }
+  }
+
+  if (mode === 'r2') {
+    const missing = missingR2Vars(env)
+    if (missing.length > 0) {
       return {
         clip_url: null,
         mode,
-        status: 'error',
-        detail: err instanceof Error ? err.message : String(err),
+        status: 'upload_failed',
+        detail: `R2 not configured: missing ${missing.join(', ')}`,
       }
+    }
+    try {
+      const wav = renderWav(request.ratios, request.rootHz, { secondsPerNote: secondsPerNote(env) })
+      const key = r2ClipKey(wav)
+      const { url, existed } = await putIfAbsent(key, wav, R2_CLIP_CONTENT_TYPE, {
+        cacheControl: R2_CLIP_CACHE_CONTROL,
+        env,
+      })
+      return {
+        clip_url: url,
+        mode,
+        status: existed ? 'reused' : 'uploaded',
+        provider: 'selemene-wav-synth',
+      }
+    } catch (err) {
+      return { clip_url: null, mode, status: 'upload_failed', detail: errorDetail(err) }
     }
   }
 
@@ -233,13 +322,8 @@ export async function generateRaagaClip(request: RaagaClipRequest): Promise<Raag
         detail: 'clip service response missing clip_url',
       }
     }
-    return { clip_url: url, mode, status: 'generated' }
+    return { clip_url: url, mode, status: 'generated', provider: 'suno' }
   } catch (err) {
-    return {
-      clip_url: null,
-      mode,
-      status: 'service_unavailable',
-      detail: err instanceof Error ? err.message : String(err),
-    }
+    return { clip_url: null, mode, status: 'service_unavailable', detail: errorDetail(err) }
   }
 }

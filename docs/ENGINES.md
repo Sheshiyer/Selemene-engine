@@ -150,12 +150,12 @@ Combines Chinese Mian Xiang with Western physiognomy traditions.
 
 ## 10. Nadabrahman Engine
 
-**Sound consciousness** — Analyzes vocal patterns, frequency signatures, and maps to Vedic sound cosmology (Nada Brahma).
+**Rāga recommender** — Recommends Melakarta rāgas for the current *prahar* (3-hour watch of the day), optionally refined by Ayurvedic dosha, rasa/mood, and a target chakra's Solfeggio frequency. Rust crate `engine-nadabrahman`.
 
-**Input:** `audio_data`  
+**Input:** `current_time` (prahar is derived from its hour; defaults to now) and optional `options.dosha` (`vata|pitta|kapha`), `options.rasa` or `options.mood` (one of the 9 rasas), `options.chakra` (`root … crown` or Sanskrit names)  
 **Endpoint:** `POST /api/v1/engines/nadabrahman/calculate`
 
-Maps voice characteristics to raaga resonance and chakra activations.
+Returns `time_recommendation` (prahar, primary rāga, dosha dominance, energy quality), up to five scored `recommendations` with arohanam/avarohanam, and `chakra_frequency` when a chakra is given. It takes **no audio input** and performs no voice or frequency analysis, and it produces **no audio clip**. For a chosen melakarta's just-intonation data and the rendered clip, use the Raaga engine (§17). Details: [docs/engines/nadabrahman.md](engines/nadabrahman.md).
 
 <br>
 
@@ -253,12 +253,12 @@ Combines Austin Osman Spare's method with planetary and angelic signatures.
 
 ## 17. Raaga Engine
 
-**Generative rāga composition** — Melodic maps from the 72 Melakarta system for state-specific sonic practice and entrainment.
+**Carnatic melakarta sound therapy** — For a chosen melakarta (1–72, by number or name, or auto-selected by dosha × prahar) returns its just-intonation swaras, Strudel-compatible ratio arrays, chakra/dosha context and prahar timing. TypeScript engine (`ts-engines/src/engines/raaga`), reached through `noesis-bridge`.
 
-**Input:** `raga_params (melakarta_number, time_of_day, mood)`  
+**Input:** `parameters.melakarta` | `parameters.name`, optional `dosha`, `root_hz` (default 220), `include_alternates`, `request_clip` (+ granted `consent`)  
 **Endpoint:** `POST /api/v1/engines/raaga/calculate`
 
-Maps Hindustani rāga resonance to consciousness state and biofield layer activation.
+With `request_clip: true` and granted consent the engine renders the swara ladder to a WAV clip and returns it in `generated_audio.clip_url`; delivery depends on `RAAGA_CLIP_MODE` (`off` default, `local`, `r2` hosted on Cloudflare R2, `service`). Every response carries a contract `provenance` block (`provider_id: selemene-wav-synth`, `fallback_used: true` whenever a requested clip was not delivered). Details: [docs/engines/raaga.md](engines/raaga.md).
 
 <br>
 
