@@ -181,8 +181,8 @@
       "worktree": ".worktrees/ralph-s2-biofield",
       "iteration": 0,
       "cap": 12,
-      "status": "proposed-session",
-      "axis_reached": "Implemented",
+      "status": "pr-open",
+      "axis_reached": "Implemented (local tests green per lane report)",
       "blocked_on_human": null,
       "receipts": [
         {
@@ -190,18 +190,27 @@
           "tier": "prep",
           "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
           "result": "awaiting operator start"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T1",
+          "cmd": "lane session opened PR #1500 from claude/blissful-shaw-98dc3e@a6d8b2d1; lane reports local suites green",
+          "result": "not yet reviewed by coordinator; staging not run"
         }
       ],
       "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
-      "title": "Biofield capture consent + honest engine"
+      "title": "Biofield capture consent + honest engine",
+      "pr": 1500,
+      "pr_branch": "claude/blissful-shaw-98dc3e",
+      "pr_head": "a6d8b2d1"
     },
     "s3-audio": {
       "branch": "ralph/s3-audio",
       "worktree": ".worktrees/ralph-s3-audio",
       "iteration": 0,
       "cap": 12,
-      "status": "proposed-session",
-      "axis_reached": "Implemented",
+      "status": "pr-open",
+      "axis_reached": "Implemented (local tests green per lane report)",
       "blocked_on_human": null,
       "receipts": [
         {
@@ -209,18 +218,27 @@
           "tier": "prep",
           "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
           "result": "awaiting operator start"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T1",
+          "cmd": "lane session opened PR #1498 from claude/busy-gagarin-720002@b452522b; lane reports local suites green",
+          "result": "not yet reviewed by coordinator; staging not run"
         }
       ],
       "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
-      "title": "Raaga r2-hosted clips + provenance + nadabrahman docs"
+      "title": "Raaga r2-hosted clips + provenance + nadabrahman docs",
+      "pr": 1498,
+      "pr_branch": "claude/busy-gagarin-720002",
+      "pr_head": "b452522b"
     },
     "s4-sigil": {
       "branch": "ralph/s4-sigil",
       "worktree": ".worktrees/ralph-s4-sigil",
       "iteration": 0,
       "cap": 12,
-      "status": "proposed-session",
-      "axis_reached": "Implemented",
+      "status": "pr-open",
+      "axis_reached": "Implemented (local tests green per lane report)",
       "blocked_on_human": null,
       "receipts": [
         {
@@ -228,10 +246,19 @@
           "tier": "prep",
           "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
           "result": "awaiting operator start"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T1",
+          "cmd": "lane session opened PR #1499 from ralph/s4-sigil-provenance@ca993f7e; lane reports local suites green",
+          "result": "not yet reviewed by coordinator; staging not run"
         }
       ],
       "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
-      "title": "Sigil provenance + honest providers + truthful schema"
+      "title": "Sigil provenance + honest providers + truthful schema",
+      "pr": 1499,
+      "pr_branch": "ralph/s4-sigil-provenance",
+      "pr_head": "ca993f7e"
     },
     "s5-rbac": {
       "branch": "ralph/s5-rbac",
@@ -345,5 +372,6 @@
     "s3-audio (rebase on s4)",
     "s2-biofield (any time)",
     "s6-consumers (follow-up, after all three)"
-  ]
+  ],
+  "overlap_note": "PR #1498 (S3) and #1499 (S4) both touch crates/noesis-bridge/src/lib.rs, crates/noesis-bridge/src/ts_client.rs and crates/noesis-api/src/lib.rs (provenance forwarding). Merge S4 first, then rebase S3 and re-run bridge tests before merging S3."
 }
