@@ -262,7 +262,7 @@
       "iteration": 0,
       "cap": 12,
       "status": "merged",
-      "axis_reached": "Deployed (prod deploying main@d5729652); Operational pending NVIDIA NIM recovery",
+      "axis_reached": "Operational (prod, honest fallback path); real-image success path blocked on NVIDIA NIM flux.1-dev 500 + TS_BRIDGE_TIMEOUT 30s",
       "blocked_on_human": null,
       "receipts": [
         {
@@ -306,6 +306,12 @@
           "tier": "T3",
           "cmd": "gh pr merge 1499 --merge --match-head-commit ca993f7e",
           "result": "MERGED 2026-10-25T20:36:35Z merge commit d5729652; prod deployments queued: Selemene-engine 6cd68ae7, ts-engines 91081190, mediapipe-service 97b67233 (main@d5729652)"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T3",
+          "cmd": "prod readback: deployments Selemene-engine 6cd68ae7 / ts-engines 91081190 / mediapipe 97b67233 main@d5729652 SUCCESS; GET selemene.tryambakam.space/health/live + /health/dependencies; POST /api/v1/engines/sigil-forge/calculate generate_image:false with prod key ralph-s4-prod (premium; basic:access, sigil-forge:read, raaga:read, biofield-capture:read; expires 1 day); same generate_image:true + consent sigil-gen",
+          "result": "live ok v3.3.1 19 engines; dependencies ready (sigil-forge TypeScript runtime, nvidia configured). fallback path 200 with envelope provenance {typescript, 2.0.0, cached false, fallback_used true, confidence 0}, no __contract_provenance. image path 500 BRIDGE_ERROR (same NVIDIA NIM 500 + 30s bridge timeout as staging). Prod key to be revoked after S3 prod readback."
         }
       ],
       "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
