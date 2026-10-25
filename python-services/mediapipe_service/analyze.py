@@ -18,6 +18,8 @@ import math
 import random
 import time
 
+import logging
+
 import cv2
 import numpy as np
 from fastapi import APIRouter, File, Form, UploadFile
@@ -65,24 +67,47 @@ _BILATERAL_PAIRS = [
 
 # ─── Real CV path (face-cv-hook-p3; mirrors T-065 _get_mediapipe_selfie) ─────
 
+logger = logging.getLogger(__name__)
+
 _mp_facemesh = None
+_mp_facemesh_error: str | None = None
+
+
+def facemesh_init_error() -> str | None:
+    """Sanitized reason the Face Mesh singleton failed to initialise, if it did."""
+    _get_mediapipe_facemesh()
+    return _mp_facemesh_error
 
 
 def _get_mediapipe_facemesh():
-    """Lazy MediaPipe Face Mesh singleton; None when mediapipe is unavailable."""
-    global _mp_facemesh
+    """Lazy MediaPipe Face Mesh singleton; None when mediapipe is unavailable.
+
+    Requires the legacy ``mediapipe.solutions`` API (mediapipe < 1.0). On 1.x the
+    module is gone and the service must not pretend CV ran: the failure reason is
+    recorded for /health instead of being swallowed.
+    """
+    global _mp_facemesh, _mp_facemesh_error
     if _mp_facemesh is None:
         try:
             import mediapipe as mp
 
-            _mp_facemesh = mp.solutions.face_mesh.FaceMesh(
+            solutions = getattr(mp, "solutions", None)
+            if solutions is None:
+                raise RuntimeError(
+                    f"mediapipe {getattr(mp, '__version__', '?')} has no legacy "
+                    "'solutions' API; pin mediapipe<1.0 or migrate to tasks.FaceLandmarker"
+                )
+            _mp_facemesh = solutions.face_mesh.FaceMesh(
                 static_image_mode=True,
                 max_num_faces=1,
                 refine_landmarks=False,
                 min_detection_confidence=0.5,
             )
-        except Exception:
+            _mp_facemesh_error = None
+        except Exception as exc:  # noqa: BLE001 - recorded, not hidden
             _mp_facemesh = False  # mark unavailable
+            _mp_facemesh_error = f"{type(exc).__name__}: {str(exc)[:160]}"
+            logger.warning("mediapipe face mesh unavailable: %s", _mp_facemesh_error)
     return _mp_facemesh if _mp_facemesh is not False else None
 
 
