@@ -149,6 +149,8 @@ export interface WitnessPersona {
 export interface ReferenceExecutionDependency {
   /** Must be true. Disabled dependency throws immediately on first use. */
   enabled: boolean;
+  /** Durable corrected-route companion checkpoint before the next chapter. */
+  envelopeCheckpoint?: (envelope: SectionGenerationEnvelope) => Promise<void>;
   /** Serialize the two independent voice calls for capacity-limited providers. */
   serialVoices?: boolean;
   /** Aletheios persona loaded from ../witness-agents/agents/aletheios/IDENTITY.md */
@@ -784,7 +786,7 @@ export function buildLeakageCleanupPrompt(previous: string, violations: LeakageG
   ).join('\n');
   return [
     'Perform a MINIMAL, TARGETED reader-facing cleanup of the previous draft. Do NOT add or remove factual claims. Do NOT reformat sections. Do NOT introduce new sources. Only remove or replace the leakage patterns listed below with natural reader prose that preserves the same meaning.',
-    'Every listed matched phrase is forbidden in the returned draft, including headings and table headers. Before returning, search your own draft for each quoted match and rewrite any surviving occurrence. A semantic synonym is required: for example, use "evidence confidence" instead of "source precision" or "precision label". Do not merely shorten the same forbidden phrase.',
+    'Every listed matched phrase is forbidden in the returned draft, including headings and table headers. Before returning, search your own draft for each quoted match and rewrite any surviving occurrence. Translate fields into natural chart names. Remove audit machinery and confidence/precision columns rather than substituting another audit label. Express any relevant limit as a plain sentence beside its chart observation.',
     '',
     'Reader-facing contract to enforce:',
     '- No engine identifiers as internal keys (e.g. `vedic-kundali`). Readable names ("Vedic Kundali", "Human Design", "Gene Keys", "Vimshottari") are welcome as narrative vocabulary.',
@@ -993,6 +995,7 @@ export async function executeReferenceSection(
     jevGate?: JevPassGate;
     checkpoint?: SectionCheckpointCallback;
     allEngineResults?: import('../selemene/types.js').SelemeneEngineOutput[];
+    engineResultsBySubject?: { subject: string; engines: import('../selemene/types.js').SelemeneEngineOutput[] }[];
     guardrailPolicy?: import('../modes/types.js').JevGuardrailPolicy;
     relationshipType?: string;
     register?: import('../modes/types.js').RegisterBand;
@@ -1300,7 +1303,9 @@ export async function executeReferenceSection(
   const engineFactsConsumed: EvidenceEngineFactsConsumed[] = [];
   if (useCorrectedMatrix) {
     const cfg = dep.correctedMatrix!;
-    const engineOutputs = (opts.allEngineResults ?? []).filter((e) => !e._error);
+    const engineOutputs = opts.engineResultsBySubject
+      ? opts.engineResultsBySubject.flatMap(({ subject, engines }) => engines.filter(e => !e._error).map(engine => ({ engine, subject })))
+      : (opts.allEngineResults ?? []).filter(e => !e._error).map(engine => ({ engine, subject: undefined as string | undefined }));
     if (engineOutputs.length === 0) {
       const reason = 'corrected_matrix_missing_engines: correctedMatrix enabled but opts.allEngineResults contains zero non-error engines';
       attempts.push({ attempt: attempts.length + 1, outcome: 'corrected_matrix_error', aletheios_raw: '', pichet_raw: '', synthesis_raw: '', reason });
@@ -1312,25 +1317,25 @@ export async function executeReferenceSection(
     const interpLlm: LlmCall = cfg.interpretationLlm ?? dep.sourceAuditLlm ?? dep.synthesisLlm ?? llm;
     const subjectLabel = cfg.subjectLabel?.trim() || input.subjectNames.filter(Boolean).join(' × ') || 'subject';
     const maxTokens = cfg.maxTokensPerInterpretation ?? 2048;
-    const jobs = engineOutputs.map((engine) => {
+    const jobs = engineOutputs.map(({ engine, subject }) => {
       const { prompt, fields } = buildPerEngineMicroInterpretationPrompt({
         engine,
         register: cfg.register,
-        subject: subjectLabel,
+        subject: subject ?? subjectLabel,
         sectionTopic: cfg.sectionTopic ?? input.passSpec.title,
         fieldsFilter: cfg.fieldsFilter,
       });
-      return { engine, prompt, fields };
+      return { engine, prompt, fields, subject };
     });
-    engineFactsConsumed.push(...jobs.map((job) => job.fields));
+    engineFactsConsumed.push(...jobs.map((job) => ({ ...job.fields, ...(job.subject ? { subject: job.subject } : {}) })));
     const activeJobs = jobs.filter((job) => job.fields.fields_used.length > 0);
-    const settled = await Promise.allSettled(activeJobs.map(async ({ engine, prompt, fields }) => {
+    const settled = await Promise.allSettled(activeJobs.map(async ({ engine, prompt, fields, subject }) => {
       const raw = (await interpLlm(
           'You are a structured extraction engine returning micro-interpretations for a single astrological/consciousness engine. Return raw JSON only.',
           prompt,
           { max_tokens: maxTokens },
         )).trim();
-      return { engine, fields, raw };
+      return { engine, fields, raw, subject };
     }));
     for (let i = 0; i < settled.length; i++) {
       const result = settled[i];
@@ -1344,7 +1349,7 @@ export async function executeReferenceSection(
         if (opts.checkpoint) await opts.checkpoint(failedReceipt);
         return { output: '', receipt: failedReceipt, rubric: emptyRubric(sectionId, input.passSpec, Date.now() - voiceStartMs) };
       }
-      const { engine, fields, raw } = result.value;
+      const { engine, fields, raw, subject } = result.value;
       const parsed = parsePerEngineMicroInterpretations(raw, engine.engine_id, fields);
       if (!parsed.ok) {
         const reason = `corrected_matrix_micro_interpretation_malformed[${engine.engine_id}]: ${parsed.reason}`;
@@ -1362,14 +1367,14 @@ export async function executeReferenceSection(
         if (opts.checkpoint) await opts.checkpoint(failedReceipt);
         return { output: '', receipt: failedReceipt, rubric: emptyRubric(sectionId, input.passSpec, Date.now() - voiceStartMs) };
       }
-      microInterpretations.push(...parsed.value);
+      microInterpretations.push(...parsed.value.map(entry => ({ ...entry, ...(subject ? { subject } : {}) })));
     }
     // Optional early validation of the interpretation coverage. If any
     // contributing engine yielded zero interpretations while claiming
     // non-empty fields_used, fail closed.
-    const coveredEngines = new Set(microInterpretations.map((m) => m.engine_id));
+    const coveredEngines = new Set(microInterpretations.map((m) => JSON.stringify([m.subject ?? '', m.engine_id])));
     for (const eng of engineFactsConsumed) {
-      if (eng.fields_used.length > 0 && !coveredEngines.has(eng.engine_id)) {
+      if (eng.fields_used.length > 0 && !coveredEngines.has(JSON.stringify([eng.subject ?? '', eng.engine_id]))) {
         const reason = `corrected_matrix_missing_engine_coverage[${eng.engine_id}]: contributing engine has no micro-interpretation entries`;
         attempts.push({ attempt: attempts.length + 1, outcome: 'corrected_matrix_error', aletheios_raw: '', pichet_raw: '', synthesis_raw: '', reason });
         const failedReceipt = buildFailedReceipt(sectionId, dep, 'corrected_matrix_error', reason, passages, attempts, '');
@@ -2384,6 +2389,7 @@ export async function executeReferenceSection(
       receipt: successReceipt,
       leakage_gate: leakageGateResult!,
     };
+    if (dep.envelopeCheckpoint) await dep.envelopeCheckpoint(envelope);
   }
 
   if (opts.checkpoint) await opts.checkpoint(successReceipt);
@@ -2496,6 +2502,7 @@ export async function executeReferenceSections(
     jevGate?: JevPassGate;
     checkpoint?: SectionCheckpointCallback;
     allEngineResults?: import('../selemene/types.js').SelemeneEngineOutput[];
+    engineResultsBySubject?: { subject: string; engines: import('../selemene/types.js').SelemeneEngineOutput[] }[];
     guardrailPolicy?: import('../modes/types.js').JevGuardrailPolicy;
     relationshipType?: string;
     register?: import('../modes/types.js').RegisterBand;

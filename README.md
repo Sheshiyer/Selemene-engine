@@ -44,6 +44,16 @@
   <strong>Not prediction. Reflection. Inquiry. Witness.</strong>
 </p>
 
+## Current Human Design report set
+
+The current Gary Abitbol, Mohan Kumar, and Sheshnarayan Cumbipuram Nateshan individual reports, plus the three-way business-partner synastry, are indexed in both languages:
+
+- [English report index](tools/humdes-extractor/output/gary-abitbol-2026-09-28/reports-12/README.en.md)
+- [Index des rapports en français](tools/humdes-extractor/output/gary-abitbol-2026-09-28/reports-12/README.fr.md)
+- [Twelve-pass Jev matrix and receipts](tools/humdes-extractor/output/gary-abitbol-2026-09-28/reports-12/matrix-runs/matrix-summary.md)
+
+Each section receives a Jev shadow review; the per-section matrix and source packs remain local. Cortex was not available in this run, and the Cloudflare pattern-memory adapter is not connected to a deployed Selemene Worker, so no remote pattern retrieval or persistence is claimed. The standalone matrix runner persists pass results and receipts per report; it has no live event listener wired to this command.
+
 <!-- readme-gen:start:hero -->
 <!-- Deployment trigger: 2026-07-10 -->
 

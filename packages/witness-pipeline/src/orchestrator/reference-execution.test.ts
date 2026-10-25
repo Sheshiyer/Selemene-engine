@@ -2270,6 +2270,26 @@ describe('reference-execution: corrected-route (Phase B) integration', () => {
     expect(pichetSystemSeen).toContain('Rohini');
   });
 
+  it('preserves partner identity across repeated engines with different values', async () => {
+    const seen: string[] = [];
+    const interpretationLlm: LlmCall = async (_system, user) => {
+      seen.push(user);
+      const engineId = /^Engine:\s*(\S+)/m.exec(user)![1];
+      const first = /^-\s*(\S+)\s*=\s*(.+)$/m.exec(user)!;
+      return makeCleanMicroJson(engineId, first[1], first[2].replace(/^"|"$/g, ''));
+    };
+    const dep = makeCorrectedDep({ correctedMatrix: { register: 'L1-L3', interpretationLlm } });
+    const result = await executeReferenceSection(makeCorrectedSectionInput(), dep, makeCorrectedRoutingLlm(), {
+      engineResultsBySubject: [
+        { subject: 'Gary', engines: [makeEngineOutput('panchanga-engine', { nakshatra_name: 'Rohini' })] },
+        { subject: 'Mohan', engines: [makeEngineOutput('panchanga-engine', { nakshatra_name: 'Ashwini' })] },
+      ],
+    });
+    expect(result.receipt.outcome).not.toBe('failed');
+    expect(seen[0]).toContain('Gary'); expect(seen[1]).toContain('Mohan');
+    expect(result.envelope!.private.micro_interpretations.map(m => [m.subject, m.source_value])).toEqual([['Gary', 'Rohini'], ['Mohan', 'Ashwini']]);
+  });
+
   it('runs per-engine interpretation calls concurrently while preserving input order', async () => {
     let active = 0;
     let maxActive = 0;
@@ -2462,7 +2482,7 @@ Reflection remains grounded and open.`;
     ]);
     expect(prompt).toContain('including headings and table headers');
     expect(prompt).toContain('search your own draft for each quoted match');
-    expect(prompt).toContain('"evidence confidence" instead of "source precision"');
+    expect(prompt).toContain('Remove audit machinery and confidence/precision columns');
   });
 
   it('fails closed when leakage cleanup still leaves violations (no accept-with-warning on the corrected gate)', async () => {

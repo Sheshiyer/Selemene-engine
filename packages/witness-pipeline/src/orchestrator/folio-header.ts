@@ -21,6 +21,7 @@ export interface RelationshipContextInfo {
 export interface FolioHeaderInput {
   subjectRoles: SubjectRoleInfo[];
   relationshipContext: RelationshipContextInfo;
+  language?: string;
 }
 
 /**
@@ -42,28 +43,48 @@ export function renderFolioRelationshipHeader(input: FolioHeaderInput): string {
   // Build human title from roles + type (declarative, non-presumptive)
   const rolePair = buildRolePair(roles);
   const typeLabel = mapTypeToLabel(ctx.type);
-  const title = `${rolePair} ${typeLabel} — non-predictive pattern witness`;
+  const isFrench = input.language?.toLowerCase().startsWith('fr');
+  const translatedRolePair = isFrench && ctx.type === 'business-partners' ? 'Partenaires commerciaux' : rolePair;
+  const translatedTypeLabel = isFrench ? mapTypeToLabelFr(ctx.type) : typeLabel;
+  const title = isFrench
+    ? `${translatedRolePair} — ${translatedTypeLabel} — lecture descriptive, sans prédiction`
+    : `${rolePair} ${typeLabel} — non-predictive pattern witness`;
 
   // Subjects line with optional labels
   const subjectsLine = roles.length > 0
     ? roles.map(r => {
-        const base = `${r.name} (${r.role}`;
+        const role = isFrench && r.role === 'business-partner' ? 'partenaire commercial' : r.role;
+        const base = `${r.name} (${role}`;
         const withLabel = r.label ? `${base}, ${r.label}` : base;
         return `${withLabel})`;
       }).join(', ')
     : '';
 
-  const goalLine = ctx.mapping_goal ? `Mapping goal: ${ctx.mapping_goal}` : '';
-  const sensLine = `Sensitivity: ${ctx.sensitivity_level}`;
+  const goalLine = ctx.mapping_goal ? `${isFrench ? 'Objectif de lecture' : 'Mapping goal'}: ${ctx.mapping_goal}` : '';
+  const sensitivity = isFrench
+    ? ({ low: 'faible', medium: 'moyenne', high: 'élevée' } as const)[ctx.sensitivity_level]
+    : ctx.sensitivity_level;
+  const sensLine = `${isFrench ? 'Sensibilité' : 'Sensitivity'}: ${sensitivity}`;
 
   const lines = [
     `# ${title}`,
-    subjectsLine ? `Subjects: ${subjectsLine}` : '',
+    subjectsLine ? `${isFrench ? 'Partenaires' : 'Subjects'}: ${subjectsLine}` : '',
     goalLine,
     sensLine,
   ].filter(Boolean);
 
   return lines.join('\n');
+}
+
+function mapTypeToLabelFr(type: string): string {
+  switch (type) {
+    case 'business-partners': return 'synastrie professionnelle';
+    case 'family': return 'lecture des liens familiaux';
+    case 'unmarried-partners': return 'lecture de dyade';
+    case 'married-partners': return 'lecture de dyade';
+    case 'friends': return 'lecture relationnelle';
+    default: return 'lecture relationnelle';
+  }
 }
 
 function capitalizeRole(role: string): string {

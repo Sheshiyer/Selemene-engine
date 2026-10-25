@@ -1,0 +1,12 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { validateGuardrailDisposition } from '../../packages/witness-pipeline/src/orchestrator/guardrail-disposition.js';
+const [dir, section] = process.argv.slice(2);
+if (!dir || !/^(opening|part(?:[1-9]|10|11))$/.test(section??'')) throw new Error('run directory and valid section required');
+const disposition=JSON.parse(readFileSync(join(dir,section+'.guardrail-disposition.json'),'utf8'));
+const rawEvidenceTexts=Object.fromEntries(disposition.evidence.map((ref:any)=>{if(ref.file.includes('/')||ref.file.includes('..'))throw new Error('unsafe evidence filename');return [ref.file,readFileSync(join(dir,ref.file),'utf8')];}));
+const byPattern=(pattern:RegExp)=>JSON.parse(rawEvidenceTexts[disposition.evidence.find((e:any)=>pattern.test(e.file)).file] as string);
+const revision=byPattern(/editorial-revision/);const diagnostic=byPattern(/guardrail-diagnostic/);const originalJev=byPattern(/editorial-jev/);
+const result=validateGuardrailDisposition({disposition,exactOutput:revision.revisedOutput,originalJev,diagnostic,revision,rawEvidenceTexts});
+writeFileSync(join(dir,section+'.guardrail-disposition-validation.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify(result));

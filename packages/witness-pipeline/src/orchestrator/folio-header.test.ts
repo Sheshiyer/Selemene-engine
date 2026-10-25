@@ -41,4 +41,25 @@ describe('folio-header renderer (Phase 6 B-surface)', () => {
     expect(header).toContain('Sensitivity: medium');
     expect(header.startsWith('# ')).toBe(true);
   });
+
+  it('localizes the relationship header for French reports', () => {
+    const header = renderFolioRelationshipHeader({
+      subjectRoles: [
+        { role: 'business-partner', name: 'Priya' },
+        { role: 'business-partner', name: 'Rahul' },
+        { role: 'business-partner', name: 'Sam' },
+      ],
+      relationshipContext: {
+        type: 'business-partners',
+        mapping_goal: 'Décrire les motifs symboliques entre trois partenaires.',
+        sensitivity_level: 'high',
+      },
+      language: 'fr',
+    });
+    expect(header).toContain('Partenaires commerciaux — synastrie professionnelle — lecture descriptive, sans prédiction');
+    expect(header).toContain('Partenaires: Priya (partenaire commercial), Rahul (partenaire commercial), Sam (partenaire commercial)');
+    expect(header).toContain('Objectif de lecture: Décrire les motifs symboliques entre trois partenaires.');
+    expect(header).toContain('Sensibilité: élevée');
+    expect(header).not.toContain('Mapping goal:');
+  });
 });

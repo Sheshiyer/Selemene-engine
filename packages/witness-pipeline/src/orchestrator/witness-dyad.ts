@@ -311,6 +311,8 @@ export const SYNTHESIS_LEAKAGE_PROHIBITION = [
   '- Do NOT include review-status labels (finalAccepted, changes-required, malformed, insufficient).',
   '- Do NOT include JSON-shaped fragments (quoted keys followed by colons inside braces or arrays).',
   '- Do NOT include receipt-style ISO 8601 timestamps with milliseconds (e.g. 2026-09-30T04:33:11.014Z). Narrative dates like "September 2026" are welcome.',
+  '- Never expose snake_case identifiers, backticked field paths, engine-result counts, source precision labels, evidence-confidence columns or audit commentary. Translate fields into readable chart vocabulary; explain the systems and their lenses instead of the processing machinery.',
+  '- In the first half teach the method: each supplied system asks a different question. Separate agreement, genuine contradiction about a comparable claim, and complementary difference. Explore supported tensions as a contour for reflection and a concrete experiment; never manufacture conflict, compatibility or biography. Avoid repeating generic disclaimers in every paragraph.',
   '- If uncertainty is relevant to the reader, express it in concise natural language attached to the affected sentence.',
   '- Recount every numerical group before writing it. If N fields share a value, list exactly those N fields; never include a different value merely because it is nearby or thematically related.',
   '- Keep present-time transit facts descriptive. State the supplied position, aspect, orb, and period dates without converting them into directional forecasts such as "approaching", "will bring", or "leading toward".',

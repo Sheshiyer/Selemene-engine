@@ -270,6 +270,7 @@ export class IntegratedReadingOrchestrator {
           maxTokensForSynthesis: Math.max(4096, Math.round(max * 10)),
         }, this.referenceExecution, this.llm, {
           jevGate: this.jevGate, checkpoint: this.sectionCheckpoint, allEngineResults,
+          engineResultsBySubject: input.engineResultsBySubject.map((engines, i) => ({ subject: input.subjectNames[i], engines })),
           guardrailPolicy, register, relationshipType: input.relationshipContext?.type,
         });
         if (section.receipt.outcome === 'failed') throw new Error(`Reference section ${pass.id} failed; inspect checkpoint receipt`);
@@ -431,7 +432,7 @@ ${best.output}`;
       : '';
     const langLine = input.language
       ? input.language.toLowerCase().startsWith('fr')
-        ? 'Output language: French. Write every heading, sentence, table label, explanation, and question in French. Preserve proper names, source identifiers, exact engine labels, and quoted source values in their original form. Do not leave English template prose untranslated.'
+        ? 'Output language: French. Write every heading, sentence, table label, explanation, and question in French. Preserve proper names and exact chart values. Translate system names into readable terms; never expose source identifiers or internal engine labels. Do not leave English template prose untranslated.'
         : `Output language: ${input.language}. Write every heading, sentence, table label, explanation, and question in ${input.language}. Preserve proper names, source identifiers, exact engine labels, and quoted source values in their original form.`
       : '';
     const voice = VOICE_RULES[this.mode.frontmatter.jev_guardrail ?? 'descriptive'];

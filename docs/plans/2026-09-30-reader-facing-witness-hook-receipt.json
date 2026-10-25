@@ -1,0 +1,26 @@
+{
+  "manual_user_requested_handoff": true,
+  "target_thread": "01a0f1a6-1473-75c0-adba-2e1737358f10",
+  "pointer_before": {
+    "schema": "temperance.rollover-pointer.v1",
+    "project_root": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine",
+    "from_session": "01a0ef55-b401-7361-97f7-1033e339260a",
+    "requested_at": "2026-09-30T09:29:47.828Z",
+    "status": "pending"
+  },
+  "hook_output": {
+    "hookSpecificOutput": {
+      "hookEventName": "SessionStart",
+      "additionalContext": "<temperance-rail-restore>\nsource: context rollover from session 01a0ef55-b401-7361-97f7-1033e339260a. This is the rail the session was on before; it supersedes a default OBSERVE banner.\nmode/tier: ALGORITHM / E4. Follow-up and continuation prompts keep this tier; an explicit /eN overrides it.\nphase: CITRINITAS \u00b7 PLAN \u00b7 3/7. Resume at this phase; do not restart the Algorithm at OBSERVE.\nisa: /Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md. Re-read it before acting; its criteria record what is done and what is left.\ngoal: /Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/.temperance/goal.json\nhandoff: /Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/.planning/HANDOFF.json. Read it first, then run /gsd:resume-work (it consumes the handoff).\n</temperance-rail-restore>"
+    }
+  },
+  "pointer_after": {
+    "schema": "temperance.rollover-pointer.v1",
+    "project_root": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine",
+    "from_session": "01a0ef55-b401-7361-97f7-1033e339260a",
+    "requested_at": "2026-09-30T09:29:47.828Z",
+    "status": "consumed",
+    "consumed_by": "01a0f1a6-1473-75c0-adba-2e1737358f10",
+    "consumed_at": "2026-09-30T09:30:08Z"
+  }
+}

@@ -84,6 +84,10 @@ const MATCH_WINDOW = 80;
 // Every block pattern must be justified against the corrective plan §2.4.
 
 const BLOCK_PATTERNS: LeakagePattern[] = [
+  { id: 'private_field_identifier', severity: 'block', regex: /\b[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]+\b/g },
+  { id: 'private_field_path', severity: 'block', regex: /`[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z0-9_]+)+`/g },
+  { id: 'engine_result_count', severity: 'block', regex: /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen)\s+(?:supplied\s+)?engine\s+(?:results?|outputs?|records?)\b/gi },
+  { id: 'evidence_audit_language', severity: 'block', regex: /\b(?:evidence[- ]confidence|source[- ]audit|audit verdict|audit status|source precision label|engine records?|engine outputs?|engine results?)\b/gi },
   // Cloudflare corpus IDs. `sw:` is a stable internal namespace.
   {
     id: 'cf_passage_id',
@@ -221,7 +225,7 @@ function windowedMatch(m: RegExpExecArray): string {
 function maskReadableTerms(text: string): string {
   let masked = text;
   for (const term of READABLE_TERMS) {
-    const rx = new RegExp(escapeRegex(term), 'gi');
+    const rx = new RegExp('\\b' + escapeRegex(term) + '\\b', 'gi');
     masked = masked.replace(rx, (m) => ' '.repeat(m.length));
   }
   return masked;

@@ -11,6 +11,8 @@ export interface SourcePackInput {
   readingMarkdown: string;
   engineResults: SelemeneEngineOutput[];
   outputDir: string;
+  language?: string;
+  reportLevel?: string;
   deterministicOnly?: boolean;
   patternLearning?: { extracted: number; upserted: number; skipped: number };
 }
@@ -19,6 +21,8 @@ export interface SourcePack {
   outputDir: string;
   manifest: {
     person_id: string;
+    language?: string;
+    report_level?: string;
     created_at: string;
     reading_length: number;
     engines: string[];
@@ -71,6 +75,8 @@ export async function createSourcePack(input: SourcePackInput): Promise<SourcePa
   }
   const manifest: SourcePack['manifest'] = {
     person_id: input.personId,
+    ...(input.language ? { language: input.language } : {}),
+    ...(input.reportLevel ? { report_level: input.reportLevel } : {}),
     created_at: new Date().toISOString(),
     reading_length: input.readingMarkdown.length,
     engines: input.engineResults.map((e) => e.engine_id),

@@ -92,12 +92,14 @@ jev_guardrail: descriptive
 ---
 
 ## opening-pass
+Introduce the Witness Alchemist approach in accessible prose: a chart is a lens, the person remains its interpreter. Explain the distinct question each supplied system asks and how structural descriptions meet lived experience. Treat agreement as resonance rather than proof. Where comparable observations pull in different directions, keep both visible: the tension can trace a contour of contexts, choices and meaning. Distinguish that from systems simply describing different dimensions. Never invent contradictions to illustrate the method. Carry this approach through the first half using grounded examples and open inquiries, without repeated disclaimers or technical processing language.
+
 Write the Opening — "Scope and Available Systems" — for {{subject_names}}.
 
 Engine facts:
 {{engine_facts}}
 
-Establish what this report covers and how the available systems offer distinct interpretive lenses without claiming mutual validation. Name only systems present in the supplied engine records. Explain the reading method: structural precision and experiential reflection are reconciled. Reserve detailed placements and numerical chart values for later chapters; any scope table here should contain system, source, and scope only.
+Establish what this report covers and how the available systems offer distinct interpretive lenses without claiming mutual validation. Name only systems present in the supplied engine records. Explain the reading method: structural precision and experiential reflection are reconciled. Reserve detailed placements and numerical chart values for later chapters; any scope table here should contain readable system name and interpretive scope only.
 
 Use this exact chapter map, translated when needed: I The Convergence Map; II The Vedic Foundation; III The Karmic Architecture; IV Career and Dharma; V Wealth and Money; VI Love, Marriage, Spouse; VII Health and Energy Body; VIII Family, Roots, and Soul Lineage; IX The Master Timeline; X Practices and Anti-Dependency; XI Final Synthesis. Do not invent a system-by-system alternative outline. Health, money, and relationship chapters describe symbolic frameworks and evidence limits, without clinical or event claims.
 
@@ -118,9 +120,9 @@ Engine facts:
 {{engine_facts}}
 
 Subsections required:
-- 1.1 The Identity Stack: list all present systems and their scope in a labeled table. Quote a source precision label only when explicitly supplied; never infer accuracy from the number of displayed digits. Missing precision is "not supplied".
-- 1.2 Shared Observations — The Bedrock: list only claims supported by at least two separate engine results; label each with the engine IDs that support it. Shared source inputs are not independent validation.
-- 1.3 What the Systems Disagree On — The Texture: list explicitly where two or more systems offer different or non-overlapping information; label each with the engine IDs
+- 1.1 The Identity Stack: explain all present systems and their distinct questions in a readable table of system and lens. Explain exact chart observations separately from symbolic interpretation in natural prose. Never include evidence-confidence, source precision or audit columns.
+- 1.2 Shared Observations — The Bedrock: list only claims supported by at least two separate engine results; name the readable systems that support it. Shared source inputs are not independent validation.
+- 1.3 What the Systems Disagree On — The Texture: distinguish genuine tensions between comparable observations from complementary, non-overlapping lenses; show how a supported tension offers a contour for meaning and a question to test in lived experience; name the readable systems involved
 
 If a system result is absent or errored, mark that row in the table with "not supplied" rather than filling from prior knowledge.
 

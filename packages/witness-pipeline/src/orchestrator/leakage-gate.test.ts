@@ -158,3 +158,12 @@ describe('leakage gate — determinism and helpers', () => {
     expect(only.length).toBeGreaterThanOrEqual(1);
   });
 });
+
+ describe('reader field boundary regression', () => {
+  it('blocks pilot field leaks and audit columns', () => {
+    for (const text of ['Your hd_type is Generator', 'nakshatra_name indicates Rohini', '`birth_nakshatra.name` is Rohini', 'eleven engine results', '| Evidence-confidence | Value |']) expect(leakageGate(text).passed).toBe(false);
+  });
+  it('keeps readable lens vocabulary and concrete values', () => {
+    expect(leakageGate('Human Design describes a Generator; Vedic Jyotish places the Moon in Rohini. Different lenses invite a question about rhythm.').passed).toBe(true);
+  });
+ });

@@ -125,3 +125,30 @@ describe('validatePrivateEvidenceMap', () => {
     expect(blockers.some(b => b.endsWith(':incomplete_entry'))).toBe(true);
   });
 });
+
+describe('partner ownership binding', () => {
+  it('allows the same engine and field for distinct partners without collision', () => {
+    const map = baseMap();
+    const facts = map.engine_facts_consumed[0]; const mi = map.micro_interpretations[0];
+    map.engine_facts_consumed = [{ ...facts, subject: 'Gary' }, { ...facts, subject: 'Mohan', values_snapshot: { ...facts.values_snapshot, 'planets.Jupiter.dignity': 'Own sign' } }];
+    map.micro_interpretations = [{ ...mi, subject: 'Gary' }, { ...mi, subject: 'Mohan', source_value: 'Own sign' }];
+    expect(validatePrivateEvidenceMap(map)).toEqual([]);
+    map.micro_interpretations[1].source_value = 'Exalted';
+    expect(validatePrivateEvidenceMap(map).some(b => b.includes('source_value_mismatch'))).toBe(true);
+  });
+  it('rejects a claim whose partner has no consumed engine', () => {
+    const map = baseMap(); map.engine_facts_consumed[0].subject = 'Gary'; map.micro_interpretations[0].subject = 'Mohan';
+    expect(validatePrivateEvidenceMap(map).some(b => b.includes('engine_not_in_facts_consumed'))).toBe(true);
+  });
+});
+
+describe('snapshot serialization', () => {
+  it('binds numeric and array chart values using the parser JSON representation', () => {
+    const map = baseMap(); const facts = map.engine_facts_consumed[0]; const mi = map.micro_interpretations[0];
+    facts.fields_used = ['life_path', 'gates']; facts.values_snapshot = { life_path: 7, gates: [1, 13, 33] };
+    map.micro_interpretations = [{ ...mi, source_field: 'life_path', source_value: '7' }, { ...mi, source_field: 'gates', source_value: '[1,13,33]' }];
+    expect(validatePrivateEvidenceMap(map)).toEqual([]);
+    map.micro_interpretations[1].source_value = '[1,13,34]';
+    expect(validatePrivateEvidenceMap(map).some(b => b.includes('source_value_mismatch'))).toBe(true);
+  });
+});

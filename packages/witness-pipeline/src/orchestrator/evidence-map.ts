@@ -27,6 +27,8 @@ export type MicroInterpretationConfidence =
 
 export interface EngineFactsConsumed {
   engine_id: string;
+  /** Partner ownership; omitted for legacy single-subject maps. */
+  subject?: string;
   /** Exact field paths from the SelemeneEngineOutput.result tree (dotted). */
   fields_used: string[];
   /** Frozen snapshot of the values referenced by fields_used at generation time. */
@@ -39,6 +41,8 @@ export interface EngineFactsConsumed {
 
 export interface MicroInterpretation {
   engine_id: string;
+  /** Partner ownership; omitted for legacy single-subject maps. */
+  subject?: string;
   /** Exact text of the reader-facing claim this interpretation supports. */
   claim: string;
   /** Dotted field path within the engine result (e.g. 'planets.Jupiter.dignity'). */
@@ -113,10 +117,14 @@ export interface SectionGenerationEnvelope {
 export function validatePrivateEvidenceMap(map: PrivateEvidenceMap): string[] {
   const blockers: string[] = [];
   const engineIndex = new Map<string, EngineFactsConsumed>();
-  for (const e of map.engine_facts_consumed) engineIndex.set(e.engine_id, e);
+  const key = (e: { engine_id: string; subject?: string }) => JSON.stringify([e.subject ?? '', e.engine_id]);
+  for (const e of map.engine_facts_consumed) {
+    if (engineIndex.has(key(e))) blockers.push('duplicate_subject_engine:' + key(e));
+    engineIndex.set(key(e), e);
+  }
 
   for (const [i, mi] of map.micro_interpretations.entries()) {
-    const eng = engineIndex.get(mi.engine_id);
+    const eng = engineIndex.get(key(mi));
     if (!eng) {
       blockers.push(`micro_interpretations[${i}]:engine_not_in_facts_consumed:${mi.engine_id}`);
       continue;
@@ -124,14 +132,17 @@ export function validatePrivateEvidenceMap(map: PrivateEvidenceMap): string[] {
     if (mi.source_field && !eng.fields_used.includes(mi.source_field)) {
       blockers.push(`micro_interpretations[${i}]:orphaned_field:${mi.engine_id}.${mi.source_field}`);
     }
+    const snapshot = eng.values_snapshot[mi.source_field];
+    const expected = typeof snapshot === 'string' ? snapshot : JSON.stringify(snapshot);
+    if (expected !== undefined && mi.source_value !== expected) blockers.push('micro_interpretations[' + i + ']:source_value_mismatch:' + key(mi) + '.' + mi.source_field);
     if (!mi.claim || !mi.source_value || !mi.interpretation_tradition) {
       blockers.push(`micro_interpretations[${i}]:incomplete_entry`);
     }
   }
 
-  const coveredEngines = new Set(map.micro_interpretations.map(m => m.engine_id));
+  const coveredEngines = new Set(map.micro_interpretations.map(key));
   for (const e of map.engine_facts_consumed) {
-    if (e.fields_used.length > 0 && !coveredEngines.has(e.engine_id)) {
+    if (e.fields_used.length > 0 && !coveredEngines.has(key(e))) {
       blockers.push(`engine_facts_consumed:no_micro_interpretation:${e.engine_id}`);
     }
   }

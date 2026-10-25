@@ -41,8 +41,12 @@ describe('createSourcePack', () => {
         readingMarkdown: '# Reading',
         engineResults: engines,
         outputDir: dir,
+        language: 'fr',
+        reportLevel: 'L3',
       });
       expect(pack.manifest.person_id).toBe('test-person');
+      expect(pack.manifest.language).toBe('fr');
+      expect(pack.manifest.report_level).toBe('L3');
       expect(pack.manifest.quality.facts_count).toBe(3);
       expect(pack.manifest.quality.gate_status).toBe('ready');
       expect(pack.reflectionQuestions.length).toBeGreaterThan(0);

@@ -1,0 +1,18 @@
+# Editorial verifier review — pending repairs
+
+This review covers the in-progress routed worker implementation, not an accepted change. Original reports and model receipts remain immutable.
+
+1. `verifyEditorialSection` compares `freshAudit.baseReceiptSha256` with a second caller-supplied hash, but receives no original receipt file bytes to recompute either hash. Require exact raw receipt text, hash it, and ensure parsed content equals the actual receipt being verified.
+2. Fresh Jev checks iterate supplied verdict entries. An empty verdict map or a missing required dimension can pass. Require guardrail, framing, grounding and register explicitly, and require `blocked === false`, a matching section/pass ID and the expected review mode. Bind a supplied guardrail disposition to THIS fresh Jev artifact, not another independently valid review of the same prose.
+3. Failed-outcome eligibility must require at least one source_audit_failed attempt and reject null, malformed and unknown attempts; an all-ok attempts list cannot justify outcome failed recovery.
+4. `verifyEditorialPriorContext` assumes all revised sections were generated against the original pre-edit versions of every predecessor. That is false for the current continuation: Part II and later actually consumed revised opening/Part I before they themselves undergo later editorial revision. Validate the exact per-edge historical text/version against saved hashes and raw synthesis input, with an allowlist of verified original and revised versions. Do not categorically reject legitimate historical revised text. Never claim a model consumed a later edit.
+5. Whole-artifact coherence must bind actual assembled text, not silently fall back to a hash-list string if assembled is omitted. Require substantive rationale and valid finding objects with explicit booleans; missing/malformed findings must not silently become an empty list. Reject duplicate reviewed revision references.
+6. Real report acceptance still requires integration with final-verification and a posthoc runner that collects raw evidence. Current full generator predates these new APIs and must remain draft-only.
+
+Known output findings that must remain open: Part II four issues, Part III four issues, Part IV ten issues, saved beside exact run receipts in `.../sheshnarayan-en-2026-09-30T01-41-24-265Z`. A fresh model re-audit of Part III still returned clean despite the manual unsupported-meaning findings. Do not equate clean audit status with source acceptance.
+
+## Additional real-artifact review after worker hardening
+
+- Parent fixed full raw receipt object equality, null edges, empty prior input, and real title-wrapped prior hashes; Parts II–IV actual historical checks now pass. Focused suite130 includes passage validator29, editorial53, reference48.
+- Still unresolved: `verifyEditorialSection` constructs a STRIPPED `expectedOriginalJev` containing only sectionOutputHash/status/blocked/verdicts, then deep-compares it to `disp.originalJev`. Actual saved originalJev is the ENTIRE parsed sidecar including receipt pass_id/mode/model/answers/rubric and more; guardrail-disposition itself binds the full raw sidecar. This comparison therefore rejects valid real dispositions while synthetic minimal fixtures pass. Fix by binding the actual complete fresh Jev artifact, update fixtures to real shape, and test real opening/PartI dispositions before acceptance. Do not strip raw evidence to appease the synthetic fixture.
+- Source-supplement worker93031 currently edits editorial-verification/prefix/reviewCLI. Avoid overlapping edits until terminal or make ownership explicit.
