@@ -237,8 +237,8 @@
       "worktree": ".worktrees/ralph-s4-sigil",
       "iteration": 0,
       "cap": 12,
-      "status": "pr-open",
-      "axis_reached": "Implemented (local tests green per lane report)",
+      "status": "merged",
+      "axis_reached": "Deployed (prod deploying main@d5729652); Operational pending NVIDIA NIM recovery",
       "blocked_on_human": null,
       "receipts": [
         {
@@ -252,6 +252,36 @@
           "tier": "T1",
           "cmd": "lane session opened PR #1499 from ralph/s4-sigil-provenance@ca993f7e; lane reports local suites green",
           "result": "not yet reviewed by coordinator; staging not run"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T2",
+          "cmd": "Railway MCP: stage Selemene-engine + ts-engines source main->ralph/s4-sigil-provenance in staging (patch 1e4ec52d, 5 non-destructive changes); accept-deploy",
+          "result": "ts-engines 44d6078d SUCCESS 20:23Z; Selemene-engine 655d4ee3 SUCCESS (cargo release 4m16s) ca993f7e"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T2",
+          "cmd": "POST staging /api/v1/engines/sigil-forge/calculate generate_image:false (X-API-Key ralph-s1-staging)",
+          "result": "200; envelope top-level provenance {runtime_kind typescript, implementation_version 2.0.0, cached false, fallback_used true, confidence 0}; no __contract_provenance key anywhere; no top-level generated_image. API lift verified."
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T2",
+          "cmd": "POST staging sigil-forge calculate generate_image:true without consent",
+          "result": "422 CONSENT_REQUIRED required_scope sigil-gen (image path is consent-gated; probe needed consent)"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T2",
+          "cmd": "POST staging sigil-forge calculate generate_image:true + consent sigil-gen, and + parameters.provider kimi",
+          "result": "API: 500 BRIDGE_ERROR (TS_BRIDGE_TIMEOUT unset -> 30s, pre-existing) because NVIDIA NIM took ~60-67s. Direct ts-engines-staging: 200, provenance fallback_used true confidence 0, result.provider nvidia, result.generated_image.error 'NVIDIA NIM image generation failed (500)', metadata.finish_reason ERROR, no fabricated b64; kimi override: provider_note \"Requested provider 'kimi' is not configured; using nvidia.\" provider_requested kimi. Honest-failure contract proven; real-image success blocked by upstream NIM 500 on black-forest-labs/flux.1-dev (3 attempts)."
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T3",
+          "cmd": "gh pr merge 1499 --merge --match-head-commit ca993f7e",
+          "result": "MERGED 2026-10-25T20:36:35Z merge commit d5729652; prod deployments queued: Selemene-engine 6cd68ae7, ts-engines 91081190, mediapipe-service 97b67233 (main@d5729652)"
         }
       ],
       "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
@@ -365,6 +395,12 @@
       "severity": "high",
       "area": "auth/RBAC (W3E slot 20, issue #913)",
       "finding": "A premium-tier key whose permissions JSON is only [basic:access, face-reading:read] successfully executed POST /api/v1/engines/panchanga/calculate in production (200 with full result). Per-engine permission scopes are not enforced on engine calculate; tier appears to grant access. Unauthenticated request correctly returns 401. Test key ralph-s1-prod was deactivated after the proof."
+    },
+    {
+      "date": "2026-10-26",
+      "severity": "medium",
+      "area": "sigil-forge image generation (provider + bridge timeout)",
+      "finding": "NVIDIA NIM ai.api.nvidia.com/v1/genai black-forest-labs/flux.1-dev returned 500 after ~60s on 3 staging attempts; the TS bridge default timeout is 30s (TS_BRIDGE_TIMEOUT unset in staging and prod), so any image generation slower than 30s surfaces as API 500 BRIDGE_ERROR even when ts-engines answers honestly. Follow-up: set TS_BRIDGE_TIMEOUT (e.g. 90) or route image gen async; consider FLUX_SCHNELL default; re-probe success path when NIM recovers."
     }
   ],
   "merge_order": [
