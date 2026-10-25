@@ -211,9 +211,9 @@
       "worktree": ".worktrees/ralph-s5-rbac",
       "iteration": 6,
       "cap": 12,
-      "status": "prod-deployed-audit",
+      "status": "prod-audit-hold",
       "axis_reached": "Deployed (prod, audit) / Operational (staging, enforce)",
-      "blocked_on_human": null,
+      "blocked_on_human": "Operator decision 2026-10-25: hold production in ENGINE_SCOPE_MODE audit for a few days; review warnings together; then run backfill preview+commit and set enforce.",
       "origin": "cross_cutting_findings[0] 2026-10-25 (W3E slot 20, #913)",
       "design": "API-key principals need <engine>:read (or engines:*/admin:*/*) on calculate, face upload, and every engine of a workflow; JWT/CF Access principals stay tier-governed; ENGINE_SCOPE_MODE off|audit(default)|enforce; check runs before quota",
       "receipts": [
@@ -269,7 +269,8 @@
       "remaining": [
         "prod rollout (operator decision): run scripts/sql/backfill-engine-scopes.sql preview+commit, review audit warnings, set ENGINE_SCOPE_MODE=enforce",
         "separate decision: /api/legacy routes are unauthenticated"
-      ]
+      ],
+      "review_readback": "railway MCP get-logs service 48b3bd23 env 702b945e filter \"engine scope missing\" (fields: user_id, tier, engine_id, route, required_permission); or railway logs --service Selemene-engine --environment production | grep \"engine scope missing\""
     }
   },
   "s0": {
