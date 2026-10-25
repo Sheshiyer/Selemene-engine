@@ -1,54 +1,52 @@
-export interface R2Config {
-  accountId: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-  bucket: string;
-  publicBaseUrl: string;
+/**
+ * R2 upload for the Suno bulk/smoke scripts.
+ *
+ * Thin wrapper over `src/utils/r2.ts` (SigV4 via aws4fetch). The previous
+ * version sent `Authorization: Bearer <secret>` to the S3 endpoint, which R2
+ * rejects, and hard-coded `audio/mpeg`; content type is now inferred from the
+ * key's extension.
+ */
+
+import { extname } from 'node:path'
+import { type R2Config, putIfAbsent, requireR2Config } from '../src/utils/r2'
+
+export type { R2Config }
+export { requireR2Config }
+
+const CONTENT_TYPES: Record<string, string> = {
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
+  '.m4a': 'audio/mp4',
+  '.flac': 'audio/flac',
+  '.json': 'application/json',
+  '.txt': 'text/plain; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
 }
 
-export function requireR2Config(env: NodeJS.ProcessEnv = process.env): R2Config {
-  const config = {
-    accountId: env.R2_ACCOUNT_ID ?? "",
-    accessKeyId: env.R2_ACCESS_KEY_ID ?? "",
-    secretAccessKey: env.R2_SECRET_ACCESS_KEY ?? "",
-    bucket: env.R2_RAGA_CLIPS_BUCKET ?? "selemene-raga-clips",
-    publicBaseUrl: env.R2_PUBLIC_BASE_URL ?? "",
-  };
-
-  const missing = [
-    !config.accountId && "R2_ACCOUNT_ID",
-    !config.accessKeyId && "R2_ACCESS_KEY_ID",
-    !config.secretAccessKey && "R2_SECRET_ACCESS_KEY",
-    !config.publicBaseUrl && "R2_PUBLIC_BASE_URL",
-  ].filter(Boolean);
-
-  if (missing.length) {
-    throw new Error(`Missing R2 env vars: ${missing.join(", ")}`);
-  }
-
-  return config;
+export function contentTypeForKey(key: string): string {
+  return CONTENT_TYPES[extname(key).toLowerCase()] ?? 'application/octet-stream'
 }
 
 export function publicR2Url(publicBaseUrl: string, key: string): string {
-  return `${publicBaseUrl.replace(/\/+$/, "")}/${key.replace(/^\/+/, "")}`;
+  return `${publicBaseUrl.replace(/\/+$/, '')}/${key.replace(/^\/+/, '')}`
 }
 
-export async function uploadToR2(key: string, buffer: Buffer, config = requireR2Config()): Promise<string> {
-  const endpoint = `https://${config.accountId}.r2.cloudflarestorage.com/${config.bucket}/${key}`;
-  const response = await fetch(endpoint, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "audio/mpeg",
-      "Cache-Control": "public, max-age=31536000, immutable",
-      "Authorization": `Bearer ${config.secretAccessKey}`,
-      "X-Access-Key-Id": config.accessKeyId,
-    },
-    body: buffer,
-  });
-
-  if (!response.ok) {
-    throw new Error(`R2 upload failed: ${response.status} ${await response.text()}`);
-  }
-
-  return publicR2Url(config.publicBaseUrl, key);
+/**
+ * Upload `buffer` under `key` (skipped when the object already exists) and
+ * return its public URL.
+ */
+export async function uploadToR2(
+  key: string,
+  buffer: Uint8Array,
+  config: R2Config = requireR2Config(),
+): Promise<string> {
+  const { url } = await putIfAbsent(key, buffer, contentTypeForKey(key), {
+    cacheControl: 'public, max-age=31536000, immutable',
+    config,
+  })
+  return url
 }

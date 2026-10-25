@@ -103,3 +103,47 @@ The bridge passes the TS result through **verbatim** — `result: ts_response.re
 - **Duplicate/divergent data sources.** The 22-shruti table + 72 melakartas exist **twice** — backend `ts-engines/.../wisdom.ts` and web `apps/noesis-web/src/lib/raaga/{shrutis,melakartas}.ts` (the renderer's `RaagaPlayer` uses the web copy, `lib/raaga/index.ts:1-3`). The header comment claims they're kept "numerically identical" (`wisdom.ts:8-9`), but that's a manual invariant — **drift risk** (e.g. the hard-coded `ratio_num/ratio_den` arrays in `engine.ts:147-152` must also track `SHRUTIS`). Not verified equal here.
 - **Vivadi aliases / "missing" geometry.** Some shruti slots collapse (R3≡G1 at index 5, D3≡N1 at index 18 — `wisdom.ts:36,38,52-70`); a swara-wheel must decide whether to draw 22 distinct positions or the collapsed 16. Flag for the Wave-2 ring design.
 - **`avarohana_indices` is emitted but unused.** The renderer recomputes the descending row from `swaras` reversed (`Raaga.tsx:75-78`) rather than reading the producer's `avarohana_indices` — harmless today (melakarta avarohana = reverse), but the producer field is dead from the web's perspective.
+
+## 8. Audio clip (`generated_audio.clip_url`) — modes, env, provenance (2026-10-26)
+
+`generated_audio` is always present on a raaga response: `{ clip_url, strudel_ratios, root_hz, metadata{…, clip{requested, status, mode?, detail?}} }`. A clip is rendered only when **both** `parameters.request_clip: true` **and** a consent object with `granted: true` are sent (top-level `consent` or `parameters.consent`; the engine checks only `granted`, not a specific scope string). The clip is the arohana ladder of the just-intonation ratios as sine tones (mono PCM16, 22 050 Hz, ~5.4 s at the default 0.6 s per swara), rendered by the pure `renderWav()` in `ts-engines/src/engines/raaga/clip.ts` — byte-identical for the same ratios/root, so it is content-addressable.
+
+| `RAAGA_CLIP_MODE` | What happens | `clip_url` | `metadata.clip.status` |
+|---|---|---|---|
+| `off` (default) | nothing rendered | `null` | `skipped_off` |
+| `local` | WAV written under `RAAGA_CLIP_DIR` and served by this process at `GET /clips/raaga/<file>` | absolute `https://…/clips/raaga/<file>` when a public base is known (`RAAGA_CLIP_BASE_URL`, else `TS_ENGINES_PUBLIC_URL`, else Railway's `RAILWAY_PUBLIC_DOMAIN`); otherwise the **relative** `/clips/raaga/<file>` with `detail` flagging it ephemeral | `generated` |
+| `r2` | WAV uploaded to Cloudflare R2 (SigV4 via `aws4fetch`, `ts-engines/src/utils/r2.ts`) under key `raaga/<sha256 of bytes>.wav`, `Content-Type: audio/wav`, `Cache-Control: public, max-age=31536000, immutable`; `HEAD` first so repeats never re-upload | absolute `${R2_PUBLIC_BASE_URL}/raaga/<sha256>.wav` (same URL on every repeat) | `uploaded` (HEAD 404 → PUT), `reused` (HEAD 200, no PUT), `upload_failed` (HEAD/PUT error or R2 vars missing) |
+| `service` | POST `{melakarta, ratios, root_hz}` to `RAAGA_CLIP_SERVICE_URL`, relay its `clip_url` | whatever the service returns | `generated` / `service_unavailable` |
+
+Other statuses: `not_requested` (no `request_clip`), `consent_missing`, `error` (local render/write failure). **Local-mode clips live on the service's disk**, which on Railway is wiped on every redeploy — treat them as ephemeral; `r2` is the durable, production mode.
+
+**Env (ts-engines service):**
+
+| Variable | Modes | Meaning |
+|---|---|---|
+| `RAAGA_CLIP_MODE` | all | `off` \| `local` \| `r2` \| `service` |
+| `RAAGA_CLIP_SECONDS_PER_NOTE` | local, r2 | seconds per swara (default 0.6; 0.05–10) |
+| `RAAGA_CLIP_DIR` | local | clip store dir (default `<os-tmp>/raaga-clips`) |
+| `RAAGA_CLIP_BASE_URL` | local | explicit URL prefix for local clips |
+| `TS_ENGINES_PUBLIC_URL`, `RAILWAY_PUBLIC_DOMAIN` | local | public base used to make the local URL absolute when `RAAGA_CLIP_BASE_URL` is unset |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | r2 | R2 S3-API credentials (never logged; errors name only the missing variable) |
+| `R2_PUBLIC_BASE_URL` | r2 | public read base (`https://pub-….r2.dev` or a custom domain) |
+| `R2_RAGA_CLIPS_BUCKET` | r2 | bucket (default `selemene-raga-clips`) |
+| `RAAGA_CLIP_SERVICE_URL` | service | external render endpoint |
+
+**Provenance.** Every raaga response carries the seven-field contract block (`ts-engines/src/types/engine.ts` `ContractProvenance`; the Rust parser is `deny_unknown_fields`, so nothing else may appear):
+
+```jsonc
+"provenance": {
+  "runtime_kind": "typescript",
+  "implementation_version": "1.0.0",
+  "cached": false,
+  "fallback_used": false,            // true whenever a clip was requested but not delivered
+  "provider_id": "selemene-wav-synth", // "suno" only when service mode produced the clip
+  "confidence": 1                    // ratios are deterministic; omitted when fallback_used is true
+}
+```
+
+`fallback_used: true` covers consent missing, mode `off`, upload failure, R2 not configured, and service unavailable — i.e. every case where `clip_url` is `null` although it was asked for. When no clip was requested the ratios alone are the deliverable, so `fallback_used` is `false`. The bridge carries the block to the API as `result.__contract_provenance`, which the API lifts into the envelope's `provenance`.
+
+**Staging/production probe.** `POST /api/v1/engines/raaga/calculate` with `{"parameters":{"melakarta":15,"request_clip":true},"consent":{"granted":true,"scopes":["audio"],"timestamp":"<iso>"}}` → `generated_audio.clip_url` starts with `https://`, `metadata.clip.mode: "r2"`, `curl -I <clip_url>` → `200` with `content-type: audio/wav`, a repeat call returns the same URL (`status: reused`); the same request without `consent` → `clip_url: null`, `metadata.clip.status: consent_missing`, `provenance.fallback_used: true`.

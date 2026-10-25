@@ -25,7 +25,7 @@ pub struct RagaClipRow {
     pub style: String,
     pub suno_song_id: String,
     pub cdn_url: String,
-    pub duration_sec: Option<f32>,
+    pub duration_sec: Option<i16>,
     pub status: String,
 }
 

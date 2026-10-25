@@ -12,12 +12,13 @@
 import type {
   ConsciousnessEngine,
   Consent,
+  ContractProvenance,
   EngineInput,
   EngineMetadata,
   EngineOutput,
 } from '../../types'
 import { EngineValidationError } from '../../utils'
-import { generateRaagaClip } from './clip'
+import { type RaagaClipProvider, generateRaagaClip } from './clip'
 import {
   type Dosha,
   MELAKARTAS,
@@ -80,7 +81,7 @@ export class RaagaEngine implements ConsciousnessEngine {
           required: false,
           description:
             'When true AND granted consent is present, render strudel_ratios to an audio clip and ' +
-            'populate generated_audio.clip_url (config: RAAGA_CLIP_MODE=off|local|service). Default false (clip_url stays null).',
+            'populate generated_audio.clip_url (config: RAAGA_CLIP_MODE=off|local|r2|service). Default false (clip_url stays null).',
           default: false,
         },
       },
@@ -239,6 +240,7 @@ export class RaagaEngine implements ConsciousnessEngine {
     const requestClip = Boolean(input.parameters.request_clip ?? false)
     const clipConsent = consent as Consent | undefined
     let clipUrl: string | null = null
+    let clipProvider: RaagaClipProvider = 'selemene-wav-synth'
     let clipNote: Record<string, unknown> = { requested: requestClip, status: 'not_requested' }
     if (requestClip) {
       if (!clipConsent?.granted) {
@@ -251,6 +253,7 @@ export class RaagaEngine implements ConsciousnessEngine {
       } else {
         const clip = await generateRaagaClip({ melakarta: m.num, ratios: m.ratios, rootHz })
         clipUrl = clip.clip_url
+        if (clip.provider) clipProvider = clip.provider
         clipNote = {
           requested: true,
           status: clip.status,
@@ -258,6 +261,21 @@ export class RaagaEngine implements ConsciousnessEngine {
           ...(clip.detail ? { detail: clip.detail } : {}),
         }
       }
+    }
+
+    // Contract provenance (exactly the seven-field block; the Rust parser is
+    // deny_unknown_fields). The melakarta ratios are deterministic wisdom data,
+    // so confidence is 1 whenever we delivered what was asked. A clip that was
+    // requested but not delivered (consent missing, mode off, upload/service
+    // failure) is a fallback: fallback_used true and confidence omitted.
+    const clipFallback = requestClip && clipUrl === null
+    const provenance: ContractProvenance = {
+      runtime_kind: 'typescript',
+      implementation_version: this.metadata().version,
+      cached: false,
+      fallback_used: clipFallback,
+      provider_id: clipProvider,
+      ...(clipFallback ? {} : { confidence: 1 }),
     }
 
     const generatedAudio = {
@@ -283,6 +301,7 @@ export class RaagaEngine implements ConsciousnessEngine {
       calculated_at: new Date().toISOString(),
       processing_time_ms: Math.round(performance.now() - startTime),
       generated_audio: generatedAudio,
+      provenance,
     }
   }
 }

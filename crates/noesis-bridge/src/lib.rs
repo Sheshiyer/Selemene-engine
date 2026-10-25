@@ -1122,6 +1122,82 @@ mod tests {
         );
     }
 
+    /// The seven-field raaga provenance block (as `ts-engines/src/engines/raaga/engine.ts`
+    /// emits it) must reach `EngineOutput.result["__contract_provenance"]` byte-for-byte.
+    #[test]
+    fn raaga_provenance_survives_contract_provenance_round_trip() {
+        let provenance = json!({
+            "runtime_kind": "typescript",
+            "implementation_version": "1.0.0",
+            "cached": false,
+            "fallback_used": false,
+            "provider_id": "selemene-wav-synth",
+            "confidence": 1
+        });
+        let response: TsEngineResponse = serde_json::from_value(json!({
+            "engine_id": "raaga",
+            "result": {"melakarta": {"num": 15}},
+            "witness_prompts": [],
+            "calculated_at": "2026-10-26T00:00:00Z",
+            "processing_time_ms": 2.0,
+            "generated_audio": {"clip_url": "https://pub.example/raaga/abc.wav"},
+            "provenance": provenance
+        }))
+        .expect("TS response with provenance should deserialize");
+        assert_eq!(response.provenance, Some(provenance.clone()));
+
+        let output = ts_response_into_output(response, 0);
+        assert_eq!(output.result[CONTRACT_PROVENANCE_KEY], provenance);
+        let parsed: noesis_core::contract::Provenance =
+            serde_json::from_value(output.result[CONTRACT_PROVENANCE_KEY].clone())
+                .expect("seven-field raaga block parses against contract::Provenance");
+        assert_eq!(parsed.provider_id.as_deref(), Some("selemene-wav-synth"));
+        assert!(!parsed.fallback_used);
+        assert_eq!(
+            output.result["generated_audio"]["clip_url"],
+            "https://pub.example/raaga/abc.wav"
+        );
+        assert_eq!(output.result["melakarta"]["num"], 15);
+
+        // Fallback shape: confidence omitted, fallback_used true — also verbatim.
+        let fallback = json!({
+            "runtime_kind": "typescript",
+            "implementation_version": "1.0.0",
+            "cached": false,
+            "fallback_used": true,
+            "provider_id": "selemene-wav-synth"
+        });
+        let response: TsEngineResponse = serde_json::from_value(json!({
+            "engine_id": "raaga",
+            "result": {},
+            "witness_prompts": [],
+            "calculated_at": "2026-10-26T00:00:00Z",
+            "processing_time_ms": 2.0,
+            "provenance": fallback
+        }))
+        .unwrap();
+        let output = ts_response_into_output(response, 0);
+        assert_eq!(output.result[CONTRACT_PROVENANCE_KEY], fallback);
+        assert!(output.result[CONTRACT_PROVENANCE_KEY]
+            .get("confidence")
+            .is_none());
+    }
+
+    #[test]
+    fn ts_response_without_provenance_leaves_result_untouched() {
+        let response: TsEngineResponse = serde_json::from_value(json!({
+            "engine_id": "raaga",
+            "result": {"melakarta": 29},
+            "witness_prompts": [],
+            "calculated_at": "2026-07-18T00:00:00Z",
+            "processing_time_ms": 1.5
+        }))
+        .expect("legacy TS response should deserialize");
+        assert!(response.provenance.is_none());
+        let output = ts_response_into_output(response, 0);
+        assert_eq!(output.result, json!({"melakarta": 29}));
+    }
+
     #[test]
     fn ts_calculated_at_is_preserved() {
         assert_eq!(

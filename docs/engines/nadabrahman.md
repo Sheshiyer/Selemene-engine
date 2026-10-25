@@ -3,7 +3,21 @@
 
 > **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
 
-Raga-based sound therapy: given a moment (and optional dosha / rasa / chakra), recommends Melakarta ragas by **prahar** (3-hour time block), plus a chakra Solfeggio frequency for tuning. "Nāda Brahman" = sound as the substrate of consciousness.
+**Rāga recommender, not an audio analyser.** Given a moment (`current_time`; prahar = its hour's 3-hour block) and optional request options `dosha`, `rasa`/`mood`, `chakra`, it recommends Melakarta ragas by **prahar**, plus a chakra Solfeggio frequency for tuning. "Nāda Brahman" = sound as the substrate of consciousness.
+
+> **What it does not do (2026-10-26):** it accepts **no audio input** (`audio_ref`, `audio_data`, voice samples and `image_data` are ignored), performs **no vocal, frequency or spectral analysis**, and emits **no audio clip** (`generated_audio` is never set). Earlier copy in `docs/ENGINES.md` §10 describing "vocal pattern analysis" was wrong and has been replaced. For a chosen melakarta's just-intonation data and a rendered/hosted clip use the Raaga engine ([raaga.md](raaga.md)).
+
+## 0. Inputs
+
+| Input | Where | Effect |
+|---|---|---|
+| `current_time` | request top level (defaults to now) | `hour()` → prahar 1–8 → `time_recommendation` + time-based ragas (`engine.rs:44-61`) |
+| `options.dosha` | `vata` \| `pitta` \| `kapha` | adds dosha-affinity ragas (score 0.7) and echoes `dosha_recommendation` |
+| `options.rasa` or `options.mood` | one of the 9 rasas | adds rasa ragas (score 0.7) and echoes `rasa_mapping` |
+| `options.chakra` | `root … crown` or Sanskrit names, case-insensitive | adds `chakra_frequency {chakra_name, solfeggio_hz, binaural_target_hz}` |
+| `birth_data`, `location`, `audio_ref`, `image_data` | — | **ignored** |
+
+Output and ranges below are unchanged (they were already derived from the runtime serializer).
 
 ## 1. Identity
 | | |
