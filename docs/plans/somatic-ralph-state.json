@@ -240,7 +240,7 @@
       "iteration": 0,
       "cap": 12,
       "status": "merged",
-      "axis_reached": "Deployed (prod deploying main@5da8f8d2); R2 clip hosting blocked on credentials",
+      "axis_reached": "Operational (prod, honest clip-off path); hosted clips blocked on R2 credentials + prod vars",
       "blocked_on_human": "Valid Cloudflare R2 S3 credentials (R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY) for bucket selemene-raga-clips: staging token returns 401 Unauthorized on HEAD and ListBucket via plain curl --aws-sigv4 (account id matches the wrangler-login account, public base pub-1f3a1b9d\u2026r2.dev answers 404 for missing keys). Operator must re-issue the token in staging and copy R2_* + RAAGA_CLIP_MODE=r2 to prod ts-engines.",
       "receipts": [
         {
@@ -290,6 +290,12 @@
           "tier": "T3",
           "cmd": "gh pr merge 1498 --merge --match-head-commit 1bd12d8d",
           "result": "MERGED 2026-10-25T20:58:22Z merge commit 5da8f8d2; prod redeploying; prod ts-engines has no R2_* vars so prod stays in local clip mode"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T3",
+          "cmd": "prod readback: ts-engines cf624024/main@5da8f8d2 SUCCESS (Selemene-engine 5da8f8d2 build still in progress; serving 2d6514e1 which already has the S4 lift); direct POST ts-engines-production/engines/raaga/calculate; POST selemene.tryambakam.space/api/v1/engines/raaga/calculate request_clip + consent with prod key ralph-s4-prod; then revoke",
+          "result": "direct: provenance {typescript, 1.0.0, cached false, fallback_used true, provider_id selemene-wav-synth}, clip {status skipped_off, mode off, detail RAAGA_CLIP_MODE=off (default)}; API envelope carries the same provenance block, no __contract_provenance. Prod honest: clips off until operator sets RAAGA_CLIP_MODE=r2 + valid R2_* vars. Key ralph-s4-prod revoked (is_active f), subsequent request 401; plaintext deleted from scratchpad."
         }
       ],
       "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
