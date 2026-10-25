@@ -296,6 +296,12 @@
           "tier": "T3",
           "cmd": "prod readback: ts-engines cf624024/main@5da8f8d2 SUCCESS (Selemene-engine 5da8f8d2 build still in progress; serving 2d6514e1 which already has the S4 lift); direct POST ts-engines-production/engines/raaga/calculate; POST selemene.tryambakam.space/api/v1/engines/raaga/calculate request_clip + consent with prod key ralph-s4-prod; then revoke",
           "result": "direct: provenance {typescript, 1.0.0, cached false, fallback_used true, provider_id selemene-wav-synth}, clip {status skipped_off, mode off, detail RAAGA_CLIP_MODE=off (default)}; API envelope carries the same provenance block, no __contract_provenance. Prod honest: clips off until operator sets RAAGA_CLIP_MODE=r2 + valid R2_* vars. Key ralph-s4-prod revoked (is_active f), subsequent request 401; plaintext deleted from scratchpad."
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T3",
+          "cmd": "prod readback after build: railway deployment list Selemene-engine + ts-engines production; GET selemene.tryambakam.space/health/live + /health/dependencies",
+          "result": "Selemene-engine SUCCESS main@5da8f8d2, ts-engines SUCCESS main@5da8f8d2; live ok v3.3.1 19 engines; dependencies ready: biofield, face-reading, raaga, sigil-forge ready; biofield-cv + mediapipe-face-mesh ready"
         }
       ],
       "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",

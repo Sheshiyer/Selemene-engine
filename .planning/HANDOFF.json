@@ -2,7 +2,7 @@
   "schema": "temperance.handoff.v2",
   "project": "Selemene-engine",
   "written_at": "2026-10-25T21:01:08Z",
-  "tier": "E4",
+  "tier": "E3",
   "wave": "S2-S4 somatic lanes: merged; prod readback; operator blockers",
   "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/.worktrees/ralph-s0-plan/ISA.md",
   "isa_note": "ISA.md in this repo is a stale earlier task (free plugin publication) and is fully checked; it carries no open ISC for this run. The live queue and receipts for this run are docs/plans/somatic-ralph-state.json + docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md on branch ralph/s0-plan.",
@@ -19,7 +19,8 @@
     "S3 raaga (#1498 rebased 1bd12d8d by lane session): migration 039 applied to staging DB, staged, consent_missing + upload_failed paths honest, merged 5da8f8d2; https clip blocked by invalid R2 token (recorded)",
     "Staging Selemene-engine + ts-engines sources returned to main (patch 22e58400 accepted)",
     "Receipts committed on ralph/s0-plan: ac9960e9, 77742dd7, 20e5608f, 4fdb51bc; S6 consumer lane proposed as a session card (task_44597657)",
-    "S3 prod readback: raaga envelope provenance in prod, clip mode off (honest); prod proof key ralph-s4-prod revoked and deleted"
+    "S3 prod readback: raaga envelope provenance in prod, clip mode off (honest); prod proof key ralph-s4-prod revoked and deleted",
+    "Prod readback final: Selemene-engine and ts-engines production both SUCCESS on main@5da8f8d2; /health/dependencies ready for all four engines and both sidecars"
   ],
   "remaining_tasks": [
     "OPERATOR: re-issue Cloudflare R2 S3 token for bucket selemene-raga-clips; set R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY (+R2_ACCOUNT_ID, R2_PUBLIC_BASE_URL, R2_RAGA_CLIPS_BUCKET, RAAGA_CLIP_MODE=r2) on staging AND prod ts-engines; then re-run raaga probe (expect https clip_url, status uploaded then reused, curl -I 200 audio/wav)",
@@ -49,7 +50,7 @@
   "session_budget": {
     "window": 1000000,
     "rollover_at": 800000,
-    "used_at_handoff": 0
+    "used_at_handoff": 890246
   },
   "session_start_prompt": "Selemene somatic lanes S2-S4 are merged (d5729652, 2d6514e1, 5da8f8d2). Remaining work is operator-gated (R2 token, prod migrations) plus S6 consumers; read .planning/HANDOFF.json remaining_tasks and docs/plans/somatic-ralph-state.json blockers before acting.",
   "references": {
@@ -70,5 +71,5 @@
   },
   "extends": "gsd.pause-work.v1",
   "harness": "claude",
-  "session_ref": "22e0b9b7-5d62-427b-b575-b05dcb445382"
+  "session_ref": "754e2b0f-e398-418c-aa6f-7e7993f31e14"
 }
