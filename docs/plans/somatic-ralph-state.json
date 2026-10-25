@@ -25,10 +25,10 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 11,
+      "iteration": 12,
       "cap": 12,
-      "status": "staging-proven",
-      "axis_reached": "Operational (staging)",
+      "status": "prod-deployed; prod end-to-end call pending a production API key",
+      "axis_reached": "Deployed (prod) / Operational (staging)",
       "blocked_on_human": null,
       "receipts": [
         {
@@ -142,6 +142,12 @@
           "tier": "T3",
           "cmd": "PR #1496 opened from ralph/s1-face (6244da31); mergeable CLEAN; gh pr merge --merge --match-head-commit 6244da31",
           "result": "MERGED 2026-10-25T13:04:30Z merge commit 7d833ac9. Production: mediapipe-service instance created via staged config + accept-deploy (root /python-services, /health, ON_FAILURE x3), vars PORT=8001 SIDECAR_SERVICE=mediapipe_service; Selemene-engine prod SELEMENE_FACE_CV_URL set to private domain :8001. Prod API, biofield, mediapipe rebuilding from main."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T3",
+          "cmd": "prod readback: list-deployments Selemene-engine e12c463e main@7d833ac9 SUCCESS; mediapipe-service 3ead646b main@7d833ac9 SUCCESS; GET selemene.tryambakam.space/health/live; GET /health/dependencies",
+          "result": "live ok v3.3.1 19 engines; dependencies status=ready, biofield-cv ready, mediapipe-face-mesh ready. biofield-cv-service prod still on its July image (no rebuild triggered yet); safe, default mode unchanged."
         }
       ],
       "findings": [
@@ -157,10 +163,12 @@
         "Rust face engine accepted a 200 from the wrong service silently; decode errors must be logged and surfaced as provenance"
       ],
       "remaining": [
-        "prod: mediapipe-service (from lane, then main), SELEMENE_FACE_CV_URL on prod API, merge PR",
-        "golden fixtures slot 27 (sidecar-down degraded path has test; add committed synthetic-face fixture)",
-        "Sankalpa: drop is_mock_data shim, render provenance badge",
-        "docs/ENGINES.md face-reading entry: add provenance fields"
+        "prod: one authenticated face-reading calculate to prove landmark_source=mediapipe-facemesh (needs a production API key)",
+        "prod: biofield-cv-service rebuild from main (unified image) on next trigger; verify default mode",
+        "staging: Selemene-engine/biofield back on main (accepted)",
+        "golden fixture slot 27: commit synthetic-face fixture",
+        "Sankalpa: drop is_mock_data shim, render provenance badge; default host selemene.tryambakam.space",
+        "docs/ENGINES.md face-reading: document provenance block"
       ]
     },
     "s2-biofield": {
