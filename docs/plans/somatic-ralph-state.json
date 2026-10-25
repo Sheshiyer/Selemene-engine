@@ -84,8 +84,8 @@
       "receipt": "colima start; docker info ok 2026-10-25"
     },
     "railway_staging": {
-      "status": "blocked_on_human",
-      "receipt": "staging env exists (created 2026-10-25T11:22Z) but 0 services: duplicate wizard was skipped. Recreate selecting all services."
+      "status": "done",
+      "receipt": "staging created via dashboard 2026-10-25T11:30Z duplicating production: 7 services, root service 60+ vars copied; Selemene-engine/ts-engines/biofield-cv building at readback"
     },
     "mediapipe_service_staging": {
       "status": "blocked_on_human",
