@@ -209,7 +209,7 @@
     "s5-rbac": {
       "branch": "ralph/s5-rbac",
       "worktree": ".worktrees/ralph-s5-rbac",
-      "iteration": 4,
+      "iteration": 5,
       "cap": 12,
       "status": "in_progress",
       "axis_reached": "Operational (staging, enforce)",
@@ -252,12 +252,18 @@
           "tier": "T1",
           "cmd": "Codex P1 #3: tier-wide backfill would widen narrow keys. Backfill rewritten to legacy full-bundle keys only (jsonb ?& 17 scopes), adds raaga/biofield-capture/financial-biosensor",
           "result": "thread resolved"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T3",
+          "cmd": "PR #1497 CLEAN (Vercel, Railway checks green; 3 Codex P1 threads resolved); gh pr merge --merge --match-head-commit 3edcb3f9",
+          "result": "MERGED 2026-10-25T18:04:44Z merge commit 0f39cd07. Production deploys in ENGINE_SCOPE_MODE audit (unset). Staging returned to main, stays enforce as canary."
         }
       ],
       "remaining": [
-        "tests green",
-        "staging: deploy, verify audit then enforce with scoped keys",
-        "prod: deploy in audit; backfill scopes; flip to enforce after log review"
+        "prod: verify audit-mode deploy (commit 0f39cd07, one warn line)",
+        "prod rollout (operator decision): run scripts/sql/backfill-engine-scopes.sql preview, review audit warnings for a few days, then set ENGINE_SCOPE_MODE=enforce",
+        "separate decision: /api/legacy routes are unauthenticated"
       ]
     }
   },
