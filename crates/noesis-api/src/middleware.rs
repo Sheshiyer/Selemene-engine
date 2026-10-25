@@ -90,6 +90,13 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
 /// Injects `AuthUser` into request extensions for handler access.
 ///
 /// Returns 401 UNAUTHORIZED if authentication fails.
+/// Request-extension marker inserted only when the principal authenticated with
+/// an `X-API-Key`. Engine permission scopes apply to API-key principals only;
+/// JWT and Cloudflare Access principals are tier-governed. Handlers read this
+/// explicitly instead of inferring the auth method from `AuthUser` fields.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct ApiKeyPrincipal;
+
 pub async fn auth_middleware(
     State(state): State<crate::AppState>,
     mut req: Request,
@@ -211,8 +218,10 @@ pub async fn auth_middleware(
         if let Ok(api_key) = api_key_header.to_str() {
             match state.auth.validate_api_key(api_key).await {
                 Ok(user) => {
-                    // Insert authenticated user into request extensions
+                    // Insert authenticated user into request extensions, and mark
+                    // the principal as API-key authenticated for scope checks.
                     req.extensions_mut().insert(user);
+                    req.extensions_mut().insert(ApiKeyPrincipal);
                     return Ok(next.run(req).await);
                 }
                 Err(e) => {
