@@ -181,8 +181,8 @@
       "worktree": ".worktrees/ralph-s2-biofield",
       "iteration": 0,
       "cap": 12,
-      "status": "pr-open",
-      "axis_reached": "Implemented (local tests green per lane report)",
+      "status": "merged",
+      "axis_reached": "Deployed (prod deploying main@2d6514e1); staging Operational",
       "blocked_on_human": null,
       "receipts": [
         {
@@ -196,6 +196,30 @@
           "tier": "T1",
           "cmd": "lane session opened PR #1500 from claude/blissful-shaw-98dc3e@a6d8b2d1; lane reports local suites green",
           "result": "not yet reviewed by coordinator; staging not run"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T2",
+          "cmd": "Railway MCP: stage Selemene-engine staging source -> claude/blissful-shaw-98dc3e (patch ee23cbe7); accept-deploy",
+          "result": "deployment 91b67582 SUCCESS a6d8b2d1"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T2",
+          "cmd": "staging probes (ralph-s1-staging key): POST /biofield/sessions; POST captures multipart image=biofield-portrait-256.jpg + capture_metadata.consent biofield-capture; same without consent; same with scopes [face-image]; GET /biofield/readings/{id}",
+          "result": "201 session; 201 reading 434ba7d5 with metrics + quality_assessment sufficient_quality true + source-image artifact (mediapipe/biofield-cv sidecar live); 422 CONSENT_REQUIRED required_scope biofield-capture for both missing and wrong scope; GET reading 200 with metrics"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T2",
+          "cmd": "POST /engines/biofield/calculate with options.biofield_capture.reading_id; without reading/birth; with birth_data; POST /engines/biofield-capture/calculate",
+          "result": "reading_id: is_mock_data true, mock_reason biofield-engine-cannot-resolve-reading, provenance.backend mock, fallback_used true, capture_reading_id set, fallback_reason names biofield-capture; no data: mock_reason no-birth-data; birth_data: backend vedic-ephemeris fallback_used false is_mock_data false. biofield-capture calculate -> 403 ENGINE_SCOPE_FORBIDDEN: staging key lacks biofield-capture:read and staging runs ENGINE_SCOPE_MODE=enforce (S5 working as designed; unchanged-behaviour probe not exercised)"
+        },
+        {
+          "date": "2026-10-26",
+          "tier": "T3",
+          "cmd": "gh pr merge 1500 --merge --match-head-commit a6d8b2d1",
+          "result": "MERGED 2026-10-25T20:45:25Z merge commit 2d6514e1; prod Selemene-engine redeploying from main"
         }
       ],
       "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
