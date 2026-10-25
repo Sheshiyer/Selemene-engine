@@ -1,0 +1,26 @@
+# Railway config for biofield-cv-service (root /python-services).
+# Renamed from railway.toml so the default config-as-code slot can serve
+# mediapipe-service; set biofield-cv-service's config path to this file.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.biofield"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[deploy.watch]
+include = [
+  "biofield_cv_service/**",
+  "shared/**",
+  "pyproject.toml",
+  "Dockerfile.biofield",
+]
+exclude = [
+  "*.md",
+  "tests/**",
+  "mediapipe_service/**",
+  "Dockerfile.mediapipe",
+]

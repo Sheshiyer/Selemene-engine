@@ -1,23 +1,31 @@
+# Railway config for the MediaPipe face-mesh sidecar (service: mediapipe-service).
+# Root directory for this service must be /python-services; set the service's
+# This is the default config-as-code file for the python-services root, so the
+# mediapipe-service needs no config-path override. The biofield sidecar's config
+# moved to railway.biofield.toml: set that service's config path accordingly.
+# Listens on 8001; the Rust face-reading engine reaches it via
+# SELEMENE_FACE_CV_URL=http://mediapipe-service.railway.internal:8001
+
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile.biofield"
+dockerfilePath = "Dockerfile.mediapipe"
 
 [deploy]
 healthcheckPath = "/health"
-healthcheckTimeout = 60
+healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
 [deploy.watch]
 include = [
-  "biofield_cv_service/**",
+  "mediapipe_service/**",
   "shared/**",
   "pyproject.toml",
-  "Dockerfile.biofield",
+  "Dockerfile.mediapipe",
 ]
 exclude = [
   "*.md",
   "tests/**",
-  "mediapipe_service/**",
-  "Dockerfile.mediapipe",
+  "biofield_cv_service/**",
+  "Dockerfile.biofield",
 ]
