@@ -94,6 +94,10 @@
     "lane_worktrees": {
       "status": "done",
       "receipt": "4 worktrees at .worktrees/ralph-s{1..4}-* on origin/main cb8ce56a; wip/witness-reference-tooling 2076eb6b parks the witness diff; PRs 886/907/1488 commented superseded 2026-10-25"
+    },
+    "staging_rewire": {
+      "status": "done",
+      "receipt": "2026-10-25 DATABASE_URL and REDIS_URL set to Railway references (hash differs from production); TS_ENGINES_URL and PYTHON_BIOFIELD_URL use *.railway.internal private domains (identical string to prod by design, resolves per-environment). API and ts-engines redeploy queued."
     }
   },
   "sentinel": "COMPLETE when every lane axis_reached == Operational, or any lane blocked_on_human != null"
