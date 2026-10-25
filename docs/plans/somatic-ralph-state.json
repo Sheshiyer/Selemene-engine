@@ -25,12 +25,23 @@
     "s1-face": {
       "branch": "ralph/s1-face",
       "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 0,
+      "iteration": 1,
       "cap": 12,
-      "status": "pending",
-      "axis_reached": "Implemented",
+      "status": "in_progress",
+      "axis_reached": "Executable",
       "blocked_on_human": null,
-      "receipts": []
+      "receipts": [
+        {
+          "date": "2026-10-25",
+          "tier": "T1",
+          "cmd": "docker build -f python-services/Dockerfile.mediapipe && docker run && curl /health",
+          "result": "healthy; mediapipe_available=true",
+          "commits": [
+            "617e928b",
+            "Dockerfile.mediapipe xcb fix"
+          ]
+        }
+      ]
     },
     "s2-biofield": {
       "branch": "ralph/s2-biofield",
@@ -74,11 +85,11 @@
     },
     "railway_staging": {
       "status": "blocked_on_human",
-      "receipt": "environment create failed with name clash after delete; rerun: railway environment new staging --duplicate production"
+      "receipt": "staging env exists (created 2026-10-25T11:22Z) but 0 services: duplicate wizard was skipped. Recreate selecting all services."
     },
     "mediapipe_service_staging": {
-      "status": "pending",
-      "receipt": null
+      "status": "blocked_on_human",
+      "receipt": "config + Dockerfile fix on ralph/s1-face (617e928b, +fix). Local T1: image builds, /health capability_status=available, mediapipe_available=true. Awaiting staging service."
     },
     "lane_worktrees": {
       "status": "done",
