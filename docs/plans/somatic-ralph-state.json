@@ -40,6 +40,18 @@
             "617e928b",
             "Dockerfile.mediapipe xcb fix"
           ]
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "railway add (main, no root dir) -> build SUCCESS but built repo-root Dockerfile.prod; runtime log shows noesis_server booting",
+          "result": "FALSE SUCCESS: unset rootDirectory makes Railway auto-detect the root Dockerfile. Recorded as the negative case for the non-GH CI flow."
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T2",
+          "cmd": "railway MCP connect-service-source branch=ralph/s1-face; update-service rootDirectory=/python-services dockerfilePath=Dockerfile.mediapipe healthcheckPath=/health timeout=120 restart ON_FAILURE x3",
+          "result": "config applied; railwayConfigFile param refused as deprecated (config-as-code sunset 2026-12-01), so settings were applied directly instead of via railway.mediapipe.toml"
         }
       ]
     },
