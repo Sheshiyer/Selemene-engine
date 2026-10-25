@@ -209,7 +209,7 @@
     "s5-rbac": {
       "branch": "ralph/s5-rbac",
       "worktree": ".worktrees/ralph-s5-rbac",
-      "iteration": 1,
+      "iteration": 2,
       "cap": 12,
       "status": "in_progress",
       "axis_reached": "Implemented",
@@ -222,6 +222,12 @@
           "tier": "T1",
           "cmd": "cargo build -p noesis-api --locked after patch",
           "result": "clean"
+        },
+        {
+          "date": "2026-10-25",
+          "tier": "T1",
+          "cmd": "commit 611584ef (scope enforcement, tests, backfill SQL, runbook); PR #1497; Codex P1 review: jti-based API-key inference would deny Cloudflare Access users; fix commit adds ApiKeyPrincipal middleware marker; cargo test lib scope 5/5, engine_scope_tests 7/7, integration_tests 43/43",
+          "result": "green; review thread resolved"
         }
       ],
       "remaining": [
