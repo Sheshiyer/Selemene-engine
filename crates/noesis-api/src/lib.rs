@@ -1845,13 +1845,27 @@ pub(crate) fn check_engine_scope(
 }
 
 /// Apply the scope rule for one engine under the configured mode.
-fn enforce_engine_scope(
+pub(crate) fn enforce_engine_scope(
     user: &AuthUser,
     is_api_key: bool,
     engine_id: &str,
     route: &'static str,
 ) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
     enforce_engine_scope_with_mode(user, is_api_key, engine_id, route, EngineScopeMode::from_env())
+}
+
+/// Scope rule for composed routes (assets, witness) that run a fixed set of
+/// engines and already tolerate an engine being unavailable: an engine the
+/// principal is not entitled to is simply not executed, and is absent from the
+/// route's `engines_used` / `engines_available` list. Logs and metrics match
+/// [`enforce_engine_scope`]; `audit` and `off` never exclude anything.
+pub(crate) fn engine_scope_allows(
+    user: &AuthUser,
+    is_api_key: bool,
+    engine_id: &str,
+    route: &'static str,
+) -> bool {
+    enforce_engine_scope(user, is_api_key, engine_id, route).is_ok()
 }
 
 fn enforce_engine_scope_with_mode(
@@ -3974,8 +3988,18 @@ struct LegacyPanchangaResponse {
 /// POST /api/legacy/panchanga/calculate -- backward compatible Panchanga endpoint
 async fn legacy_panchanga_handler(
     State(state): State<AppState>,
+    auth_user: Option<Extension<AuthUser>>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(request): Json<LegacyPanchangaRequest>,
 ) -> Result<Json<LegacyPanchangaResponse>, (StatusCode, Json<ErrorResponse>)> {
+    if let Some(Extension(user)) = auth_user.as_ref() {
+        enforce_engine_scope(
+            user,
+            api_key_principal.is_some(),
+            "panchanga",
+            "panchanga/calculate",
+        )?;
+    }
     // Convert legacy request to new EngineInput format
     let input = EngineInput {
         birth_data: Some(noesis_core::BirthData {
@@ -4066,8 +4090,18 @@ struct LegacyGhatiResponse {
 /// GET /api/legacy/ghati/current -- backward compatible current Ghati time endpoint
 async fn legacy_ghati_current_handler(
     State(state): State<AppState>,
+    auth_user: Option<Extension<AuthUser>>,
+    api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(request): Json<LegacyGhatiRequest>,
 ) -> Result<Json<LegacyGhatiResponse>, (StatusCode, Json<ErrorResponse>)> {
+    if let Some(Extension(user)) = auth_user.as_ref() {
+        enforce_engine_scope(
+            user,
+            api_key_principal.is_some(),
+            "panchanga",
+            "ghati/current",
+        )?;
+    }
     // Default to Bangalore coordinates if not provided
     let latitude = request.latitude.unwrap_or(12.9716);
     let longitude = request.longitude.unwrap_or(77.5946);

@@ -6,6 +6,14 @@ Engine routes check that an **API-key principal** holds `"<engine_id>:read"`
 - `POST /api/v1/engines/{engine_id}/calculate`
 - `POST /api/v1/engines/face-reading/upload`
 - `POST /api/v1/workflows/{workflow_id}/execute` (every engine the workflow composes)
+- `POST /api/legacy/panchanga/calculate` and `GET /api/legacy/ghati/current` carry the
+  gate too, but `/api/legacy` is mounted without an auth layer (rate limit only), so
+  today no principal reaches it and the gate is a no-op. Whether those routes should
+  require authentication is a separate decision.
+- `POST /api/v1/assets/generate` and `POST /api/v1/witness/interpret`: these compose a
+  fixed set of engines and already tolerate an unavailable engine, so in `enforce` an
+  engine the key is not entitled to is simply not executed and is absent from the
+  response's `engines_used`; the same warning and metric are emitted.
 
 An API-key principal is one that authenticated through the `X-API-Key` header;
 the middleware marks that request explicitly (`ApiKeyPrincipal`). JWT and

@@ -213,3 +213,63 @@ async fn unknown_engine_with_scope_still_returns_not_found_shape() {
     assert_ne!(status, StatusCode::FORBIDDEN);
     assert_ne!(status, StatusCode::OK);
 }
+
+// ─── Alternative dispatch paths (review finding on PR #1497) ─────────────────
+// Engines also run through POST /assets/generate, POST /witness/interpret and
+// the legacy POST /panchanga/calculate. A scoped key must not execute engines
+// it is not entitled to through those routes either.
+
+const BIRTH: &str = r#"{"date": "1990-01-15", "time": "14:30", "latitude": 12.9716, "longitude": 77.5946, "timezone": "Asia/Kolkata", "name": "Test"}"#;
+
+#[tokio::test]
+#[serial]
+async fn enforce_mode_omits_unentitled_engines_from_assets_generate() {
+    let _mode = ModeGuard::set("enforce");
+    let (router, key) = router_with_key(&["basic:access", "panchanga:read"]).await;
+    let body = format!(r#"{{"birth_data": {BIRTH}, "mode": "integrated-reading"}}"#);
+
+    let (status, resp) = post(&router, "/api/v1/assets/generate", ("X-API-Key", &key), &body).await;
+
+    assert!(
+        status == StatusCode::OK || status == StatusCode::UNPROCESSABLE_ENTITY,
+        "{status} {resp}"
+    );
+    if status == StatusCode::OK {
+        let used: Vec<String> = serde_json::from_value(resp["engines_used"].clone()).unwrap();
+        assert!(used.iter().all(|e| e == "panchanga"), "engines_used = {used:?}");
+    }
+}
+
+#[tokio::test]
+#[serial]
+async fn enforce_mode_omits_unentitled_engines_from_witness_interpret() {
+    let _mode = ModeGuard::set("enforce");
+    let (router, key) = router_with_key(&["basic:access", "panchanga:read"]).await;
+    let body = format!(
+        r#"{{"birth_data": {BIRTH}, "live_scores": {{"energy": 0.5, "coherence": 0.5, "symmetry": 0.5, "complexity": 0.5, "regulation": 0.5, "color_balance": 0.5}}}}"#
+    );
+
+    let (status, resp) = post(&router, "/api/v1/witness/interpret", ("X-API-Key", &key), &body).await;
+
+    assert_eq!(status, StatusCode::OK, "{resp}");
+    let used: Vec<String> = serde_json::from_value(resp["engines_used"].clone()).unwrap();
+    for denied in ["numerology", "human-design", "gene-keys", "vimshottari", "transits"] {
+        assert!(!used.iter().any(|e| e == denied), "{denied} ran: {used:?}");
+    }
+}
+
+#[tokio::test]
+#[serial]
+async fn legacy_panchanga_route_is_unauthenticated_and_scope_gate_is_a_noop() {
+    // /api/legacy has only a rate limiter, no auth layer (pre-existing design),
+    // so there is never a principal to scope-check. The gate must not break the
+    // public route; with a principal it would apply (covered by unit tests).
+    let _mode = ModeGuard::set("enforce");
+    let (router, key) = router_with_key(&["basic:access", "face-reading:read"]).await;
+    let body = r#"{"date": "2026-10-25", "time": "06:00", "latitude": 12.97, "longitude": 77.59, "timezone": "Asia/Kolkata"}"#;
+
+    let (status, resp) = post(&router, "/api/legacy/panchanga/calculate", ("X-API-Key", &key), body).await;
+
+    assert_eq!(status, StatusCode::OK, "{resp}");
+    assert!(resp["tithi_name"].is_string(), "{resp}");
+}

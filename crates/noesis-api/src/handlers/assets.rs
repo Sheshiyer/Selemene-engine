@@ -157,8 +157,15 @@ pub struct AssetGenerateResponse {
 pub async fn generate(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<crate::ApiKeyPrincipal>>,
     Json(req): Json<AssetGenerateRequest>,
 ) -> Result<Json<AssetGenerateResponse>, (StatusCode, Json<crate::error_mapper::ErrorResponse>)> {
+    // Engine permission scopes (API-key principals): an engine the key is not
+    // entitled to is not executed and does not appear in engines_used.
+    let is_api_key = api_key_principal.is_some();
+    let allows = |engine_id: &str| {
+        crate::engine_scope_allows(&user, is_api_key, engine_id, "assets/generate")
+    };
     // Engine authorization must come only from the authenticated identity.
     // The legacy request field remains accepted but cannot raise or lower access.
     let consciousness_level = user.consciousness_level;
@@ -237,12 +244,12 @@ pub async fn generate(
     // (Partial results are acceptable — mirrors existing witness behavior.)
     // These seeds are the input to the canonical pipeline (same as SelemeneClient in @noesis/witness-pipeline).
     let (panchanga, numerology, human_design, gene_keys, vimshottari, biorhythm) = tokio::join!(
-        run_engine(&orch, "panchanga", input.clone(), level),
-        run_engine(&orch, "numerology", input.clone(), level),
-        run_engine(&orch, "human-design", input.clone(), level),
-        run_engine(&orch, "gene-keys", input.clone(), level),
-        run_engine(&orch, "vimshottari", input.clone(), level),
-        run_engine(&orch, "biorhythm", input.clone(), level),
+        run_engine(&orch, allows("panchanga"), "panchanga", input.clone(), level),
+        run_engine(&orch, allows("numerology"), "numerology", input.clone(), level),
+        run_engine(&orch, allows("human-design"), "human-design", input.clone(), level),
+        run_engine(&orch, allows("gene-keys"), "gene-keys", input.clone(), level),
+        run_engine(&orch, allows("vimshottari"), "vimshottari", input.clone(), level),
+        run_engine(&orch, allows("biorhythm"), "biorhythm", input.clone(), level),
     );
 
     // Collect seeds (id, value) preserving partial-results tolerance.
@@ -326,10 +333,14 @@ pub async fn generate(
 
 async fn run_engine(
     orch: &noesis_orchestrator::WorkflowOrchestrator,
+    allowed: bool,
     engine_id: &str,
     input: EngineInput,
     level: u8,
 ) -> Option<Value> {
+    if !allowed {
+        return None;
+    }
     match orch.execute_engine(engine_id, input, level).await {
         Ok(output) => Some(output.result),
         Err(e) => {

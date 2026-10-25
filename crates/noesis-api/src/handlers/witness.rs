@@ -72,9 +72,16 @@ pub struct WitnessInterpretResponse {
 pub async fn interpret(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
+    api_key_principal: Option<Extension<crate::ApiKeyPrincipal>>,
     Json(req): Json<WitnessInterpretRequest>,
 ) -> Result<Json<WitnessInterpretResponse>, (StatusCode, Json<crate::error_mapper::ErrorResponse>)>
 {
+    // Engine permission scopes (API-key principals): an engine the key is not
+    // entitled to is not executed and does not appear in engines_available.
+    let is_api_key = api_key_principal.is_some();
+    let allows = |engine_id: &str| {
+        crate::engine_scope_allows(&user, is_api_key, engine_id, "witness/interpret")
+    };
     let now = Utc::now();
     // Engine authorization must come only from the authenticated identity.
     // The legacy request field remains accepted but cannot raise or lower access.
@@ -132,13 +139,13 @@ pub async fn interpret(
 
     // Run all engines concurrently; ignore individual failures (partial context is fine)
     let (panchanga, biorhythm, human_design, numerology, transits, gene_keys, vimshottari) = tokio::join!(
-        run_engine(&orch, "panchanga", panchanga_input, level),
-        run_engine(&orch, "biorhythm", biorhythm_input, level),
-        run_engine(&orch, "human-design", hd_input, level),
-        run_engine(&orch, "numerology", numerology_input, level),
-        run_engine(&orch, "transits", transits_input, level),
-        run_engine(&orch, "gene-keys", gene_keys_input, level),
-        run_engine(&orch, "vimshottari", vimshottari_input, level),
+        run_engine(&orch, allows("panchanga"), "panchanga", panchanga_input, level),
+        run_engine(&orch, allows("biorhythm"), "biorhythm", biorhythm_input, level),
+        run_engine(&orch, allows("human-design"), "human-design", hd_input, level),
+        run_engine(&orch, allows("numerology"), "numerology", numerology_input, level),
+        run_engine(&orch, allows("transits"), "transits", transits_input, level),
+        run_engine(&orch, allows("gene-keys"), "gene-keys", gene_keys_input, level),
+        run_engine(&orch, allows("vimshottari"), "vimshottari", vimshottari_input, level),
     );
 
     // ── Partner context (if synastry/composite) ───────────────────────────────
@@ -153,24 +160,28 @@ pub async fn interpret(
         let (p_hd, p_num, p_gk, p_vim) = tokio::join!(
             run_engine(
                 &orch,
+                allows("human-design"),
                 "human-design",
                 partner_input(Some(partner_bd.clone())),
                 level
             ),
             run_engine(
                 &orch,
+                allows("numerology"),
                 "numerology",
                 partner_input(Some(partner_bd.clone())),
                 level
             ),
             run_engine(
                 &orch,
+                allows("gene-keys"),
                 "gene-keys",
                 partner_input(Some(partner_bd.clone())),
                 level
             ),
             run_engine(
                 &orch,
+                allows("vimshottari"),
                 "vimshottari",
                 partner_input(Some(partner_bd.clone())),
                 level
@@ -328,10 +339,14 @@ pub async fn interpret(
 
 async fn run_engine(
     orch: &noesis_orchestrator::WorkflowOrchestrator,
+    allowed: bool,
     engine_id: &str,
     input: EngineInput,
     level: u8,
 ) -> Option<Value> {
+    if !allowed {
+        return None;
+    }
     match orch.execute_engine(engine_id, input, level).await {
         Ok(output) => Some(output.result),
         Err(e) => {
