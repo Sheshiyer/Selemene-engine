@@ -234,5 +234,13 @@
     },
     "status": "complete"
   },
-  "sentinel": "COMPLETE when every lane axis_reached == Operational, or any lane blocked_on_human != null"
+  "sentinel": "COMPLETE when every lane axis_reached == Operational, or any lane blocked_on_human != null",
+  "cross_cutting_findings": [
+    {
+      "date": "2026-10-25",
+      "severity": "high",
+      "area": "auth/RBAC (W3E slot 20, issue #913)",
+      "finding": "A premium-tier key whose permissions JSON is only [basic:access, face-reading:read] successfully executed POST /api/v1/engines/panchanga/calculate in production (200 with full result). Per-engine permission scopes are not enforced on engine calculate; tier appears to grant access. Unauthenticated request correctly returns 401. Test key ralph-s1-prod was deactivated after the proof."
+    }
+  ]
 }
