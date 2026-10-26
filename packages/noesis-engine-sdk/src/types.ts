@@ -57,12 +57,41 @@ export interface WitnessPrompt {
 export interface GeneratedImageRef {
   b64_json?: string
   url?: string
+  /** Set on `result.generated_image` when the provider did not deliver a real image. */
+  error?: string
+  prompt_used?: string
   metadata?: {
     model?: string
     prompt?: string
     provider?: string
     style?: string
+    /** Provider completion status: SUCCESS, ERROR, PROVIDER_UNAVAILABLE, SUCCESS_MOCK, … (lane S4). */
+    finish_reason?: string
+    /** Provider the caller asked for when the engine had to substitute its default (lane S4). */
+    provider_requested?: string
+    /** Why `provider_requested` could not be honoured (lane S4). */
+    provider_note?: string
+    [key: string]: unknown
   }
+}
+
+/** Raaga clip delivery status reported in `generated_audio.metadata.clip.status` (lane S3). */
+export type GeneratedAudioClipStatus =
+  | 'uploaded'
+  | 'reused'
+  | 'generated'
+  | 'upload_failed'
+  | 'consent_missing'
+  | 'not_requested'
+  | 'skipped_off'
+  | 'error'
+
+export interface GeneratedAudioClipMetadata {
+  requested?: boolean
+  status?: GeneratedAudioClipStatus | string
+  /** r2 | local | off */
+  mode?: string
+  detail?: string
 }
 
 /** Generated audio output (FROZEN generated_audio; raaga T-005/T-031). clip_url null until server clip gen. */
@@ -76,6 +105,9 @@ export interface GeneratedAudioRef {
     timbre?: string
     dosha?: string
     prahar?: number
+    /** Clip delivery receipt; `clip_url` is non-null only for uploaded | reused | generated (lane S3). */
+    clip?: GeneratedAudioClipMetadata
+    [key: string]: unknown
   }
 }
 
