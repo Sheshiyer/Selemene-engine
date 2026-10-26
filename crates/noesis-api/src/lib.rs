@@ -184,6 +184,7 @@ use workflow_parity::log_workflow_registry_parity;
             ApiEngineOutputResponse,
             ApiWitnessPrompt,
             ApiWorkflowResultResponse,
+            ApiWorkflowEngineResult,
             HealthResponse,
             ReadinessResponse,
             DependencyHealthResponse,
@@ -492,6 +493,18 @@ impl AppState {
     /// handler code does not directly reference the concrete manager type.
     pub fn bridge(&self) -> &Arc<noesis_bridge::BridgeManager> {
         &self.bridge_manager
+    }
+
+    /// A native engine is one registered with the orchestrator that the
+    /// TypeScript bridge does not serve: the same split `capabilities.rs`
+    /// reports as `runtime_kind: native`. Never inferred from `metadata.backend`.
+    pub(crate) fn is_native_engine(&self, engine_id: &str) -> bool {
+        self.orchestrator.registry().get(engine_id).is_some()
+            && !self
+                .bridge()
+                .engines()
+                .iter()
+                .any(|engine| engine.engine_id() == engine_id)
     }
 }
 
@@ -1547,17 +1560,59 @@ fn take_contract_provenance(
     }
 }
 
-/// Strip the reserved provenance key from every engine output in a workflow
-/// result so it reaches neither workflow responses nor persisted readings.
-fn strip_workflow_contract_provenance(workflow: &mut WorkflowResult) {
-    for output in workflow.engine_outputs.values_mut() {
-        let _ = take_contract_provenance(output);
+/// Contract-v1 provenance for a native engine, derived from the metadata the
+/// engine itself filled in (`fallback_used` and `provider_id` are set
+/// explicitly at every native construction site). `confidence` is omitted
+/// until an engine computes one.
+fn native_contract_provenance(
+    metadata: &noesis_core::CalculationMetadata,
+) -> noesis_core::contract::Provenance {
+    noesis_core::contract::Provenance {
+        runtime_kind: noesis_core::contract::RuntimeKind::Native,
+        implementation_version: metadata.engine_version.clone(),
+        cached: metadata.cached,
+        fallback_used: metadata.fallback_used,
+        backend_id: Some(metadata.backend.clone()).filter(|backend| !backend.is_empty()),
+        provider_id: metadata.provider_id.clone(),
+        confidence: None,
     }
 }
 
-impl From<EngineOutput> for ApiEngineOutputResponse {
-    fn from(mut output: EngineOutput) -> Self {
-        let provenance = take_contract_provenance(&mut output);
+/// Envelope provenance for one engine output: the bridge block lifted from
+/// `result` when present, else a block derived from metadata for native
+/// engines. A bridge engine whose block was malformed gets none (the block is
+/// still stripped), never a derived substitute.
+fn envelope_contract_provenance(
+    output: &mut EngineOutput,
+    is_native: bool,
+) -> Option<noesis_core::contract::Provenance> {
+    let lifted = take_contract_provenance(output);
+    lifted.or_else(|| is_native.then(|| native_contract_provenance(&output.metadata)))
+}
+
+/// Strip the reserved provenance key from every engine output in a workflow
+/// result so it reaches neither workflow responses nor persisted readings, and
+/// return each engine's envelope provenance for the response.
+fn strip_workflow_contract_provenance(
+    workflow: &mut WorkflowResult,
+    is_native: impl Fn(&str) -> bool,
+) -> HashMap<String, noesis_core::contract::Provenance> {
+    workflow
+        .engine_outputs
+        .iter_mut()
+        .filter_map(|(engine_id, output)| {
+            let native = is_native(engine_id.as_str());
+            envelope_contract_provenance(output, native)
+                .map(|provenance| (engine_id.clone(), provenance))
+        })
+        .collect()
+}
+
+impl ApiEngineOutputResponse {
+    /// Build the calculate envelope. `is_native` must come from
+    /// [`AppState::is_native_engine`].
+    fn from_engine_output(mut output: EngineOutput, is_native: bool) -> Self {
+        let provenance = envelope_contract_provenance(&mut output, is_native);
         let generated_image = output.result.get("generated_image").cloned();
         let generated_audio = output.result.get("generated_audio").cloned();
         let witness_prompts = vec![ApiWitnessPrompt {
@@ -1594,12 +1649,37 @@ struct ApiWitnessPrompt {
 struct ApiWorkflowResultResponse {
     #[serde(flatten)]
     workflow: WorkflowResult,
-    engine_results: HashMap<String, EngineOutput>,
+    engine_results: HashMap<String, ApiWorkflowEngineResult>,
 }
 
-impl From<WorkflowResult> for ApiWorkflowResultResponse {
-    fn from(workflow: WorkflowResult) -> Self {
-        let engine_results = workflow.engine_outputs.clone();
+/// One engine's output inside a workflow response, carrying the same
+/// contract-v1 `provenance` block the single-engine envelope does.
+#[derive(Serialize, ToSchema)]
+struct ApiWorkflowEngineResult {
+    #[serde(flatten)]
+    output: EngineOutput,
+    #[schema(inline)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    provenance: Option<noesis_core::contract::Provenance>,
+}
+
+impl ApiWorkflowResultResponse {
+    /// `provenance` comes from [`strip_workflow_contract_provenance`].
+    fn new(
+        workflow: WorkflowResult,
+        mut provenance: HashMap<String, noesis_core::contract::Provenance>,
+    ) -> Self {
+        let engine_results = workflow
+            .engine_outputs
+            .iter()
+            .map(|(engine_id, output)| {
+                let result = ApiWorkflowEngineResult {
+                    output: output.clone(),
+                    provenance: provenance.remove(engine_id),
+                };
+                (engine_id.clone(), result)
+            })
+            .collect();
         Self {
             workflow,
             engine_results,
@@ -3008,7 +3088,8 @@ async fn calculate_handler(
 
             // Lift the bridge's reserved provenance block into the envelope now so
             // the persisted reading never carries the scaffolding key.
-            let envelope = ApiEngineOutputResponse::from(output);
+            let is_native = state.is_native_engine(&engine_id);
+            let envelope = ApiEngineOutputResponse::from_engine_output(output, is_native);
             let output = &envelope.output;
 
             // Fire-and-forget: persist reading when appropriate, log usage, award XP
@@ -3484,7 +3565,9 @@ async fn execute_workflow_by_id(
                 "success",
                 duration_secs,
             );
-            strip_workflow_contract_provenance(&mut workflow_result);
+            let provenance = strip_workflow_contract_provenance(&mut workflow_result, |id| {
+                state.is_native_engine(id)
+            });
 
             increment_free_tier_counter(&state, &user);
 
@@ -3555,7 +3638,7 @@ async fn execute_workflow_by_id(
                 });
             }
 
-            Ok(Json(workflow_result.into()))
+            Ok(Json(ApiWorkflowResultResponse::new(workflow_result, provenance)))
         }
         Err(e) => {
             state.metrics.record_engine_calculation_with_status(
@@ -4832,9 +4915,11 @@ mod p4_contract_tests {
                     .unwrap()
                     .with_timezone(&chrono::Utc),
                 engine_version: "fixture".to_string(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
-        let response = serde_json::to_value(ApiEngineOutputResponse::from(output)).unwrap();
+        let response = serde_json::to_value(ApiEngineOutputResponse::from_engine_output(output, false)).unwrap();
 
         assert_eq!(response["generated_audio"], fixture("audio"));
         assert_eq!(response["generated_image"], fixture("image"));
@@ -4879,9 +4964,11 @@ mod p4_contract_tests {
                     .unwrap()
                     .with_timezone(&chrono::Utc),
                 engine_version: "fixture".to_string(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
-        let envelope = ApiEngineOutputResponse::from(output);
+        let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
         let prov = envelope.provenance.as_ref().expect("lifted provenance");
         assert_eq!(
             prov.runtime_kind,
@@ -4921,15 +5008,148 @@ mod p4_contract_tests {
                 cached: false,
                 timestamp: chrono::Utc::now(),
                 engine_version: "fixture".to_string(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
-        let envelope = ApiEngineOutputResponse::from(output);
+        let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
         assert!(envelope.provenance.is_none());
         assert!(envelope
             .output
             .result
             .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
             .is_none());
+    }
+
+    fn native_output(fallback_used: bool, provider_id: Option<&str>) -> EngineOutput {
+        EngineOutput {
+            engine_id: "panchanga".to_string(),
+            result: serde_json::json!({"tithi_name": "Pratipada"}),
+            witness_prompt: "What do you notice?".to_string(),
+            consciousness_level: 0,
+            metadata: CalculationMetadata {
+                calculation_time_ms: 0.5,
+                backend: "native-rust".to_string(),
+                precision_achieved: "Standard".to_string(),
+                cached: false,
+                timestamp: chrono::Utc::now(),
+                engine_version: "0.1.0".to_string(),
+                fallback_used,
+                provider_id: provider_id.map(str::to_string),
+            },
+        }
+    }
+
+    #[test]
+    fn native_engine_envelope_derives_block_from_metadata() {
+        let envelope = ApiEngineOutputResponse::from_engine_output(native_output(false, None), true);
+        let prov = envelope.provenance.as_ref().expect("native block derived");
+        assert_eq!(prov.runtime_kind, noesis_core::contract::RuntimeKind::Native);
+        assert_eq!(prov.implementation_version, "0.1.0");
+        assert!(!prov.cached);
+        assert!(!prov.fallback_used);
+        assert_eq!(prov.backend_id.as_deref(), Some("native-rust"));
+        assert!(prov.provider_id.is_none());
+        assert!(prov.confidence.is_none());
+    }
+
+    #[test]
+    fn native_fallback_and_provider_reach_the_wire_and_round_trip() {
+        let envelope = ApiEngineOutputResponse::from_engine_output(
+            native_output(true, Some("vedic-api")),
+            true,
+        );
+        let wire = serde_json::to_value(&envelope).unwrap();
+        let block = &wire["provenance"];
+        let keys: std::collections::BTreeSet<&str> =
+            block.as_object().unwrap().keys().map(String::as_str).collect();
+        assert_eq!(
+            keys,
+            std::collections::BTreeSet::from([
+                "runtime_kind",
+                "implementation_version",
+                "cached",
+                "fallback_used",
+                "backend_id",
+                "provider_id",
+            ])
+        );
+        assert_eq!(block["runtime_kind"], "native");
+        assert_eq!(block["fallback_used"], true);
+        let parsed: noesis_core::contract::Provenance =
+            serde_json::from_value(block.clone()).expect("deny_unknown_fields parse");
+        assert_eq!(&serde_json::to_value(&parsed).unwrap(), block);
+        assert!(wire["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+    }
+
+    #[test]
+    fn bridge_engine_without_sidecar_block_gets_no_derived_block() {
+        let mut output = native_output(false, None);
+        output.engine_id = "tarot".to_string();
+        output.metadata.backend = "typescript".to_string();
+        let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
+        assert!(envelope.provenance.is_none());
+    }
+
+    #[test]
+    fn workflow_strip_lifts_bridge_blocks_and_derives_native_ones() {
+        let mut bridge = native_output(false, None);
+        bridge.engine_id = "sigil-forge".to_string();
+        bridge.result = serde_json::json!({
+            (noesis_bridge::CONTRACT_PROVENANCE_KEY): {
+                "runtime_kind": "typescript",
+                "implementation_version": "2.0.0",
+                "cached": false,
+                "fallback_used": true
+            }
+        });
+        let mut malformed = native_output(false, None);
+        malformed.engine_id = "tarot".to_string();
+        malformed.result = serde_json::json!({
+            (noesis_bridge::CONTRACT_PROVENANCE_KEY): {"runtime_kind": "bogus"}
+        });
+        let mut workflow = WorkflowResult {
+            workflow_id: "test".to_string(),
+            engine_outputs: HashMap::from([
+                ("panchanga".to_string(), native_output(true, None)),
+                ("sigil-forge".to_string(), bridge),
+                ("tarot".to_string(), malformed),
+            ]),
+            synthesis: None,
+            total_time_ms: 1.0,
+            timestamp: chrono::Utc::now(),
+        };
+
+        let provenance =
+            strip_workflow_contract_provenance(&mut workflow, |id| id == "panchanga");
+
+        assert_eq!(
+            provenance["panchanga"].runtime_kind,
+            noesis_core::contract::RuntimeKind::Native
+        );
+        assert!(provenance["panchanga"].fallback_used);
+        assert_eq!(
+            provenance["sigil-forge"].runtime_kind,
+            noesis_core::contract::RuntimeKind::TypeScript
+        );
+        assert!(!provenance.contains_key("tarot"));
+        for output in workflow.engine_outputs.values() {
+            assert!(output
+                .result
+                .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+                .is_none());
+        }
+
+        let response = serde_json::to_value(ApiWorkflowResultResponse::new(workflow, provenance))
+            .unwrap();
+        assert_eq!(
+            response["engine_results"]["panchanga"]["provenance"]["runtime_kind"],
+            "native"
+        );
+        assert!(response["engine_results"]["tarot"].get("provenance").is_none());
+        assert!(response["engine_outputs"]["panchanga"].get("provenance").is_none());
     }
 
     fn scope_user(permissions: &[&str]) -> AuthUser {
