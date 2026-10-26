@@ -89,7 +89,8 @@
     "precision_achieved": "simulated",
     "cached": false,
     "timestamp": "2026-01-01T00:00:00Z",
-    "engine_version": "3.0.0"
+    "engine_version": "3.0.0",
+    "fallback_used": true
   },
   "_fixture_meta": {
     "input": {

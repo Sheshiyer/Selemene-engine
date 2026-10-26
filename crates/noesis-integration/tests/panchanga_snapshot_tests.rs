@@ -197,6 +197,10 @@ fn assert_output_matches(actual: &Value, expected: &Value, user_id: &str) {
         actual["metadata"]["engine_version"], expected["metadata"]["engine_version"],
         "metadata.engine_version mismatch for {user_id}"
     );
+    assert_eq!(
+        actual["metadata"]["fallback_used"], expected["metadata"]["fallback_used"],
+        "metadata.fallback_used mismatch for {user_id}"
+    );
 
     // Result: exact fields
     let result_exact_fields = [

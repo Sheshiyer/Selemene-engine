@@ -75,6 +75,16 @@ fn assert_engine_output_structure(fixture: &Value, expected_engine_id: &str) {
         meta["timestamp"].is_string(),
         "metadata.timestamp must be a string"
     );
+    // Lane N1: every native fixture declares whether a fallback served it; the
+    // biofield fixtures are mock (no birth data path) and so declare one.
+    let fallback_used = meta["fallback_used"]
+        .as_bool()
+        .expect("metadata.fallback_used must be a boolean");
+    assert_eq!(
+        fallback_used,
+        meta["backend"] == "mock",
+        "metadata.fallback_used must match the fixture's backend"
+    );
 }
 
 const REFERENCE_USERS: &[&str] = &[

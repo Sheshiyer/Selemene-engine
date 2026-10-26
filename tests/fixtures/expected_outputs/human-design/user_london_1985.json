@@ -163,6 +163,7 @@
     "precision_achieved": "Standard",
     "cached": false,
     "timestamp": "2025-01-01T00:00:00Z",
-    "engine_version": "3.0.0"
+    "engine_version": "3.0.0",
+    "fallback_used": false
   }
 }
