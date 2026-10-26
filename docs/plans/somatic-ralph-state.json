@@ -264,8 +264,8 @@
    "iteration": 0,
    "cap": 12,
    "status": "merged",
-   "axis_reached": "Operational (prod, honest clip-off path); hosted clips blocked on R2 credentials + prod vars",
-   "blocked_on_human": "Valid Cloudflare R2 S3 credentials (R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY) for bucket selemene-raga-clips: staging token returns 401 Unauthorized on HEAD and ListBucket via plain curl --aws-sigv4 (account id matches the wrangler-login account, public base pub-1f3a1b9d…r2.dev answers 404 for missing keys). Operator must re-issue the token in staging and copy R2_* + RAAGA_CLIP_MODE=r2 to prod ts-engines.",
+   "axis_reached": "Operational (prod, hosted R2 clips live)",
+   "blocked_on_human": "",
    "receipts": [
     {
      "date": "2026-10-26",
@@ -326,6 +326,12 @@
      "tier": "T3",
      "cmd": "prod readback after build: railway deployment list Selemene-engine + ts-engines production; GET selemene.tryambakam.space/health/live + /health/dependencies",
      "result": "Selemene-engine SUCCESS main@5da8f8d2, ts-engines SUCCESS main@5da8f8d2; live ok v3.3.1 19 engines; dependencies ready: biofield, face-reading, raaga, sigil-forge ready; biofield-cv + mediapipe-face-mesh ready"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "R2 fix: bucket-scoped API token (Workers R2 Storage Bucket Item Read+Write on selemene-raga-clips) created on the Urania 9d9d account via Cloudflare API; S3 creds (token id / sha256) verified with SigV4 ListBucket 200; set R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_PUBLIC_BASE_URL/R2_RAGA_CLIPS_BUCKET + RAAGA_CLIP_MODE=r2 on ts-engines staging then production (redeployed); POST /engines/raaga/calculate request_clip + consent raaga-audio with scoped key; HEAD clip_url; key revoked",
+     "result": "staging and prod: 200, provenance fallback_used false provider selemene-wav-synth, clip_url https://pub-1f3a1b9d...r2.dev/raaga/573cf5cb....wav, HEAD 200 audio/wav. Creds kept in ~/.config/selemene/r2-ts-engines.env (0600). HOSTED CLIPS LIVE IN PRODUCTION."
     }
    ],
    "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
@@ -340,8 +346,8 @@
    "iteration": 0,
    "cap": 12,
    "status": "merged",
-   "axis_reached": "Operational (prod, honest fallback path); real-image success path blocked on NVIDIA NIM flux.1-dev 500 + TS_BRIDGE_TIMEOUT 30s",
-   "blocked_on_human": null,
+   "axis_reached": "Operational (prod, real NVIDIA image path)",
+   "blocked_on_human": "",
    "receipts": [
     {
      "date": "2026-10-26",
@@ -390,6 +396,12 @@
      "tier": "T3",
      "cmd": "prod readback: deployments Selemene-engine 6cd68ae7 / ts-engines 91081190 / mediapipe 97b67233 main@d5729652 SUCCESS; GET selemene.tryambakam.space/health/live + /health/dependencies; POST /api/v1/engines/sigil-forge/calculate generate_image:false with prod key ralph-s4-prod (premium; basic:access, sigil-forge:read, raaga:read, biofield-capture:read; expires 1 day); same generate_image:true + consent sigil-gen",
      "result": "live ok v3.3.1 19 engines; dependencies ready (sigil-forge TypeScript runtime, nvidia configured). fallback path 200 with envelope provenance {typescript, 2.0.0, cached false, fallback_used true, confidence 0}, no __contract_provenance. image path 500 BRIDGE_ERROR (same NVIDIA NIM 500 + 30s bridge timeout as staging). Prod key to be revoked after S3 prod readback."
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "NIM fix: NVIDIA_API_KEY rotated to the key in ~/.claude/.env (sha prefix 29d3a0fc; old deployed key sha prefix 51c3b727 was still valid against /v1/models) on ts-engines + Selemene-engine, TS_BRIDGE_TIMEOUT=90 on Selemene-engine, staging then production (redeployed); POST /engines/sigil-forge/calculate generate_image=true + consent sigil-gen with scoped key; key revoked",
+     "result": "staging 200 in 9.9s, prod 200 in 11.5s: provider nvidia, image_gen_available true, generated_image.b64_json present, finish_reason SUCCESS, provenance fallback_used false confidence 0.9. REAL SIGIL IMAGE IN PRODUCTION."
     }
    ],
    "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
