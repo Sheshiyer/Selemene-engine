@@ -729,3 +729,35 @@ describe('consent primitives', () => {
     expect(consentAgeMs(c)).toBeGreaterThanOrEqual(0)
   })
 })
+
+// ---------------------------------------------------------------------------
+// capabilities()
+// ---------------------------------------------------------------------------
+
+describe('capabilities()', () => {
+  const row = {
+    contract_version: 'v1', engine_id: 'tarot', display_name: 'Tarot',
+    availability: 'available', runtime_kind: 'typescript', dependencies: [], required_phase: 1,
+  }
+  it('uses the ts server route when no apiUrl is set', async () => {
+    const { fetchImpl, calls } = mockFetch(() =>
+      new Response(JSON.stringify({ capabilities: [row], count: 1 }), { status: 200 }))
+    const client = new EngineClient({ tsEnginesUrl: 'http://ts.local:3001', fetchImpl })
+    const res = await client.capabilities()
+    expect(calls[0].url).toBe('http://ts.local:3001/engines/capabilities')
+    expect(res.count).toBe(1)
+    expect(res.capabilities[0].availability).toBe('available')
+  })
+  it('uses the api route when apiUrl is set', async () => {
+    const { fetchImpl, calls } = mockFetch(() =>
+      new Response(JSON.stringify({ capabilities: [], count: 0 }), { status: 200 }))
+    const client = new EngineClient({ apiUrl: 'https://api.local', fetchImpl })
+    await client.capabilities()
+    expect(calls[0].url).toBe('https://api.local/api/v1/engines/capabilities')
+  })
+  it('surfaces 404 as EngineSdkError so callers can fall back to declared', async () => {
+    const { fetchImpl } = mockFetch(() => new Response('not found', { status: 404 }))
+    const client = new EngineClient({ apiUrl: 'https://old.local', fetchImpl })
+    await expect(client.capabilities()).rejects.toBeInstanceOf(EngineSdkError)
+  })
+})

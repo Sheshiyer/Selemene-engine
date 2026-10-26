@@ -84,6 +84,8 @@ export interface ContractProvenance {
   fallback_used: boolean;
   backend_id?: string;
   provider_id?: string;
+  /** Confidence in the result, 0-1. Omitted where not yet computed. */
+  confidence?: number;
 }
 
 export interface ContractEngineRequest {
@@ -185,6 +187,14 @@ export interface EngineInfo {
   required_phase?: number;
   description?: string;
   version?: string;
+}
+
+/** contract-v1 runtime capability discovery row (alias of ContractEngineCapability). */
+export type EngineCapability = ContractEngineCapability;
+
+export interface EngineCapabilitiesResponse {
+  capabilities: EngineCapability[];
+  count: number;
 }
 
 export interface WorkflowInfo {
@@ -442,6 +452,11 @@ export class NoesisClient {
   /** List all available engines. */
   async listEngines(options?: RequestOptions): Promise<EngineInfo[]> {
     return this.request<EngineInfo[]>("/api/v1/engines", { method: "GET" }, options);
+  }
+
+  /** GET /api/v1/engines/capabilities -- contract-v1 runtime capability discovery */
+  async listCapabilities(options?: RequestOptions): Promise<EngineCapabilitiesResponse> {
+    return this.request<EngineCapabilitiesResponse>("/api/v1/engines/capabilities", { method: "GET" }, options);
   }
 
   /** List all available workflows. */

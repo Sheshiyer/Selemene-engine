@@ -1,10 +1,13 @@
 //! Integration tests for the Rust/API contract-v1 capability discovery route.
 //!
 //! This mirrors the TypeScript `/engines/capabilities` endpoint's contract-v1
-//! shape (`contracts/v1` `EngineCapability`), but on the admin-gated Rust/API
-//! surface, deriving availability from the same bridge readiness self-check
-//! data source that `/admin/bridge/health` already uses (no provider,
-//! database, or additional remote calls).
+//! shape (`contracts/v1` `EngineCapability`) on two Rust/API surfaces: the
+//! admin-gated `/admin/engines/capabilities` and the API-key / bearer
+//! `/engines/capabilities` (same auth group as `GET /engines`). Both delegate
+//! to `noesis_api::capabilities::collect_capabilities`, which lists native
+//! engines plus bridge-proxied TypeScript engines and derives bridge
+//! availability from the same readiness self-check `/admin/bridge/health`
+//! uses (no provider, database, or additional remote calls).
 
 use axum::http::StatusCode;
 use noesis_auth::AuthService;
@@ -108,8 +111,14 @@ fn test_capability_route_returns_contract_v1_shape_for_all_ts_engines() {
             .as_array()
             .unwrap_or_else(|| panic!("response body should be a JSON array, got body={body:?}"));
 
+        // The admin surface now lists native engines too; the TS subset must
+        // still be exactly the bridge registry.
+        let ts_capabilities: Vec<&serde_json::Value> = capabilities
+            .iter()
+            .filter(|capability| capability["runtime_kind"] == "typescript")
+            .collect();
         assert_eq!(
-            capabilities.len(),
+            ts_capabilities.len(),
             KNOWN_TS_ENGINES.len(),
             "expected {} TS engine capability rows, got body={body:?}",
             KNOWN_TS_ENGINES.len()
@@ -121,8 +130,9 @@ fn test_capability_route_returns_contract_v1_shape_for_all_ts_engines() {
                 capability["contract_version"], "v1",
                 "capability={capability:?}"
             );
-            assert_eq!(
-                capability["runtime_kind"], "typescript",
+            assert!(
+                ["native", "typescript"]
+                    .contains(&capability["runtime_kind"].as_str().unwrap_or("")),
                 "capability={capability:?}"
             );
             assert!(
@@ -157,5 +167,51 @@ fn test_capability_route_returns_contract_v1_shape_for_all_ts_engines() {
                 "expected engine_id {expected} in {seen_ids:?}"
             );
         }
+    });
+}
+
+#[test]
+fn test_public_capabilities_route_is_reachable_with_user_token() {
+    test_runtime().block_on(async {
+        let token = generate_user_token();
+        let (status, body) =
+            common::make_authenticated_request("GET", "/api/v1/engines/capabilities", &token, None)
+                .await;
+        assert_eq!(status, StatusCode::OK, "body={body:?}");
+        let caps = body["capabilities"].as_array().expect("capabilities array");
+        assert_eq!(body["count"].as_u64().unwrap() as usize, caps.len());
+        assert!(
+            !caps.is_empty(),
+            "must never be empty even if bridge readiness fails"
+        );
+        let native = caps
+            .iter()
+            .find(|c| c["engine_id"] == "panchanga")
+            .expect("native engine listed");
+        assert_eq!(native["contract_version"], "v1");
+        assert_eq!(native["runtime_kind"], "native");
+        assert_eq!(native["availability"], "available");
+        for id in KNOWN_TS_ENGINES {
+            let row = caps
+                .iter()
+                .find(|c| c["engine_id"] == id)
+                .unwrap_or_else(|| panic!("{id} missing in {caps:?}"));
+            assert_eq!(row["contract_version"], "v1");
+            assert_eq!(row["runtime_kind"], "typescript");
+            assert!(matches!(
+                row["availability"].as_str(),
+                Some("available" | "unavailable")
+            ));
+        }
+    });
+}
+
+#[test]
+fn test_public_capabilities_route_requires_auth() {
+    test_runtime().block_on(async {
+        let (status, _) =
+            common::make_unauthenticated_request("GET", "/api/v1/engines/capabilities", None)
+                .await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
     });
 }
