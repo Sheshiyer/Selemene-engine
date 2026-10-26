@@ -27,3 +27,10 @@ No npm provenance attestation: that needs a CI OIDC token, and CI is disabled by
 
 - sankalpa branch `chore/engine-sdk-from-npm`: dependency to `^0.2.0`, delete `vendor/selemene-engine-sdk-0.2.0.tgz`, regenerate the lockfile after the package is live, vitest + typecheck, PR.
 - urania-137 #180 and noesis-raycast: separate optional PRs replacing copied types with `import type { ... } from "@selemene/engine-sdk"`.
+
+## Receipt (2026-10-27)
+
+- Published `@selemene/engine-sdk@0.2.0` (dist-tag latest) by `tryambakam-noesis`, owner of the `@selemene` npm org. shasum `070ccf5d4f35eb24253c45cd8261f8b775fc7142`, 26 files, 22.6 kB, from Selemene-engine main@dcc1a046 via `scripts/release/publish-engine-sdk.sh` (operator approved 2FA in the browser).
+- npm normalised `repository.url` to `git+https://...` on publish; fix in source with the next version bump (`npm pkg fix`).
+- Sankalpa PR Sheshiyer/sankalpa#19: dependency `^0.2.0`, lockfile resolves from the registry (integrity matches), vendor tarball removed; `npm ci`, typecheck and 144 vitest tests pass.
+- `@noesis/sdk` held (no consumer). The `@selemene` org also has access to an unrelated `@selemene/sdk` package not visible in public search.
