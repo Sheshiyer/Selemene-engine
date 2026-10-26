@@ -415,7 +415,7 @@
    "worktree": ".worktrees/ralph-s5-rbac",
    "iteration": 6,
    "cap": 12,
-   "status": "prod-audit-hold",
+   "status": "prod-enforce",
    "axis_reached": "Deployed (prod, audit) / Operational (staging, enforce)",
    "blocked_on_human": "Operator decision 2026-10-25: hold production in ENGINE_SCOPE_MODE audit for a few days; review warnings together; then run backfill preview+commit and set enforce.",
    "origin": "cross_cutting_findings[0] 2026-10-25 (W3E slot 20, #913)",
@@ -468,6 +468,12 @@
      "tier": "T3",
      "cmd": "prod readback: Selemene-engine dcafb300 main@0f39cd07 SUCCESS; /health/live ok 19 engines; /health/dependencies ready; ENGINE_SCOPE_MODE unset (audit); test key ralph-s1-prod rotated+activated for one call then deactivated: face-reading-only key -> panchanga",
      "result": "200 in audit mode (logged, not blocked); probe key deactivated"
+    },
+    {
+     "date": "2026-10-27",
+     "tier": "T3",
+     "cmd": "audit review: 3 prod warnings 2026-10-25..26 (1 own probe; 2 from admin key cd5100e4 on transits + vedic-clock). Added transits:read + vedic-clock:read to cd5100e4 (guarded UPDATE). scripts/sql/backfill-engine-scopes.sql preview (ROLLBACK) then COMMIT. ENGINE_SCOPE_MODE=enforce on prod Selemene-engine (deploy f9c2a22e on dcc1a046). Probe key ralph-enforce-probe (basic:access + panchanga:read, 2h) minted, used, revoked.",
+     "result": "backfill: 9 full-bundle keys (3 enterprise, 6 premium) gained raaga/biofield-capture/financial-biosensor:read; re-run UPDATE 0. Enforce: /health/ready 200; panchanga 200; numerology 403 ENGINE_SCOPE_FORBIDDEN; transits 403; GET /engines and /engines/capabilities 200 (listing not scope-gated); logs show mode Enforce for the two probe denials only; revoke -> 401. Untouched: admin key d99a94f7 (last used 2026-09-08, basic+panchanga+tarot). Rollback: unset ENGINE_SCOPE_MODE (returns to audit)."
     }
    ],
    "remaining": [
