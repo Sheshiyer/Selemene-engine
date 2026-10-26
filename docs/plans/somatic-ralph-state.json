@@ -68,7 +68,7 @@
     {
      "date": "2026-10-25",
      "tier": "T2",
-     "cmd": "railway run Postgres: bash scripts/apply-migrations.sh (36 applied); minted staging-only key nk_1LY… (premium, face-reading:read); GET /api/v1/engines 200 with X-API-Key",
+     "cmd": "railway run Postgres: bash scripts/apply-migrations.sh (36 applied); minted staging-only key nk_1LY\u2026 (premium, face-reading:read); GET /api/v1/engines 200 with X-API-Key",
      "result": "staging DB migrated and authenticated"
     },
     {
@@ -475,6 +475,35 @@
     "separate decision: /api/legacy routes are unauthenticated"
    ],
    "review_readback": "railway MCP get-logs service 48b3bd23 env 702b945e filter \"engine scope missing\" (fields: user_id, tier, engine_id, route, required_permission); or railway logs --service Selemene-engine --environment production | grep \"engine scope missing\""
+  },
+  "c1-capabilities": {
+   "title": "Capability consumer surface v2 (rebuilds #1486/#1487/#1491 from main)",
+   "plan": "docs/plans/2026-10-26-capability-stack-landing-plan.md",
+   "pr": 1507,
+   "branch": "capability/consumer-surface-v2",
+   "head": "22109ebf",
+   "status": "staging-proven",
+   "receipts": [
+    {
+     "date": "2026-10-26",
+     "tier": "T1",
+     "cmd": "C1 session: cargo test noesis-api (capability_route, integration, p4_media, fixture_snapshot, engine_scope), noesis-core, noesis-bridge; ts-engines typecheck+bun test; engine-sdk bun test; noesis-sdk-ts vitest; route inventory regenerated",
+     "result": "all green; pasted in PR #1507 body. Deviations: native-engine synthesized provenance not taken (S4 tests pin main); witness/reading-repair-wip split halted on a doc conflict (not pushed)"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "staging Selemene-engine + ts-engines pinned to 22109ebf via staged source switch + accept-deploy (both SUCCESS); keys: ralph-s1-staging rotated, ralph-c1-narrow (face-reading:read only) minted, both expire 2026-10-28; probes per plan \u00a73",
+     "result": "P1 GET /api/v1/engines/capabilities 200: count 19, 13 native + 6 typescript, all v1, all available. P2 no key 401; narrow key 200 (same as GET /engines, which the route mirrors; basic:access is not a listing gate) and the same narrow key gets 403 on panchanga calculate, so enforce mode is intact. P3 API typescript rows == ts-engines /engines/capabilities (AGREE). P4 cache: 0.164s/0.148s within 10s, 0.214s after 11s; no log line is emitted, timing-only evidence. P5 sigil calculate generate_image=false: envelope provenance 7-field (fallback_used true, confidence 0), result has no provenance and no __contract_provenance; persisted reading 7a3bc37b via GET /readings/{id} has no reserved key. P6 schema: fixture valid with and without confidence, 1.5 rejected, unknown field rejected."
+    }
+   ],
+   "open": [
+    "T3 prod readback after merge",
+    "SDK publish (engine-sdk 0.2.0, noesis-sdk-ts 3.4.0) is an operator step",
+    "consumer PRs (urania-137, noesis-raycast, antahkarana, sankalpa) after SDK publish",
+    "witness/reading-repair-wip split still pending (commits only on codex/selemene-capability-consumer-surface)",
+    "close #1486 #1487 #1491 as superseded once #1507 merges"
+   ]
   }
  },
  "s0": {
@@ -533,7 +562,8 @@
   "s4-sigil",
   "s3-audio (rebase on s4)",
   "s2-biofield (any time)",
-  "s6-consumers (follow-up, after all three)"
+  "s6-consumers (follow-up, after all three)",
+  "#1507 capability v2 (after staging receipt 2026-10-26)"
  ],
  "overlap_note": "PR #1498 (S3) and #1499 (S4) both touch crates/noesis-bridge/src/lib.rs, crates/noesis-bridge/src/ts_client.rs and crates/noesis-api/src/lib.rs (provenance forwarding). Merge S4 first, then rebase S3 and re-run bridge tests before merging S3."
 }
