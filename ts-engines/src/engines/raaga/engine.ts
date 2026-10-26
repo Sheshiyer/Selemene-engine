@@ -81,7 +81,7 @@ export class RaagaEngine implements ConsciousnessEngine {
           required: false,
           description:
             'When true AND granted consent is present, render strudel_ratios to an audio clip and ' +
-            'populate generated_audio.clip_url (config: RAAGA_CLIP_MODE=off|local|r2|service). Default false (clip_url stays null).',
+            'populate generated_audio.clip_url (config: RAAGA_CLIP_MODE=off|local|r2). Default false (clip_url stays null).',
           default: false,
         },
       },
@@ -235,7 +235,7 @@ export class RaagaEngine implements ConsciousnessEngine {
     const verif = verifyFull72Melakartas() // from wisdom, ensures support
 
     // raaga-clip-generation (p5-p4-next-batch): consent-gated, config-driven clip path.
-    // request_clip + granted consent → generateRaagaClip (RAAGA_CLIP_MODE=off|local|service, default off).
+    // request_clip + granted consent → generateRaagaClip (RAAGA_CLIP_MODE=off|local|r2, default off).
     // clip_url stays null when not requested / consent missing / mode off (backward compat per FROZEN).
     const requestClip = Boolean(input.parameters.request_clip ?? false)
     const clipConsent = consent as Consent | undefined
@@ -266,7 +266,7 @@ export class RaagaEngine implements ConsciousnessEngine {
     // Contract provenance (exactly the seven-field block; the Rust parser is
     // deny_unknown_fields). The melakarta ratios are deterministic wisdom data,
     // so confidence is 1 whenever we delivered what was asked. A clip that was
-    // requested but not delivered (consent missing, mode off, upload/service
+    // requested but not delivered (consent missing, mode off, upload
     // failure) is a fallback: fallback_used true and confidence omitted.
     const clipFallback = requestClip && clipUrl === null
     const provenance: ContractProvenance = {

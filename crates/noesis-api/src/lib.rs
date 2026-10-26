@@ -252,7 +252,6 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::admin::AdminBridgeEngineHealth,
             handlers::admin::AdminBridgeConfig,
             handlers::admin::AdminHermesBridgeStatus,
-            handlers::admin::AdminSunoBridgeStatus,
             handlers::admin::AdminLlmProxyStatus,
             handlers::admin::AdminObservabilitySummary,
             handlers::admin::AdminObservabilityService,
@@ -903,10 +902,6 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             get(handlers::admin::hermes_bridge_status),
         )
         .route(
-            "/admin/bridge/suno/status",
-            get(handlers::admin::suno_bridge_status),
-        )
-        .route(
             "/admin/bridge/llm-proxy/status",
             get(handlers::admin::llm_proxy_status),
         )
@@ -1049,8 +1044,6 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/readings", get(list_readings_handler))
         .route("/readings/stats", get(readings_stats_handler))
         .route("/readings/:reading_id", get(get_reading_handler))
-        // Raga clip lookup (SUNO-03)
-        .route("/raga/:num/clip", get(handlers::raga::get_raga_clip))
         // OpenClaw onboarding routes
         .route(
             "/onboarding/invite",
@@ -1099,13 +1092,6 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/billing/events",
             post(handlers::billing::events_forward).layer(axum_middleware::from_fn(
                 middleware::billing_forward_secret_middleware,
-            )),
-        )
-        // Raga clip upsert — called by ts-engines bulk-gen (SUNO-05)
-        .route(
-            "/raga/clip",
-            post(handlers::raga::upsert_raga_clip).layer(axum_middleware::from_fn(
-                middleware::raga_internal_key_middleware,
             )),
         )
         .layer(axum_middleware::from_fn_with_state(

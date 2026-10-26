@@ -3,7 +3,7 @@
  *
  * Renders strudel_ratios (just-intonation swara set) offline into a mono PCM16
  * WAV clip (arohana ascent, sine voices, short fades) and delivers it through
- * one of four modes:
+ * one of three modes:
  *
  *   off      — never render; clip_url stays null (default; backward compat).
  *   local    — write the WAV under RAAGA_CLIP_DIR and serve it from this
@@ -13,15 +13,12 @@
  *   r2       — upload the WAV to Cloudflare R2 (key raaga/<sha256>.wav, HEAD
  *              before PUT so repeats are free) and return the absolute public
  *              URL. Durable; the production path.
- *   service  — POST to an external render endpoint (RAAGA_CLIP_SERVICE_URL,
- *              historically the suno bridge) and relay its clip_url.
  *
  * Config (env):
- *   RAAGA_CLIP_MODE             — "off" | "local" | "r2" | "service"  (default "off")
+ *   RAAGA_CLIP_MODE             — "off" | "local" | "r2"  (default "off")
  *   RAAGA_CLIP_DIR              — local clip store dir   (default <os-tmp>/raaga-clips)
  *   RAAGA_CLIP_BASE_URL         — URL prefix for local clips (default "/clips/raaga",
  *                                 or https://<TS_ENGINES_PUBLIC_URL|RAILWAY_PUBLIC_DOMAIN>/clips/raaga)
- *   RAAGA_CLIP_SERVICE_URL      — external render endpoint (service mode only)
  *   RAAGA_CLIP_SECONDS_PER_NOTE — seconds per swara (default 0.6)
  *   R2_*                        — see src/utils/r2.ts (r2 mode only)
  */
@@ -32,10 +29,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { missingR2Vars, putIfAbsent } from '../../utils/r2'
 
-export type RaagaClipMode = 'off' | 'local' | 'r2' | 'service'
+export type RaagaClipMode = 'off' | 'local' | 'r2'
 
-/** Who actually produced the clip bytes (surfaces as provenance.provider_id). */
-export type RaagaClipProvider = 'selemene-wav-synth' | 'suno'
+/** Who produced the clip bytes (surfaces as provenance.provider_id). Always the in-process synth. */
+export type RaagaClipProvider = 'selemene-wav-synth'
 
 export interface RaagaClipRequest {
   melakarta: number
@@ -45,7 +42,7 @@ export interface RaagaClipRequest {
 }
 
 export type RaagaClipStatus =
-  /** local/service: clip rendered and delivered */
+  /** local: clip rendered and delivered */
   | 'generated'
   /** r2: HEAD 404 → PUT succeeded */
   | 'uploaded'
@@ -54,7 +51,6 @@ export type RaagaClipStatus =
   /** r2: HEAD/PUT failed or R2 not configured */
   | 'upload_failed'
   | 'skipped_off'
-  | 'service_unavailable'
   | 'error'
 
 export interface RaagaClipResult {
@@ -74,7 +70,7 @@ export const R2_CLIP_CONTENT_TYPE = 'audio/wav'
 /** Resolve the configured clip mode; defaults to "off" (backward compat per FROZEN). */
 export function resolveClipMode(env: Env = process.env): RaagaClipMode {
   const raw = (env.RAAGA_CLIP_MODE ?? 'off').trim().toLowerCase()
-  if (raw === 'local' || raw === 'r2' || raw === 'service' || raw === 'off') return raw
+  if (raw === 'local' || raw === 'r2' || raw === 'off') return raw
   return 'off'
 }
 
@@ -228,7 +224,7 @@ export async function generateRaagaClip(request: RaagaClipRequest): Promise<Raag
       mode,
       status: 'skipped_off',
       detail:
-        'RAAGA_CLIP_MODE=off (default); set to local, r2 or service to enable clip generation',
+        'RAAGA_CLIP_MODE=off (default); set to local or r2 to enable clip generation',
     }
   }
 
@@ -251,79 +247,30 @@ export async function generateRaagaClip(request: RaagaClipRequest): Promise<Raag
     }
   }
 
-  if (mode === 'r2') {
-    const missing = missingR2Vars(env)
-    if (missing.length > 0) {
-      return {
-        clip_url: null,
-        mode,
-        status: 'upload_failed',
-        detail: `R2 not configured: missing ${missing.join(', ')}`,
-      }
-    }
-    try {
-      const wav = renderWav(request.ratios, request.rootHz, { secondsPerNote: secondsPerNote(env) })
-      const key = r2ClipKey(wav)
-      const { url, existed } = await putIfAbsent(key, wav, R2_CLIP_CONTENT_TYPE, {
-        cacheControl: R2_CLIP_CACHE_CONTROL,
-        env,
-      })
-      return {
-        clip_url: url,
-        mode,
-        status: existed ? 'reused' : 'uploaded',
-        provider: 'selemene-wav-synth',
-      }
-    } catch (err) {
-      return { clip_url: null, mode, status: 'upload_failed', detail: errorDetail(err) }
-    }
-  }
-
-  // service mode — external render endpoint (e.g. a suno-bridge style service), graceful fallback
-  const serviceUrl = env.RAAGA_CLIP_SERVICE_URL
-  if (!serviceUrl) {
+  // r2 mode — content-addressed upload to Cloudflare R2 (the durable, production path)
+  const missing = missingR2Vars(env)
+  if (missing.length > 0) {
     return {
       clip_url: null,
       mode,
-      status: 'service_unavailable',
-      detail: 'RAAGA_CLIP_SERVICE_URL not configured',
+      status: 'upload_failed',
+      detail: `R2 not configured: missing ${missing.join(', ')}`,
     }
   }
-
   try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 10_000)
-    const res = await fetch(serviceUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({
-        melakarta: request.melakarta,
-        ratios: request.ratios,
-        root_hz: request.rootHz,
-      }),
-      signal: controller.signal,
+    const wav = renderWav(request.ratios, request.rootHz, { secondsPerNote: secondsPerNote(env) })
+    const key = r2ClipKey(wav)
+    const { url, existed } = await putIfAbsent(key, wav, R2_CLIP_CONTENT_TYPE, {
+      cacheControl: R2_CLIP_CACHE_CONTROL,
+      env,
     })
-    clearTimeout(timeout)
-    if (!res.ok) {
-      return {
-        clip_url: null,
-        mode,
-        status: 'service_unavailable',
-        detail: `clip service responded ${res.status}`,
-      }
+    return {
+      clip_url: url,
+      mode,
+      status: existed ? 'reused' : 'uploaded',
+      provider: 'selemene-wav-synth',
     }
-    const body = (await res.json().catch(() => ({}))) as { clip_url?: string; url?: string }
-    const url = body.clip_url ?? body.url ?? null
-    if (!url) {
-      return {
-        clip_url: null,
-        mode,
-        status: 'service_unavailable',
-        detail: 'clip service response missing clip_url',
-      }
-    }
-    return { clip_url: url, mode, status: 'generated', provider: 'suno' }
   } catch (err) {
-    return { clip_url: null, mode, status: 'service_unavailable', detail: errorDetail(err) }
+    return { clip_url: null, mode, status: 'upload_failed', detail: errorDetail(err) }
   }
 }

@@ -1,4 +1,0 @@
-.env
-suno-api-build/
-*.log
-.run-state.json

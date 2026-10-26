@@ -113,15 +113,14 @@ The bridge passes the TS result through **verbatim** — `result: ts_response.re
 | `off` (default) | nothing rendered | `null` | `skipped_off` |
 | `local` | WAV written under `RAAGA_CLIP_DIR` and served by this process at `GET /clips/raaga/<file>` | absolute `https://…/clips/raaga/<file>` when a public base is known (`RAAGA_CLIP_BASE_URL`, else `TS_ENGINES_PUBLIC_URL`, else Railway's `RAILWAY_PUBLIC_DOMAIN`); otherwise the **relative** `/clips/raaga/<file>` with `detail` flagging it ephemeral | `generated` |
 | `r2` | WAV uploaded to Cloudflare R2 (SigV4 via `aws4fetch`, `ts-engines/src/utils/r2.ts`) under key `raaga/<sha256 of bytes>.wav`, `Content-Type: audio/wav`, `Cache-Control: public, max-age=31536000, immutable`; `HEAD` first so repeats never re-upload | absolute `${R2_PUBLIC_BASE_URL}/raaga/<sha256>.wav` (same URL on every repeat) | `uploaded` (HEAD 404 → PUT), `reused` (HEAD 200, no PUT), `upload_failed` (HEAD/PUT error or R2 vars missing) |
-| `service` | POST `{melakarta, ratios, root_hz}` to `RAAGA_CLIP_SERVICE_URL`, relay its `clip_url` | whatever the service returns | `generated` / `service_unavailable` |
 
-Other statuses: `not_requested` (no `request_clip`), `consent_missing`, `error` (local render/write failure). **Local-mode clips live on the service's disk**, which on Railway is wiped on every redeploy — treat them as ephemeral; `r2` is the durable, production mode.
+Other statuses: `not_requested` (no `request_clip`), `consent_missing`, `error` (local render/write failure). There is no external render service: the retired Suno path (bridge service, `raga_clips` table, `GET /api/v1/raga/{num}/clip`) was removed on 2026-10-26; `r2` is its replacement. **Local-mode clips live on the service's disk**, which on Railway is wiped on every redeploy — treat them as ephemeral; `r2` is the durable, production mode.
 
 **Env (ts-engines service):**
 
 | Variable | Modes | Meaning |
 |---|---|---|
-| `RAAGA_CLIP_MODE` | all | `off` \| `local` \| `r2` \| `service` |
+| `RAAGA_CLIP_MODE` | all | `off` \| `local` \| `r2` |
 | `RAAGA_CLIP_SECONDS_PER_NOTE` | local, r2 | seconds per swara (default 0.6; 0.05–10) |
 | `RAAGA_CLIP_DIR` | local | clip store dir (default `<os-tmp>/raaga-clips`) |
 | `RAAGA_CLIP_BASE_URL` | local | explicit URL prefix for local clips |
@@ -129,7 +128,6 @@ Other statuses: `not_requested` (no `request_clip`), `consent_missing`, `error` 
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | r2 | R2 S3-API credentials (never logged; errors name only the missing variable) |
 | `R2_PUBLIC_BASE_URL` | r2 | public read base (`https://pub-….r2.dev` or a custom domain) |
 | `R2_RAGA_CLIPS_BUCKET` | r2 | bucket (default `selemene-raga-clips`) |
-| `RAAGA_CLIP_SERVICE_URL` | service | external render endpoint |
 
 **Provenance.** Every raaga response carries the seven-field contract block (`ts-engines/src/types/engine.ts` `ContractProvenance`; the Rust parser is `deny_unknown_fields`, so nothing else may appear):
 
@@ -139,11 +137,11 @@ Other statuses: `not_requested` (no `request_clip`), `consent_missing`, `error` 
   "implementation_version": "1.0.0",
   "cached": false,
   "fallback_used": false,            // true whenever a clip was requested but not delivered
-  "provider_id": "selemene-wav-synth", // "suno" only when service mode produced the clip
+  "provider_id": "selemene-wav-synth", // always: every clip is rendered in-process
   "confidence": 1                    // ratios are deterministic; omitted when fallback_used is true
 }
 ```
 
-`fallback_used: true` covers consent missing, mode `off`, upload failure, R2 not configured, and service unavailable — i.e. every case where `clip_url` is `null` although it was asked for. When no clip was requested the ratios alone are the deliverable, so `fallback_used` is `false`. The bridge carries the block to the API as `result.__contract_provenance`, which the API lifts into the envelope's `provenance`.
+`fallback_used: true` covers consent missing, mode `off`, upload failure, and R2 not configured — i.e. every case where `clip_url` is `null` although it was asked for. When no clip was requested the ratios alone are the deliverable, so `fallback_used` is `false`. The bridge carries the block to the API as `result.__contract_provenance`, which the API lifts into the envelope's `provenance`.
 
 **Staging/production probe.** `POST /api/v1/engines/raaga/calculate` with `{"parameters":{"melakarta":15,"request_clip":true},"consent":{"granted":true,"scopes":["audio"],"timestamp":"<iso>"}}` → `generated_audio.clip_url` starts with `https://`, `metadata.clip.mode: "r2"`, `curl -I <clip_url>` → `200` with `content-type: audio/wav`, a repeat call returns the same URL (`status: reused`); the same request without `consent` → `clip_url: null`, `metadata.clip.status: consent_missing`, `provenance.fallback_used: true`.
