@@ -737,6 +737,12 @@ components:
           format: date-time
         engine_version:
           type: string
+        fallback_used:
+          type: boolean
+          description: True when a mock, heuristic or approximation replaced the engine's primary computation.
+        provider_id:
+          type: string
+          description: External provider that computed the result; omitted for local computation.
 
     EngineOutput:
       type: object
