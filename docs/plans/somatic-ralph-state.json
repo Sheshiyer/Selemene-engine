@@ -1,503 +1,527 @@
 {
-  "version": 1,
-  "plan": "docs/plans/2026-10-25-somatic-engines-reconciliation-and-ralph-plan.md",
-  "axes": [
-    "Declared",
-    "Implemented",
-    "Executable",
-    "Integrated",
-    "Deployed",
-    "Operational"
-  ],
-  "tiers": {
-    "T1": "local gate",
-    "T2": "railway staging",
-    "T3": "prod readback"
-  },
-  "lock_zones": [
-    "crates/noesis-core/src/types.rs",
-    "Cargo.lock",
-    "python-services/railway.toml",
-    "railway.toml",
-    "sankalpa/src/main/engineGateway.ts"
-  ],
-  "lanes": {
-    "s1-face": {
-      "branch": "ralph/s1-face",
-      "worktree": ".worktrees/ralph-s1-face",
-      "iteration": 13,
-      "cap": 12,
-      "status": "prod-proven",
-      "axis_reached": "Operational (prod)",
-      "blocked_on_human": null,
-      "receipts": [
-        {
-          "date": "2026-10-25",
-          "tier": "T1",
-          "cmd": "docker build -f python-services/Dockerfile.mediapipe && docker run && curl /health",
-          "result": "healthy; mediapipe_available=true",
-          "commits": [
-            "617e928b",
-            "Dockerfile.mediapipe xcb fix"
-          ]
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "railway add (main, no root dir) -> build SUCCESS but built repo-root Dockerfile.prod; runtime log shows noesis_server booting",
-          "result": "FALSE SUCCESS: unset rootDirectory makes Railway auto-detect the root Dockerfile. Recorded as the negative case for the non-GH CI flow."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "railway MCP connect-service-source branch=ralph/s1-face; update-service rootDirectory=/python-services dockerfilePath=Dockerfile.mediapipe healthcheckPath=/health timeout=120 restart ON_FAILURE x3",
-          "result": "config applied; railwayConfigFile param refused as deprecated (config-as-code sunset 2026-12-01), so settings were applied directly instead of via railway.mediapipe.toml"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "railway up from worktree (snapshot build, no log) FAILED; empty trigger commit 19cc4700 pushed -> deployment 9b9f6cc4 SUCCESS building Dockerfile.mediapipe (mediapipe 1.1.1, opencv-contrib 5.0.0.93); uvicorn booted on injected PORT=8080",
-          "result": "sidecar healthy on its own /health but API reported unavailable: SELEMENE_FACE_CV_URL targets :8001"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "railway variables --service mediapipe-service --environment staging --set PORT=8001; redeploy; GET selemene-engine-staging.up.railway.app/health/dependencies",
-          "result": "sidecars: biofield-cv ready, mediapipe-face-mesh ready. First Deployed-axis receipt for face reading."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "railway run Postgres: bash scripts/apply-migrations.sh (36 applied); minted staging-only key nk_1LY\u2026 (premium, face-reading:read); GET /api/v1/engines 200 with X-API-Key",
-          "result": "staging DB migrated and authenticated"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "POST /api/v1/engines/face-reading/upload with a PIL-drawn non-photo face + consent face-image",
-          "result": "200; mediapipe-service deploy log shows POST /analyze 200 x2, so API->sidecar wiring is live. BUT FaceUploadResponse returns only engine_id/witness_prompt/analysis/is_mock_data: metadata.backend, computation_mode, notice, landmark_analysis are dropped, so a consumer cannot distinguish CV from heuristic. is_mock_data=false on a non-face. Defect for slot W3E:face-reading:07."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "Higgsfield gpt_image_2_5 synthetic neutral portrait -> POST staging /api/v1/engines/face-reading/calculate with exact v1 contract {contract_version,consciousness_level,parameters,image_data{b64,mime_type,consent}}",
-          "result": "200 full envelope: metadata.backend=heuristic-image-landmark-hook, computation_mode=image-heuristic-capture. NOT mediapipe. Sidecar was reached but returned deterministic-fallback."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T1",
-          "cmd": "docker run selemene-mediapipe:local; POST /analyze synthetic face; python -c hasattr(mp,\"solutions\")",
-          "result": "landmark_source=deterministic-fallback with mediapipe_available=true. ROOT CAUSE: mediapipe 1.1.1 installed (pyproject allows >=0.10); legacy mp.solutions.face_mesh removed in 1.0; analyze.py except swallowed it. Health only tested import."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T1",
-          "cmd": "commit 0c30e2e4 (pin mediapipe<1.0, honest health); docker build selemene-mediapipe:fix; /health; /analyze synthetic face; pytest 4 sidecar test files in image",
-          "result": "mediapipe 0.10.18 solutions=True; /health capability_status=available facemesh_ready=true; /analyze landmark_source=mediapipe-facemesh 468 landmarks 44.7ms; 31 passed"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "push 0c30e2e4 (<1.0 pin) -> staging deployment 309af0c0 SUCCESS; /health/dependencies mediapipe ready; calculate x3",
-          "result": "still backend=heuristic. Build log: x86_64 resolved mediapipe-0.10.35 (py3-none wheel, no solutions API); arm64 locally had resolved 0.10.18. Pinned ==0.10.18 (x86_64 cp311 wheel verified via pip download) and pushed."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "temporary domain mediapipe-service-staging.up.railway.app; GET /health; POST /analyze",
-          "result": "service identified as biofield-cv (opencv/numpy/mediapipe flags), /analyze returned biofield shape. ROOT CAUSE 2: config-as-code python-services/railway.toml (dockerfilePath=Dockerfile.biofield) overrides the dockerfilePath set via API, so mediapipe-service built and ran the biofield sidecar. Rust engine got 200 with wrong shape -> decode fail -> silent heuristic."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "git mv railway.toml railway.biofield.toml; git mv railway.mediapipe.toml railway.toml; push ralph/s1-face",
-          "result": "rebuild in progress"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "deployment f09e1a1f (railway.toml swap) SUCCESS; direct GET /health; direct POST /analyze; API /health/dependencies; API POST /api/v1/engines/face-reading/calculate (v1 contract, synthetic Higgsfield portrait, consent face-image)",
-          "result": "sidecar: service=mediapipe-face-mesh capability_status=available facemesh_ready=true; direct analyze landmark_source=mediapipe-facemesh 468 landmarks 69.8ms; API envelope: metadata.backend=mediapipe-face-cv precision_achieved=cv-468-landmarks computation_mode=image-cv-capture landmark_analysis.landmark_source=mediapipe-facemesh num_landmarks=468, calc 136ms. FIRST REAL FACE READING IN ANY SELEMENE ENVIRONMENT."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T1",
-          "cmd": "commit 99ef14c4: engine provenance block + tracing::warn on fallback; upload returns provenance/backend/computation_mode/landmark summary; /health/dependencies honours capability_status. cargo test engine 47/47, api probe test, p4_media 25/25, fixture_snapshot 4/4, openapi 5/5 (--locked)",
-          "result": "Rust hardening green locally"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "Railway MCP: stage Selemene-engine source branch main->ralph/s1-face in staging only; get-staged-changes = 1 non-destructive update; accept-deploy",
-          "result": "staging API rebuilding from the lane"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "staging: Selemene-engine 826ef662, biofield-cv-service + mediapipe-service rebuilt from Dockerfile.sidecar (6a5c01d8); GET /health/dependencies; POST upload; POST upload consent=false; POST calculate",
-          "result": "status=ready, both sidecars ready (capability-aware); upload keys now include computation_mode/backend/provenance/landmark_analysis with backend=mediapipe-face-cv fallback_used=false landmark_source=mediapipe-facemesh 468; consent=false -> 422 CONSENT_REQUIRED; calculate provenance identical. Biofield build log: load build definition from python-services/Dockerfile.sidecar."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T3",
-          "cmd": "PR #1496 opened from ralph/s1-face (6244da31); mergeable CLEAN; gh pr merge --merge --match-head-commit 6244da31",
-          "result": "MERGED 2026-10-25T13:04:30Z merge commit 7d833ac9. Production: mediapipe-service instance created via staged config + accept-deploy (root /python-services, /health, ON_FAILURE x3), vars PORT=8001 SIDECAR_SERVICE=mediapipe_service; Selemene-engine prod SELEMENE_FACE_CV_URL set to private domain :8001. Prod API, biofield, mediapipe rebuilding from main."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T3",
-          "cmd": "prod readback: list-deployments Selemene-engine e12c463e main@7d833ac9 SUCCESS; mediapipe-service 3ead646b main@7d833ac9 SUCCESS; GET selemene.tryambakam.space/health/live; GET /health/dependencies",
-          "result": "live ok v3.3.1 19 engines; dependencies status=ready, biofield-cv ready, mediapipe-face-mesh ready. biofield-cv-service prod still on its July image (no rebuild triggered yet); safe, default mode unchanged."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T3",
-          "cmd": "prod key ralph-s1-prod (face-reading:read + basic:access, expires 2026-11-01) minted in prod Postgres via railway run; POST selemene.tryambakam.space/api/v1/engines/face-reading/calculate (v1 contract, synthetic portrait, consent face-image); POST /upload; POST /upload consent=false",
-          "result": "calculate 200: metadata.backend=mediapipe-face-cv precision=cv-468-landmarks computation_mode=image-cv-capture provenance.landmark_source=mediapipe-facemesh fallback_used=false num_landmarks=468 (364ms). upload: backend=mediapipe-face-cv fallback_used=false. consent=false: 422. FIRST REAL FACE READING IN PRODUCTION."
-        }
-      ],
-      "findings": [
-        "upload route strips provenance (backend/computation_mode/landmark_analysis)",
-        "calculate route rejects {image_data:{b64_json,mime_type}} shape with VALIDATION_ERROR; contract shape TBD",
-        "no real face fixture exists in any repo",
-        "Rust engine labels sidecar deterministic-fallback as backend=heuristic-image-landmark-hook with is_mock_data=false; should be degraded/provenance.fallback_used=true (slot 07/09)",
-        "ROOT CAUSE face CV: mediapipe>=0.10 unpinned resolved to 1.1.1 which has no solutions API; fix = pin <1.0 (0.10.18 has cp311 wheels) + honest health",
-        "Rust /health/dependencies marks a sidecar ready on HTTP 200 alone; it ignores capability_status, so a degraded face-mesh reports ready",
-        "Rust analysis_from_landmark_hook swallows Ok(fallback) and Err(...) with no log line; add tracing::warn and expose in provenance",
-        "railway ssh needs a registered key (railway ssh keys add); not set up on this Mac",
-        "MERGE PREREQ: before ralph/s1-face merges to main, set biofield-cv-service config path to /python-services/railway.biofield.toml in prod and staging (config-as-code deprecated 2026-12-01; migrate to .railway/railway.ts later)",
-        "Rust face engine accepted a 200 from the wrong service silently; decode errors must be logged and surfaced as provenance"
-      ],
-      "remaining": [
-        "prod: biofield-cv-service rebuild from main (unified image) on next trigger; verify default mode",
-        "staging: Selemene-engine/biofield back on main (accepted)",
-        "golden fixture slot 27: commit synthetic-face fixture",
-        "Sankalpa: drop is_mock_data shim, render provenance badge; default host selemene.tryambakam.space",
-        "docs/ENGINES.md face-reading: document provenance block"
-      ]
-    },
-    "s2-biofield": {
-      "branch": "ralph/s2-biofield",
-      "worktree": ".worktrees/ralph-s2-biofield",
-      "iteration": 0,
-      "cap": 12,
-      "status": "merged",
-      "axis_reached": "Deployed (prod main@2d6514e1); Operational in staging only; prod blocked on schema migration",
-      "blocked_on_human": "Production Postgres schema drift: biofield_sessions has the pre-017 column set (no notes), biofield_readings does not exist, and there is no noesis_migration_journal. POST /api/v1/biofield/sessions in prod -> 500 BIOFIELD_DB_ERROR (column notes does not exist). Fix needs scripts/apply-migrations.sh --adopt-through on a pre-journal nonempty prod DB: operator decision.",
-      "receipts": [
-        {
-          "date": "2026-10-26",
-          "tier": "prep",
-          "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
-          "result": "awaiting operator start"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T1",
-          "cmd": "lane session opened PR #1500 from claude/blissful-shaw-98dc3e@a6d8b2d1; lane reports local suites green",
-          "result": "not yet reviewed by coordinator; staging not run"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "Railway MCP: stage Selemene-engine staging source -> claude/blissful-shaw-98dc3e (patch ee23cbe7); accept-deploy",
-          "result": "deployment 91b67582 SUCCESS a6d8b2d1"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "staging probes (ralph-s1-staging key): POST /biofield/sessions; POST captures multipart image=biofield-portrait-256.jpg + capture_metadata.consent biofield-capture; same without consent; same with scopes [face-image]; GET /biofield/readings/{id}",
-          "result": "201 session; 201 reading 434ba7d5 with metrics + quality_assessment sufficient_quality true + source-image artifact (mediapipe/biofield-cv sidecar live); 422 CONSENT_REQUIRED required_scope biofield-capture for both missing and wrong scope; GET reading 200 with metrics"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "POST /engines/biofield/calculate with options.biofield_capture.reading_id; without reading/birth; with birth_data; POST /engines/biofield-capture/calculate",
-          "result": "reading_id: is_mock_data true, mock_reason biofield-engine-cannot-resolve-reading, provenance.backend mock, fallback_used true, capture_reading_id set, fallback_reason names biofield-capture; no data: mock_reason no-birth-data; birth_data: backend vedic-ephemeris fallback_used false is_mock_data false. biofield-capture calculate -> 403 ENGINE_SCOPE_FORBIDDEN: staging key lacks biofield-capture:read and staging runs ENGINE_SCOPE_MODE=enforce (S5 working as designed; unchanged-behaviour probe not exercised)"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T3",
-          "cmd": "gh pr merge 1500 --merge --match-head-commit a6d8b2d1",
-          "result": "MERGED 2026-10-25T20:45:25Z merge commit 2d6514e1; prod Selemene-engine redeploying from main"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T3",
-          "cmd": "prod readback: Selemene-engine e6daca29 main@2d6514e1 SUCCESS; POST selemene.tryambakam.space/api/v1/biofield/sessions with prod key ralph-s4-prod; prod API logs; read-only psql via railway run",
-          "result": "500 BIOFIELD_DB_ERROR; log: column \"notes\" of relation \"biofield_sessions\" does not exist; psql: to_regclass(biofield_readings) null, no noesis_migration_journal table, biofield_sessions columns id,user_id,status,analysis_mode,analysis_region... Pre-existing prod schema drift, not introduced by S2."
-        }
-      ],
-      "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
-      "title": "Biofield capture consent + honest engine",
-      "pr": 1500,
-      "pr_branch": "claude/blissful-shaw-98dc3e",
-      "pr_head": "a6d8b2d1"
-    },
-    "s3-audio": {
-      "branch": "ralph/s3-audio",
-      "worktree": ".worktrees/ralph-s3-audio",
-      "iteration": 0,
-      "cap": 12,
-      "status": "merged",
-      "axis_reached": "Operational (prod, honest clip-off path); hosted clips blocked on R2 credentials + prod vars",
-      "blocked_on_human": "Valid Cloudflare R2 S3 credentials (R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY) for bucket selemene-raga-clips: staging token returns 401 Unauthorized on HEAD and ListBucket via plain curl --aws-sigv4 (account id matches the wrangler-login account, public base pub-1f3a1b9d\u2026r2.dev answers 404 for missing keys). Operator must re-issue the token in staging and copy R2_* + RAAGA_CLIP_MODE=r2 to prod ts-engines.",
-      "receipts": [
-        {
-          "date": "2026-10-26",
-          "tier": "prep",
-          "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
-          "result": "awaiting operator start"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T1",
-          "cmd": "lane session opened PR #1498 from claude/busy-gagarin-720002@b452522b; lane reports local suites green",
-          "result": "not yet reviewed by coordinator; staging not run"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T1",
-          "cmd": "lane session rebased #1498 onto main d5729652 (dropped duplicate bridge/api plumbing, kept S4 versions); head 1bd12d8d",
-          "result": "noesis-bridge 44+1 pass; noesis-api lib 113 pass; bun 134 pass; git merge-tree vs main clean"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "railway run -s Postgres -e staging bash scripts/apply-migrations.sh --migrations-dir <S3 branch migrations>",
-          "result": "applied=2 skipped=36 (039_raga_clips_style_traditional applied)"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "Railway MCP: stage Selemene-engine + ts-engines staging -> claude/busy-gagarin-720002 (patch 7e55512f); accept-deploy",
-          "result": "Selemene-engine 3b09aa94 SUCCESS, ts-engines 30dc4e66 SUCCESS at 1bd12d8d"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "POST staging /engines/raaga/calculate melakarta 15 request_clip + consent audio; repeat; without consent",
-          "result": "with consent: clip_url null, metadata.clip {mode r2, status upload_failed, detail 'R2 HEAD raaga/<sha>.wav failed with status 401'}, envelope provenance {typescript, 1.0.0, cached false, fallback_used true, provider_id selemene-wav-synth} (no confidence on fallback). Without consent: clip.status consent_missing, fallback_used true. Honest-failure + consent paths proven; https clip_url success blocked by R2 credentials."
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "railway run -s ts-engines -e staging curl --aws-sigv4 aws:amz:auto:s3 HEAD + ListBucket on <account>.r2.cloudflarestorage.com/selemene-raga-clips",
-          "result": "401 Unauthorized for both, independent of lane code -> credentials invalid/revoked. wrangler is logged in to the same account id but its token lacks R2 scope (auth error 10000)"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T3",
-          "cmd": "gh pr merge 1498 --merge --match-head-commit 1bd12d8d",
-          "result": "MERGED 2026-10-25T20:58:22Z merge commit 5da8f8d2; prod redeploying; prod ts-engines has no R2_* vars so prod stays in local clip mode"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T3",
-          "cmd": "prod readback: ts-engines cf624024/main@5da8f8d2 SUCCESS (Selemene-engine 5da8f8d2 build still in progress; serving 2d6514e1 which already has the S4 lift); direct POST ts-engines-production/engines/raaga/calculate; POST selemene.tryambakam.space/api/v1/engines/raaga/calculate request_clip + consent with prod key ralph-s4-prod; then revoke",
-          "result": "direct: provenance {typescript, 1.0.0, cached false, fallback_used true, provider_id selemene-wav-synth}, clip {status skipped_off, mode off, detail RAAGA_CLIP_MODE=off (default)}; API envelope carries the same provenance block, no __contract_provenance. Prod honest: clips off until operator sets RAAGA_CLIP_MODE=r2 + valid R2_* vars. Key ralph-s4-prod revoked (is_active f), subsequent request 401; plaintext deleted from scratchpad."
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T3",
-          "cmd": "prod readback after build: railway deployment list Selemene-engine + ts-engines production; GET selemene.tryambakam.space/health/live + /health/dependencies",
-          "result": "Selemene-engine SUCCESS main@5da8f8d2, ts-engines SUCCESS main@5da8f8d2; live ok v3.3.1 19 engines; dependencies ready: biofield, face-reading, raaga, sigil-forge ready; biofield-cv + mediapipe-face-mesh ready"
-        }
-      ],
-      "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
-      "title": "Raaga r2-hosted clips + provenance + nadabrahman docs",
-      "pr": 1498,
-      "pr_branch": "claude/busy-gagarin-720002",
-      "pr_head": "b452522b"
-    },
-    "s4-sigil": {
-      "branch": "ralph/s4-sigil",
-      "worktree": ".worktrees/ralph-s4-sigil",
-      "iteration": 0,
-      "cap": 12,
-      "status": "merged",
-      "axis_reached": "Operational (prod, honest fallback path); real-image success path blocked on NVIDIA NIM flux.1-dev 500 + TS_BRIDGE_TIMEOUT 30s",
-      "blocked_on_human": null,
-      "receipts": [
-        {
-          "date": "2026-10-26",
-          "tier": "prep",
-          "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
-          "result": "awaiting operator start"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T1",
-          "cmd": "lane session opened PR #1499 from ralph/s4-sigil-provenance@ca993f7e; lane reports local suites green",
-          "result": "not yet reviewed by coordinator; staging not run"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "Railway MCP: stage Selemene-engine + ts-engines source main->ralph/s4-sigil-provenance in staging (patch 1e4ec52d, 5 non-destructive changes); accept-deploy",
-          "result": "ts-engines 44d6078d SUCCESS 20:23Z; Selemene-engine 655d4ee3 SUCCESS (cargo release 4m16s) ca993f7e"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "POST staging /api/v1/engines/sigil-forge/calculate generate_image:false (X-API-Key ralph-s1-staging)",
-          "result": "200; envelope top-level provenance {runtime_kind typescript, implementation_version 2.0.0, cached false, fallback_used true, confidence 0}; no __contract_provenance key anywhere; no top-level generated_image. API lift verified."
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "POST staging sigil-forge calculate generate_image:true without consent",
-          "result": "422 CONSENT_REQUIRED required_scope sigil-gen (image path is consent-gated; probe needed consent)"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T2",
-          "cmd": "POST staging sigil-forge calculate generate_image:true + consent sigil-gen, and + parameters.provider kimi",
-          "result": "API: 500 BRIDGE_ERROR (TS_BRIDGE_TIMEOUT unset -> 30s, pre-existing) because NVIDIA NIM took ~60-67s. Direct ts-engines-staging: 200, provenance fallback_used true confidence 0, result.provider nvidia, result.generated_image.error 'NVIDIA NIM image generation failed (500)', metadata.finish_reason ERROR, no fabricated b64; kimi override: provider_note \"Requested provider 'kimi' is not configured; using nvidia.\" provider_requested kimi. Honest-failure contract proven; real-image success blocked by upstream NIM 500 on black-forest-labs/flux.1-dev (3 attempts)."
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T3",
-          "cmd": "gh pr merge 1499 --merge --match-head-commit ca993f7e",
-          "result": "MERGED 2026-10-25T20:36:35Z merge commit d5729652; prod deployments queued: Selemene-engine 6cd68ae7, ts-engines 91081190, mediapipe-service 97b67233 (main@d5729652)"
-        },
-        {
-          "date": "2026-10-26",
-          "tier": "T3",
-          "cmd": "prod readback: deployments Selemene-engine 6cd68ae7 / ts-engines 91081190 / mediapipe 97b67233 main@d5729652 SUCCESS; GET selemene.tryambakam.space/health/live + /health/dependencies; POST /api/v1/engines/sigil-forge/calculate generate_image:false with prod key ralph-s4-prod (premium; basic:access, sigil-forge:read, raaga:read, biofield-capture:read; expires 1 day); same generate_image:true + consent sigil-gen",
-          "result": "live ok v3.3.1 19 engines; dependencies ready (sigil-forge TypeScript runtime, nvidia configured). fallback path 200 with envelope provenance {typescript, 2.0.0, cached false, fallback_used true, confidence 0}, no __contract_provenance. image path 500 BRIDGE_ERROR (same NVIDIA NIM 500 + 30s bridge timeout as staging). Prod key to be revoked after S3 prod readback."
-        }
-      ],
-      "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
-      "title": "Sigil provenance + honest providers + truthful schema",
-      "pr": 1499,
-      "pr_branch": "ralph/s4-sigil-provenance",
-      "pr_head": "ca993f7e"
-    },
-    "s5-rbac": {
-      "branch": "ralph/s5-rbac",
-      "worktree": ".worktrees/ralph-s5-rbac",
-      "iteration": 6,
-      "cap": 12,
-      "status": "prod-audit-hold",
-      "axis_reached": "Deployed (prod, audit) / Operational (staging, enforce)",
-      "blocked_on_human": "Operator decision 2026-10-25: hold production in ENGINE_SCOPE_MODE audit for a few days; review warnings together; then run backfill preview+commit and set enforce.",
-      "origin": "cross_cutting_findings[0] 2026-10-25 (W3E slot 20, #913)",
-      "design": "API-key principals need <engine>:read (or engines:*/admin:*/*) on calculate, face upload, and every engine of a workflow; JWT/CF Access principals stay tier-governed; ENGINE_SCOPE_MODE off|audit(default)|enforce; check runs before quota",
-      "receipts": [
-        {
-          "date": "2026-10-25",
-          "tier": "T1",
-          "cmd": "cargo build -p noesis-api --locked after patch",
-          "result": "clean"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T1",
-          "cmd": "commit 611584ef (scope enforcement, tests, backfill SQL, runbook); PR #1497; Codex P1 review: jti-based API-key inference would deny Cloudflare Access users; fix commit adds ApiKeyPrincipal middleware marker; cargo test lib scope 5/5, engine_scope_tests 7/7, integration_tests 43/43",
-          "result": "green; review thread resolved"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "staging API 86e068dd (audit default): narrow key ralph-s5-narrow [basic:access, face-reading:read] POST /engines/panchanga/calculate",
-          "result": "200 (audit proceeds); API deploy log: warn \"engine scope missing on API key\" with user_id, tier=premium, engine_id=panchanga, route=engines/calculate, required_permission=panchanga:read, mode=Audit"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T1",
-          "cmd": "Codex P1 #2: assets/generate and witness/interpret dispatch engines unchecked. commit 13e1fb1f: engine_scope_allows() shared boundary; assets (6 engines) + witness (11) gated; legacy routes gated but unauthenticated by design. engine_scope_tests 10/10; lib 111/111; assets_generate_contract 13/13; integration 43/43; p4_media 25/25",
-          "result": "green; both review threads resolved"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T2",
-          "cmd": "staging API 13e1fb1f with ENGINE_SCOPE_MODE=enforce; narrow key [basic:access, face-reading:read] and S1 key [.., panchanga:read, no human-design]",
-          "result": "narrow->panchanga 403 ENGINE_SCOPE_FORBIDDEN {engine_id:panchanga, required_permission:panchanga:read}; narrow->face-reading 200 mediapipe-face-cv; narrow->workflow daily-practice 403; narrow->witness/interpret 200 engines_used=[biofield] only; S1->panchanga 200; S1->human-design 403. Staging left in enforce as canary."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T1",
-          "cmd": "Codex P1 #3: tier-wide backfill would widen narrow keys. Backfill rewritten to legacy full-bundle keys only (jsonb ?& 17 scopes), adds raaga/biofield-capture/financial-biosensor",
-          "result": "thread resolved"
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T3",
-          "cmd": "PR #1497 CLEAN (Vercel, Railway checks green; 3 Codex P1 threads resolved); gh pr merge --merge --match-head-commit 3edcb3f9",
-          "result": "MERGED 2026-10-25T18:04:44Z merge commit 0f39cd07. Production deploys in ENGINE_SCOPE_MODE audit (unset). Staging returned to main, stays enforce as canary."
-        },
-        {
-          "date": "2026-10-25",
-          "tier": "T3",
-          "cmd": "prod readback: Selemene-engine dcafb300 main@0f39cd07 SUCCESS; /health/live ok 19 engines; /health/dependencies ready; ENGINE_SCOPE_MODE unset (audit); test key ralph-s1-prod rotated+activated for one call then deactivated: face-reading-only key -> panchanga",
-          "result": "200 in audit mode (logged, not blocked); probe key deactivated"
-        }
-      ],
-      "remaining": [
-        "prod rollout (operator decision): run scripts/sql/backfill-engine-scopes.sql preview+commit, review audit warnings, set ENGINE_SCOPE_MODE=enforce",
-        "separate decision: /api/legacy routes are unauthenticated"
-      ],
-      "review_readback": "railway MCP get-logs service 48b3bd23 env 702b945e filter \"engine scope missing\" (fields: user_id, tier, engine_id, route, required_permission); or railway logs --service Selemene-engine --environment production | grep \"engine scope missing\""
-    }
-  },
-  "s0": {
-    "rust_toolchain": {
-      "status": "done",
-      "receipt": "rustc 1.99.1; cargo test 4 somatic crates 147/147 pass 2026-10-25"
-    },
-    "docker": {
-      "status": "done",
-      "receipt": "colima start; docker info ok 2026-10-25"
-    },
-    "railway_staging": {
-      "status": "done",
-      "receipt": "staging created via dashboard 2026-10-25T11:30Z duplicating production: 7 services, root service 60+ vars copied; Selemene-engine/ts-engines/biofield-cv building at readback"
-    },
-    "mediapipe_service_staging": {
-      "status": "done",
-      "receipt": "2026-10-25 mediapipe-service created in staging from Sheshiyer/Selemene-engine@main (building); SELEMENE_FACE_CV_URL set on Selemene-engine; RAAGA_CLIP_MODE=local on ts-engines. Needs root dir /python-services + config path + branch ralph/s1-face once pushed."
-    },
-    "lane_worktrees": {
-      "status": "done",
-      "receipt": "4 worktrees at .worktrees/ralph-s{1..4}-* on origin/main cb8ce56a; wip/witness-reference-tooling 2076eb6b parks the witness diff; PRs 886/907/1488 commented superseded 2026-10-25"
-    },
-    "staging_rewire": {
-      "status": "done",
-      "receipt": "2026-10-25 DATABASE_URL and REDIS_URL set to Railway references (hash differs from production); TS_ENGINES_URL and PYTHON_BIOFIELD_URL use *.railway.internal private domains (identical string to prod by design, resolves per-environment). API and ts-engines redeploy queued."
-    },
-    "status": "complete",
-    "staging_ts_engines_r2": {
-      "status": "done",
-      "receipt": "2026-10-26 R2_ACCOUNT_ID/ACCESS_KEY_ID/SECRET/PUBLIC_BASE_URL/RAGA_CLIPS_BUCKET copied from staging root to staging ts-engines; RAAGA_CLIP_MODE=r2; public base is an r2.dev host"
-    }
-  },
-  "sentinel": "COMPLETE when every lane axis_reached == Operational, or any lane blocked_on_human != null",
-  "cross_cutting_findings": [
+ "version": 1,
+ "plan": "docs/plans/2026-10-25-somatic-engines-reconciliation-and-ralph-plan.md",
+ "axes": [
+  "Declared",
+  "Implemented",
+  "Executable",
+  "Integrated",
+  "Deployed",
+  "Operational"
+ ],
+ "tiers": {
+  "T1": "local gate",
+  "T2": "railway staging",
+  "T3": "prod readback"
+ },
+ "lock_zones": [
+  "crates/noesis-core/src/types.rs",
+  "Cargo.lock",
+  "python-services/railway.toml",
+  "railway.toml",
+  "sankalpa/src/main/engineGateway.ts"
+ ],
+ "lanes": {
+  "s1-face": {
+   "branch": "ralph/s1-face",
+   "worktree": ".worktrees/ralph-s1-face",
+   "iteration": 13,
+   "cap": 12,
+   "status": "prod-proven",
+   "axis_reached": "Operational (prod)",
+   "blocked_on_human": null,
+   "receipts": [
     {
-      "date": "2026-10-25",
-      "severity": "high",
-      "area": "auth/RBAC (W3E slot 20, issue #913)",
-      "finding": "A premium-tier key whose permissions JSON is only [basic:access, face-reading:read] successfully executed POST /api/v1/engines/panchanga/calculate in production (200 with full result). Per-engine permission scopes are not enforced on engine calculate; tier appears to grant access. Unauthenticated request correctly returns 401. Test key ralph-s1-prod was deactivated after the proof."
+     "date": "2026-10-25",
+     "tier": "T1",
+     "cmd": "docker build -f python-services/Dockerfile.mediapipe && docker run && curl /health",
+     "result": "healthy; mediapipe_available=true",
+     "commits": [
+      "617e928b",
+      "Dockerfile.mediapipe xcb fix"
+     ]
     },
     {
-      "date": "2026-10-26",
-      "severity": "medium",
-      "area": "sigil-forge image generation (provider + bridge timeout)",
-      "finding": "NVIDIA NIM ai.api.nvidia.com/v1/genai black-forest-labs/flux.1-dev returned 500 after ~60s on 3 staging attempts; the TS bridge default timeout is 30s (TS_BRIDGE_TIMEOUT unset in staging and prod), so any image generation slower than 30s surfaces as API 500 BRIDGE_ERROR even when ts-engines answers honestly. Follow-up: set TS_BRIDGE_TIMEOUT (e.g. 90) or route image gen async; consider FLUX_SCHNELL default; re-probe success path when NIM recovers."
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "railway add (main, no root dir) -> build SUCCESS but built repo-root Dockerfile.prod; runtime log shows noesis_server booting",
+     "result": "FALSE SUCCESS: unset rootDirectory makes Railway auto-detect the root Dockerfile. Recorded as the negative case for the non-GH CI flow."
     },
     {
-      "date": "2026-10-26",
-      "severity": "high",
-      "area": "production database migrations",
-      "finding": "Production Postgres was never journaled by scripts/apply-migrations.sh: no noesis_migration_journal, biofield_readings missing, biofield_sessions on an old column set. The biofield session/capture API is a 500 in production today. Staging was migrated (38+1 applied) so staging and prod now differ. Operator action: run apply-migrations.sh with --adopt-through <NNN> against prod after confirming which migrations are already applied; back up first."
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "railway MCP connect-service-source branch=ralph/s1-face; update-service rootDirectory=/python-services dockerfilePath=Dockerfile.mediapipe healthcheckPath=/health timeout=120 restart ON_FAILURE x3",
+     "result": "config applied; railwayConfigFile param refused as deprecated (config-as-code sunset 2026-12-01), so settings were applied directly instead of via railway.mediapipe.toml"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "railway up from worktree (snapshot build, no log) FAILED; empty trigger commit 19cc4700 pushed -> deployment 9b9f6cc4 SUCCESS building Dockerfile.mediapipe (mediapipe 1.1.1, opencv-contrib 5.0.0.93); uvicorn booted on injected PORT=8080",
+     "result": "sidecar healthy on its own /health but API reported unavailable: SELEMENE_FACE_CV_URL targets :8001"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "railway variables --service mediapipe-service --environment staging --set PORT=8001; redeploy; GET selemene-engine-staging.up.railway.app/health/dependencies",
+     "result": "sidecars: biofield-cv ready, mediapipe-face-mesh ready. First Deployed-axis receipt for face reading."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "railway run Postgres: bash scripts/apply-migrations.sh (36 applied); minted staging-only key nk_1LY… (premium, face-reading:read); GET /api/v1/engines 200 with X-API-Key",
+     "result": "staging DB migrated and authenticated"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "POST /api/v1/engines/face-reading/upload with a PIL-drawn non-photo face + consent face-image",
+     "result": "200; mediapipe-service deploy log shows POST /analyze 200 x2, so API->sidecar wiring is live. BUT FaceUploadResponse returns only engine_id/witness_prompt/analysis/is_mock_data: metadata.backend, computation_mode, notice, landmark_analysis are dropped, so a consumer cannot distinguish CV from heuristic. is_mock_data=false on a non-face. Defect for slot W3E:face-reading:07."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "Higgsfield gpt_image_2_5 synthetic neutral portrait -> POST staging /api/v1/engines/face-reading/calculate with exact v1 contract {contract_version,consciousness_level,parameters,image_data{b64,mime_type,consent}}",
+     "result": "200 full envelope: metadata.backend=heuristic-image-landmark-hook, computation_mode=image-heuristic-capture. NOT mediapipe. Sidecar was reached but returned deterministic-fallback."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T1",
+     "cmd": "docker run selemene-mediapipe:local; POST /analyze synthetic face; python -c hasattr(mp,\"solutions\")",
+     "result": "landmark_source=deterministic-fallback with mediapipe_available=true. ROOT CAUSE: mediapipe 1.1.1 installed (pyproject allows >=0.10); legacy mp.solutions.face_mesh removed in 1.0; analyze.py except swallowed it. Health only tested import."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T1",
+     "cmd": "commit 0c30e2e4 (pin mediapipe<1.0, honest health); docker build selemene-mediapipe:fix; /health; /analyze synthetic face; pytest 4 sidecar test files in image",
+     "result": "mediapipe 0.10.18 solutions=True; /health capability_status=available facemesh_ready=true; /analyze landmark_source=mediapipe-facemesh 468 landmarks 44.7ms; 31 passed"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "push 0c30e2e4 (<1.0 pin) -> staging deployment 309af0c0 SUCCESS; /health/dependencies mediapipe ready; calculate x3",
+     "result": "still backend=heuristic. Build log: x86_64 resolved mediapipe-0.10.35 (py3-none wheel, no solutions API); arm64 locally had resolved 0.10.18. Pinned ==0.10.18 (x86_64 cp311 wheel verified via pip download) and pushed."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "temporary domain mediapipe-service-staging.up.railway.app; GET /health; POST /analyze",
+     "result": "service identified as biofield-cv (opencv/numpy/mediapipe flags), /analyze returned biofield shape. ROOT CAUSE 2: config-as-code python-services/railway.toml (dockerfilePath=Dockerfile.biofield) overrides the dockerfilePath set via API, so mediapipe-service built and ran the biofield sidecar. Rust engine got 200 with wrong shape -> decode fail -> silent heuristic."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "git mv railway.toml railway.biofield.toml; git mv railway.mediapipe.toml railway.toml; push ralph/s1-face",
+     "result": "rebuild in progress"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "deployment f09e1a1f (railway.toml swap) SUCCESS; direct GET /health; direct POST /analyze; API /health/dependencies; API POST /api/v1/engines/face-reading/calculate (v1 contract, synthetic Higgsfield portrait, consent face-image)",
+     "result": "sidecar: service=mediapipe-face-mesh capability_status=available facemesh_ready=true; direct analyze landmark_source=mediapipe-facemesh 468 landmarks 69.8ms; API envelope: metadata.backend=mediapipe-face-cv precision_achieved=cv-468-landmarks computation_mode=image-cv-capture landmark_analysis.landmark_source=mediapipe-facemesh num_landmarks=468, calc 136ms. FIRST REAL FACE READING IN ANY SELEMENE ENVIRONMENT."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T1",
+     "cmd": "commit 99ef14c4: engine provenance block + tracing::warn on fallback; upload returns provenance/backend/computation_mode/landmark summary; /health/dependencies honours capability_status. cargo test engine 47/47, api probe test, p4_media 25/25, fixture_snapshot 4/4, openapi 5/5 (--locked)",
+     "result": "Rust hardening green locally"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "Railway MCP: stage Selemene-engine source branch main->ralph/s1-face in staging only; get-staged-changes = 1 non-destructive update; accept-deploy",
+     "result": "staging API rebuilding from the lane"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "staging: Selemene-engine 826ef662, biofield-cv-service + mediapipe-service rebuilt from Dockerfile.sidecar (6a5c01d8); GET /health/dependencies; POST upload; POST upload consent=false; POST calculate",
+     "result": "status=ready, both sidecars ready (capability-aware); upload keys now include computation_mode/backend/provenance/landmark_analysis with backend=mediapipe-face-cv fallback_used=false landmark_source=mediapipe-facemesh 468; consent=false -> 422 CONSENT_REQUIRED; calculate provenance identical. Biofield build log: load build definition from python-services/Dockerfile.sidecar."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T3",
+     "cmd": "PR #1496 opened from ralph/s1-face (6244da31); mergeable CLEAN; gh pr merge --merge --match-head-commit 6244da31",
+     "result": "MERGED 2026-10-25T13:04:30Z merge commit 7d833ac9. Production: mediapipe-service instance created via staged config + accept-deploy (root /python-services, /health, ON_FAILURE x3), vars PORT=8001 SIDECAR_SERVICE=mediapipe_service; Selemene-engine prod SELEMENE_FACE_CV_URL set to private domain :8001. Prod API, biofield, mediapipe rebuilding from main."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T3",
+     "cmd": "prod readback: list-deployments Selemene-engine e12c463e main@7d833ac9 SUCCESS; mediapipe-service 3ead646b main@7d833ac9 SUCCESS; GET selemene.tryambakam.space/health/live; GET /health/dependencies",
+     "result": "live ok v3.3.1 19 engines; dependencies status=ready, biofield-cv ready, mediapipe-face-mesh ready. biofield-cv-service prod still on its July image (no rebuild triggered yet); safe, default mode unchanged."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T3",
+     "cmd": "prod key ralph-s1-prod (face-reading:read + basic:access, expires 2026-11-01) minted in prod Postgres via railway run; POST selemene.tryambakam.space/api/v1/engines/face-reading/calculate (v1 contract, synthetic portrait, consent face-image); POST /upload; POST /upload consent=false",
+     "result": "calculate 200: metadata.backend=mediapipe-face-cv precision=cv-468-landmarks computation_mode=image-cv-capture provenance.landmark_source=mediapipe-facemesh fallback_used=false num_landmarks=468 (364ms). upload: backend=mediapipe-face-cv fallback_used=false. consent=false: 422. FIRST REAL FACE READING IN PRODUCTION."
     }
-  ],
-  "merge_order": [
-    "s4-sigil",
-    "s3-audio (rebase on s4)",
-    "s2-biofield (any time)",
-    "s6-consumers (follow-up, after all three)"
-  ],
-  "overlap_note": "PR #1498 (S3) and #1499 (S4) both touch crates/noesis-bridge/src/lib.rs, crates/noesis-bridge/src/ts_client.rs and crates/noesis-api/src/lib.rs (provenance forwarding). Merge S4 first, then rebase S3 and re-run bridge tests before merging S3."
+   ],
+   "findings": [
+    "upload route strips provenance (backend/computation_mode/landmark_analysis)",
+    "calculate route rejects {image_data:{b64_json,mime_type}} shape with VALIDATION_ERROR; contract shape TBD",
+    "no real face fixture exists in any repo",
+    "Rust engine labels sidecar deterministic-fallback as backend=heuristic-image-landmark-hook with is_mock_data=false; should be degraded/provenance.fallback_used=true (slot 07/09)",
+    "ROOT CAUSE face CV: mediapipe>=0.10 unpinned resolved to 1.1.1 which has no solutions API; fix = pin <1.0 (0.10.18 has cp311 wheels) + honest health",
+    "Rust /health/dependencies marks a sidecar ready on HTTP 200 alone; it ignores capability_status, so a degraded face-mesh reports ready",
+    "Rust analysis_from_landmark_hook swallows Ok(fallback) and Err(...) with no log line; add tracing::warn and expose in provenance",
+    "railway ssh needs a registered key (railway ssh keys add); not set up on this Mac",
+    "MERGE PREREQ: before ralph/s1-face merges to main, set biofield-cv-service config path to /python-services/railway.biofield.toml in prod and staging (config-as-code deprecated 2026-12-01; migrate to .railway/railway.ts later)",
+    "Rust face engine accepted a 200 from the wrong service silently; decode errors must be logged and surfaced as provenance"
+   ],
+   "remaining": [
+    "prod: biofield-cv-service rebuild from main (unified image) on next trigger; verify default mode",
+    "staging: Selemene-engine/biofield back on main (accepted)",
+    "golden fixture slot 27: commit synthetic-face fixture",
+    "Sankalpa: drop is_mock_data shim, render provenance badge; default host selemene.tryambakam.space",
+    "docs/ENGINES.md face-reading: document provenance block"
+   ]
+  },
+  "s2-biofield": {
+   "branch": "ralph/s2-biofield",
+   "worktree": ".worktrees/ralph-s2-biofield",
+   "iteration": 0,
+   "cap": 12,
+   "status": "merged",
+   "axis_reached": "Operational (prod main@1a8c2aba, journaled DB, real capture reading 3b5aa649)",
+   "blocked_on_human": "",
+   "receipts": [
+    {
+     "date": "2026-10-26",
+     "tier": "prep",
+     "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
+     "result": "awaiting operator start"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T1",
+     "cmd": "lane session opened PR #1500 from claude/blissful-shaw-98dc3e@a6d8b2d1; lane reports local suites green",
+     "result": "not yet reviewed by coordinator; staging not run"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "Railway MCP: stage Selemene-engine staging source -> claude/blissful-shaw-98dc3e (patch ee23cbe7); accept-deploy",
+     "result": "deployment 91b67582 SUCCESS a6d8b2d1"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "staging probes (ralph-s1-staging key): POST /biofield/sessions; POST captures multipart image=biofield-portrait-256.jpg + capture_metadata.consent biofield-capture; same without consent; same with scopes [face-image]; GET /biofield/readings/{id}",
+     "result": "201 session; 201 reading 434ba7d5 with metrics + quality_assessment sufficient_quality true + source-image artifact (mediapipe/biofield-cv sidecar live); 422 CONSENT_REQUIRED required_scope biofield-capture for both missing and wrong scope; GET reading 200 with metrics"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "POST /engines/biofield/calculate with options.biofield_capture.reading_id; without reading/birth; with birth_data; POST /engines/biofield-capture/calculate",
+     "result": "reading_id: is_mock_data true, mock_reason biofield-engine-cannot-resolve-reading, provenance.backend mock, fallback_used true, capture_reading_id set, fallback_reason names biofield-capture; no data: mock_reason no-birth-data; birth_data: backend vedic-ephemeris fallback_used false is_mock_data false. biofield-capture calculate -> 403 ENGINE_SCOPE_FORBIDDEN: staging key lacks biofield-capture:read and staging runs ENGINE_SCOPE_MODE=enforce (S5 working as designed; unchanged-behaviour probe not exercised)"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "gh pr merge 1500 --merge --match-head-commit a6d8b2d1",
+     "result": "MERGED 2026-10-25T20:45:25Z merge commit 2d6514e1; prod Selemene-engine redeploying from main"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "prod readback: Selemene-engine e6daca29 main@2d6514e1 SUCCESS; POST selemene.tryambakam.space/api/v1/biofield/sessions with prod key ralph-s4-prod; prod API logs; read-only psql via railway run",
+     "result": "500 BIOFIELD_DB_ERROR; log: column \"notes\" of relation \"biofield_sessions\" does not exist; psql: to_regclass(biofield_readings) null, no noesis_migration_journal table, biofield_sessions columns id,user_id,status,analysis_mode,analysis_region... Pre-existing prod schema drift, not introduced by S2."
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "runbook PR #1502 merged (3daf3e32); migration PR #1503 merged (1a8c2aba): 040_biofield_sessions_reconcile_legacy_shape.sql + raga_clips drop renumbered to 041; staging replay applied=1 then applied=1; staging probe set: POST /biofield/sessions, captures with/without/wrong-scope consent, GET reading, POST close",
+     "result": "staging journal 40 rows ending 041; probes 201, 201 sufficient_quality true, 422 CONSENT_REQUIRED x2, 200 with 11 metrics, 200 close with closed_at set"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "prod backups: railway postgres pitr backup create refused (Pro-only); pg_dump custom format ~/Backups/selemene-prod/selemene-prod-20261026T063444Z.dump (40.2 MB, 733 TOC entries) sha256 e88adcad0b62d8fbfb20174ff8998a2fc52f9659129088e227c812d5ca77bb6f; raga_clips-production-20261026T063444Z.csv (10 rows) sha256 c818463209a28fd7bc5b98d884d5ad163de31c13f50f79650f8e2828b5820162; local pg_restore into selemene_prod_verify",
+     "result": "restore 0 errors; counts match prod exactly (users 35, api_keys 41, readings 129093, progression_logs 109095, billing_subscriptions 33, biofield_sessions 4, raga_clips 10)"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "prod: bash scripts/apply-migrations.sh --adopt-through 036 from clean main 1a8c2aba via railway run Postgres production; then plain re-run",
+     "result": "adopted 35 (001-036 incl. both 007), applied 037,038,039,040,041 (applied=5 skipped=35); journal 40 rows ending 041_drop_raga_clips.sql, 0 dirty; re-run applied=0 skipped=40; biofield_sessions has notes+closed_at, 4 legacy rows intact; raga_clips dropped; archived_reading_invitations + billing_mode_control present"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "prod readback: /health/ready, /health/dependencies; probe key ops-prod-migration-probe (premium, basic:access, 2h expiry) minted in prod Postgres; same probe set as staging against selemene.tryambakam.space; key revoked",
+     "result": "ready postgres ok, sidecars biofield-cv + mediapipe-face-mesh ready; 201 session ac079e91; 201 reading 3b5aa649 sufficient_quality true; 422 CONSENT_REQUIRED x2; 200 reading 11 metrics; 200 close status closed closed_at set; revoke is_active f, next call 401. FIRST REAL BIOFIELD CAPTURE IN PRODUCTION."
+    }
+   ],
+   "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
+   "title": "Biofield capture consent + honest engine",
+   "pr": 1500,
+   "pr_branch": "claude/blissful-shaw-98dc3e",
+   "pr_head": "a6d8b2d1"
+  },
+  "s3-audio": {
+   "branch": "ralph/s3-audio",
+   "worktree": ".worktrees/ralph-s3-audio",
+   "iteration": 0,
+   "cap": 12,
+   "status": "merged",
+   "axis_reached": "Operational (prod, honest clip-off path); hosted clips blocked on R2 credentials + prod vars",
+   "blocked_on_human": "Valid Cloudflare R2 S3 credentials (R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY) for bucket selemene-raga-clips: staging token returns 401 Unauthorized on HEAD and ListBucket via plain curl --aws-sigv4 (account id matches the wrangler-login account, public base pub-1f3a1b9d…r2.dev answers 404 for missing keys). Operator must re-issue the token in staging and copy R2_* + RAAGA_CLIP_MODE=r2 to prod ts-engines.",
+   "receipts": [
+    {
+     "date": "2026-10-26",
+     "tier": "prep",
+     "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
+     "result": "awaiting operator start"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T1",
+     "cmd": "lane session opened PR #1498 from claude/busy-gagarin-720002@b452522b; lane reports local suites green",
+     "result": "not yet reviewed by coordinator; staging not run"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T1",
+     "cmd": "lane session rebased #1498 onto main d5729652 (dropped duplicate bridge/api plumbing, kept S4 versions); head 1bd12d8d",
+     "result": "noesis-bridge 44+1 pass; noesis-api lib 113 pass; bun 134 pass; git merge-tree vs main clean"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "railway run -s Postgres -e staging bash scripts/apply-migrations.sh --migrations-dir <S3 branch migrations>",
+     "result": "applied=2 skipped=36 (039_raga_clips_style_traditional applied)"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "Railway MCP: stage Selemene-engine + ts-engines staging -> claude/busy-gagarin-720002 (patch 7e55512f); accept-deploy",
+     "result": "Selemene-engine 3b09aa94 SUCCESS, ts-engines 30dc4e66 SUCCESS at 1bd12d8d"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "POST staging /engines/raaga/calculate melakarta 15 request_clip + consent audio; repeat; without consent",
+     "result": "with consent: clip_url null, metadata.clip {mode r2, status upload_failed, detail 'R2 HEAD raaga/<sha>.wav failed with status 401'}, envelope provenance {typescript, 1.0.0, cached false, fallback_used true, provider_id selemene-wav-synth} (no confidence on fallback). Without consent: clip.status consent_missing, fallback_used true. Honest-failure + consent paths proven; https clip_url success blocked by R2 credentials."
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "railway run -s ts-engines -e staging curl --aws-sigv4 aws:amz:auto:s3 HEAD + ListBucket on <account>.r2.cloudflarestorage.com/selemene-raga-clips",
+     "result": "401 Unauthorized for both, independent of lane code -> credentials invalid/revoked. wrangler is logged in to the same account id but its token lacks R2 scope (auth error 10000)"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "gh pr merge 1498 --merge --match-head-commit 1bd12d8d",
+     "result": "MERGED 2026-10-25T20:58:22Z merge commit 5da8f8d2; prod redeploying; prod ts-engines has no R2_* vars so prod stays in local clip mode"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "prod readback: ts-engines cf624024/main@5da8f8d2 SUCCESS (Selemene-engine 5da8f8d2 build still in progress; serving 2d6514e1 which already has the S4 lift); direct POST ts-engines-production/engines/raaga/calculate; POST selemene.tryambakam.space/api/v1/engines/raaga/calculate request_clip + consent with prod key ralph-s4-prod; then revoke",
+     "result": "direct: provenance {typescript, 1.0.0, cached false, fallback_used true, provider_id selemene-wav-synth}, clip {status skipped_off, mode off, detail RAAGA_CLIP_MODE=off (default)}; API envelope carries the same provenance block, no __contract_provenance. Prod honest: clips off until operator sets RAAGA_CLIP_MODE=r2 + valid R2_* vars. Key ralph-s4-prod revoked (is_active f), subsequent request 401; plaintext deleted from scratchpad."
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "prod readback after build: railway deployment list Selemene-engine + ts-engines production; GET selemene.tryambakam.space/health/live + /health/dependencies",
+     "result": "Selemene-engine SUCCESS main@5da8f8d2, ts-engines SUCCESS main@5da8f8d2; live ok v3.3.1 19 engines; dependencies ready: biofield, face-reading, raaga, sigil-forge ready; biofield-cv + mediapipe-face-mesh ready"
+    }
+   ],
+   "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
+   "title": "Raaga r2-hosted clips + provenance + nadabrahman docs",
+   "pr": 1498,
+   "pr_branch": "claude/busy-gagarin-720002",
+   "pr_head": "b452522b"
+  },
+  "s4-sigil": {
+   "branch": "ralph/s4-sigil",
+   "worktree": ".worktrees/ralph-s4-sigil",
+   "iteration": 0,
+   "cap": 12,
+   "status": "merged",
+   "axis_reached": "Operational (prod, honest fallback path); real-image success path blocked on NVIDIA NIM flux.1-dev 500 + TS_BRIDGE_TIMEOUT 30s",
+   "blocked_on_human": null,
+   "receipts": [
+    {
+     "date": "2026-10-26",
+     "tier": "prep",
+     "cmd": "worktree rebased to origin/main 0f39cd07 and branch pushed; session card proposed",
+     "result": "awaiting operator start"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T1",
+     "cmd": "lane session opened PR #1499 from ralph/s4-sigil-provenance@ca993f7e; lane reports local suites green",
+     "result": "not yet reviewed by coordinator; staging not run"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "Railway MCP: stage Selemene-engine + ts-engines source main->ralph/s4-sigil-provenance in staging (patch 1e4ec52d, 5 non-destructive changes); accept-deploy",
+     "result": "ts-engines 44d6078d SUCCESS 20:23Z; Selemene-engine 655d4ee3 SUCCESS (cargo release 4m16s) ca993f7e"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "POST staging /api/v1/engines/sigil-forge/calculate generate_image:false (X-API-Key ralph-s1-staging)",
+     "result": "200; envelope top-level provenance {runtime_kind typescript, implementation_version 2.0.0, cached false, fallback_used true, confidence 0}; no __contract_provenance key anywhere; no top-level generated_image. API lift verified."
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "POST staging sigil-forge calculate generate_image:true without consent",
+     "result": "422 CONSENT_REQUIRED required_scope sigil-gen (image path is consent-gated; probe needed consent)"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T2",
+     "cmd": "POST staging sigil-forge calculate generate_image:true + consent sigil-gen, and + parameters.provider kimi",
+     "result": "API: 500 BRIDGE_ERROR (TS_BRIDGE_TIMEOUT unset -> 30s, pre-existing) because NVIDIA NIM took ~60-67s. Direct ts-engines-staging: 200, provenance fallback_used true confidence 0, result.provider nvidia, result.generated_image.error 'NVIDIA NIM image generation failed (500)', metadata.finish_reason ERROR, no fabricated b64; kimi override: provider_note \"Requested provider 'kimi' is not configured; using nvidia.\" provider_requested kimi. Honest-failure contract proven; real-image success blocked by upstream NIM 500 on black-forest-labs/flux.1-dev (3 attempts)."
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "gh pr merge 1499 --merge --match-head-commit ca993f7e",
+     "result": "MERGED 2026-10-25T20:36:35Z merge commit d5729652; prod deployments queued: Selemene-engine 6cd68ae7, ts-engines 91081190, mediapipe-service 97b67233 (main@d5729652)"
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "prod readback: deployments Selemene-engine 6cd68ae7 / ts-engines 91081190 / mediapipe 97b67233 main@d5729652 SUCCESS; GET selemene.tryambakam.space/health/live + /health/dependencies; POST /api/v1/engines/sigil-forge/calculate generate_image:false with prod key ralph-s4-prod (premium; basic:access, sigil-forge:read, raaga:read, biofield-capture:read; expires 1 day); same generate_image:true + consent sigil-gen",
+     "result": "live ok v3.3.1 19 engines; dependencies ready (sigil-forge TypeScript runtime, nvidia configured). fallback path 200 with envelope provenance {typescript, 2.0.0, cached false, fallback_used true, confidence 0}, no __contract_provenance. image path 500 BRIDGE_ERROR (same NVIDIA NIM 500 + 30s bridge timeout as staging). Prod key to be revoked after S3 prod readback."
+    }
+   ],
+   "plan": "docs/plans/2026-10-26-somatic-lanes-s2-s4-plan.md",
+   "title": "Sigil provenance + honest providers + truthful schema",
+   "pr": 1499,
+   "pr_branch": "ralph/s4-sigil-provenance",
+   "pr_head": "ca993f7e"
+  },
+  "s5-rbac": {
+   "branch": "ralph/s5-rbac",
+   "worktree": ".worktrees/ralph-s5-rbac",
+   "iteration": 6,
+   "cap": 12,
+   "status": "prod-audit-hold",
+   "axis_reached": "Deployed (prod, audit) / Operational (staging, enforce)",
+   "blocked_on_human": "Operator decision 2026-10-25: hold production in ENGINE_SCOPE_MODE audit for a few days; review warnings together; then run backfill preview+commit and set enforce.",
+   "origin": "cross_cutting_findings[0] 2026-10-25 (W3E slot 20, #913)",
+   "design": "API-key principals need <engine>:read (or engines:*/admin:*/*) on calculate, face upload, and every engine of a workflow; JWT/CF Access principals stay tier-governed; ENGINE_SCOPE_MODE off|audit(default)|enforce; check runs before quota",
+   "receipts": [
+    {
+     "date": "2026-10-25",
+     "tier": "T1",
+     "cmd": "cargo build -p noesis-api --locked after patch",
+     "result": "clean"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T1",
+     "cmd": "commit 611584ef (scope enforcement, tests, backfill SQL, runbook); PR #1497; Codex P1 review: jti-based API-key inference would deny Cloudflare Access users; fix commit adds ApiKeyPrincipal middleware marker; cargo test lib scope 5/5, engine_scope_tests 7/7, integration_tests 43/43",
+     "result": "green; review thread resolved"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "staging API 86e068dd (audit default): narrow key ralph-s5-narrow [basic:access, face-reading:read] POST /engines/panchanga/calculate",
+     "result": "200 (audit proceeds); API deploy log: warn \"engine scope missing on API key\" with user_id, tier=premium, engine_id=panchanga, route=engines/calculate, required_permission=panchanga:read, mode=Audit"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T1",
+     "cmd": "Codex P1 #2: assets/generate and witness/interpret dispatch engines unchecked. commit 13e1fb1f: engine_scope_allows() shared boundary; assets (6 engines) + witness (11) gated; legacy routes gated but unauthenticated by design. engine_scope_tests 10/10; lib 111/111; assets_generate_contract 13/13; integration 43/43; p4_media 25/25",
+     "result": "green; both review threads resolved"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T2",
+     "cmd": "staging API 13e1fb1f with ENGINE_SCOPE_MODE=enforce; narrow key [basic:access, face-reading:read] and S1 key [.., panchanga:read, no human-design]",
+     "result": "narrow->panchanga 403 ENGINE_SCOPE_FORBIDDEN {engine_id:panchanga, required_permission:panchanga:read}; narrow->face-reading 200 mediapipe-face-cv; narrow->workflow daily-practice 403; narrow->witness/interpret 200 engines_used=[biofield] only; S1->panchanga 200; S1->human-design 403. Staging left in enforce as canary."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T1",
+     "cmd": "Codex P1 #3: tier-wide backfill would widen narrow keys. Backfill rewritten to legacy full-bundle keys only (jsonb ?& 17 scopes), adds raaga/biofield-capture/financial-biosensor",
+     "result": "thread resolved"
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T3",
+     "cmd": "PR #1497 CLEAN (Vercel, Railway checks green; 3 Codex P1 threads resolved); gh pr merge --merge --match-head-commit 3edcb3f9",
+     "result": "MERGED 2026-10-25T18:04:44Z merge commit 0f39cd07. Production deploys in ENGINE_SCOPE_MODE audit (unset). Staging returned to main, stays enforce as canary."
+    },
+    {
+     "date": "2026-10-25",
+     "tier": "T3",
+     "cmd": "prod readback: Selemene-engine dcafb300 main@0f39cd07 SUCCESS; /health/live ok 19 engines; /health/dependencies ready; ENGINE_SCOPE_MODE unset (audit); test key ralph-s1-prod rotated+activated for one call then deactivated: face-reading-only key -> panchanga",
+     "result": "200 in audit mode (logged, not blocked); probe key deactivated"
+    }
+   ],
+   "remaining": [
+    "prod rollout (operator decision): run scripts/sql/backfill-engine-scopes.sql preview+commit, review audit warnings, set ENGINE_SCOPE_MODE=enforce",
+    "separate decision: /api/legacy routes are unauthenticated"
+   ],
+   "review_readback": "railway MCP get-logs service 48b3bd23 env 702b945e filter \"engine scope missing\" (fields: user_id, tier, engine_id, route, required_permission); or railway logs --service Selemene-engine --environment production | grep \"engine scope missing\""
+  }
+ },
+ "s0": {
+  "rust_toolchain": {
+   "status": "done",
+   "receipt": "rustc 1.99.1; cargo test 4 somatic crates 147/147 pass 2026-10-25"
+  },
+  "docker": {
+   "status": "done",
+   "receipt": "colima start; docker info ok 2026-10-25"
+  },
+  "railway_staging": {
+   "status": "done",
+   "receipt": "staging created via dashboard 2026-10-25T11:30Z duplicating production: 7 services, root service 60+ vars copied; Selemene-engine/ts-engines/biofield-cv building at readback"
+  },
+  "mediapipe_service_staging": {
+   "status": "done",
+   "receipt": "2026-10-25 mediapipe-service created in staging from Sheshiyer/Selemene-engine@main (building); SELEMENE_FACE_CV_URL set on Selemene-engine; RAAGA_CLIP_MODE=local on ts-engines. Needs root dir /python-services + config path + branch ralph/s1-face once pushed."
+  },
+  "lane_worktrees": {
+   "status": "done",
+   "receipt": "4 worktrees at .worktrees/ralph-s{1..4}-* on origin/main cb8ce56a; wip/witness-reference-tooling 2076eb6b parks the witness diff; PRs 886/907/1488 commented superseded 2026-10-25"
+  },
+  "staging_rewire": {
+   "status": "done",
+   "receipt": "2026-10-25 DATABASE_URL and REDIS_URL set to Railway references (hash differs from production); TS_ENGINES_URL and PYTHON_BIOFIELD_URL use *.railway.internal private domains (identical string to prod by design, resolves per-environment). API and ts-engines redeploy queued."
+  },
+  "status": "complete",
+  "staging_ts_engines_r2": {
+   "status": "done",
+   "receipt": "2026-10-26 R2_ACCOUNT_ID/ACCESS_KEY_ID/SECRET/PUBLIC_BASE_URL/RAGA_CLIPS_BUCKET copied from staging root to staging ts-engines; RAAGA_CLIP_MODE=r2; public base is an r2.dev host"
+  }
+ },
+ "sentinel": "COMPLETE when every lane axis_reached == Operational, or any lane blocked_on_human != null",
+ "cross_cutting_findings": [
+  {
+   "date": "2026-10-25",
+   "severity": "high",
+   "area": "auth/RBAC (W3E slot 20, issue #913)",
+   "finding": "A premium-tier key whose permissions JSON is only [basic:access, face-reading:read] successfully executed POST /api/v1/engines/panchanga/calculate in production (200 with full result). Per-engine permission scopes are not enforced on engine calculate; tier appears to grant access. Unauthenticated request correctly returns 401. Test key ralph-s1-prod was deactivated after the proof."
+  },
+  {
+   "date": "2026-10-26",
+   "severity": "medium",
+   "area": "sigil-forge image generation (provider + bridge timeout)",
+   "finding": "NVIDIA NIM ai.api.nvidia.com/v1/genai black-forest-labs/flux.1-dev returned 500 after ~60s on 3 staging attempts; the TS bridge default timeout is 30s (TS_BRIDGE_TIMEOUT unset in staging and prod), so any image generation slower than 30s surfaces as API 500 BRIDGE_ERROR even when ts-engines answers honestly. Follow-up: set TS_BRIDGE_TIMEOUT (e.g. 90) or route image gen async; consider FLUX_SCHNELL default; re-probe success path when NIM recovers."
+  },
+  {
+   "date": "2026-10-26",
+   "severity": "high",
+   "area": "production database migrations",
+   "finding": "Production Postgres was never journaled by scripts/apply-migrations.sh: no noesis_migration_journal, biofield_readings missing, biofield_sessions on an old column set. The biofield session/capture API is a 500 in production today. Staging was migrated (38+1 applied) so staging and prod now differ. Operator action: run apply-migrations.sh with --adopt-through <NNN> against prod after confirming which migrations are already applied; back up first."
+  }
+ ],
+ "merge_order": [
+  "s4-sigil",
+  "s3-audio (rebase on s4)",
+  "s2-biofield (any time)",
+  "s6-consumers (follow-up, after all three)"
+ ],
+ "overlap_note": "PR #1498 (S3) and #1499 (S4) both touch crates/noesis-bridge/src/lib.rs, crates/noesis-bridge/src/ts_client.rs and crates/noesis-api/src/lib.rs (provenance forwarding). Merge S4 first, then rebase S3 and re-run bridge tests before merging S3."
 }
