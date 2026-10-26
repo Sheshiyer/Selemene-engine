@@ -482,7 +482,7 @@
    "pr": 1507,
    "branch": "capability/consumer-surface-v2",
    "head": "22109ebf",
-   "status": "staging-proven",
+   "status": "prod-proven",
    "receipts": [
     {
      "date": "2026-10-26",
@@ -495,15 +495,20 @@
      "tier": "T2",
      "cmd": "staging Selemene-engine + ts-engines pinned to 22109ebf via staged source switch + accept-deploy (both SUCCESS); keys: ralph-s1-staging rotated, ralph-c1-narrow (face-reading:read only) minted, both expire 2026-10-28; probes per plan \u00a73",
      "result": "P1 GET /api/v1/engines/capabilities 200: count 19, 13 native + 6 typescript, all v1, all available. P2 no key 401; narrow key 200 (same as GET /engines, which the route mirrors; basic:access is not a listing gate) and the same narrow key gets 403 on panchanga calculate, so enforce mode is intact. P3 API typescript rows == ts-engines /engines/capabilities (AGREE). P4 cache: 0.164s/0.148s within 10s, 0.214s after 11s; no log line is emitted, timing-only evidence. P5 sigil calculate generate_image=false: envelope provenance 7-field (fallback_used true, confidence 0), result has no provenance and no __contract_provenance; persisted reading 7a3bc37b via GET /readings/{id} has no reserved key. P6 schema: fixture valid with and without confidence, 1.5 rejected, unknown field rejected."
+    },
+    {
+     "date": "2026-10-26",
+     "tier": "T3",
+     "cmd": "#1507 merged at verified head 22109ebf as dcc1a046; prod Selemene-engine + ts-engines SUCCESS on dcc1a046; probe key ralph-c1-prod (basic:access + sigil-forge:read, 2h) minted in prod Postgres, probes against selemene.tryambakam.space, key revoked; #1486 #1487 #1491 closed as superseded; staging sources restored to main",
+     "result": "/health/ready 200, /health/dependencies ready. P1 capabilities 200: 19 rows, 13 native + 6 typescript, all v1, all available; no key 401. P5 sigil calculate 200: envelope provenance 7-field (fallback_used true, confidence 0), no provenance or reserved key in result; persisted reading da509e54 has no __contract_provenance. Revoke: is_active f, next call 401. CAPABILITY DISCOVERY LIVE IN PRODUCTION."
     }
    ],
    "open": [
-    "T3 prod readback after merge",
     "SDK publish (engine-sdk 0.2.0, noesis-sdk-ts 3.4.0) is an operator step",
     "consumer PRs (urania-137, noesis-raycast, antahkarana, sankalpa) after SDK publish",
-    "witness/reading-repair-wip split still pending (commits only on codex/selemene-capability-consumer-surface)",
-    "close #1486 #1487 #1491 as superseded once #1507 merges"
-   ]
+    "witness/reading-repair-wip split still pending (commits only on codex/selemene-capability-consumer-surface)"
+   ],
+   "merge": "dcc1a046"
   }
  },
  "s0": {
