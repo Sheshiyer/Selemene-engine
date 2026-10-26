@@ -104,7 +104,7 @@ This GitHub Project tracks the development of all consciousness engines and inte
   - Focus: Vedic API integration, enhanced Vedic Clock
   
 - **v2.2.0 - Specialized Engines** (Next)
-  - Due: Q2 2026
+  - Due: Q2 2026 (slipped; somatic engines reached production 2026-10-25/26)
   - Focus: Numerology, Biorhythm, Biofield
   
 - **v3.0.0 - Platform Launch** (Future)
@@ -245,5 +245,15 @@ scripts/import-tasks-to-github.sh --apply --repo Sheshiyer/Selemene-engine
 - No stale planning docs for this initiative (old web-app refs are historical/retired and correctly annotated in engine docs).
 
 **Execution Start Note (P1 W1, 2026-07-17, continued):** P1 Wave 1 coordination (GitHub sync, bootstrap packet, validation prep, status tracking, 4 new issues #899-902) handled 2026-07-17. See docs/plans/engine-integration/EXECUTION-STATUS.md for live started tasks (T-002 in worktree, gate drafted). Links: bootstrap p1-w1-worker-bootstrap-packet.md, checklist p1-w1-validation-gate-checklist.md, STATUS, FROZEN .worktrees/T-002-copilot/docs/plans/engine-integration/P1W1-CONTRACTS-FROZEN.md. All work references the 3 extraction files (resources-and-assets.md, gaps-and-improvements.md, goal-understanding.md). Current status: contracts in worktree, gate drafted. See also new issues for local dev/CI, Sankalpa contracts, validation exec, docs/handoff.
+
+**Current Status (as of 2026-10-26, somatic lanes S1-S4 operational in production):**
+- Production Postgres is under `noesis_migration_journal` (adopted through 036 from main 1a8c2aba; 037-041 applied; 40 journal rows). Runbook with the per-migration diagnosis, backup and rollback commands: `docs/plans/2026-10-26-prod-migration-adoption-runbook.md` (#1502). Migration 040 reconciled the Supabase-era `biofield_sessions` shape additively (#1503); the retired `raga_clips` table was dropped by 041 after a CSV export (#1501).
+- biofield-capture: first real capture reading in production (mediapipe + biofield-cv sidecars, server-side consent `biofield-capture`), PR #1500.
+- face-reading: real mediapipe landmarks in production since 2026-10-25 (lane S1).
+- raaga: hosted clips live on Cloudflare R2 in staging and production (`RAAGA_CLIP_MODE=r2`, bucket-scoped token on the Urania account; `fallback_used: false`, HEAD 200 audio/wav), PR #1498. Suno path removed.
+- sigil-forge: real NVIDIA image generation in staging and production (~10-12 s, `fallback_used: false`); `TS_BRIDGE_TIMEOUT=90` on Selemene-engine, PR #1499.
+- Evidence comments with these receipts are on #893, #913, #914 and the W3E slices 09/14/19/24/25/30 for biofield-capture, and 09/24/30 for raaga and sigil-forge. Closure still goes through the six-axis ledger (#896).
+- Known gaps carried forward: Railway refuses manual volume backups and schedules on this workspace tier and PITR is off (pg_dump is the only backup path); `admin_repository.rs` reads the legacy `biofield_sessions.ended_at`; `ENGINE_SCOPE_MODE` is enforce in staging but audit in production; `/api/legacy` routes are unauthenticated; readiness does not detect schema drift.
+- Lane receipts: `docs/plans/somatic-ralph-state.json` on `ralph/s0-plan`.
 
 See also sankalpa/ROADMAP.md for frontend-specific milestones.
