@@ -317,6 +317,9 @@ impl ConsciousnessEngine for VedicClockEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                // Local organ-clock computation; no provider or fallback branch.
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }
@@ -500,6 +503,8 @@ mod tests {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
 

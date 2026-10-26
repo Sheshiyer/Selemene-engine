@@ -75,6 +75,8 @@ impl ConsciousnessEngine for MockEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: MOCK_VERSION.to_string(),
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }

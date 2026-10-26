@@ -249,6 +249,9 @@ impl ConsciousnessEngine for FinancialBiosensorEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                // Composed from native contributors; absent ones lower coverage, not a fallback.
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }

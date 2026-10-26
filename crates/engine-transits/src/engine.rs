@@ -231,6 +231,9 @@ impl ConsciousnessEngine for TransitsEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                // Local Swiss Ephemeris positions; no fallback branch.
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }

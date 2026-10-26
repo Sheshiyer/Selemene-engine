@@ -194,6 +194,9 @@ impl ConsciousnessEngine for HumanDesignEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                // Local Swiss Ephemeris chart; no fallback branch.
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }
@@ -393,6 +396,8 @@ mod tests {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
 

@@ -387,6 +387,9 @@ impl ConsciousnessEngine for GeneKeysEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                // Derived from HD chart or explicit gates; no fallback branch.
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }
@@ -639,6 +642,8 @@ mod tests {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
 
@@ -676,6 +681,8 @@ mod tests {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
 

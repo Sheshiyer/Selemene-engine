@@ -107,6 +107,8 @@ impl ConsciousnessEngine for MockEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }
@@ -709,6 +711,8 @@ async fn test_synthesis_theme_detection() {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         },
     );
@@ -726,6 +730,8 @@ async fn test_synthesis_theme_detection() {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         },
     );
@@ -743,6 +749,8 @@ async fn test_synthesis_theme_detection() {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         },
     );

@@ -29,6 +29,12 @@ impl SiderealMoon {
             "swiss-ephemeris-lahiri-full-v1:swiss-files"
         }
     }
+
+    /// Swiss Ephemeris silently substitutes the analytical Moshier ephemeris
+    /// when the requested `.se1` files are unavailable; that is a fallback.
+    pub(crate) fn fallback_used(&self) -> bool {
+        self.flags & SEFLG_MOSEPH as i32 != 0
+    }
 }
 
 pub(crate) fn lahiri_moon(
@@ -76,4 +82,30 @@ pub(crate) fn lahiri_moon(
         longitude: coordinates[0].rem_euclid(360.0),
         flags,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn moshier_substitution_is_a_fallback() {
+        let moon = SiderealMoon {
+            longitude: 0.0,
+            flags: (SEFLG_MOSEPH | SEFLG_SIDEREAL) as i32,
+        };
+        assert!(moon.fallback_used());
+        assert_eq!(moon.backend(), "swiss-ephemeris-lahiri-full-v1:moshier");
+    }
+
+    #[test]
+    fn swiss_files_and_jpl_are_not_fallbacks() {
+        for flags in [SEFLG_SWIEPH | SEFLG_SIDEREAL, SEFLG_JPLEPH | SEFLG_SIDEREAL] {
+            let moon = SiderealMoon {
+                longitude: 0.0,
+                flags: flags as i32,
+            };
+            assert!(!moon.fallback_used(), "flags {flags}");
+        }
+    }
 }

@@ -64,6 +64,8 @@ impl ConsciousnessEngine for PhaseProbe {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: "test".to_string(),
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }

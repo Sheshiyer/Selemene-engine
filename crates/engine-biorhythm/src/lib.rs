@@ -281,6 +281,9 @@ impl ConsciousnessEngine for BiorhythmEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                // Deterministic local computation; no fallback branch.
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }
