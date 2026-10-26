@@ -57,6 +57,34 @@ describe('canonical v1 fixtures', () => {
     expect(singularLegacyResult.provenance).toBeUndefined()
   })
 
+  test('engine SDK types the somatic-lane honesty fields (S3 clip status, S4 image finish_reason, confidence)', () => {
+    const somatic: ContractEngineResult = {
+      ...singularLegacyResult,
+      engine_id: 'sigil-forge',
+      provenance: {
+        runtime_kind: 'typescript',
+        implementation_version: '1.0.0',
+        cached: false,
+        fallback_used: true,
+        confidence: undefined,
+      },
+      generated_image: undefined,
+      generated_audio: {
+        clip_url: null,
+        metadata: { clip: { requested: true, status: 'consent_missing' } },
+      },
+    }
+    const undelivered: import('../src/index.js').GeneratedImageRef = {
+      error: 'NIM returned no artifact',
+      metadata: { finish_reason: 'PROVIDER_UNAVAILABLE', provider_requested: 'kimi', provider_note: 'kimi is not configured' },
+    }
+    expect(somatic.provenance?.fallback_used).toBe(true)
+    expect(somatic.provenance?.confidence).toBeUndefined()
+    expect(somatic.generated_audio?.metadata?.clip?.status).toBe('consent_missing')
+    expect(undelivered.b64_json).toBeUndefined()
+    expect(undelivered.metadata?.finish_reason).toBe('PROVIDER_UNAVAILABLE')
+  })
+
   test('engine SDK consumes error and capability authority', () => {
     expect(error.error_code).toBe('VALIDATION_ERROR')
     expect(error.contract_version).toBe(CONTRACT_VERSION)

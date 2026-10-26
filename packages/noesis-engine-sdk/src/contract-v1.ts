@@ -20,6 +20,12 @@ export interface ContractProvenance {
   fallback_used: boolean
   backend_id?: string
   provider_id?: string
+  /**
+   * Confidence in the result, 0–1. Emitted per engine (e.g. sigil-forge 0.9 for a real
+   * image, raaga 1 for deterministic ratios); omitted when `fallback_used` is true or
+   * the engine has not computed one. Mirrors `noesis_core::contract::Provenance.confidence`.
+   */
+  confidence?: number
 }
 
 export interface ContractEngineRequest {
