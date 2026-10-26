@@ -1,4 +1,4 @@
--- Migration 040: drop the raga_clips table (Suno integration retired).
+-- Migration 041: drop the raga_clips table (Suno integration retired).
 --
 -- raga_clips (028) held Suno-rendered melakarta clips; the Suno bridge, its
 -- scripts and the /raga/{num}/clip + /internal/raga/clip routes are removed.
