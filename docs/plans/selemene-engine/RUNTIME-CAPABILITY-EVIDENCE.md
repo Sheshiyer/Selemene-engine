@@ -274,3 +274,56 @@ statement above without rewriting the historical preparation record:
 - Rust SDK/TUI registry receipts, Cloudflare scoped-account refresh, Vercel
   production protection, exact schema/image linkage, and exercised rollback
   remain open holds.
+
+## Public capability discovery route (2026-10-26, `capability/consumer-surface-v2`)
+
+Rebuild of the capability stack (#1486 → #1487 → #1491) as one PR on top of
+main after the somatic lanes S1–S6. Plan:
+`docs/plans/2026-10-26-capability-stack-landing-plan.md` (branch `ralph/s0-plan`).
+
+### Behavior
+
+- `GET /api/v1/engines/capabilities` is a new API-key / bearer surface in the
+  same auth group as `GET /engines` (basic:access), not behind an engine scope.
+  Response: `{ capabilities: EngineCapability[], count }`, sorted by
+  `engine_id`, native rows (`runtime_kind: native`, `availability: available`,
+  `implementation_version` = API crate version) plus bridge rows
+  (`runtime_kind: typescript`, availability from the bridge readiness
+  self-check). It is never empty when the sidecar is down.
+- `crates/noesis-api/src/capabilities.rs` is the shared collector; the admin
+  route `GET /api/v1/admin/engines/capabilities` now delegates to it and so
+  also lists native engines.
+- Bridge readiness is cached for 10 s (`CAPABILITY_READINESS_TTL`), keyed by
+  bridge-manager identity, with concurrent callers coalesced onto one
+  self-check; a failed readiness call is cached as "all bridge rows
+  unavailable" rather than retried per request.
+- `provenance.confidence` (number, 0–1, optional) is now in
+  `contracts/v1/schemas/provenance.schema.json` and the fixture
+  `contracts/v1/fixtures/engine-result.json`, matching the Rust contract and
+  the engine-sdk types main already carried. The provenance block stays at
+  exactly seven fields; `deny_unknown_fields` still drops the block on any
+  unknown key.
+- SDKs: `@selemene/engine-sdk` 0.2.0 adds `EngineClient.capabilities()`
+  (API route when configured, else the ts server) and
+  `PythonSidecarHealthResponse.capability_status?` /
+  `mediapipe_available?`; `@noesis/sdk` 3.4.0 adds
+  `NoesisClient.listCapabilities()` and the `EngineCapability` /
+  `EngineCapabilitiesResponse` types.
+
+### Not taken from #1491
+
+- Always-derived provenance for native engines (envelope `provenance` from
+  `CalculationMetadata` when the bridge block is absent). Main lifts and strips
+  the bridge block only and leaves `provenance` absent for native engines;
+  that behavior is kept, and the integration test that asserted derived
+  native provenance was not ported.
+- The four witness-pipeline commits, split onto `witness/reading-repair-wip`.
+- The #1486/#1487 residuals: already on main, superseded by main (i-ching
+  1.1.0), or retired (Suno proxy).
+
+### Receipts
+
+- Local T1 gate output is in the PR body.
+- Staging (T2) probes from §3 of the plan are run by the parent session after
+  the PR is open; results are recorded in `docs/plans/somatic-ralph-state.json`
+  under lane `c1-capabilities`.
