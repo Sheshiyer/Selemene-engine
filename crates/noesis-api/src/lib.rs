@@ -508,6 +508,29 @@ impl AppState {
     }
 }
 
+/// Initialise Swiss Ephemeris once at startup through the shared resolver so
+/// the process-global path is the real data directory whichever engine runs
+/// first, and log it. Returns the directory to checksum.
+fn init_swiss_ephemeris() -> String {
+    let _ = EphemerisCalculator::new("");
+    let active = noesis_orchestrator::active_ephemeris_path().unwrap_or_default();
+    if active.is_empty() {
+        tracing::warn!(
+            "Swiss Ephemeris data files not found (set SWISS_EPHEMERIS_PATH); \
+             engines will use built-in Moshier and report fallback_used"
+        );
+    } else {
+        tracing::info!(path = %active, "Swiss Ephemeris initialised with data files");
+    }
+    std::env::var("EPHEMERIS_DIR").unwrap_or_else(|_| {
+        if active.is_empty() {
+            "data/ephemeris".to_string()
+        } else {
+            active.to_string()
+        }
+    })
+}
+
 /// Compute SHA256 checksums for all `.se1` files in `dir`.
 ///
 /// Returns a map of `filename → hex-encoded SHA256`.  Missing or
@@ -4538,9 +4561,8 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     // -- Metrics --
     let metrics = shared_metrics();
 
-    // -- Ephemeris checksums --
-    let ephemeris_dir =
-        std::env::var("EPHEMERIS_DIR").unwrap_or_else(|_| "data/ephemeris".to_string());
+    // -- Swiss Ephemeris path + checksums --
+    let ephemeris_dir = init_swiss_ephemeris();
     let ephemeris_checksums = Arc::new(compute_ephemeris_checksums(&ephemeris_dir));
     tracing::info!(
         "Computed SHA256 checksums for {} ephemeris file(s)",
@@ -4666,9 +4688,8 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
     // -- Metrics --
     let metrics = shared_metrics();
 
-    // -- Ephemeris checksums --
-    let ephemeris_dir =
-        std::env::var("EPHEMERIS_DIR").unwrap_or_else(|_| "data/ephemeris".to_string());
+    // -- Swiss Ephemeris path + checksums --
+    let ephemeris_dir = init_swiss_ephemeris();
     let ephemeris_checksums = Arc::new(compute_ephemeris_checksums(&ephemeris_dir));
 
     AppState {

@@ -244,6 +244,9 @@ impl ConsciousnessEngine for VimshottariEngine {
                 Some(&birth_data.timezone),
             )?;
 
+            // "" = the shared resolver (SWISS_EPHE_PATH / SWISS_EPHEMERIS_PATH /
+            // EPHEMERIS_DIR, then data/ephemeris near the cwd or executable).
+            // Without .se1 files Swiss Ephemeris uses Moshier: a declared fallback.
             let moon = crate::ephemeris::lahiri_moon(&utc_dt, "")?;
             (moon.longitude, utc_dt, moon.backend(), moon.fallback_used())
         } else if input.options.contains_key("moon_longitude") {
