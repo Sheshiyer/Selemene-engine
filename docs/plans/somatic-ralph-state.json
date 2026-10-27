@@ -515,6 +515,34 @@
     "witness/reading-repair-wip split still pending (commits only on codex/selemene-capability-consumer-surface)"
    ],
    "merge": "dcc1a046"
+  },
+  "n1-native-provenance": {
+   "title": "Contract provenance for the 13 native engines with explicit fallback flags",
+   "plan": "docs/plans/2026-10-27-native-provenance-lane-plan.md",
+   "pr": 1508,
+   "branch": "feat/native-provenance-n1",
+   "head": "60336d3f",
+   "status": "staging-proven, decision pending",
+   "receipts": [
+    {
+     "date": "2026-10-27",
+     "tier": "T1",
+     "cmd": "lane session: cargo test --workspace --locked --no-fail-fast",
+     "result": "lane targets green; 28 failures in 9 targets identical on main dcc1a046 (billing DB role, vedic-api wiremock, panchanga snapshot engine_version, metrics doctest). See PR body."
+    },
+    {
+     "date": "2026-10-27",
+     "tier": "T2",
+     "cmd": "staging Selemene-engine pinned to 60336d3f (deploy cfd2e0fc SUCCESS); ralph-s1-staging widened to engines:* (expires 2026-10-28); probes per plan",
+     "result": "P1: 13/13 native engines return a seven-field block, runtime_kind native (biofield-capture via a fresh capture reading 34d8eb69 -> backend persisted-reading, fallback false). P2: face-reading no image -> fallback true backend birth-physiognomy-fallback (engine-owned block agrees); with portrait -> false backend mediapipe-face-cv. P3: biofield no birth data -> true backend mock; with birth data -> false vedic-ephemeris. P4: panchanga time 24:00 -> true (mean-longitude path). P5: sigil-forge bridge block unchanged (typescript); persisted numerology reading 2dbcf1b3 has no reserved key and carries metadata.fallback_used. FINDING: vimshottari reports fallback true on ordinary calls, backend swiss-ephemeris-lahiri-full-v1:moshier, because engine.rs:247 passes an empty ephemeris path; the .se1 files ship in the image and SWISS_EPHEMERIS_PATH=/app/data/ephemeris is set in both envs. Pre-existing bug made visible by N1."
+    }
+   ],
+   "open": [
+    "decide vimshottari: fix ephemeris path in #1508 or merge and follow up",
+    "T3 prod readback after merge",
+    "restore staging Selemene-engine source to main",
+    "revert ralph-s1-staging engines:* widening (or let it expire 2026-10-28)"
+   ]
   }
  },
  "s0": {
