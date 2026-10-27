@@ -522,7 +522,7 @@
    "pr": 1508,
    "branch": "feat/native-provenance-n1",
    "head": "1e495d64",
-   "status": "staging-proven",
+   "status": "prod-proven",
    "receipts": [
     {
      "date": "2026-10-27",
@@ -547,14 +547,19 @@
      "tier": "T2",
      "cmd": "lane fix 05ea85b5 (+docs 1e495d64): lock_ephemeris() sets swe_set_ephe_path per thread under EPHE_MUTEX at every SwissEph entry point; Moshier surfaced from SEFLG_MOSEPH in HD, transits, gene-keys, panchanga. Linux x86_64 container tests green incl. cross-thread tests (mutation check stalled under QEMU, not claimed). Staging Selemene-engine rebuilt from 1e495d64 (deploy 9281c859); full probe set plus 3 repeated calls per ephemeris engine.",
      "result": "P1 13/13 seven-field native blocks; vimshottari fallback false backend swiss-ephemeris-lahiri-full-v1:swiss-files; human-design, transits, gene-keys, panchanga fallback false on all repeated calls. P2 face no image true / portrait false mediapipe-face-cv. P3 biofield no birth data true mock / birth data false vedic-ephemeris. P4 panchanga 24:00 true. P5 sigil bridge unchanged; persisted reading clean. Swiss Ephemeris thread-local bug fixed in staging."
+    },
+    {
+     "date": "2026-10-27",
+     "tier": "T3",
+     "cmd": "#1508 merged at verified head 1e495d64 as d7684b0b; prod Selemene-engine c4bb4bc3 SUCCESS on d7684b0b; staging source restored to main (also d7684b0b). Probe key ralph-n1-prod (first run blocked: prod edge rejects the Python urllib user agent, non-JSON body; key revoked unused) then ralph-n1-prod-2 (basic + numerology/face-reading/vimshottari/human-design/transits/sigil-forge, 2h); probes with UA curl; key revoked.",
+     "result": "/health/ready 200, deps ready. numerology fb false native-rust; vimshottari fb false swiss-ephemeris-lahiri-full-v1:swiss-files (3 calls, different dates); human-design fb false swiss-ephemeris; transits fb false swiss-ephemeris; face-reading no image fb true birth-physiognomy-fallback, portrait fb false mediapipe-face-cv; sigil-forge bridge typescript block unchanged; persisted numerology reading fce65da4 no reserved key, metadata.fallback_used present; panchanga with key lacking scope 403 ENGINE_SCOPE_FORBIDDEN (enforce intact); revoke -> 401. NATIVE PROVENANCE + REAL EPHEMERIS FILES LIVE IN PRODUCTION."
     }
    ],
    "open": [
-    "T3 prod readback after merge",
-    "restore staging Selemene-engine source to main",
-    "ralph-s1-staging engines:* widening expires 2026-10-28",
-    "follow-ups: biofield vedic path Moshier flag; input-defaulting signal (timezone/birth time); stub-metrics/v1 biofield-capture readings"
-   ]
+    "follow-ups: biofield vedic path Moshier flag; input-defaulting signal (timezone/birth time); stub-metrics/v1 biofield-capture readings; mutation check of the cross-thread test not completed",
+    "ralph-s1-staging engines:* widening expires 2026-10-28"
+   ],
+   "merge": "d7684b0b"
   }
  },
  "s0": {
