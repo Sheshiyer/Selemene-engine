@@ -521,8 +521,8 @@
    "plan": "docs/plans/2026-10-27-native-provenance-lane-plan.md",
    "pr": 1508,
    "branch": "feat/native-provenance-n1",
-   "head": "60336d3f",
-   "status": "staging-proven, decision pending",
+   "head": "4fc619c5",
+   "status": "staging: vimshottari still Moshier; per-thread ephemeris fix in progress",
    "receipts": [
     {
      "date": "2026-10-27",
@@ -535,6 +535,12 @@
      "tier": "T2",
      "cmd": "staging Selemene-engine pinned to 60336d3f (deploy cfd2e0fc SUCCESS); ralph-s1-staging widened to engines:* (expires 2026-10-28); probes per plan",
      "result": "P1: 13/13 native engines return a seven-field block, runtime_kind native (biofield-capture via a fresh capture reading 34d8eb69 -> backend persisted-reading, fallback false). P2: face-reading no image -> fallback true backend birth-physiognomy-fallback (engine-owned block agrees); with portrait -> false backend mediapipe-face-cv. P3: biofield no birth data -> true backend mock; with birth data -> false vedic-ephemeris. P4: panchanga time 24:00 -> true (mean-longitude path). P5: sigil-forge bridge block unchanged (typescript); persisted numerology reading 2dbcf1b3 has no reserved key and carries metadata.fallback_used. FINDING: vimshottari reports fallback true on ordinary calls, backend swiss-ephemeris-lahiri-full-v1:moshier, because engine.rs:247 passes an empty ephemeris path; the .se1 files ship in the image and SWISS_EPHEMERIS_PATH=/app/data/ephemeris is set in both envs. Pre-existing bug made visible by N1."
+    },
+    {
+     "date": "2026-10-27",
+     "tier": "T2",
+     "cmd": "staging Selemene-engine rebuilt from 4fc619c5 (shared ephemeris path resolver); same probe set",
+     "result": "All P1-P5 results unchanged and correct (13/13 seven-field blocks; face, biofield, panchanga fallback pairs; bridge unchanged; persisted reading clean) EXCEPT vimshottari still fallback true :moshier. Startup log: \"Swiss Ephemeris initialised with data files\" path=/app/data/ephemeris. ROOT CAUSE: libswisseph-sys 0.1.2 sweodef.h makes swed (incl. ephe_path_is_set) __thread on Linux (not macOS), so the path set on the startup thread never reaches tokio worker threads; human-design/transits/gene-keys likely also on Moshier in prod (undetectable today). Sent to lane: per-thread set_ephe_path + Linux-container regression test."
     }
    ],
    "open": [
