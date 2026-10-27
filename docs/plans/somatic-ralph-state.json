@@ -521,8 +521,8 @@
    "plan": "docs/plans/2026-10-27-native-provenance-lane-plan.md",
    "pr": 1508,
    "branch": "feat/native-provenance-n1",
-   "head": "4fc619c5",
-   "status": "staging: vimshottari still Moshier; per-thread ephemeris fix in progress",
+   "head": "1e495d64",
+   "status": "staging-proven",
    "receipts": [
     {
      "date": "2026-10-27",
@@ -541,13 +541,19 @@
      "tier": "T2",
      "cmd": "staging Selemene-engine rebuilt from 4fc619c5 (shared ephemeris path resolver); same probe set",
      "result": "All P1-P5 results unchanged and correct (13/13 seven-field blocks; face, biofield, panchanga fallback pairs; bridge unchanged; persisted reading clean) EXCEPT vimshottari still fallback true :moshier. Startup log: \"Swiss Ephemeris initialised with data files\" path=/app/data/ephemeris. ROOT CAUSE: libswisseph-sys 0.1.2 sweodef.h makes swed (incl. ephe_path_is_set) __thread on Linux (not macOS), so the path set on the startup thread never reaches tokio worker threads; human-design/transits/gene-keys likely also on Moshier in prod (undetectable today). Sent to lane: per-thread set_ephe_path + Linux-container regression test."
+    },
+    {
+     "date": "2026-10-27",
+     "tier": "T2",
+     "cmd": "lane fix 05ea85b5 (+docs 1e495d64): lock_ephemeris() sets swe_set_ephe_path per thread under EPHE_MUTEX at every SwissEph entry point; Moshier surfaced from SEFLG_MOSEPH in HD, transits, gene-keys, panchanga. Linux x86_64 container tests green incl. cross-thread tests (mutation check stalled under QEMU, not claimed). Staging Selemene-engine rebuilt from 1e495d64 (deploy 9281c859); full probe set plus 3 repeated calls per ephemeris engine.",
+     "result": "P1 13/13 seven-field native blocks; vimshottari fallback false backend swiss-ephemeris-lahiri-full-v1:swiss-files; human-design, transits, gene-keys, panchanga fallback false on all repeated calls. P2 face no image true / portrait false mediapipe-face-cv. P3 biofield no birth data true mock / birth data false vedic-ephemeris. P4 panchanga 24:00 true. P5 sigil bridge unchanged; persisted reading clean. Swiss Ephemeris thread-local bug fixed in staging."
     }
    ],
    "open": [
-    "decide vimshottari: fix ephemeris path in #1508 or merge and follow up",
     "T3 prod readback after merge",
     "restore staging Selemene-engine source to main",
-    "revert ralph-s1-staging engines:* widening (or let it expire 2026-10-28)"
+    "ralph-s1-staging engines:* widening expires 2026-10-28",
+    "follow-ups: biofield vedic path Moshier flag; input-defaulting signal (timezone/birth time); stub-metrics/v1 biofield-capture readings"
    ]
   }
  },
