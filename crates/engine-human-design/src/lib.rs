@@ -15,7 +15,11 @@ pub mod gate_sequence;
 pub mod witness;
 
 // Re-export ephemeris calculator for convenience
-pub use ephemeris::{EphemerisCalculator, HDPlanet, PlanetPosition};
+pub use ephemeris::{
+    active_ephemeris_path, lock_ephemeris, moshier_observed, reset_moshier_observed,
+    resolve_ephemeris_path, EphemerisCalculator, HDPlanet, PlanetPosition,
+    EPHEMERIS_PATH_ENV_VARS, SEFLG_MOSEPH,
+};
 
 // Re-export key functions for convenience
 pub use activations::{

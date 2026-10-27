@@ -164,6 +164,30 @@ pub struct CalculationMetadata {
     /// Engine version (from crate Cargo.toml)
     #[serde(default)]
     pub engine_version: String,
+    /// Whether the engine served a degraded/fallback path instead of its
+    /// primary computation. Each engine sets this explicitly; the API copies it
+    /// into the contract-v1 envelope `provenance` for native engines.
+    #[serde(default)]
+    pub fallback_used: bool,
+    /// External provider that computed the result, when one did (e.g. the
+    /// vedic API). `None` for purely local computation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub provider_id: Option<String>,
+}
+
+impl Default for CalculationMetadata {
+    fn default() -> Self {
+        Self {
+            calculation_time_ms: 0.0,
+            backend: String::new(),
+            precision_achieved: String::new(),
+            cached: false,
+            timestamp: Utc::now(),
+            engine_version: String::new(),
+            fallback_used: false,
+            provider_id: None,
+        }
+    }
 }
 
 /// Multi-engine workflow definition

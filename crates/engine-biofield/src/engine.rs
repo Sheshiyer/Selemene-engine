@@ -420,6 +420,8 @@ impl ConsciousnessEngine for BiofieldEngine {
         };
         let backend = provenance.backend;
         let precision = provenance.precision.clone();
+        // Mock and capture-mock paths are fallbacks; the vedic path is real.
+        let fallback_used = provenance.fallback_used;
 
         if witness_prompt.is_empty() {
             return Err(EngineError::CalculationError(
@@ -487,6 +489,8 @@ impl ConsciousnessEngine for BiofieldEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                fallback_used,
+                provider_id: None,
             },
         })
     }
@@ -843,6 +847,8 @@ mod tests {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
 
@@ -1014,6 +1020,8 @@ mod tests {
         assert!(output.result.get("mock_reason").is_none());
         assert_eq!(output.result["is_mock_data"], json!(false));
         assert_eq!(output.metadata.backend, "vedic-ephemeris");
+        assert!(!output.metadata.fallback_used);
+        assert!(output.metadata.provider_id.is_none());
         let validation = engine.validate(&output).await.unwrap();
         assert!(validation.valid, "{:?}", validation.messages);
     }
@@ -1035,6 +1043,7 @@ mod tests {
         assert_eq!(output.result["mock_reason"], json!("no-birth-data"));
         assert_eq!(output.result["is_mock_data"], json!(true));
         assert_eq!(output.result["computation_mode"], json!("mock"));
+        assert!(output.metadata.fallback_used);
         let validation = engine.validate(&output).await.unwrap();
         assert!(validation.valid, "{:?}", validation.messages);
     }
@@ -1070,6 +1079,7 @@ mod tests {
         let prov = &res["provenance"];
         assert_eq!(prov["backend"], json!("mock"));
         assert_eq!(prov["fallback_used"], json!(true));
+        assert!(output.metadata.fallback_used);
         assert_eq!(
             prov["capture_reading_id"],
             json!("11111111-2222-3333-4444-555555555555")

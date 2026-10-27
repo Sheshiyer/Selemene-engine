@@ -210,6 +210,8 @@ impl HistoryBrowser {
                                     cached: false,
                                     timestamp: entry.created_at,
                                     engine_version: String::new(),
+                                    fallback_used: false,
+                                    provider_id: None,
                                 },
                             };
                             Action::ShowEngineResult {

@@ -617,7 +617,25 @@ async fn test_workflow_execute_birth_blueprint_success() {
     assert!(body["engine_results"].is_object());
     assert!(body["engine_outputs"].is_object());
     assert!(body["total_time_ms"].is_number());
-    assert_eq!(body["engine_results"], body["engine_outputs"]);
+    // engine_results mirror engine_outputs plus the per-engine envelope
+    // provenance (lane N1); the persisted-shape engine_outputs carry none.
+    let outputs = body["engine_outputs"].as_object().unwrap();
+    let results = body["engine_results"].as_object().unwrap();
+    assert_eq!(
+        outputs.keys().collect::<Vec<_>>(),
+        results.keys().collect::<Vec<_>>()
+    );
+    for (engine_id, output) in outputs {
+        let mut result = results[engine_id].clone();
+        let provenance = result
+            .as_object_mut()
+            .unwrap()
+            .remove("provenance")
+            .unwrap_or_else(|| panic!("{engine_id} result lacks provenance"));
+        assert_eq!(provenance["runtime_kind"], "native", "{engine_id}");
+        assert_eq!(&result, output, "{engine_id}");
+        assert!(output.get("provenance").is_none());
+    }
 }
 
 #[tokio::test]

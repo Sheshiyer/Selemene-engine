@@ -233,7 +233,9 @@ impl ConsciousnessEngine for VimshottariEngine {
         let start = Instant::now();
 
         // Determine Moon longitude and birth time
-        let (moon_longitude, birth_time, backend) = if let Some(ref birth_data) = input.birth_data {
+        let (moon_longitude, birth_time, backend, fallback_used) = if let Some(ref birth_data) =
+            input.birth_data
+        {
             // Mode 1: Calculate from birth_data using Swiss Ephemeris, then convert
             // tropical Moon longitude to sidereal for Vedic nakshatra/dasha logic.
             let utc_dt = Self::parse_birth_datetime(
@@ -242,8 +244,11 @@ impl ConsciousnessEngine for VimshottariEngine {
                 Some(&birth_data.timezone),
             )?;
 
+            // "" = the shared resolver (SWISS_EPHE_PATH / SWISS_EPHEMERIS_PATH /
+            // EPHEMERIS_DIR, then data/ephemeris near the cwd or executable).
+            // Without .se1 files Swiss Ephemeris uses Moshier: a declared fallback.
             let moon = crate::ephemeris::lahiri_moon(&utc_dt, "")?;
-            (moon.longitude, utc_dt, moon.backend())
+            (moon.longitude, utc_dt, moon.backend(), moon.fallback_used())
         } else if input.options.contains_key("moon_longitude") {
             // Mode 2: Moon longitude provided directly
             let longitude = Self::extract_moon_longitude(&input.options)?;
@@ -259,7 +264,7 @@ impl ConsciousnessEngine for VimshottariEngine {
 
             let birth_time = Self::parse_birth_datetime(date_str, time_str, timezone)?;
 
-            (longitude, birth_time, "moon-longitude")
+            (longitude, birth_time, "moon-longitude", false)
         } else {
             return Err(EngineError::CalculationError(
                 "Vimshottari requires either birth_data or moon_longitude in options".to_string(),
@@ -348,6 +353,9 @@ impl ConsciousnessEngine for VimshottariEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                // Moshier substituted for the Swiss Ephemeris files.
+                fallback_used,
+                provider_id: None,
             },
         })
     }
@@ -582,6 +590,8 @@ mod tests {
             "Witness prompt should not be empty"
         );
         assert_eq!(output.consciousness_level, 3); // Default
+        assert_eq!(output.metadata.backend, "moon-longitude");
+        assert!(!output.metadata.fallback_used);
 
         // Check timeline structure (9-10 mahadashas for 120-year coverage)
         let timeline = output.result.get("timeline").expect("should have timeline");
@@ -617,6 +627,12 @@ mod tests {
         let output = result.unwrap();
         assert_eq!(output.engine_id, "vimshottari");
         assert!(!output.witness_prompt.is_empty());
+        // The flag tracks the ephemeris actually used, whatever this host has.
+        assert_eq!(
+            output.metadata.fallback_used,
+            output.metadata.backend.ends_with(":moshier")
+        );
+        assert!(output.metadata.provider_id.is_none());
 
         // Timeline should have 9-10 mahadashas (120-year coverage)
         let timeline = output.result.get("timeline").unwrap();
@@ -704,6 +720,8 @@ mod tests {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
 
@@ -729,6 +747,8 @@ mod tests {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
 

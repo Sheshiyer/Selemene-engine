@@ -335,13 +335,32 @@ pub fn calculate_vara(jd: f64) -> i32 {
 
 /// Compute a full `PanchangaResult` from date, time, and timezone offset.
 pub fn compute_panchanga(date: &str, time: &str, tz_offset_hours: f64) -> PanchangaResult {
+    compute_panchanga_reporting_fallback(date, time, tz_offset_hours).0
+}
+
+/// Like [`compute_panchanga`], also reporting whether a fallback was used: the
+/// mean-longitude approximation replaced Swiss Ephemeris positions, or Swiss
+/// Ephemeris itself substituted Moshier for the `.se1` files.
+pub fn compute_panchanga_reporting_fallback(
+    date: &str,
+    time: &str,
+    tz_offset_hours: f64,
+) -> (PanchangaResult, bool) {
     let jd = calculate_julian_day(date, time, tz_offset_hours);
 
     // Prefer local Swiss Ephemeris positions for correct transition timing,
     // but retain the original mean-longitude fallback if ephemeris access fails.
-    let (solar_lng_tropical, lunar_lng_tropical) =
-        precise_tropical_positions(date, time, tz_offset_hours)
-            .unwrap_or_else(|| (calculate_solar_position(jd), calculate_lunar_position(jd)));
+    // Moshier substitution inside Swiss Ephemeris is a fallback too.
+    engine_human_design::ephemeris::reset_moshier_observed();
+    let (solar_lng_tropical, lunar_lng_tropical, fallback_used) =
+        match precise_tropical_positions(date, time, tz_offset_hours) {
+            Some((sun, moon)) => (
+                sun,
+                moon,
+                engine_human_design::ephemeris::moshier_observed(),
+            ),
+            None => (calculate_solar_position(jd), calculate_lunar_position(jd), true),
+        };
     let solar_lng = to_sidereal_longitude(solar_lng_tropical);
     let lunar_lng = to_sidereal_longitude(lunar_lng_tropical);
 
@@ -358,7 +377,7 @@ pub fn compute_panchanga(date: &str, time: &str, tz_offset_hours: f64) -> Pancha
     let yoga_idx = (yoga_val.floor() as usize).min(26);
     let vara_idx = (vara_val as usize).min(6);
 
-    PanchangaResult {
+    let result = PanchangaResult {
         tithi_index: tithi_idx as u8,
         tithi_name: TITHI_NAMES[tithi_idx].to_string(),
         tithi_value: tithi_val,
@@ -381,7 +400,8 @@ pub fn compute_panchanga(date: &str, time: &str, tz_offset_hours: f64) -> Pancha
         solar_longitude: solar_lng,
         lunar_longitude: lunar_lng,
         julian_day: jd,
-    }
+    };
+    (result, fallback_used)
 }
 
 // ---------------------------------------------------------------------------
@@ -501,7 +521,8 @@ impl ConsciousnessEngine for PanchangaEngine {
             )
         };
 
-        let result = compute_panchanga(&date_str, &time_str, tz_offset);
+        let (result, fallback_used) =
+            compute_panchanga_reporting_fallback(&date_str, &time_str, tz_offset);
         let witness_prompt = generate_witness_prompt(&result);
 
         let result_json = serde_json::to_value(&result).map_err(|e| {
@@ -522,6 +543,9 @@ impl ConsciousnessEngine for PanchangaEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                // Mean-longitude approximation instead of Swiss Ephemeris.
+                fallback_used,
+                provider_id: None,
             },
         })
     }
@@ -747,6 +771,31 @@ mod tests {
     }
 
     #[test]
+    fn test_ephemeris_positions_report_no_fallback() {
+        let (_, fallback_used) = compute_panchanga_reporting_fallback("1991-08-13", "13:31", 5.5);
+        assert!(!fallback_used);
+    }
+
+    #[test]
+    fn test_mean_longitude_fallback_is_reported() {
+        // "24:00" is rejected by the chrono parse that feeds Swiss Ephemeris, so
+        // the mean-longitude approximation must be used and declared.
+        let (p, fallback_used) = compute_panchanga_reporting_fallback("1991-08-13", "24:00", 5.5);
+        assert!(fallback_used);
+        assert!(!p.tithi_name.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_calculate_declares_mean_longitude_fallback() {
+        let engine = PanchangaEngine::new();
+        let mut input = test_input();
+        input.birth_data.as_mut().unwrap().time = Some("24:00".to_string());
+        let output = engine.calculate(input).await.expect("calculate failed");
+        assert!(output.metadata.fallback_used);
+        assert_eq!(output.metadata.backend, "native-rust");
+    }
+
+    #[test]
     fn test_cache_key_deterministic() {
         let engine = PanchangaEngine::new();
         let input = test_input();
@@ -772,6 +821,8 @@ mod tests {
         assert_eq!(output.engine_id, "panchanga");
         assert!(!output.witness_prompt.is_empty());
         assert_eq!(output.metadata.backend, "native-rust");
+        assert!(!output.metadata.fallback_used);
+        assert!(output.metadata.provider_id.is_none());
 
         // The result should deserialize back into PanchangaResult
         let pr: PanchangaResult =

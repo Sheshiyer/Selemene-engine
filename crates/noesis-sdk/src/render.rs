@@ -444,6 +444,8 @@ mod tests {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: "3.0.0".into(),
+                fallback_used: false,
+                provider_id: None,
             },
         }
     }

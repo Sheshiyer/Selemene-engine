@@ -128,6 +128,10 @@ impl ConsciousnessEngine for ExampleEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                // Set explicitly: true whenever a mock, heuristic or
+                // approximation replaced the primary computation.
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }

@@ -776,6 +776,20 @@ pub struct BridgeCircuitBreakerSnapshot {
 pub fn ts_response_into_output(ts_response: TsEngineResponse, required_phase: u8) -> EngineOutput {
     let calculated_at = parse_ts_calculated_at(&ts_response.calculated_at);
 
+    // Mirror the sidecar's declared fallback/provider into metadata so readings
+    // and workflow outputs carry it too; the envelope still lifts the full block.
+    let declared = |key: &str| {
+        ts_response
+            .provenance
+            .as_ref()
+            .and_then(|p| p.get(key))
+            .cloned()
+    };
+    let fallback_used = declared("fallback_used")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let provider_id = declared("provider_id").and_then(|v| v.as_str().map(str::to_string));
+
     let mut result = ts_response.result;
     if let Some(object) = result.as_object_mut() {
         if let Some(generated_image) = ts_response.generated_image {
@@ -805,6 +819,8 @@ pub fn ts_response_into_output(ts_response: TsEngineResponse, required_phase: u8
             cached: false,
             timestamp: calculated_at,
             engine_version: env!("CARGO_PKG_VERSION").to_string(),
+            fallback_used,
+            provider_id,
         },
     }
 }
@@ -1067,6 +1083,9 @@ mod tests {
         assert_eq!(parsed.provider_id.as_deref(), Some("nvidia"));
         assert_eq!(parsed.confidence, Some(0.9));
         assert_eq!(serde_json::to_value(&parsed).unwrap(), provenance);
+        // Metadata mirrors the declared flags.
+        assert!(!output.metadata.fallback_used);
+        assert_eq!(output.metadata.provider_id.as_deref(), Some("nvidia"));
     }
 
     #[test]
@@ -1093,6 +1112,8 @@ mod tests {
         assert!(parsed.fallback_used);
         assert!(parsed.provider_id.is_none());
         assert_eq!(parsed.confidence, Some(0.0));
+        assert!(output.metadata.fallback_used);
+        assert!(output.metadata.provider_id.is_none());
         assert!(output.result.get("generated_image").unwrap()["error"].is_string());
     }
 

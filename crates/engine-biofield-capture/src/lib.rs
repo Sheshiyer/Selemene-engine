@@ -176,6 +176,10 @@ impl ConsciousnessEngine for BiofieldCaptureEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                // The persisted capture is the primary source; a missing or
+                // foreign reading is an error above, never a silent mock.
+                fallback_used: false,
+                provider_id: None,
             },
         })
     }
@@ -394,6 +398,9 @@ mod tests {
             .expect("reading lookup should succeed");
         assert_eq!(output.engine_id, BIOFIELD_CAPTURE_ENGINE_ID);
         assert_eq!(output.result["reading_id"], reading_id.to_string());
+        assert_eq!(output.metadata.backend, "persisted-reading");
+        assert!(!output.metadata.fallback_used);
+        assert!(output.metadata.provider_id.is_none());
         assert_eq!(
             output.result["analysis"]["analysis_version"],
             "stub-metrics/v1"

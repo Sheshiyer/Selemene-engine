@@ -197,7 +197,7 @@ fn sidereal_calculations_do_not_contaminate_tropical_moon_across_threads() {
                 let calc = EphemerisCalculator::new("");
                 for _ in 0..8 {
                     {
-                        let _guard = engine_human_design::ephemeris::EPHE_MUTEX.lock().unwrap();
+                        let _guard = engine_human_design::ephemeris::lock_ephemeris().unwrap();
                         // SAFETY: shared guard owns global sidereal state. Deliberately
                         // choose a different mode to verify each calculation sets Lahiri.
                         unsafe {

@@ -429,7 +429,11 @@ impl ConsciousnessEngine for FaceReadingEngine {
         }
 
         // W3E:face-reading:07 — provenance is always present and never implies CV
-        // ran when it did not. `fallback_used` is true for every non-CV path.
+        // ran when it did not. `fallback_used` is true for every non-CV path and
+        // is the single flag behind both this engine-owned block and the
+        // envelope-level contract provenance (via `metadata.fallback_used`).
+        let fallback_used = landmark_summary.is_none();
+        debug_assert_eq!(fallback_used, fallback_reason.is_some());
         let landmark_source = landmark_summary
             .as_ref()
             .and_then(|s| s.get("landmark_source"))
@@ -439,7 +443,7 @@ impl ConsciousnessEngine for FaceReadingEngine {
             "backend": backend_name.clone(),
             "precision": precision.clone(),
             "landmark_source": landmark_source,
-            "fallback_used": landmark_summary.is_none(),
+            "fallback_used": fallback_used,
             "fallback_reason": fallback_reason,
             "image_provided": image_bytes.is_some(),
             "consent_granted": consent_val
@@ -461,6 +465,8 @@ impl ConsciousnessEngine for FaceReadingEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
+                fallback_used,
+                provider_id: None,
             },
         })
     }
@@ -705,6 +711,8 @@ mod tests {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: String::new(),
+                fallback_used: false,
+                provider_id: None,
             },
         };
 
@@ -742,6 +750,8 @@ mod tests {
         let output = engine.calculate(input).await.unwrap();
         assert_eq!(output.metadata.backend, "mock-stub");
         assert_eq!(output.metadata.precision_achieved, "simulated");
+        assert!(output.metadata.fallback_used);
+        assert_eq!(output.result["provenance"]["fallback_used"], json!(true));
     }
 
     #[tokio::test]
@@ -767,6 +777,16 @@ mod tests {
 
         assert!(!is_mock);
         assert_eq!(output.metadata.backend, "birth-physiognomy-fallback");
+        // No image: the birth-data physiognomy path is a fallback, and the
+        // engine-owned block agrees with the metadata flag and its reason.
+        assert!(output.metadata.fallback_used);
+        assert!(output.metadata.provider_id.is_none());
+        let prov = &output.result["provenance"];
+        assert_eq!(prov["fallback_used"], json!(true));
+        assert_eq!(
+            prov["fallback_reason"],
+            json!("no-image-data: birth-data physiognomy")
+        );
     }
 
     #[tokio::test]
@@ -787,6 +807,8 @@ mod tests {
 
         assert!(!is_mock);
         assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
+        assert!(output.metadata.fallback_used);
+        assert_eq!(output.result["provenance"]["fallback_used"], json!(true));
     }
 
     #[tokio::test]
@@ -1017,6 +1039,10 @@ mod tests {
         let output = engine.calculate(input).await.unwrap();
         assert_eq!(output.metadata.backend, "mediapipe-face-cv");
         assert_eq!(output.metadata.precision_achieved, "cv-468-landmarks");
+        // Real CV ran: no fallback in either provenance view.
+        assert!(!output.metadata.fallback_used);
+        assert_eq!(output.result["provenance"]["fallback_used"], json!(false));
+        assert!(output.result["provenance"]["fallback_reason"].is_null());
 
         let summary = output
             .result
@@ -1087,6 +1113,7 @@ mod tests {
         let output = engine.calculate(input).await.unwrap();
         assert_eq!(output.metadata.backend, "heuristic-image-landmark-hook");
         assert!(output.result.get("landmark_analysis").is_none());
+        assert!(output.metadata.fallback_used);
         // W3E:face-reading:07 — the fallback is declared, never implied.
         let prov = &output.result["provenance"];
         assert_eq!(prov["fallback_used"], json!(true));

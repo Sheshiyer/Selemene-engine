@@ -267,6 +267,9 @@ fn face_reading_fixtures_schema_valid() {
     for user in FACE_READING_USERS {
         let output = load_fixture("face-reading", user);
         assert_common_schema(&output, "face-reading", user);
+        // Birth-data physiognomy (no image) is a declared fallback.
+        assert_eq!(output.metadata.backend, "birth-physiognomy-fallback");
+        assert!(output.metadata.fallback_used, "face-reading/{user}");
         assert_face_reading_schema(&output.result, user);
     }
 }
@@ -288,6 +291,7 @@ fn nadabrahman_fixtures_schema_valid() {
     for user in NADABRAHMAN_USERS {
         let output = load_fixture("nadabrahman", user);
         assert_common_schema(&output, "nadabrahman", user);
+        assert!(!output.metadata.fallback_used, "nadabrahman/{user}");
         assert_nadabrahman_schema(&output.result, user);
     }
 }

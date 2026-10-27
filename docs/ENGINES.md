@@ -334,6 +334,32 @@ With `request_clip: true` and granted consent the engine renders the swara ladde
 
 <br>
 
+## Native Engine Provenance
+
+Every native Rust engine's calculate envelope (and each native entry in a workflow's `engine_results`) carries the contract-v1 `provenance` block: `runtime_kind: native`, `implementation_version` = `metadata.engine_version`, `cached`, `fallback_used`, `backend_id` = `metadata.backend`, `provider_id` (only when an external provider computed the result; no native engine calls one today), `confidence` omitted. Each engine sets `metadata.fallback_used` explicitly; the API copies it, it never infers a fallback from the backend string. The envelope block is canonical. The engine-owned `result.provenance` blocks on face-reading and biofield remain for backward compatibility and always agree with it.
+
+| Engine | `backend_id` | `fallback_used: true` when |
+|---|---|---|
+| panchanga | `native-rust` | Swiss Ephemeris positions were unavailable and the mean-longitude approximation was used, or Swiss Ephemeris substituted Moshier for the `.se1` files |
+| vimshottari | `swiss-ephemeris-lahiri-full-v1:*` or `moon-longitude` | Swiss Ephemeris substituted Moshier because no `.se1` files were reachable (`…:moshier`); the shared resolver reads `SWISS_EPHE_PATH`, `SWISS_EPHEMERIS_PATH`, `EPHEMERIS_DIR`, then `data/ephemeris` near the cwd or executable |
+| face-reading | `mediapipe-face-cv`, `heuristic-image-landmark-hook`, `birth-physiognomy-fallback`, `mock-stub` | anything but real CV landmarks: no image (birth-data physiognomy or mock), no consent, sidecar disabled/erroring/deterministic |
+| biofield | `vedic-ephemeris` or `mock` | the mock and capture-mock paths (no birth data); never on the vedic path |
+| biofield-capture | `persisted-reading` | never: a missing or foreign reading is an error, not a silent mock |
+| vedic-clock | `native` | never (local organ clock; does not call the vedic provider) |
+| transits | `swiss-ephemeris` | Swiss Ephemeris substituted Moshier for the `.se1` files |
+| human-design | `swiss-ephemeris` | Swiss Ephemeris substituted Moshier for the `.se1` files |
+| gene-keys | `hd-derived` or `hd-gates` | birth-data mode only: the Human Design chart it derives from used Moshier |
+| numerology | `native-rust` | never |
+| biorhythm | `native-rust` | never |
+| nadabrahman | `native` | never |
+| financial-biosensor | `composed-native-rust` | never (absent contributors lower `coverage`; they are not a fallback) |
+
+Swiss Ephemeris keeps its state per thread on Linux, so every calculation runs under `engine_human_design::lock_ephemeris()`, which applies the resolved ephemeris path to each thread on first use; Moshier substitution is read from the flags each calculation returns. Biofield's vedic path uses the same ephemeris but does not yet report Moshier.
+
+Bridge (TypeScript) engines keep the block their sidecar emits; a malformed sidecar block is dropped, not replaced. Input defaulting (an unknown timezone resolved to UTC, a missing birth time treated as noon) is not reported as a fallback.
+
+<br>
+
 ## Common Response Format
 
 All engines return this unified structure:
