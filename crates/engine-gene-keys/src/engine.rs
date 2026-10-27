@@ -329,7 +329,7 @@ impl ConsciousnessEngine for GeneKeysEngine {
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
         let start = Instant::now();
 
-        let chart = if input.birth_data.is_some() {
+        let (chart, fallback_used) = if input.birth_data.is_some() {
             // Mode 1: Calculate from birth_data (requires HD engine)
             let hd_engine = self.hd_engine.as_ref().ok_or_else(|| {
                 EngineError::CalculationError(
@@ -339,11 +339,15 @@ impl ConsciousnessEngine for GeneKeysEngine {
 
             // Call HD engine to get HD chart
             let hd_output = hd_engine.calculate(input.clone()).await?;
-            Self::create_chart_from_hd_result(&hd_output.result)?
+            (
+                Self::create_chart_from_hd_result(&hd_output.result)?,
+                // Inherit the HD chart's Moshier fallback.
+                hd_output.metadata.fallback_used,
+            )
         } else if input.options.contains_key("hd_gates") {
-            // Mode 2: Extract gates from options
+            // Mode 2: Extract gates from options (no ephemeris involved)
             let (ps, pe, ds, de) = Self::extract_hd_gates_from_options(&input.options)?;
-            Self::create_chart_from_gates(ps, pe, ds, de)?
+            (Self::create_chart_from_gates(ps, pe, ds, de)?, false)
         } else {
             return Err(EngineError::ValidationError(
                 "Gene Keys requires either birth_data or hd_gates in options".to_string(),
@@ -387,8 +391,8 @@ impl ConsciousnessEngine for GeneKeysEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
-                // Derived from HD chart or explicit gates; no fallback branch.
-                fallback_used: false,
+                // True only when the HD chart it derives from used Moshier.
+                fallback_used,
                 provider_id: None,
             },
         })

@@ -3,11 +3,32 @@
 //! production image, drives the ephemeris even when the working directory has
 //! no `data/ephemeris`, and vimshottari then reports real Swiss files.
 use chrono::{DateTime, Utc};
-use engine_human_design::{active_ephemeris_path, EphemerisCalculator, HDPlanet};
+use engine_human_design::{
+    active_ephemeris_path, EphemerisCalculator, HDPlanet, HumanDesignEngine,
+};
 use engine_vimshottari::{ConsciousnessEngine, EngineInput, VimshottariEngine};
 use noesis_core::{BirthData, Precision};
 use std::collections::HashMap;
 use std::path::Path;
+
+fn birth_input() -> EngineInput {
+    EngineInput {
+        birth_data: Some(BirthData {
+            name: None,
+            date: "1991-08-13".into(),
+            time: Some("13:31".into()),
+            latitude: 12.9716,
+            longitude: 77.5946,
+            timezone: "Asia/Kolkata".into(),
+        }),
+        current_time: DateTime::parse_from_rfc3339("2026-10-24T04:43:21Z")
+            .unwrap()
+            .with_timezone(&Utc),
+        location: None,
+        precision: Precision::Standard,
+        options: HashMap::new(),
+    }
+}
 
 #[tokio::test]
 async fn swiss_ephemeris_path_env_selects_swiss_files_from_any_cwd() {
@@ -23,22 +44,7 @@ async fn swiss_ephemeris_path_env_selects_swiss_files_from_any_cwd() {
     std::env::set_current_dir(std::env::temp_dir()).unwrap();
 
     let output = VimshottariEngine::new()
-        .calculate(EngineInput {
-            birth_data: Some(BirthData {
-                name: None,
-                date: "1991-08-13".into(),
-                time: Some("13:31".into()),
-                latitude: 12.9716,
-                longitude: 77.5946,
-                timezone: "Asia/Kolkata".into(),
-            }),
-            current_time: DateTime::parse_from_rfc3339("2026-10-24T04:43:21Z")
-                .unwrap()
-                .with_timezone(&Utc),
-            location: None,
-            precision: Precision::Standard,
-            options: HashMap::new(),
-        })
+        .calculate(birth_input())
         .await
         .unwrap();
 
@@ -56,4 +62,37 @@ async fn swiss_ephemeris_path_env_selects_swiss_files_from_any_cwd() {
         .get_planet_position(HDPlanet::Sun, &Utc::now())
         .expect("sun position");
     assert!((0.0..360.0).contains(&sun.longitude));
+    let hd = HumanDesignEngine::new()
+        .calculate(birth_input())
+        .await
+        .unwrap();
+    assert!(
+        !hd.metadata.fallback_used,
+        "human-design fell back to Moshier"
+    );
+
+    // Linux regression: libswisseph's path is thread-local there, so a thread
+    // that never set it would silently compute with Moshier. Calculate on a
+    // brand-new OS thread with its own runtime.
+    let (backend, fallback_used, hd_fallback) = std::thread::spawn(|| {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .unwrap();
+        let vim = rt
+            .block_on(VimshottariEngine::new().calculate(birth_input()))
+            .unwrap();
+        let hd = rt
+            .block_on(HumanDesignEngine::new().calculate(birth_input()))
+            .unwrap();
+        (
+            vim.metadata.backend,
+            vim.metadata.fallback_used,
+            hd.metadata.fallback_used,
+        )
+    })
+    .join()
+    .unwrap();
+    assert_eq!(backend, "swiss-ephemeris-lahiri-full-v1:swiss-files");
+    assert!(!fallback_used);
+    assert!(!hd_fallback);
 }

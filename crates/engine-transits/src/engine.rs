@@ -199,7 +199,10 @@ impl ConsciousnessEngine for TransitsEngine {
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
         let start = Instant::now();
 
+        // Synchronous Swiss Ephemeris section: observe Moshier substitution.
+        engine_human_design::ephemeris::reset_moshier_observed();
         let analysis = self.analyze(&input)?;
+        let fallback_used = engine_human_design::ephemeris::moshier_observed();
 
         let consciousness_level = input
             .options
@@ -231,8 +234,8 @@ impl ConsciousnessEngine for TransitsEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
-                // Local Swiss Ephemeris positions; no fallback branch.
-                fallback_used: false,
+                // Swiss Ephemeris substituted Moshier for the .se1 files.
+                fallback_used,
                 provider_id: None,
             },
         })

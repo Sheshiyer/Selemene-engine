@@ -4,7 +4,7 @@
 //! to avoid duplicate Swiss Ephemeris initialization and ensure thread safety.
 
 use chrono::{DateTime, Datelike, Timelike, Utc};
-use engine_human_design::{ephemeris::EPHE_MUTEX, EphemerisCalculator, HDPlanet};
+use engine_human_design::{ephemeris::lock_ephemeris, EphemerisCalculator, HDPlanet};
 use libswisseph_sys::tuple_result::simple::{swe_get_ayanamsa_ut, swe_julday, swe_set_sid_mode};
 use noesis_core::EngineError;
 
@@ -32,7 +32,7 @@ fn lahiri_ayanamsa(datetime: &DateTime<Utc>) -> f64 {
 
     // Swiss Ephemeris sidereal mode is global state; guard it with the shared mutex
     // used throughout the native ephemeris-backed engines.
-    let _guard = EPHE_MUTEX.lock().unwrap();
+    let _guard = lock_ephemeris().unwrap();
     unsafe {
         swe_set_sid_mode(SIDM_LAHIRI, 0.0, 0.0);
         swe_get_ayanamsa_ut(jd_ut)

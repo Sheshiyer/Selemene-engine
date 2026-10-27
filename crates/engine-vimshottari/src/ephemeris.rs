@@ -3,7 +3,7 @@
 //! Initialization and the C-library mutex belong to the existing HD ephemeris
 //! layer. This module changes neither its tropical flags nor its chart logic.
 use chrono::{DateTime, Datelike, Timelike, Utc};
-use engine_human_design::ephemeris::{EphemerisCalculator, EPHE_MUTEX};
+use engine_human_design::ephemeris::{lock_ephemeris, EphemerisCalculator};
 use libswisseph_sys::{
     tuple_result::{
         create::swe_calc_ut,
@@ -41,10 +41,11 @@ pub(crate) fn lahiri_moon(
     birth: &DateTime<Utc>,
     ephe_path: &str,
 ) -> Result<SiderealMoon, EngineError> {
-    // Initialize through the existing Once before acquiring its non-reentrant
-    // mutex. No HD calculation, sidereal subtraction or second init is needed.
+    // Choose the process ephemeris path, then take the shared (non-reentrant)
+    // lock, which also applies that path to this thread's libswisseph state
+    // (thread-local on Linux). No HD calculation or sidereal subtraction needed.
     let _calculator = EphemerisCalculator::new(ephe_path);
-    let _guard = EPHE_MUTEX.lock().map_err(|_| {
+    let _guard = lock_ephemeris().map_err(|_| {
         EngineError::CalculationError(
             "Swiss Ephemeris mutex poisoned during Lahiri calculation".into(),
         )

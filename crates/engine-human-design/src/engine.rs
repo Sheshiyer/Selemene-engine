@@ -157,10 +157,13 @@ impl ConsciousnessEngine for HumanDesignEngine {
             .ok_or_else(|| EngineError::ValidationError("Ambiguous local time".to_string()))?;
         let utc_dt = local_dt.with_timezone(&Utc);
 
-        // Generate HD chart
+        // Generate HD chart (synchronous: every Swiss Ephemeris call below runs
+        // on this thread, so the per-thread Moshier observation covers them).
+        crate::ephemeris::reset_moshier_observed();
         let chart = generate_hd_chart(utc_dt, "").map_err(|e| {
             EngineError::CalculationError(format!("Chart generation failed: {}", e))
         })?;
+        let fallback_used = crate::ephemeris::moshier_observed();
 
         // Get consciousness level from input options or default to 1
         let consciousness_level = input
@@ -194,8 +197,8 @@ impl ConsciousnessEngine for HumanDesignEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
-                // Local Swiss Ephemeris chart; no fallback branch.
-                fallback_used: false,
+                // Swiss Ephemeris substituted Moshier for the .se1 files.
+                fallback_used,
                 provider_id: None,
             },
         })

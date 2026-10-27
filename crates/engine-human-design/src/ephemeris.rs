@@ -4,15 +4,27 @@
 
 use chrono::{DateTime, Datelike, Timelike, Utc};
 use noesis_core::EngineError;
+use std::cell::Cell;
 use std::path::{Path, PathBuf};
-use std::sync::{Mutex, Once, OnceLock};
+use std::sync::{LockResult, Mutex, MutexGuard, OnceLock};
 
-/// Global guard ensuring Swiss Ephemeris path is set exactly once.
-static EPHE_INIT: Once = Once::new();
-
-/// The path handed to `swe_set_ephe_path` by the first caller ("" = built-in
-/// Moshier). Process-global, like the C library state it mirrors.
+/// The ephemeris path chosen for this process ("" = built-in Moshier): the
+/// first [`EphemerisCalculator::new`] or [`lock_ephemeris`] decides it.
 static ACTIVE_EPHE_PATH: OnceLock<String> = OnceLock::new();
+
+/// `SEFLG_MOSEPH`: set in the flags Swiss Ephemeris returns when it computed
+/// with the built-in Moshier ephemeris instead of the requested `.se1` files.
+pub const SEFLG_MOSEPH: i32 = 4;
+
+thread_local! {
+    /// libswisseph keeps its state (`swed`, including the ephemeris path) in
+    /// thread-local storage on Linux (`TLS __thread` in sweodef.h; not on
+    /// macOS), so `swe_set_ephe_path` must run on every thread that calculates.
+    static THREAD_EPHE_PATH_SET: Cell<bool> = const { Cell::new(false) };
+    /// Whether a calculation on this thread returned [`SEFLG_MOSEPH`] since the
+    /// last [`reset_moshier_observed`].
+    static MOSHIER_OBSERVED: Cell<bool> = const { Cell::new(false) };
+}
 
 /// Environment variables naming the Swiss Ephemeris data directory, in
 /// priority order. `SWISS_EPHEMERIS_PATH` is what the production image sets;
@@ -85,11 +97,56 @@ pub fn resolve_ephemeris_path() -> Option<PathBuf> {
     )
 }
 
-/// The ephemeris path the process actually initialised Swiss Ephemeris with:
-/// `None` before the first [`EphemerisCalculator::new`], `Some("")` when no
-/// data files were found (built-in Moshier).
+/// The ephemeris path chosen for this process: `None` before the first
+/// [`EphemerisCalculator::new`] or [`lock_ephemeris`], `Some("")` when no data
+/// files were found (built-in Moshier).
 pub fn active_ephemeris_path() -> Option<&'static str> {
     ACTIVE_EPHE_PATH.get().map(String::as_str)
+}
+
+fn active_or_resolved_path() -> &'static str {
+    ACTIVE_EPHE_PATH.get_or_init(|| {
+        resolve_ephemeris_path()
+            .map(|path| path.to_string_lossy().into_owned())
+            .unwrap_or_default()
+    })
+}
+
+/// Acquire [`EPHE_MUTEX`] for Swiss Ephemeris calls and make sure this thread's
+/// libswisseph state has the process ephemeris path. Every Swiss Ephemeris
+/// calculation in the workspace must run while holding this guard; locking
+/// `EPHE_MUTEX` directly skips the per-thread path and silently gives Moshier
+/// on Linux worker threads.
+pub fn lock_ephemeris() -> LockResult<MutexGuard<'static, ()>> {
+    let guard = EPHE_MUTEX.lock();
+    if guard.is_ok() {
+        THREAD_EPHE_PATH_SET.with(|set| {
+            if !set.get() {
+                swisseph::swe::set_ephe_path(active_or_resolved_path());
+                set.set(true);
+            }
+        });
+    }
+    guard
+}
+
+/// Record the flags a Swiss Ephemeris calculation returned on this thread.
+pub fn note_returned_flags(flags: i32) {
+    if flags & SEFLG_MOSEPH != 0 {
+        MOSHIER_OBSERVED.with(|seen| seen.set(true));
+    }
+}
+
+/// Start observing Moshier substitution on this thread (call before a
+/// synchronous run of calculations).
+pub fn reset_moshier_observed() {
+    MOSHIER_OBSERVED.with(|seen| seen.set(false));
+}
+
+/// Whether any calculation on this thread since [`reset_moshier_observed`]
+/// fell back to the built-in Moshier ephemeris.
+pub fn moshier_observed() -> bool {
+    MOSHIER_OBSERVED.with(Cell::get)
 }
 
 /// Global mutex serializing ALL Swiss Ephemeris C library access.
@@ -140,8 +197,9 @@ impl EphemerisCalculator {
     /// (environment, then working directory, then executable directory) and
     /// stays empty (built-in Moshier) only when no `.se1` files are found.
     ///
-    /// The first call in the process pins the Swiss Ephemeris path for every
-    /// engine; later calls cannot change it.
+    /// The first call in the process chooses the ephemeris path for every
+    /// engine; later calls cannot change it. The path is applied to each
+    /// calculating thread by [`lock_ephemeris`].
     pub fn new(data_path: impl Into<String>) -> Self {
         let mut data_path = data_path.into();
 
@@ -151,14 +209,10 @@ impl EphemerisCalculator {
             }
         }
 
-        // Guard: set_ephe_path must be called exactly once across all threads.
-        let path_for_init = data_path.clone();
-        EPHE_INIT.call_once(|| {
-            let _guard = EPHE_MUTEX.lock().unwrap();
-            swisseph::swe::set_ephe_path(&path_for_init);
-            let _ = ACTIVE_EPHE_PATH.set(path_for_init);
-        });
-        Self { data_path }
+        let active = ACTIVE_EPHE_PATH.get_or_init(|| data_path);
+        Self {
+            data_path: active.clone(),
+        }
     }
 
     /// Convert DateTime to Julian Day using Swiss Ephemeris
@@ -210,15 +264,19 @@ impl EphemerisCalculator {
             });
         }
 
-        // Serialize access to the Swiss Ephemeris C library
-        let _guard = EPHE_MUTEX.lock().unwrap();
+        // Serialize access to the Swiss Ephemeris C library (and set this
+        // thread's ephemeris path on first use).
+        let _guard = lock_ephemeris().unwrap();
         match swisseph::swe::calc_ut(jd, planet_id as u32, flags) {
-            Ok(result) => Ok(PlanetPosition {
-                longitude: result.out[0],
-                latitude: result.out[1],
-                distance: result.out[2],
-                speed: result.out[3],
-            }),
+            Ok(result) => {
+                note_returned_flags(result.code);
+                Ok(PlanetPosition {
+                    longitude: result.out[0],
+                    latitude: result.out[1],
+                    distance: result.out[2],
+                    speed: result.out[3],
+                })
+            }
             Err(e) => Err(EngineError::CalculationError(format!(
                 "Swiss Ephemeris calculation failed for planet {:?}: {:?}",
                 planet, e
@@ -256,7 +314,7 @@ impl EphemerisCalculator {
             .collect()
     }
 
-    /// Get data path
+    /// The process ephemeris path ("" = built-in Moshier).
     pub fn data_path(&self) -> &str {
         &self.data_path
     }
@@ -360,6 +418,49 @@ mod tests {
             .expect("repository data/ephemeris must resolve");
         assert!(resolved.is_absolute());
         assert!(resolved.join("semo_18.se1").exists());
+    }
+
+    #[test]
+    fn calculation_on_a_fresh_thread_uses_the_data_files() {
+        // Initialise on this thread, calculate on a newly spawned one: on Linux
+        // libswisseph's path is thread-local, so a thread that never called
+        // swe_set_ephe_path would silently use Moshier.
+        let calc = EphemerisCalculator::new("");
+        assert!(!calc.data_path().is_empty(), "repository ephemeris must resolve");
+        let dt = DateTime::parse_from_rfc3339("1991-08-13T08:01:00Z")
+            .unwrap()
+            .with_timezone(&Utc);
+        let _ = calc.get_planet_position(HDPlanet::Sun, &dt).unwrap();
+
+        let (moshier, raw_flags) = std::thread::spawn(move || {
+            reset_moshier_observed();
+            calc.get_planet_position(HDPlanet::Moon, &dt).unwrap();
+            let raw = {
+                let _guard = lock_ephemeris().unwrap();
+                let jd = swisseph::swe::julday(1991, 8, 13, 8.0 + 1.0 / 60.0, 1);
+                swisseph::swe::calc_ut(jd, HDPlanet::Moon as u32, 258)
+                    .unwrap()
+                    .code
+            };
+            (moshier_observed(), raw)
+        })
+        .join()
+        .unwrap();
+        assert_eq!(raw_flags & SEFLG_MOSEPH, 0, "flags {raw_flags} include MOSEPH");
+        assert!(!moshier, "fresh thread fell back to Moshier");
+    }
+
+    #[test]
+    fn moshier_observation_tracks_returned_flags_per_thread() {
+        reset_moshier_observed();
+        note_returned_flags(258);
+        assert!(!moshier_observed());
+        note_returned_flags(258 | SEFLG_MOSEPH);
+        assert!(moshier_observed());
+        // Another thread starts clean.
+        assert!(!std::thread::spawn(moshier_observed).join().unwrap());
+        reset_moshier_observed();
+        assert!(!moshier_observed());
     }
 
     #[test]

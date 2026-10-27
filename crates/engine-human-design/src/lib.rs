@@ -16,8 +16,9 @@ pub mod witness;
 
 // Re-export ephemeris calculator for convenience
 pub use ephemeris::{
-    active_ephemeris_path, resolve_ephemeris_path, EphemerisCalculator, HDPlanet, PlanetPosition,
-    EPHEMERIS_PATH_ENV_VARS,
+    active_ephemeris_path, lock_ephemeris, moshier_observed, reset_moshier_observed,
+    resolve_ephemeris_path, EphemerisCalculator, HDPlanet, PlanetPosition,
+    EPHEMERIS_PATH_ENV_VARS, SEFLG_MOSEPH,
 };
 
 // Re-export key functions for convenience

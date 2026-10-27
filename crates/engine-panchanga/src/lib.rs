@@ -338,8 +338,9 @@ pub fn compute_panchanga(date: &str, time: &str, tz_offset_hours: f64) -> Pancha
     compute_panchanga_reporting_fallback(date, time, tz_offset_hours).0
 }
 
-/// Like [`compute_panchanga`], also reporting whether the mean-longitude
-/// approximation replaced Swiss Ephemeris positions (`true` = fallback used).
+/// Like [`compute_panchanga`], also reporting whether a fallback was used: the
+/// mean-longitude approximation replaced Swiss Ephemeris positions, or Swiss
+/// Ephemeris itself substituted Moshier for the `.se1` files.
 pub fn compute_panchanga_reporting_fallback(
     date: &str,
     time: &str,
@@ -349,9 +350,15 @@ pub fn compute_panchanga_reporting_fallback(
 
     // Prefer local Swiss Ephemeris positions for correct transition timing,
     // but retain the original mean-longitude fallback if ephemeris access fails.
+    // Moshier substitution inside Swiss Ephemeris is a fallback too.
+    engine_human_design::ephemeris::reset_moshier_observed();
     let (solar_lng_tropical, lunar_lng_tropical, fallback_used) =
         match precise_tropical_positions(date, time, tz_offset_hours) {
-            Some((sun, moon)) => (sun, moon, false),
+            Some((sun, moon)) => (
+                sun,
+                moon,
+                engine_human_design::ephemeris::moshier_observed(),
+            ),
             None => (calculate_solar_position(jd), calculate_lunar_position(jd), true),
         };
     let solar_lng = to_sidereal_longitude(solar_lng_tropical);

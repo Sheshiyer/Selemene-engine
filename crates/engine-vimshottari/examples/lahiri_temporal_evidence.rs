@@ -1,6 +1,6 @@
 //! Emit a local patched-engine packet; no hosted service or fixed chart runs.
 use chrono::{DateTime, Utc};
-use engine_human_design::ephemeris::{EphemerisCalculator, EPHE_MUTEX};
+use engine_human_design::ephemeris::{lock_ephemeris, EphemerisCalculator};
 use engine_vimshottari::{ConsciousnessEngine, EngineInput, VimshottariEngine};
 use libswisseph_sys::{
     tuple_result::{
@@ -34,8 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
     let calculator = EphemerisCalculator::new("");
     let (version, flags, moon) = {
-        let _guard = EPHE_MUTEX
-            .lock()
+        let _guard = lock_ephemeris()
             .map_err(|_| "Swiss Ephemeris mutex poisoned")?;
         // SAFETY: the shared mutex protects global mode, C state and buffers;
         // tuple_result owns buffers and the date is a fixed valid reference.

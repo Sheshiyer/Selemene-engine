@@ -44,7 +44,7 @@ fn datetime_to_julian_day(dt: &DateTime<Utc>) -> f64 {
     let hour = dt.hour() as f64 + (dt.minute() as f64 / 60.0) + (dt.second() as f64 / 3600.0);
 
     // Serialize access to Swiss Ephemeris C library
-    let _guard = crate::ephemeris::EPHE_MUTEX.lock().unwrap();
+    let _guard = crate::ephemeris::lock_ephemeris().unwrap();
     swe::julday(year, month, day, hour, 1)
 }
 
@@ -73,9 +73,10 @@ fn calculate_sun_longitude(jd: f64) -> Result<f64, DesignTimeError> {
     let flags = Seflg::SWIEPH; // Use Swiss Ephemeris
 
     // Serialize access to Swiss Ephemeris C library
-    let _guard = crate::ephemeris::EPHE_MUTEX.lock().unwrap();
+    let _guard = crate::ephemeris::lock_ephemeris().unwrap();
     match swe::calc_ut(jd, Body::Sun as u32, flags.into()) {
         Ok(result) => {
+            crate::ephemeris::note_returned_flags(result.code);
             // result.out[0] contains the ecliptic longitude
             Ok(result.out[0])
         }
