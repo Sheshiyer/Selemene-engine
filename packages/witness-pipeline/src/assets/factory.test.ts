@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createSourcePack } from './factory.js';
 import type { SelemeneEngineOutput } from '../index.js';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -78,6 +78,41 @@ describe('createSourcePack', () => {
       });
 
       expect(pack.manifest.quality.pattern_learning).toEqual({ extracted: 2, upserted: 1, skipped: 1 });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('includes report_level in manifest', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'source-pack-level-'));
+    try {
+      const pack = await createSourcePack({
+        personId: 'p1',
+        readingMarkdown: '# Test',
+        engineResults: [],
+        outputDir: dir,
+        reportLevel: 'L0',
+      });
+
+      expect(pack.manifest.report_level).toBe('L0');
+      const written = JSON.parse(readFileSync(pack.paths.manifest, 'utf-8'));
+      expect(written.report_level).toBe('L0');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('defaults report_level to L3', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'source-pack-level-'));
+    try {
+      const pack = await createSourcePack({
+        personId: 'p1',
+        readingMarkdown: '# Test',
+        engineResults: [],
+        outputDir: dir,
+      });
+
+      expect(pack.manifest.report_level).toBe('L3');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

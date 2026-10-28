@@ -13,6 +13,7 @@ export interface SourcePackInput {
   outputDir: string;
   deterministicOnly?: boolean;
   patternLearning?: { extracted: number; upserted: number; skipped: number };
+  reportLevel?: string;
 }
 
 export interface SourcePack {
@@ -22,6 +23,7 @@ export interface SourcePack {
     created_at: string;
     reading_length: number;
     engines: string[];
+    report_level?: string;
     quality: { facts_count: number; gate_status: string; pattern_learning?: { extracted: number; upserted: number; skipped: number } };
   };
   reflectionQuestions: string[];
@@ -74,6 +76,7 @@ export async function createSourcePack(input: SourcePackInput): Promise<SourcePa
     created_at: new Date().toISOString(),
     reading_length: input.readingMarkdown.length,
     engines: input.engineResults.map((e) => e.engine_id),
+    report_level: input.reportLevel ?? 'L3',
     quality,
   };
 

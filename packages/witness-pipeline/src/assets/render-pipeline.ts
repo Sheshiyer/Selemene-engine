@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { loadBrandTokens } from './brand-loader.js';
 import { renderReadingToHtml } from './html-renderer.js';
@@ -26,6 +26,7 @@ export async function renderLocalArtifacts(input: RenderPipelineInput): Promise<
   const htmlPath = join(input.outputDir, 'reading.html');
   const pdfPath = join(input.outputDir, 'reading.pdf');
 
+  await mkdir(input.outputDir, { recursive: true });
   await writeFile(htmlPath, html, 'utf-8');
   await renderHtmlToPdf({ htmlPath, pdfPath });
 

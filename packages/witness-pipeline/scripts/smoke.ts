@@ -10,7 +10,13 @@
  * 2. Basic orchestrator instantiation works
  * 3. Mode parser works
  * 4. Audit validates deterministic gates
+ * 5. A synthetic L0 source pack renders to HTML/PDF and passes final verification
  */
+
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   // Selemene fetcher
@@ -48,7 +54,12 @@ import {
   searchBirthplace,
   buildReportIntakeQuestions,
   type ReportGenerationRequest,
+  type PassResult,
 } from '../src/index.js';
+import { renderLocalArtifacts } from '../src/assets/render-pipeline.js';
+import { runFinalVerification } from '../src/orchestrator/final-verification.js';
+
+const FIXTURE_BRAND_CONFIG = fileURLToPath(new URL('../tests/fixtures/brand/brand-config.yaml', import.meta.url));
 
 async function smoke() {
   console.log('🔥 Smoke test for @noesis/witness-pipeline\n');
@@ -175,6 +186,49 @@ async function smoke() {
   }
 
   console.log('   ✓ Intake location normalization contract verified\n');
+
+  // 9. Synthetic L0 render + final verification (no live engines, LLM or real brand docs)
+  console.log('9. Checking L0 render and final verification...');
+  const l0Root = mkdtempSync(join(tmpdir(), 'smoke-l0-'));
+  try {
+    const sourcePackDir = join(l0Root, 'source-pack');
+    const localDir = join(l0Root, 'local');
+    const pack = await createSourcePack({
+      personId: 'smoke-person',
+      readingMarkdown: '# Synthetic L0 reading\n\nSynthetic body text.',
+      engineResults: [],
+      outputDir: sourcePackDir,
+      reportLevel: 'L0',
+    });
+    if (pack.manifest.report_level !== 'L0') {
+      throw new Error(`Expected report_level L0, got ${pack.manifest.report_level}`);
+    }
+
+    const rendered = await renderLocalArtifacts({
+      sourcePackDir,
+      outputDir: localDir,
+      brandConfigPath: FIXTURE_BRAND_CONFIG,
+    });
+    if (readFileSync(rendered.pdfPath).subarray(0, 5).toString('latin1') !== '%PDF-') {
+      throw new Error('Rendered reading.pdf is not a PDF');
+    }
+
+    const passes = [
+      { id: 'synthetic', title: 'Synthetic', output: '', rubric: { placeholder_gate: 'pass', chart_fidelity_gate: 'pass' } },
+    ] as unknown as PassResult[];
+    const verification = runFinalVerification({ passes, pdfPath: rendered.pdfPath });
+    if (!verification.passed) {
+      throw new Error(`Final verification blockers: ${verification.blockers.join(', ')}`);
+    }
+
+    const missingPdf = runFinalVerification({ passes, pdfPath: join(localDir, 'missing.pdf') });
+    if (missingPdf.passed || !missingPdf.blockers.includes('pdf:missing')) {
+      throw new Error('Final verification should block on a missing PDF');
+    }
+  } finally {
+    rmSync(l0Root, { recursive: true, force: true });
+  }
+  console.log('   ✓ L0 source pack rendered to HTML/PDF and passed final verification\n');
 
   console.log('🎉 All smoke tests passed!\n');
 }
