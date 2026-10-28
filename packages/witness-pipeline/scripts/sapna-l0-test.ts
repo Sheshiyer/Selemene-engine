@@ -10,6 +10,7 @@ import {
   type ReportGenerationRequest,
   type SelemeneEngineOutput,
 } from '../src/index.js';
+import { runFinalVerification } from '../src/orchestrator/final-verification.js';
 
 const SOLO_DIR = '/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/723/Solos/sapna-sabharwal';
 const BATCH_INPUT = '/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/witness-agents/.batch-inputs/sapna-sabharwal.json';
@@ -164,6 +165,10 @@ async function main() {
   };
   console.log('\n=== SUMMARY ===');
   console.log(JSON.stringify(summary, null, 2));
+
+  const verification = runFinalVerification({ passes: runResult.passes });
+  console.log('Final verification:', verification.passed ? 'PASS' : 'FAIL', verification.blockers);
+  if (!verification.passed) process.exit(1);
 
   // Also print a one-line for "only the summary"
   console.log('\nNOESIS');

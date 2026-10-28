@@ -10,7 +10,7 @@ const FIXTURE_BRAND_CONFIG = fileURLToPath(
 );
 
 describe('renderLocalArtifacts', () => {
-  it('creates a non-empty, brand-styled reading.html and reading.pdf in output dir', async () => {
+  it('creates a non-empty, brand-styled reading.html and reading.pdf in a new output dir', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'render-test-'));
     writeFileSync(join(dir, 'reading.md'), '# Synthetic Heading\n\nSynthetic body text.');
     writeFileSync(join(dir, 'engines.json'), JSON.stringify([]));
@@ -19,13 +19,14 @@ describe('renderLocalArtifacts', () => {
       JSON.stringify({ person_id: 'synthetic-person' }),
     );
 
+    const outputDir = join(dir, 'local');
     const result = await renderLocalArtifacts({
       sourcePackDir: dir,
-      outputDir: dir,
+      outputDir,
       brandConfigPath: FIXTURE_BRAND_CONFIG,
     });
-    expect(result.htmlPath).toBe(join(dir, 'reading.html'));
-    expect(result.pdfPath).toBe(join(dir, 'reading.pdf'));
+    expect(result.htmlPath).toBe(join(outputDir, 'reading.html'));
+    expect(result.pdfPath).toBe(join(outputDir, 'reading.pdf'));
 
     const html = readFileSync(result.htmlPath, 'utf-8');
     expect(html).toContain('--void-black: #101820;');

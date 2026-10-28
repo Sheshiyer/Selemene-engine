@@ -131,6 +131,32 @@ npm run typecheck
 npm run build
 ```
 
+The smoke test also renders a synthetic L0 source pack to HTML/PDF with the
+test brand fixture and fails if final verification reports any blocker.
+
+## Rendering L0 artifacts to HTML/PDF
+
+After generating a source pack, render the `local/` artifacts:
+
+```bash
+PREMIUM_ASSETS_ROOT=/path/to/723/witness-agents-archive \
+BRAND_CONFIG_PATH=/path/to/brand-docs-final/tryambakam-noesis-aleph/brand-config.yaml \
+  pnpm --filter @noesis/witness-pipeline exec tsx scripts/l0-render.ts <person-id>
+```
+
+This reads `.premium-assets-witness-<person-id>/<person-id>/source-pack/` under
+`PREMIUM_ASSETS_ROOT` and writes:
+- `local/reading.html`
+- `local/reading.pdf`
+
+Brand tokens come from `BRAND_CONFIG_PATH` (or an explicit `brandConfigPath`
+passed to `renderLocalArtifacts`). PDF rendering uses Playwright 1.63.0; install
+its browser once with `npx playwright install chromium`.
+
+To move an older `new-l0-flow/` output into this layout, run
+`runbooks/migrate-harshita-l0.sh <src-new-l0-flow-dir> <dst-person-dir>` from
+the repo root.
+
 ## API Reference
 
 ### Selemene Fetcher
