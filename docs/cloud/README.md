@@ -172,13 +172,9 @@ Compare against these before claiming a regression:
   - Workspace clippy fails in `noesis-core` (`large_enum_variant` on
     `EngineResultData`). Use `--no-deps`.
   - `ts-engines` `bun run lint` reports 2 Biome errors.
-  - `witness-pipeline` has 4 failing tests:
-    - `brand-loader` and `render-pipeline` read a hard-coded
-      `/Volumes/madara/...` brand path;
-    - `pdf-renderer` pins Playwright 1.61.1, while the preinstalled browsers
-      match 1.62;
-    - `migrate-harshita-l0` fails with `spawn bash ENOENT` when bash is not
-      on its PATH.
+  - `witness-pipeline` is fully green since #1512 and #1513: the brand
+    config is a test fixture (`BRAND_CONFIG_PATH` points real runs at the
+    brand docs) and Playwright is pinned to 1.62.1.
 - **sankalpa:** `check:renderer-budget` fails (262,527 B against a 256,000 B
   budget).
 - **urania-137:** the bundle sits within about 135 B of its 575,000 B budget.
@@ -202,7 +198,8 @@ ledger row in #896 before it can close.
 Within a wave, issues on different engines can run in parallel. Issues on the
 same engine run in the order listed.
 
-**Wave A: unblock the witness pipeline.** Run these in sequence.
+**Wave A: unblock the witness pipeline.** Done 2026-10-28: #1510, #1511,
+#1512 (with #1513 closing #890).
 
 | Issue | Ask |
 |---|---|
