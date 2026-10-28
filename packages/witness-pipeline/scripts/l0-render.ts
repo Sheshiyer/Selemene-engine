@@ -10,6 +10,5 @@ export async function renderL0Local(personId: string) {
   return renderLocalArtifacts({
     sourcePackDir,
     outputDir,
-    brandConfigPath: '/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/brand-config.yaml',
   });
 }

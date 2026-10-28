@@ -12,17 +12,20 @@ import {
 } from '../src/index.js';
 import { runFinalVerification } from '../src/orchestrator/final-verification.js';
 import { renderLocalArtifacts } from '../src/assets/render-pipeline.js';
+import { resolveBrandConfigPath } from '../src/assets/brand-loader.js';
 import { createLlmCall } from './lib/multi-llm.js';
 
 const SOLO_DIR = process.argv[2];
 const LIVE_MODE = process.argv.includes('--live');
-const BRAND_CONFIG = '/Volumes/madara/2026/twc-vault/01-Projects/tryambakam-noesis/brand-docs-final/tryambakam-noesis-aleph/brand-config.yaml';
 const MODE_PATH = resolve(process.cwd(), 'modes/integrated-kundali-l0.md');
 
 if (!SOLO_DIR) {
-  console.error('Usage: tsx scripts/solo-l0-runner.ts <solo-dir> [--live]');
+  console.error('Usage: BRAND_CONFIG_PATH=<brand-config.yaml> tsx scripts/solo-l0-runner.ts <solo-dir> [--live]');
   process.exit(1);
 }
+
+// Resolve up front so a missing BRAND_CONFIG_PATH fails before any engine or LLM work.
+const BRAND_CONFIG = resolveBrandConfigPath();
 
 async function main() {
   const soloName = basename(SOLO_DIR);
