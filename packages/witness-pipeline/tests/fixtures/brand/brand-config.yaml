@@ -1,0 +1,17 @@
+# Synthetic brand tokens for tests. Same shape as the real brand-config.yaml;
+# the values are made up and are not the production brand.
+brand:
+  colors:
+    background: "#101820"
+    accent: "#C8A2FF"
+    text: "#F4F1EA"
+  typography:
+    heading: "Fixture Display"
+    body: "Fixture Serif"
+palette:
+  primary:
+    name: "Fixture Violet"
+    hex: "#6A4C93"
+typography:
+  mono:
+    font: "Fixture Mono"

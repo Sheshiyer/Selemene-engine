@@ -96,8 +96,20 @@ function extractFonts(doc: any): Record<string, string> {
   return fonts;
 }
 
-export async function loadBrandTokens(configPath: string): Promise<BrandTokens> {
-  const raw = await readFile(configPath, 'utf-8');
+export const BRAND_CONFIG_PATH_ENV = 'BRAND_CONFIG_PATH';
+
+export function resolveBrandConfigPath(explicitPath?: string): string {
+  const configPath = explicitPath ?? process.env[BRAND_CONFIG_PATH_ENV];
+  if (!configPath) {
+    throw new Error(
+      `No brand config path: pass brandConfigPath or set ${BRAND_CONFIG_PATH_ENV} to the brand-config.yaml location`,
+    );
+  }
+  return configPath;
+}
+
+export async function loadBrandTokens(configPath?: string): Promise<BrandTokens> {
+  const raw = await readFile(resolveBrandConfigPath(configPath), 'utf-8');
   const doc = yaml.load(raw) as any;
   return {
     colors: extractColors(doc),

@@ -7,7 +7,8 @@ import { renderHtmlToPdf } from './pdf-renderer.js';
 export interface RenderPipelineInput {
   sourcePackDir: string;
   outputDir: string;
-  brandConfigPath: string;
+  /** Falls back to the BRAND_CONFIG_PATH env var when omitted. */
+  brandConfigPath?: string;
 }
 
 export interface RenderPipelineOutput {
