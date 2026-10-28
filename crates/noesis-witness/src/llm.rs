@@ -1,15 +1,19 @@
 //! Tier-aware LLM client for the Witness Dyad.
 //!
 //! Provider selection (highest precedence first):
-//!   1. `LLM_PROVIDER=nvidia` → NVIDIA NIM at `https://integrate.api.nvidia.com/v1`
-//!   2. `LLM_PROVIDER=openrouter` → OpenRouter at `https://openrouter.ai/api/v1`
+//!   1. `LLM_PROVIDER=nvidia|openrouter|omniroute` with that provider configured
+//!   2. OmniRoute configured (`OMNIROUTE_API_KEY` + `OMNIROUTE_MODEL`) → OmniRoute,
+//!      the default gateway at `OMNIROUTE_BASE_URL` (default
+//!      `https://omniroute.thoughtseed.space/v1`)
 //!   3. `NVIDIA_API_KEY` set, no `OPENROUTER_API_KEY` → NVIDIA (auto)
-//!   4. `OPENROUTER_API_KEY` set, no `NVIDIA_API_KEY` → OpenRouter (auto)
-//!   5. Both keys set → OpenRouter (compat default)
-//!   6. Neither key → silent fallback to rule-based dyad
+//!   4. `OPENROUTER_API_KEY` set → OpenRouter (also the compat default when both
+//!      NVIDIA and OpenRouter keys are set)
+//!   5. Nothing configured → silent fallback to rule-based dyad
 //!
-//! Model selection is tier-aware (free/standard/enterprise → NVIDIA routing table).
-//! Falls back to OpenRouter when NVIDIA call fails.
+//! Model selection is tier-aware (free/standard/enterprise → NVIDIA routing
+//! table); OmniRoute uses `OMNIROUTE_MODEL` for every role because its model
+//! ids are deployment-specific. A failed OmniRoute call retries via NVIDIA, then
+//! OpenRouter; a failed NVIDIA call retries via OpenRouter.
 
 use serde::{Deserialize, Serialize};
 use std::env;
@@ -17,6 +21,7 @@ use tracing::{debug, warn};
 
 const NVIDIA_BASE_URL: &str = "https://integrate.api.nvidia.com/v1";
 const OPENROUTER_BASE_URL: &str = "https://openrouter.ai/api/v1";
+const OMNIROUTE_DEFAULT_BASE_URL: &str = "https://omniroute.thoughtseed.space/v1";
 
 // Tier → (model_id, max_tokens) for the Witness Dyad.
 // Mirrors nvidia-routing.ts — single source of truth is the TS file;
@@ -42,8 +47,30 @@ fn model_for_tier(tier: &str, role: &str) -> (&'static str, u32) {
     }
 }
 
+/// OmniRoute gateway settings; present only when both key and model are set.
+struct OmniRouteConfig {
+    base_url: String,
+    api_key: String,
+    model: String,
+}
+
+impl OmniRouteConfig {
+    fn from_env() -> Option<Self> {
+        let non_empty = |name: &str| env::var(name).ok().filter(|v| !v.trim().is_empty());
+        Some(Self {
+            base_url: non_empty("OMNIROUTE_BASE_URL")
+                .unwrap_or_else(|| OMNIROUTE_DEFAULT_BASE_URL.to_string())
+                .trim_end_matches('/')
+                .to_string(),
+            api_key: non_empty("OMNIROUTE_API_KEY")?,
+            model: non_empty("OMNIROUTE_MODEL")?,
+        })
+    }
+}
+
 pub struct LlmClient {
     client: reqwest::Client,
+    omniroute: Option<OmniRouteConfig>,
     nvidia_api_key: Option<String>,
     openrouter_api_key: Option<String>,
     /// Active provider for this client instance.
@@ -54,8 +81,44 @@ pub struct LlmClient {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum LlmProvider {
+    OmniRoute,
     Nvidia,
     OpenRouter,
+}
+
+/// Pick the primary provider from what is configured. Pure for testability.
+fn select_provider(
+    provider_env: &str,
+    has_omniroute: bool,
+    has_nvidia: bool,
+    has_openrouter: bool,
+) -> Option<LlmProvider> {
+    match provider_env {
+        "omniroute" if has_omniroute => Some(LlmProvider::OmniRoute),
+        "nvidia" if has_nvidia => Some(LlmProvider::Nvidia),
+        "openrouter" if has_openrouter => Some(LlmProvider::OpenRouter),
+        _ if has_omniroute => Some(LlmProvider::OmniRoute),
+        _ if has_nvidia && !has_openrouter => Some(LlmProvider::Nvidia),
+        // Covers both "OpenRouter only" and "NVIDIA + OpenRouter" — OpenRouter
+        // is the default for the latter (compat with witness-agents).
+        _ if has_openrouter => Some(LlmProvider::OpenRouter),
+        _ => None, // nothing configured → silent fallback
+    }
+}
+
+/// The provider to retry with after `primary` fails, if one is configured.
+fn fallback_provider(
+    primary: &LlmProvider,
+    has_nvidia: bool,
+    has_openrouter: bool,
+) -> Option<LlmProvider> {
+    match primary {
+        LlmProvider::OmniRoute if has_nvidia => Some(LlmProvider::Nvidia),
+        LlmProvider::OmniRoute | LlmProvider::Nvidia if has_openrouter => {
+            Some(LlmProvider::OpenRouter)
+        }
+        _ => None,
+    }
 }
 
 #[derive(Serialize)]
@@ -94,26 +157,21 @@ impl LlmClient {
     /// Build a tier-aware client from environment.
     /// Returns `None` when no API key is available → caller falls back to rule-based dyad.
     pub fn for_tier(tier: &str) -> Option<Self> {
+        let omniroute = OmniRouteConfig::from_env();
         let nvidia_key = env::var("NVIDIA_API_KEY").ok();
         let openrouter_key = env::var("OPENROUTER_API_KEY").ok();
         let provider_env = env::var("LLM_PROVIDER").unwrap_or_default().to_lowercase();
 
-        let provider = if provider_env == "nvidia" && nvidia_key.is_some() {
-            LlmProvider::Nvidia
-        } else if provider_env == "openrouter" && openrouter_key.is_some() {
-            LlmProvider::OpenRouter
-        } else if nvidia_key.is_some() && openrouter_key.is_none() {
-            LlmProvider::Nvidia
-        } else if openrouter_key.is_some() {
-            // Covers both "OpenRouter only" and "both keys set" — OpenRouter
-            // is the default for the latter (compat with witness-agents).
-            LlmProvider::OpenRouter
-        } else {
-            return None; // no key → silent fallback
-        };
+        let provider = select_provider(
+            &provider_env,
+            omniroute.is_some(),
+            nvidia_key.is_some(),
+            openrouter_key.is_some(),
+        )?;
 
         Some(Self {
             client: reqwest::Client::new(),
+            omniroute,
             nvidia_api_key: nvidia_key,
             openrouter_api_key: openrouter_key,
             provider,
@@ -122,7 +180,7 @@ impl LlmClient {
     }
 
     /// Send a chat completion for a specific agent role.
-    /// Tries the primary provider first; falls back to OpenRouter on error.
+    /// Tries the primary provider first, then each configured fallback.
     pub async fn complete_for_role(
         &self,
         role: &str,
@@ -131,23 +189,25 @@ impl LlmClient {
     ) -> Result<String, String> {
         let (model, max_tokens) = model_for_tier(&self.tier, role);
 
-        match self
-            .complete_with_provider(&self.provider, model, system, user, max_tokens)
-            .await
-        {
-            Ok(t) => Ok(t),
-            Err(e) if self.provider == LlmProvider::Nvidia && self.openrouter_api_key.is_some() => {
-                warn!("[witness-llm] NVIDIA failed ({e}), retrying via OpenRouter");
-                self.complete_with_provider(
-                    &LlmProvider::OpenRouter,
-                    model,
-                    system,
-                    user,
-                    max_tokens,
-                )
+        let mut provider = self.provider.clone();
+        loop {
+            match self
+                .complete_with_provider(&provider, model, system, user, max_tokens)
                 .await
+            {
+                Ok(t) => return Ok(t),
+                Err(e) => match fallback_provider(
+                    &provider,
+                    self.nvidia_api_key.is_some(),
+                    self.openrouter_api_key.is_some(),
+                ) {
+                    Some(next) => {
+                        warn!("[witness-llm] {provider:?} failed ({e}), retrying via {next:?}");
+                        provider = next;
+                    }
+                    None => return Err(e),
+                },
             }
-            Err(e) => Err(e),
         }
     }
 
@@ -160,14 +220,27 @@ impl LlmClient {
         user: &str,
         max_tokens: u32,
     ) -> Result<String, String> {
-        let (base_url, api_key) = match provider {
+        let (base_url, api_key, model) = match provider {
+            LlmProvider::OmniRoute => {
+                let cfg = self
+                    .omniroute
+                    .as_ref()
+                    .ok_or_else(|| "OmniRoute is not configured".to_string())?;
+                (
+                    cfg.base_url.as_str(),
+                    cfg.api_key.as_str(),
+                    cfg.model.as_str(),
+                )
+            }
             LlmProvider::Nvidia => (
                 NVIDIA_BASE_URL,
                 self.nvidia_api_key.as_deref().unwrap_or(""),
+                model,
             ),
             LlmProvider::OpenRouter => (
                 OPENROUTER_BASE_URL,
                 self.openrouter_api_key.as_deref().unwrap_or(""),
+                model,
             ),
         };
 
@@ -224,5 +297,79 @@ impl LlmClient {
             })
             .map(|s| s.trim().to_string())
             .ok_or_else(|| "LLM returned empty choices".to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn omniroute_is_the_default_when_configured() {
+        assert_eq!(
+            select_provider("", true, true, true),
+            Some(LlmProvider::OmniRoute)
+        );
+        assert_eq!(
+            select_provider("", true, false, false),
+            Some(LlmProvider::OmniRoute)
+        );
+    }
+
+    #[test]
+    fn explicit_provider_wins_when_configured() {
+        assert_eq!(
+            select_provider("nvidia", true, true, true),
+            Some(LlmProvider::Nvidia)
+        );
+        assert_eq!(
+            select_provider("openrouter", true, true, true),
+            Some(LlmProvider::OpenRouter)
+        );
+        // Asking for an unconfigured provider falls back to auto selection.
+        assert_eq!(
+            select_provider("omniroute", false, true, false),
+            Some(LlmProvider::Nvidia)
+        );
+    }
+
+    #[test]
+    fn legacy_auto_selection_is_unchanged_without_omniroute() {
+        assert_eq!(
+            select_provider("", false, true, false),
+            Some(LlmProvider::Nvidia)
+        );
+        assert_eq!(
+            select_provider("", false, false, true),
+            Some(LlmProvider::OpenRouter)
+        );
+        assert_eq!(
+            select_provider("", false, true, true),
+            Some(LlmProvider::OpenRouter)
+        );
+        assert_eq!(select_provider("", false, false, false), None);
+    }
+
+    #[test]
+    fn fallback_chain_is_omniroute_then_nvidia_then_openrouter() {
+        let omni = LlmProvider::OmniRoute;
+        assert_eq!(
+            fallback_provider(&omni, true, true),
+            Some(LlmProvider::Nvidia)
+        );
+        assert_eq!(
+            fallback_provider(&omni, false, true),
+            Some(LlmProvider::OpenRouter)
+        );
+        assert_eq!(fallback_provider(&omni, false, false), None);
+        let nvidia = LlmProvider::Nvidia;
+        assert_eq!(
+            fallback_provider(&nvidia, true, true),
+            Some(LlmProvider::OpenRouter)
+        );
+        assert_eq!(
+            fallback_provider(&LlmProvider::OpenRouter, true, true),
+            None
+        );
     }
 }

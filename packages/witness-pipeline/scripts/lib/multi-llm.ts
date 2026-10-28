@@ -1,7 +1,9 @@
 // Multi-provider LLM adapter with tier-agnostic automatic fallback.
 //
-// Provider chain: Command Code → NVIDIA NIM → OpenRouter → OpenAI
+// Provider chain: OmniRoute → Command Code → NVIDIA NIM → OpenRouter → OpenAI
 // Each exposes an OpenAI-compatible /v1/chat/completions endpoint.
+// OmniRoute (omniroute.thoughtseed.space) is skipped unless both
+// OMNIROUTE_API_KEY and OMNIROUTE_MODEL are set.
 // Tier (L0-L5) only changes the number of NN calls and rubric depth,
 // not the provider routing — the chain is identical across all tiers.
 //
@@ -22,6 +24,8 @@ interface Provider {
   hostname: string;
   path: string;
   model: string;
+  /** Env var that supplies the model; the provider is skipped when it is unset. */
+  modelVar?: string;
   headers: (apiKey: string) => Record<string, string>;
 }
 
@@ -57,6 +61,14 @@ function loadCodexOAuthToken(): string | undefined {
 
 const PROVIDERS: Provider[] = [
   {
+    name: 'omniroute',
+    hostname: 'omniroute.thoughtseed.space',
+    path: '/v1/chat/completions',
+    model: '',
+    modelVar: 'OMNIROUTE_MODEL',
+    headers: (key) => ({ 'Authorization': `Bearer ${key}` }),
+  },
+  {
     name: 'command-code',
     hostname: 'api.commandcode.ai',
     path: '/provider/v1/chat/completions',
@@ -91,11 +103,16 @@ const PROVIDERS: Provider[] = [
 ];
 
 const PROVIDER_KEY_VARS: Record<string, string> = {
+  omniroute: 'OMNIROUTE_API_KEY',
   'command-code': 'COMMANDCODE_API_KEY',
   nvidia: 'NVIDIA_API_KEY',
   openrouter: 'OPENROUTER_API_KEY',
   openai: 'OPENAI_API_KEY',
 };
+
+function resolveModel(provider: Provider): string | undefined {
+  return provider.modelVar ? loadKey(provider.modelVar) : provider.model;
+}
 
 // ─── Core LLM call ────────────────────────────────────────────────────
 
@@ -184,15 +201,20 @@ export function createLlmCall(opts: LlmOptions = {}): LlmCall {
         errors.push(`${provider.name}: no key (${keyVar})`);
         continue;
       }
+      const model = resolveModel(provider);
+      if (!model) {
+        errors.push(`${provider.name}: no model (${provider.modelVar})`);
+        continue;
+      }
 
       const start = Date.now();
       try {
         const result = await callProvider(
-          provider, apiKey, provider.model, system, user, maxTokens, temperature, timeoutMs,
+          provider, apiKey, model, system, user, maxTokens, temperature, timeoutMs,
         );
         const latency = Date.now() - start;
         if (process.env.DEBUG_LLM) {
-          process.stderr.write(`[llm] ${provider.name}/${provider.model} ${latency}ms ${result.length}chars\n`);
+          process.stderr.write(`[llm] ${provider.name}/${model} ${latency}ms ${result.length}chars\n`);
         }
         return result;
       } catch (e: any) {
@@ -216,17 +238,19 @@ export async function probeProviders(): Promise<string[]> {
     const keyVar = PROVIDER_KEY_VARS[provider.name];
     const apiKey = loadKey(keyVar);
     if (!apiKey) { results.push(`${provider.name}: no key`); continue; }
+    const model = resolveModel(provider);
+    if (!model) { results.push(`${provider.name}: no model (${provider.modelVar})`); continue; }
     try {
       const start = Date.now();
       const out = await callProvider(
-        provider, apiKey, provider.model,
+        provider, apiKey, model,
         'Reply with exactly one word.',
         'What is the capital of France?',
         16, 0.0, 15000,
       );
-      results.push(`${provider.name}/${provider.model}: OK (${Date.now()-start}ms) → "${out}"`);
+      results.push(`${provider.name}/${model}: OK (${Date.now()-start}ms) → "${out}"`);
     } catch (e: any) {
-      results.push(`${provider.name}/${provider.model}: ${e.message}`);
+      results.push(`${provider.name}/${model}: ${e.message}`);
     }
   }
   return results;

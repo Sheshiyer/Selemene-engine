@@ -1,6 +1,11 @@
 // Selemene LLM Proxy Worker
 // Stores provider API keys in KV, routes to the active provider.
-// Provider chain (in order): Command Code → Nebius → NVIDIA NIM → Kimi (Moonshot)
+// Provider chain (in order): OmniRoute → Command Code → Nebius → NVIDIA NIM → Kimi (Moonshot)
+//
+// OmniRoute (https://omniroute.thoughtseed.space) is the default gateway. It
+// is inert until both `OMNIROUTE_API_KEY` and `OMNIROUTE_MODEL` are stored in
+// KV; the model has no built-in default because OmniRoute model and combo ids
+// are deployment-specific.
 //
 // Endpoint: POST /v1/chat/completions  (OpenAI-compatible)
 //
@@ -53,9 +58,19 @@ interface Provider {
   path: string;
   defaultModel: string;
   keyKvKey: string;
+  /** Optional KV key that overrides `defaultModel` at runtime. */
+  modelKvKey?: string;
 }
 
 const PROVIDERS: Provider[] = [
+  {
+    name: 'omniroute',
+    hostname: 'omniroute.thoughtseed.space',
+    path: '/v1/chat/completions',
+    defaultModel: '',
+    keyKvKey: 'OMNIROUTE_API_KEY',
+    modelKvKey: 'OMNIROUTE_MODEL',
+  },
   {
     name: 'command-code',
     hostname: 'api.commandcode.ai',
@@ -91,10 +106,11 @@ const PROVIDERS: Provider[] = [
 async function callProvider(
   provider: Provider,
   apiKey: string,
+  defaultModel: string,
   body: ChatRequest,
   signal: AbortSignal,
 ): Promise<Response> {
-  const model = body.model || provider.defaultModel;
+  const model = body.model || defaultModel;
   const headers: Record<string, string> = {
     'Authorization': `Bearer ${apiKey}`,
     'Content-Type': 'application/json',
@@ -152,12 +168,19 @@ export default {
         continue;
       }
 
+      const defaultModel =
+        (provider.modelKvKey && (await env.LLM_SECRETS.get(provider.modelKvKey))) || provider.defaultModel;
+      if (!body.model && !defaultModel) {
+        errors.push(`${provider.name}: no model in KV (${provider.modelKvKey})`);
+        continue;
+      }
+
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 120000);
 
       try {
         const start = Date.now();
-        const res = await callProvider(provider, apiKey, body, controller.signal);
+        const res = await callProvider(provider, apiKey, defaultModel, body, controller.signal);
 
         if (res.ok) {
           const data = await res.json() as any;
