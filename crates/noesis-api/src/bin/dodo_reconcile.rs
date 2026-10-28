@@ -34,6 +34,23 @@ use std::time::Duration;
 async fn main() -> ExitCode {
     let _ = tracing_subscriber::fmt::try_init();
 
+    // Reconciliation only means something while Dodo billing is live. A cron
+    // left scheduled after billing is deferred must not touch subscriptions.
+    match noesis_api::BillingMode::from_env() {
+        Ok(noesis_api::BillingMode::Dodo) => {}
+        Ok(mode) => {
+            println!(
+                "{}",
+                serde_json::json!({ "skipped": true, "billing_mode": mode.as_str() })
+            );
+            return ExitCode::SUCCESS;
+        }
+        Err(e) => {
+            eprintln!("error: {e}");
+            return ExitCode::from(2);
+        }
+    }
+
     let api_key = match std::env::var("DODO_PAYMENTS_API_KEY") {
         Ok(k) if !k.is_empty() => k,
         _ => {

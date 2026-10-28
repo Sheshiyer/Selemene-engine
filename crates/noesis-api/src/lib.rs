@@ -2953,6 +2953,13 @@ async fn vedic_chart_handler(
 /// an active Dodo customer.
 const FREE_TIER_MONTHLY_LIMIT: i64 = 50;
 
+/// The cap exists to push free users toward a paid plan, so it only applies
+/// while Dodo billing is live. In `free` and `disabled` modes there is no paid
+/// tier to upgrade to; per-minute/per-day rate limits still apply.
+fn free_tier_quota_applies(mode: BillingMode, tier: &str) -> bool {
+    mode == BillingMode::Dodo && tier == "free"
+}
+
 /// Returns Err(402) when the user has consumed their free-tier quota for the
 /// current calendar month. Fails OPEN on db errors / missing repo to avoid
 /// blocking paying flows on infrastructure hiccups.
@@ -2960,7 +2967,12 @@ async fn enforce_free_tier_quota(
     state: &AppState,
     user: &AuthUser,
 ) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
-    if user.tier != "free" {
+    // The release mode is the ceiling, so skip the override lookup unless the
+    // release opted into Dodo.
+    if !free_tier_quota_applies(billing::release_billing_mode(), &user.tier) {
+        return Ok(());
+    }
+    if !free_tier_quota_applies(billing::effective_billing_mode(state).await, &user.tier) {
         return Ok(());
     }
     let Some(repo) = state.billing_repository.as_ref() else {
@@ -4710,6 +4722,26 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         cf_access_validator,
         cf_dev_bypass_token: config.cf_dev_bypass_token.clone(),
         ephemeris_checksums,
+    }
+}
+
+#[cfg(test)]
+mod free_tier_quota_tests {
+    use super::*;
+
+    #[test]
+    fn quota_applies_only_to_free_users_under_dodo() {
+        assert!(free_tier_quota_applies(BillingMode::Dodo, "free"));
+        assert!(!free_tier_quota_applies(BillingMode::Dodo, "premium"));
+    }
+
+    #[test]
+    fn quota_never_applies_without_a_paid_tier() {
+        for mode in [BillingMode::Free, BillingMode::Disabled] {
+            for tier in ["free", "basic", "premium", "enterprise"] {
+                assert!(!free_tier_quota_applies(mode, tier), "{mode:?}/{tier}");
+            }
+        }
     }
 }
 
