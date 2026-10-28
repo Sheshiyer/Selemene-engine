@@ -198,3 +198,77 @@ test('kimi fallback (tertiary): Moonshot endpoint + kimi-k2.6 default model', as
     globalThis.fetch = originalFetch;
   }
 });
+
+test('omniroute is the default gateway once its key and model are in KV', async () => {
+  const kv: Record<string, string> = {
+    OMNIROUTE_API_KEY: 'or-key',
+    OMNIROUTE_MODEL: 'thoughtseed/narrator',
+    COMMANDCODE_API_KEY: 'provider-key',
+  };
+  const env = { LLM_SECRETS: { get: async (key: string) => kv[key] ?? null } } as TestEnv as never;
+
+  const originalFetch = globalThis.fetch;
+  let calledUrl = '';
+  let providerAuth = '';
+  let sentBody: { model?: string } = {};
+  globalThis.fetch = (async (url: unknown, init?: { body?: string; headers?: Record<string, string> }) => {
+    calledUrl = String(url);
+    providerAuth = init?.headers?.['Authorization'] ?? '';
+    sentBody = JSON.parse(init?.body ?? '{}');
+    return Response.json({ choices: [{ message: { content: 'ok' } }] });
+  }) as typeof fetch;
+  try {
+    const res = await worker.fetch(chatReq(), env);
+    assert.equal(res.status, 200);
+    const body = (await res.json()) as { provider?: string };
+    assert.equal(body.provider, 'omniroute');
+    assert.equal(calledUrl, 'https://omniroute.thoughtseed.space/v1/chat/completions');
+    assert.equal(providerAuth, 'Bearer or-key');
+    assert.equal(sentBody.model, 'thoughtseed/narrator');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('omniroute without a model in KV is skipped, never sent a guessed model', async () => {
+  const kv: Record<string, string> = { OMNIROUTE_API_KEY: 'or-key', COMMANDCODE_API_KEY: 'provider-key' };
+  const env = { LLM_SECRETS: { get: async (key: string) => kv[key] ?? null } } as TestEnv as never;
+
+  const originalFetch = globalThis.fetch;
+  const calledUrls: string[] = [];
+  globalThis.fetch = (async (url: unknown) => {
+    calledUrls.push(String(url));
+    return Response.json({ choices: [{ message: { content: 'ok' } }] });
+  }) as typeof fetch;
+  try {
+    const res = await worker.fetch(chatReq(), env);
+    const body = (await res.json()) as { provider?: string };
+    assert.equal(body.provider, 'command-code');
+    assert.deepEqual(calledUrls, ['https://api.commandcode.ai/provider/v1/chat/completions']);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('omniroute failure falls through to the next provider', async () => {
+  const kv: Record<string, string> = {
+    OMNIROUTE_API_KEY: 'or-key',
+    OMNIROUTE_MODEL: 'thoughtseed/narrator',
+    COMMANDCODE_API_KEY: 'provider-key',
+  };
+  const env = { LLM_SECRETS: { get: async (key: string) => kv[key] ?? null } } as TestEnv as never;
+
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (url: unknown) =>
+    String(url).includes('omniroute')
+      ? new Response('upstream down', { status: 503 })
+      : Response.json({ choices: [{ message: { content: 'ok' } }] })) as typeof fetch;
+  try {
+    const res = await worker.fetch(chatReq(), env);
+    assert.equal(res.status, 200);
+    const body = (await res.json()) as { provider?: string };
+    assert.equal(body.provider, 'command-code');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
