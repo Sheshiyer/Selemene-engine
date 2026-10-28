@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import {
   IChingEngine,
+  castDerivation,
   castThreeCoinLines,
   resolveCast,
   threeCoinLineValue,
@@ -273,6 +274,134 @@ describe('I Ching King Wen computation', () => {
         if (hexagram.judgment) expect(prompt.prompt).not.toContain(hexagram.judgment)
         if (hexagram.image) expect(prompt.prompt).not.toContain(hexagram.image)
       }
+    }
+  })
+})
+
+// #1341: provenance, confidence and degradation. The contract block must stay
+// within the seven contracts/v1 fields (the Rust parser denies unknown keys).
+const SEVEN_FIELDS = [
+  'runtime_kind',
+  'implementation_version',
+  'cached',
+  'fallback_used',
+  'backend_id',
+  'provider_id',
+  'confidence',
+]
+
+interface Derivation {
+  line_values: { origin: string; method: string; seed_source?: string }
+  primary_hexagram: { origin: string; derived_from: string[] }
+  changing_lines: { origin: string; derived_from: string[]; positions: number[] }
+  relating_hexagram: {
+    origin: string
+    derived_from?: string[]
+    flipped_positions?: number[]
+    reason?: string
+  }
+  changing_line_texts: { origin: string; reason: string }
+}
+
+describe('I Ching provenance and degradation (#1341)', () => {
+  function provenanceOf(output: Awaited<ReturnType<IChingEngine['calculate']>>) {
+    expect(output.provenance).toBeDefined()
+    const p = output.provenance as unknown as Record<string, unknown>
+    for (const key of Object.keys(p)) expect(SEVEN_FIELDS).toContain(key)
+    return p
+  }
+
+  it('happy path: a seeded cast labels lines as cast and everything else as derived', async () => {
+    const output = await engine.calculate(input({ seed: 42 }))
+    expect(provenanceOf(output)).toEqual({
+      runtime_kind: 'typescript',
+      implementation_version: '1.1.0',
+      cached: false,
+      fallback_used: false,
+      confidence: 1,
+    })
+    const reading = output.result as unknown as ReadingResult & { derivation: Derivation }
+    const d = reading.derivation
+    expect(d.line_values).toEqual({
+      origin: 'cast',
+      method: 'seeded_three_coin_simulation',
+      seed_source: 'request',
+    })
+    expect(d.primary_hexagram).toEqual({ origin: 'derived', derived_from: ['line_values'] })
+    expect(d.changing_lines.origin).toBe('derived')
+    expect(d.changing_lines.derived_from).toEqual(['line_values'])
+    expect(d.changing_lines.positions).toEqual(reading.changing_lines ?? [])
+    if (reading.relating_hexagram) {
+      expect(d.relating_hexagram).toEqual({
+        origin: 'derived',
+        derived_from: ['primary_hexagram', 'changing_lines'],
+        flipped_positions: reading.changing_lines as number[],
+      })
+    } else {
+      expect(d.relating_hexagram.origin).toBe('not_applicable')
+    }
+  })
+
+  it('happy path: an omitted seed is reported as generated, and the seed is echoed', async () => {
+    const output = await engine.calculate({ consciousness_level: 0, parameters: {} })
+    const reading = output.result as unknown as ReadingResult & { derivation: Derivation }
+    expect(reading.derivation.line_values.seed_source).toBe('generated')
+    expect(Number.isSafeInteger(reading.seed)).toBe(true)
+    provenanceOf(output)
+  })
+
+  it('boundary: zero changing lines marks the relating hexagram not applicable', () => {
+    const d = castDerivation('three_coins', 'request', resolveCast([7, 8, 7, 8, 7, 8]))
+    expect(d.changing_lines.positions).toEqual([])
+    expect(d.relating_hexagram.origin).toBe('not_applicable')
+    expect(d.relating_hexagram.reason).toContain('No changing lines')
+  })
+
+  it('boundary: all six changing lines flip every position', () => {
+    const d = castDerivation('three_coins', 'request', resolveCast([9, 6, 9, 6, 9, 6]))
+    expect(d.changing_lines.positions).toEqual([1, 2, 3, 4, 5, 6])
+    expect(d.relating_hexagram).toEqual({
+      origin: 'derived',
+      derived_from: ['primary_hexagram', 'changing_lines'],
+      flipped_positions: [1, 2, 3, 4, 5, 6],
+    })
+  })
+
+  it('boundary: manual selection is labelled user-selected, not cast, and has no relating hexagram', async () => {
+    const output = await engine.calculate(input({ parameters: { hexagram: 64 } }))
+    const reading = output.result as unknown as ReadingResult & { derivation: Derivation }
+    expect(reading.derivation.line_values).toEqual({
+      origin: 'user_selected',
+      method: 'manual_king_wen_selection',
+    })
+    expect(reading.derivation.relating_hexagram.origin).toBe('not_applicable')
+    expect(provenanceOf(output).fallback_used).toBe(false)
+  })
+
+  it('unavailable dependency: changing-line texts are marked unavailable, never substituted', async () => {
+    const output = await engine.calculate(input({ seed: 42 }))
+    const reading = output.result as unknown as ReadingResult & { derivation: Derivation }
+    expect(reading.derivation.changing_line_texts.origin).toBe('unavailable')
+    expect(reading.derivation.changing_line_texts.reason).toContain('not bundled')
+    expect(provenanceOf(output).fallback_used).toBe(false)
+    expect(JSON.stringify(reading)).not.toContain('line_texts":[')
+  })
+
+  it('unavailable dependency: yarrow stalks fail with UNSUPPORTED_METHOD instead of falling back to coins', async () => {
+    const error = await engine
+      .calculate(input({ parameters: { method: 'yarrow_stalks' } }))
+      .catch((caught: unknown) => caught)
+    expect((error as { code?: string }).code).toBe('UNSUPPORTED_METHOD')
+  })
+
+  it('invalid input: malformed requests fail before any provenance is emitted', async () => {
+    for (const bad of [
+      input({ seed: -1 }),
+      input({ parameters: { hexagram: 65 } }),
+      input({ parameters: { method: 'unknown' } }),
+    ]) {
+      const error = await engine.calculate(bad).catch((caught: unknown) => caught)
+      expect((error as { code?: string }).code).toMatch(/^INVALID_/)
     }
   })
 })

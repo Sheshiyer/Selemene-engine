@@ -203,12 +203,12 @@ Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 
 ## 13. I Ching Engine
 
-**64 hexagrams** — Oracle casting via yarrow stalk, coin, or digital methods. Interprets changing lines and transformations.
+**64 hexagrams** — Seeded three-coin simulation or manual King Wen selection (yarrow stalks are not implemented and return `UNSUPPORTED_METHOD`). Derives changing lines and the relating hexagram from the line values.
 
-**Input:** `question, casting_method`  
+**Input:** `question, seed, parameters.method (three_coins), parameters.hexagram (1-64, manual)`  
 **Endpoint:** `POST /api/v1/engines/i-ching/calculate`
 
-Traditional Book of Changes divination system.
+**Provenance:** a contracts/v1 block (`runtime_kind: typescript`, `cached: false`, `fallback_used: false`, `confidence: 1`). `result.derivation` labels line values as `cast` (with `seed_source`) or `user_selected`, and the primary hexagram, changing lines and relating hexagram as `derived` (or `not_applicable` when nothing changes). Changing-line texts are `unavailable`, not generated.
 
 <br>
 
