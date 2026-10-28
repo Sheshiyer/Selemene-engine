@@ -171,6 +171,29 @@ fn precise_tropical_positions(date: &str, time: &str, tz_offset_hours: f64) -> O
 // PanchangaResult — local structured output
 // ---------------------------------------------------------------------------
 
+/// Which path produced the solar and lunar longitudes that tithi, nakshatra,
+/// yoga and karana are derived from. Vara is calendar arithmetic on the Julian
+/// Day and does not depend on it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PositionSource {
+    /// Swiss Ephemeris computed from the `.se1` data files.
+    SwissEphemerisFiles,
+    /// Swiss Ephemeris substituted its built-in Moshier ephemeris because no
+    /// `.se1` files were reachable. A fallback (`fallback_used: true`).
+    SwissEphemerisMoshier,
+    /// Swiss Ephemeris was unavailable for this input and the mean-longitude
+    /// approximation was used. A fallback (`fallback_used: true`).
+    MeanLongitude,
+}
+
+impl PositionSource {
+    /// Whether this source is a degraded path (`metadata.fallback_used`).
+    pub fn is_fallback(self) -> bool {
+        self != PositionSource::SwissEphemerisFiles
+    }
+}
+
 /// Structured Panchanga calculation result.
 ///
 /// Holds both the raw numeric indices and the resolved Sanskrit names
@@ -216,6 +239,15 @@ pub struct PanchangaResult {
     pub lunar_longitude: f64,
     /// Julian Day Number used for the calculation
     pub julian_day: f64,
+
+    /// Path that produced the longitudes. `None` only when deserializing a
+    /// result serialized before this field existed.
+    #[serde(default)]
+    pub position_source: Option<PositionSource>,
+    /// The birth time was missing and local noon was assumed. Input
+    /// defaulting, not a calculation fallback: `fallback_used` ignores it.
+    #[serde(default)]
+    pub birth_time_assumed: bool,
 }
 
 // ---------------------------------------------------------------------------
@@ -340,7 +372,8 @@ pub fn compute_panchanga(date: &str, time: &str, tz_offset_hours: f64) -> Pancha
 
 /// Like [`compute_panchanga`], also reporting whether a fallback was used: the
 /// mean-longitude approximation replaced Swiss Ephemeris positions, or Swiss
-/// Ephemeris itself substituted Moshier for the `.se1` files.
+/// Ephemeris itself substituted Moshier for the `.se1` files. Which one is
+/// recorded in [`PanchangaResult::position_source`].
 pub fn compute_panchanga_reporting_fallback(
     date: &str,
     time: &str,
@@ -352,14 +385,17 @@ pub fn compute_panchanga_reporting_fallback(
     // but retain the original mean-longitude fallback if ephemeris access fails.
     // Moshier substitution inside Swiss Ephemeris is a fallback too.
     engine_human_design::ephemeris::reset_moshier_observed();
-    let (solar_lng_tropical, lunar_lng_tropical, fallback_used) =
+    let (solar_lng_tropical, lunar_lng_tropical, position_source) =
         match precise_tropical_positions(date, time, tz_offset_hours) {
-            Some((sun, moon)) => (
-                sun,
-                moon,
-                engine_human_design::ephemeris::moshier_observed(),
+            Some((sun, moon)) if engine_human_design::ephemeris::moshier_observed() => {
+                (sun, moon, PositionSource::SwissEphemerisMoshier)
+            }
+            Some((sun, moon)) => (sun, moon, PositionSource::SwissEphemerisFiles),
+            None => (
+                calculate_solar_position(jd),
+                calculate_lunar_position(jd),
+                PositionSource::MeanLongitude,
             ),
-            None => (calculate_solar_position(jd), calculate_lunar_position(jd), true),
         };
     let solar_lng = to_sidereal_longitude(solar_lng_tropical);
     let lunar_lng = to_sidereal_longitude(lunar_lng_tropical);
@@ -400,8 +436,10 @@ pub fn compute_panchanga_reporting_fallback(
         solar_longitude: solar_lng,
         lunar_longitude: lunar_lng,
         julian_day: jd,
+        position_source: Some(position_source),
+        birth_time_assumed: false,
     };
-    (result, fallback_used)
+    (result, position_source.is_fallback())
 }
 
 // ---------------------------------------------------------------------------
@@ -498,7 +536,7 @@ impl ConsciousnessEngine for PanchangaEngine {
         // default uses birth_data.date for the natal birth panchanga.
         let use_daily = input.options.get("mode").and_then(|v| v.as_str()) == Some("daily");
 
-        let (date_str, time_str, tz_offset) = if use_daily {
+        let (date_str, time_str, tz_offset, birth_time_assumed) = if use_daily {
             // Daily mode: use today's date from current_time, birth timezone for offset
             let today = input.current_time.format("%Y-%m-%d").to_string();
             let now_time = input.current_time.format("%H:%M").to_string();
@@ -507,7 +545,7 @@ impl ConsciousnessEngine for PanchangaEngine {
                 .as_ref()
                 .map(|b| tz_offset_from_string(&b.timezone))
                 .unwrap_or(0.0);
-            (today, now_time, tz)
+            (today, now_time, tz, false)
         } else {
             let birth = input.birth_data.as_ref().ok_or_else(|| {
                 EngineError::CalculationError(
@@ -518,11 +556,21 @@ impl ConsciousnessEngine for PanchangaEngine {
                 birth.date.clone(),
                 birth.time.as_deref().unwrap_or("12:00").to_string(),
                 tz_offset_from_string(&birth.timezone),
+                birth.time.is_none(),
             )
         };
 
-        let (result, fallback_used) =
+        // Reject what Swiss Ephemeris cannot parse instead of serving a
+        // mean-longitude result computed from a defaulted Julian Day.
+        if parse_local_datetime_to_utc(&date_str, &time_str, tz_offset).is_none() {
+            return Err(EngineError::ValidationError(
+                "birth_data.date must be YYYY-MM-DD and birth_data.time HH:MM or HH:MM:SS".into(),
+            ));
+        }
+
+        let (mut result, fallback_used) =
             compute_panchanga_reporting_fallback(&date_str, &time_str, tz_offset);
+        result.birth_time_assumed = birth_time_assumed;
         let witness_prompt = generate_witness_prompt(&result);
 
         let result_json = serde_json::to_value(&result).map_err(|e| {
@@ -543,7 +591,7 @@ impl ConsciousnessEngine for PanchangaEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
-                // Mean-longitude approximation instead of Swiss Ephemeris.
+                // Moshier or mean-longitude; `result.position_source` says which.
                 fallback_used,
                 provider_id: None,
             },
@@ -785,14 +833,134 @@ mod tests {
         assert!(!p.tithi_name.is_empty());
     }
 
+    // -----------------------------------------------------------------------
+    // #1191 provenance probes: which path produced tithi, nakshatra, yoga and
+    // karana, and which inputs were assumed rather than supplied.
+    // -----------------------------------------------------------------------
+
+    fn result_of(output: &EngineOutput) -> PanchangaResult {
+        serde_json::from_value(output.result.clone()).expect("bad PanchangaResult JSON")
+    }
+
+    /// Happy path: `.se1` files are reachable (SWISS_EPHEMERIS_PATH or
+    /// data/ephemeris), so positions come from Swiss Ephemeris files.
     #[tokio::test]
-    async fn test_calculate_declares_mean_longitude_fallback() {
-        let engine = PanchangaEngine::new();
+    async fn probe_happy_path_reports_swiss_ephemeris_files() {
+        let output = PanchangaEngine::new()
+            .calculate(test_input())
+            .await
+            .expect("calculate failed");
+        let pr = result_of(&output);
+        assert_eq!(
+            pr.position_source,
+            Some(PositionSource::SwissEphemerisFiles)
+        );
+        assert!(!pr.birth_time_assumed);
+        assert!(!output.metadata.fallback_used);
+        assert_eq!(output.result["position_source"], "swiss_ephemeris_files");
+        assert_eq!(output.result["birth_time_assumed"], false);
+    }
+
+    /// Fallback path: the mean-longitude approximation is labelled as such in
+    /// the result, not only through the shared `fallback_used` flag.
+    #[test]
+    fn probe_mean_longitude_fallback_is_distinguishable() {
+        // "24:00" is rejected by the chrono parse that feeds Swiss Ephemeris.
+        // `calculate` rejects it as invalid input; the library function keeps
+        // the mean-longitude path so it stays observable.
+        let (p, fallback_used) = compute_panchanga_reporting_fallback("1991-08-13", "24:00", 5.5);
+        assert!(fallback_used);
+        assert_eq!(p.position_source, Some(PositionSource::MeanLongitude));
+        let json = serde_json::to_value(&p).unwrap();
+        assert_eq!(json["position_source"], "mean_longitude");
+    }
+
+    /// Boundary: a missing birth time is computed at local noon and the
+    /// result says so instead of passing the noon chart off as the birth time.
+    #[tokio::test]
+    async fn probe_boundary_missing_birth_time_reported_as_assumed_noon() {
         let mut input = test_input();
-        input.birth_data.as_mut().unwrap().time = Some("24:00".to_string());
-        let output = engine.calculate(input).await.expect("calculate failed");
-        assert!(output.metadata.fallback_used);
-        assert_eq!(output.metadata.backend, "native-rust");
+        input.birth_data.as_mut().unwrap().time = None;
+        let output = PanchangaEngine::new()
+            .calculate(input)
+            .await
+            .expect("calculate failed");
+        let pr = result_of(&output);
+        assert!(pr.birth_time_assumed);
+        assert_eq!(output.result["birth_time_assumed"], true);
+        // Same positions as an explicit noon, so only the flag differs.
+        let noon = compute_panchanga("1991-08-13", "12:00", 5.5);
+        assert_eq!(pr.tithi_name, noon.tithi_name);
+        assert_eq!(pr.julian_day, noon.julian_day);
+        // Input defaulting is not a calculation fallback.
+        assert_eq!(
+            pr.position_source,
+            Some(PositionSource::SwissEphemerisFiles)
+        );
+        assert!(!output.metadata.fallback_used);
+    }
+
+    /// Boundary: tithi wraps at new moon (Amavasya -> Pratipada) rather than
+    /// going negative or reaching 30.
+    #[test]
+    fn probe_boundary_tithi_wraps_at_new_moon() {
+        let before = calculate_tithi(0.1, 359.9);
+        let after = calculate_tithi(359.9, 0.1);
+        assert_eq!(TITHI_NAMES[(before.floor() as usize).min(29)], "Amavasya");
+        assert_eq!(
+            TITHI_NAMES[(after.floor() as usize).min(29)],
+            "Pratipada (Shukla)"
+        );
+        assert!((0.0..30.0).contains(&before) && (0.0..30.0).contains(&after));
+    }
+
+    /// Daily mode reads the time from `current_time`, so nothing is assumed.
+    #[tokio::test]
+    async fn probe_daily_mode_never_assumes_birth_time() {
+        let mut input = test_input();
+        input.birth_data.as_mut().unwrap().time = None;
+        input
+            .options
+            .insert("mode".to_string(), serde_json::json!("daily"));
+        let output = PanchangaEngine::new().calculate(input).await.unwrap();
+        assert!(!result_of(&output).birth_time_assumed);
+    }
+
+    /// Invalid input: an unparseable date or time is a validation error, not a
+    /// degraded mean-longitude result computed from a defaulted Julian Day.
+    #[tokio::test]
+    async fn probe_invalid_input_rejected_with_validation_error() {
+        let engine = PanchangaEngine::new();
+        for (date, time) in [
+            ("1991-13-45", Some("13:31")),
+            ("not-a-date", Some("13:31")),
+            ("1991-08-13", Some("24:00")),
+            ("1991-08-13", Some("noon")),
+            ("", None),
+        ] {
+            let mut input = test_input();
+            let birth = input.birth_data.as_mut().unwrap();
+            birth.date = date.to_string();
+            birth.time = time.map(str::to_string);
+            match engine.calculate(input).await {
+                Err(EngineError::ValidationError(_)) => {}
+                other => panic!("{date:?} {time:?}: expected ValidationError, got {other:?}"),
+            }
+        }
+    }
+
+    /// Results serialized before #1191 (no provenance fields) still validate.
+    #[tokio::test]
+    async fn probe_pre_provenance_result_still_deserializes() {
+        let engine = PanchangaEngine::new();
+        let mut output = engine.calculate(test_input()).await.unwrap();
+        let obj = output.result.as_object_mut().unwrap();
+        obj.remove("position_source");
+        obj.remove("birth_time_assumed");
+        let pr = result_of(&output);
+        assert_eq!(pr.position_source, None);
+        assert!(!pr.birth_time_assumed);
+        assert!(engine.validate(&output).await.unwrap().valid);
     }
 
     #[test]
