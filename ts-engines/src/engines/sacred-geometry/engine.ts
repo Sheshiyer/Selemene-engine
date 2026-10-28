@@ -72,6 +72,10 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
       })
     }
 
+    const formSelection = form
+      ? ({ kind: 'requested' } as const)
+      : ({ kind: 'seeded_random', seed } as const)
+
     if (!form) {
       // Random selection if no form specified
       const rng = new SeededRandom(seed)
@@ -102,6 +106,26 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
       intention: intention ?? null,
       svg_preview: svgPreview,
       seed,
+      // Per-part origin of this result (GH #1401). Form text is a static table
+      // lookup; this engine computes no geometry and renders no artifact, so
+      // those two parts are marked not_implemented rather than left implied.
+      provenance_detail: {
+        form: { kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' },
+        form_selection: formSelection,
+        meditation: { kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' },
+        calculated_geometry: {
+          status: 'not_implemented',
+          reason:
+            'No ratios, coordinates or constructions are computed; numerology and elements are table values.',
+        },
+        rendered_artifact: {
+          status: 'not_implemented',
+          reason:
+            'The engine renders no SVG or image; svg_preview only validates a caller-supplied svg_template.',
+        },
+        svg_preview: { kind: 'caller_template_validation', status: svgPreview.status },
+        witness_prompts: { kind: 'templated_narrative' },
+      },
     }
 
     return {
@@ -110,6 +134,16 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
       witness_prompts: witnessPrompts,
       calculated_at: new Date().toISOString(),
       processing_time_ms: Math.round(endTime - startTime),
+      // Everything above comes from the in-process SACRED_FORMS table and
+      // witness templates: there is no external dependency, fallback or mock
+      // path, so fallback_used is always false and confidence is 1.
+      provenance: {
+        runtime_kind: 'typescript',
+        implementation_version: this.metadata().version,
+        cached: false,
+        fallback_used: false,
+        confidence: 1,
+      },
     }
   }
 }
