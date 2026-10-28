@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500&display=swap');
+.iso{
+  --anatomy-page:#070B1D;--anatomy-card:#070B1D;--anatomy-text:#F0EDE3;--anatomy-strong:#F0EDE3;--anatomy-muted:#AEBBC4;
+  --anatomy-paper:#211B11;--anatomy-face:#2C2417;--anatomy-top:#6E5B36;
+  --anatomy-shade-0:#15110B;--anatomy-shade-1:#2C2417;--anatomy-shade-2:#5A4A2E;--anatomy-shade-3:#64522F;
+  --anatomy-lit-top:#B59A5A;--anatomy-lit-shade:#6E5B36;
+  --anatomy-hi:#C5A017;--anatomy-mid:#9C7F1C;--anatomy-lo:#6B5A1E;--anatomy-faint:#3B3320;--anatomy-lit:#E6B84D;
+  --anatomy-halo:#C5A017;--anatomy-halo-opacity:.22;--anatomy-dot:#E6B84D;
+}
+.iso .iso-plate{--anatomy-paper:#211B11;box-shadow:0 0 0 1px rgba(197,160,23,.22)}
+.iso[data-theme="light"]{
+  --anatomy-page:#F0EDE3;--anatomy-card:#F0EDE3;--anatomy-text:#1A1A24;--anatomy-strong:#1A1A24;--anatomy-muted:#6E6552;
+  --anatomy-paper:#F0EDE3;--anatomy-face:#FAF7EE;--anatomy-top:#F8F4E8;
+  --anatomy-shade-0:#CBBFA3;--anatomy-shade-1:#D8CEB5;--anatomy-shade-2:#E2D9C3;--anatomy-shade-3:#EAE3D1;
+  --anatomy-lit-top:#FFFDF6;--anatomy-lit-shade:#E6DCC0;
+  --anatomy-hi:#1A1A24;--anatomy-mid:#5A4A2E;--anatomy-lo:#9A8A66;--anatomy-faint:#CDC2A6;--anatomy-lit:#76652A;
+  --anatomy-halo:#8A7A50;--anatomy-halo-opacity:.3;--anatomy-dot:#5A4A2E;
+}
+.iso[data-theme="light"] .iso-plate{--anatomy-paper:#F0EDE3;box-shadow:0 0 0 1px rgba(90,74,46,.35)}
+.iso-plate-corner[data-corner="title"]{font-family:Cinzel,"Times New Roman",serif;font-size:12.5px;letter-spacing:.14em;text-transform:none}
+.iso-plate-corner[data-corner="readout"]{font-variant-numeric:tabular-nums}
+.wp-stage{outline:none;touch-action:pan-y}
+.wp-stage:focus-visible{outline:1px solid var(--anatomy-muted);outline-offset:6px}
+.wp-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:560px){.iso-plate-corner[data-corner="readout"]{font-size:9.5px}.iso-plate-corner[data-corner="hint"]{font-size:9.5px}}
