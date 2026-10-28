@@ -56,11 +56,12 @@ const DEFAULT_THRESHOLDS = { minFacts: 3, minLayers: 3 };
 // Unsubstituted template slots such as `[... from engine results]`.
 const PLACEHOLDER_RE = /\[[^\]]*\bfrom engine results\b[^\]]*\]/i;
 const MIN_CHART_FIDELITY = 0.5;
+const PASS_CHART_FIDELITY = 0.8;
 
 // Gates that runFinalVerification blocks on. Kept here so SectionRubric in integrated.ts is untouched.
 export interface AuditedSectionRubric extends SectionRubric {
   placeholder_gate: 'pass' | 'fail';
-  chart_fidelity_gate?: 'pass' | 'fail';
+  chart_fidelity_gate?: 'pass' | 'warn' | 'fail';
 }
 
 function extractKeyFactsFromEngines(engines: any[]): Set<string> {
@@ -104,6 +105,7 @@ export function auditSectionOutput(input: AuditSectionInput): AuditedSectionRubr
 
   const engineFacts = extractKeyFactsFromEngines(input.engineResults || []);
   const fid = computeFidelity(input.output, engineFacts);
+  const fidelityGate = fid.score >= PASS_CHART_FIDELITY ? 'pass' : fid.score >= MIN_CHART_FIDELITY ? 'warn' : 'fail';
 
   return {
     section_id: input.sectionId,
@@ -124,7 +126,7 @@ export function auditSectionOutput(input: AuditSectionInput): AuditedSectionRubr
     chart_fidelity_score: engineFacts.size > 0 ? Number(fid.score.toFixed(3)) : undefined,
     chart_fidelity_details: engineFacts.size > 0 ? fid.details : undefined,
     placeholder_gate: PLACEHOLDER_RE.test(input.output) ? 'fail' : 'pass',
-    chart_fidelity_gate: engineFacts.size > 0 ? (fid.score >= MIN_CHART_FIDELITY ? 'pass' : 'fail') : undefined,
+    chart_fidelity_gate: engineFacts.size > 0 ? fidelityGate : undefined,
   };
 }
 

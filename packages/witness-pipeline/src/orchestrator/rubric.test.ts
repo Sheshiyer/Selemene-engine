@@ -118,10 +118,17 @@ describe('auditSectionOutput', () => {
     expect(rubric.chart_fidelity_gate).toBe('fail');
   });
 
-  it('passes chart fidelity gate when score is exactly 0.5', () => {
+  it('warns on chart fidelity when score is exactly 0.5', () => {
     const engines = [makeEngineWithLagna('aries'), makeEngineWithGate(34)];
     const rubric = auditOpening('Lagna is Aries.', engines);
     expect(rubric.chart_fidelity_score).toBe(0.5);
+    expect(rubric.chart_fidelity_gate).toBe('warn');
+  });
+
+  it('passes chart fidelity gate when score is exactly 0.8', () => {
+    const engines = [34, 20, 10, 57].map(makeEngineWithGate).concat(makeEngineWithLagna('aries'));
+    const rubric = auditOpening('Lagna is Aries with gates 34, 20 and 10.', engines);
+    expect(rubric.chart_fidelity_score).toBe(0.8);
     expect(rubric.chart_fidelity_gate).toBe('pass');
   });
 });
