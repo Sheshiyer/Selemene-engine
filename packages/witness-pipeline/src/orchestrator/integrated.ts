@@ -9,6 +9,7 @@ import type { ExtractedPattern } from '../patterns/types.js';
 import type { PatternVectorRetriever, RetrievedPattern } from '../patterns/retrieval.js';
 import { renderRetrievedPatternsForPrompt } from '../patterns/retrieval.js';
 import { renderFolioRelationshipHeader } from './folio-header.js';
+import { formatEngineResultsForPrompt } from './engine-formatter.js';
 
 export interface OrchestratorInput {
   subjectNames: string[];
@@ -191,6 +192,7 @@ export class IntegratedReadingOrchestrator {
     const overlaySummary = this.buildOverlaySummary();
     const bridgeMandates = this.mode.frontmatter.bridge_mandates.map((m) => `- ${m}`).join('\n');
     const lessonsSummary = summarizeLessons(this.mode.lessons, 5);
+    const engineResults = formatEngineResultsForPrompt(input.engineResultsBySubject[0] ?? []);
 
     const subjectRolesStr = input.subjectRoles && input.subjectRoles.length > 0
       ? input.subjectRoles.map((r) => `${r.name} (${r.role}${r.label ? ` — ${r.label}` : ''})`).join(', ')
@@ -212,6 +214,8 @@ export class IntegratedReadingOrchestrator {
       .replace(/\{\{overlay_summary\}\}/g, overlaySummary)
       .replace(/\{\{bridge_mandates\}\}/g, bridgeMandates)
       .replace(/\{\{lessons_summary\}\}/g, lessonsSummary)
+      // Function replacer: engine JSON may contain `$` sequences that string replacement would expand.
+      .replace(/\{\{engine_results\}\}/g, () => engineResults)
       .replace(/\{\{register\}\}/g, register)
       .replace(/\{\{pass_id\}\}/g, pass.id)
       .replace(/\{\{target_words\}\}/g, String(pass.target_words))

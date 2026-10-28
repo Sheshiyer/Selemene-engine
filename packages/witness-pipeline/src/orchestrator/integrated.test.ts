@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
+import { resolve } from 'node:path';
 import { IntegratedReadingOrchestrator } from './integrated.js';
+import { parseModeDoc } from '../modes/parser.js';
 import type { ParsedModeDoc, SelemeneEngineOutput } from '../index.js';
 import type { PatternVectorRetriever, RetrievedPattern } from '../patterns/retrieval.js';
 
@@ -37,7 +39,7 @@ const mockKundaliMode: ParsedModeDoc = {
     svg_topology: 'web-graph',
   },
   sections: {
-    'pass-opening-template': 'Write about {{subject_names}}.',
+    'pass-opening-template': 'Write about {{subject_names}}.\n\nEngine results:\n{{engine_results}}',
   },
   lessons: [],
   raw_path: 'mock-kundali.md',
@@ -107,6 +109,17 @@ const mockEngineResults: SelemeneEngineOutput[] = [
     },
     envelope_version: '1',
   },
+];
+
+// Synthetic chart values only; not derived from any real birth data.
+function makeEngine(engine_id: SelemeneEngineOutput['engine_id'], result: Record<string, unknown>): SelemeneEngineOutput {
+  return { ...mockEngineResults[0], engine_id, result };
+}
+
+const sampleEngineResults: SelemeneEngineOutput[] = [
+  makeEngine('panchanga', { nakshatra_name: 'Pushya', tithi_name: 'Shukla Panchami' }),
+  makeEngine('vimshottari', { current_period: { mahadasha: { planet: 'Saturn' } } }),
+  makeEngine('human-design', { hd_type: 'Projector', profile: '5/1' }),
 ];
 
 describe('IntegratedReadingOrchestrator', () => {
@@ -187,4 +200,40 @@ describe('IntegratedReadingOrchestrator', () => {
     const user = llm.mock.calls[0][1] as string;
     expect(user).toContain('hi'); // via {{language}} or system line
   });
+
+  it('injects deterministic engine results into the rendered prompt', async () => {
+    const llm = vi.fn().mockResolvedValue('ok');
+    const orchestrator = new IntegratedReadingOrchestrator({ mode: mockKundaliMode, llm });
+    await orchestrator.run({
+      subjectNames: ['A'],
+      engineResultsBySubject: [sampleEngineResults],
+      consciousnessLevel: 2,
+    });
+    const prompt = llm.mock.calls[0][1] as string;
+    expect(prompt).toContain('## Deterministic Engine Results');
+    expect(prompt).toContain('nakshatra Pushya');
+    expect(prompt).toContain('dasha Saturn');
+    expect(prompt).toContain('HD type Projector');
+    expect(prompt).not.toContain('{{engine_results}}');
+  });
+
+  it.each([2, 5])(
+    'every integrated-kundali-l0 pass prompt carries engine data (consciousness level %i)',
+    async (consciousnessLevel) => {
+      const mode = parseModeDoc(resolve(__dirname, '../../modes/integrated-kundali-l0.md'));
+      const llm = vi.fn().mockResolvedValue('ok');
+      const orchestrator = new IntegratedReadingOrchestrator({ mode, llm });
+      await orchestrator.run({
+        subjectNames: ['A'],
+        engineResultsBySubject: [sampleEngineResults],
+        consciousnessLevel,
+      });
+      expect(llm).toHaveBeenCalledTimes(mode.frontmatter.pass_plan.length);
+      for (const [, prompt] of llm.mock.calls as [string, string][]) {
+        expect(prompt).toContain('## Deterministic Engine Results');
+        expect(prompt).toContain('nakshatra Pushya');
+        expect(prompt).not.toMatch(/\{\{\w+\}\}/);
+      }
+    },
+  );
 });
