@@ -53,6 +53,17 @@ const SECTION_THRESHOLDS: Record<string, { minFacts: number; minLayers: number }
 
 const DEFAULT_THRESHOLDS = { minFacts: 3, minLayers: 3 };
 
+// Unsubstituted template slots such as `[... from engine results]`.
+const PLACEHOLDER_RE = /\[[^\]]*\bfrom engine results\b[^\]]*\]/i;
+const MIN_CHART_FIDELITY = 0.5;
+const PASS_CHART_FIDELITY = 0.8;
+
+// Gates that runFinalVerification blocks on. Kept here so SectionRubric in integrated.ts is untouched.
+export interface AuditedSectionRubric extends SectionRubric {
+  placeholder_gate: 'pass' | 'fail';
+  chart_fidelity_gate?: 'pass' | 'warn' | 'fail';
+}
+
 function extractKeyFactsFromEngines(engines: any[]): Set<string> {
   const facts = new Set<string>();
   for (const e of engines) {
@@ -80,7 +91,7 @@ function computeFidelity(output: string, engineFacts: Set<string>): { score: num
   return { score: hits / engineFacts.size, details };
 }
 
-export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
+export function auditSectionOutput(input: AuditSectionInput): AuditedSectionRubric {
   const words = input.output.trim().split(/\s+/).filter(Boolean).length;
   const ratio = input.targetWords > 0 ? words / input.targetWords : 0;
   const deterministicFactCount = SYSTEM_PATTERNS.reduce((sum, re) => {
@@ -94,6 +105,7 @@ export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
 
   const engineFacts = extractKeyFactsFromEngines(input.engineResults || []);
   const fid = computeFidelity(input.output, engineFacts);
+  const fidelityGate = fid.score >= PASS_CHART_FIDELITY ? 'pass' : fid.score >= MIN_CHART_FIDELITY ? 'warn' : 'fail';
 
   return {
     section_id: input.sectionId,
@@ -113,6 +125,8 @@ export function auditSectionOutput(input: AuditSectionInput): SectionRubric {
     latency_ms: input.latencyMs,
     chart_fidelity_score: engineFacts.size > 0 ? Number(fid.score.toFixed(3)) : undefined,
     chart_fidelity_details: engineFacts.size > 0 ? fid.details : undefined,
+    placeholder_gate: PLACEHOLDER_RE.test(input.output) ? 'fail' : 'pass',
+    chart_fidelity_gate: engineFacts.size > 0 ? fidelityGate : undefined,
   };
 }
 

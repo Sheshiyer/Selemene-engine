@@ -87,4 +87,48 @@ describe('auditSectionOutput', () => {
     expect(rubric.chart_fidelity_score).toBeGreaterThanOrEqual(0.5);
     expect(rubric.chart_fidelity_score).toBeLessThanOrEqual(1.0);
   });
+
+  function auditOpening(output: string, engineResults?: any[]) {
+    return auditSectionOutput({
+      sectionId: 'opening',
+      title: 'Opening',
+      targetWords: 100,
+      output,
+      modelRequested: 'tier-default',
+      modelUsed: 'tier-default',
+      latencyMs: 10,
+      engineResults,
+    });
+  }
+
+  it('fails placeholder gate on unsubstituted engine placeholders', () => {
+    const rubric = auditOpening('Your Lagna is [... from engine results] and it shapes the chart.');
+    expect(rubric.placeholder_gate).toBe('fail');
+  });
+
+  it('passes placeholder gate on substituted output', () => {
+    const rubric = auditOpening('Your Lagna is Aries and it shapes the chart.');
+    expect(rubric.placeholder_gate).toBe('pass');
+  });
+
+  it('fails chart fidelity gate when score is below 0.5', () => {
+    const engines = [makeEngineWithLagna('aries'), makeEngineWithGate(34), makeEngineWithGate(20)];
+    const rubric = auditOpening('Lagna is Aries.', engines);
+    expect(rubric.chart_fidelity_score).toBeLessThan(0.5);
+    expect(rubric.chart_fidelity_gate).toBe('fail');
+  });
+
+  it('warns on chart fidelity when score is exactly 0.5', () => {
+    const engines = [makeEngineWithLagna('aries'), makeEngineWithGate(34)];
+    const rubric = auditOpening('Lagna is Aries.', engines);
+    expect(rubric.chart_fidelity_score).toBe(0.5);
+    expect(rubric.chart_fidelity_gate).toBe('warn');
+  });
+
+  it('passes chart fidelity gate when score is exactly 0.8', () => {
+    const engines = [34, 20, 10, 57].map(makeEngineWithGate).concat(makeEngineWithLagna('aries'));
+    const rubric = auditOpening('Lagna is Aries with gates 34, 20 and 10.', engines);
+    expect(rubric.chart_fidelity_score).toBe(0.8);
+    expect(rubric.chart_fidelity_gate).toBe('pass');
+  });
 });
