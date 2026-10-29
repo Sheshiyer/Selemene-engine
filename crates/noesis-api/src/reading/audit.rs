@@ -64,6 +64,10 @@ struct Patterns {
     system: Vec<Regex>,
     layers: Vec<Regex>,
     placeholder: Regex,
+    /// Where a clause starts: sentence ends, semicolons, line breaks and
+    /// contrastive turns ("…, but you will marry").
+    clause_break: Regex,
+    negation: Regex,
 }
 
 fn patterns() -> &'static Patterns {
@@ -93,6 +97,10 @@ fn patterns() -> &'static Patterns {
             .map(re)
             .collect(),
             placeholder: re(r"\[[^\]]*\bfrom engine results\b[^\]]*\]"),
+            clause_break: re(r"[.!?;:\n]|\b(but|however|yet|although|though)\b"),
+            negation: re(
+                r"\b(not|no|nothing|never|none|nor|neither|cannot|without|rather than)\b|n't\b",
+            ),
         }
     })
 }
@@ -195,6 +203,27 @@ fn engine_facts(seeds: &[(String, Value)]) -> BTreeSet<String> {
     facts
 }
 
+/// Whether `output` asserts the guardrail phrase rather than ruling it out.
+/// The safeguards ask the model to say what a reading cannot tell ("nothing
+/// here says you will marry"), so a match whose clause is negated before it
+/// is the safeguard working, not a breach.
+fn asserts(p: &Patterns, guardrail: &str, output: &str) -> bool {
+    let Ok(re) = Regex::new(&format!("(?i){guardrail}")) else {
+        return false;
+    };
+    let asserted = re.find_iter(output).any(|m| {
+        let before = &output[..m.start()];
+        let clause_start = p
+            .clause_break
+            .find_iter(before)
+            .last()
+            .map(|b| b.end())
+            .unwrap_or(0);
+        !p.negation.is_match(&before[clause_start..])
+    });
+    asserted
+}
+
 pub fn audit_section(input: &SectionInput<'_>) -> SectionRubric {
     let p = patterns();
     let output = input.output;
@@ -209,11 +238,7 @@ pub fn audit_section(input: &SectionInput<'_>) -> SectionRubric {
     let (min_facts, min_layers) = thresholds(input.section_id);
     let violations: Vec<String> = guardrails(input.section_id)
         .iter()
-        .filter(|g| {
-            Regex::new(&format!("(?i){g}"))
-                .map(|re| re.is_match(output))
-                .unwrap_or(false)
-        })
+        .filter(|g| asserts(p, g, output))
         .map(|g| g.to_string())
         .collect();
 
@@ -388,6 +413,58 @@ mod tests {
             rubric("opening", &"w ".repeat(70), 100, "m").word_count_fit,
             Gate::Warn
         );
+    }
+
+    #[test]
+    fn a_safeguard_that_rules_out_a_claim_is_not_a_breach() {
+        // Wording from a real OmniRoute-written L0 reading.
+        for (section, text) in [
+            (
+                "love-marriage",
+                "Nothing in the timeline says you will marry, remain married, or separate.",
+            ),
+            (
+                "health",
+                "Contemplatively, not diagnostically, the gate can ask how a routine adapts.",
+            ),
+            (
+                "health",
+                "They do not establish susceptibility, diagnosis, or certainty.",
+            ),
+            (
+                "health",
+                "It does not direct changes to medication, diet, testing, or treatment.",
+            ),
+            (
+                "family-lineage",
+                "The overlay cannot say whether you will have children, what a child will be like.",
+            ),
+        ] {
+            let r = rubric(section, text, 10, "m");
+            assert_eq!(
+                r.guardrail_gate,
+                Gate::Pass,
+                "{section}: {text} → {:?}",
+                r.guardrail_violations
+            );
+        }
+        for (section, text) in [
+            (
+                "love-marriage",
+                "This is not fate, but you will marry in 2027.",
+            ),
+            (
+                "health",
+                "No doubt about it. This is a diagnosis of strain.",
+            ),
+            ("family-lineage", "Your first child will be a leader."),
+        ] {
+            assert_eq!(
+                rubric(section, text, 10, "m").guardrail_gate,
+                Gate::Fail,
+                "{section}: {text}"
+            );
+        }
     }
 
     #[test]
