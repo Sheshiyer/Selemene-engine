@@ -3,7 +3,7 @@
 
 > **Note (2026-06-30):** `apps/noesis-web` has been retired. Engine renderers are being ported to [Sankalpa](../../sankalpa/). Paths referencing `apps/noesis-web` below are historical.
 
-**Rāga recommender, not an audio analyser.** Given a moment (`current_time`; prahar = its hour's 3-hour block) and optional request options `dosha`, `rasa`/`mood`, `chakra`, it recommends Melakarta ragas by **prahar**, plus a chakra Solfeggio frequency for tuning. "Nāda Brahman" = sound as the substrate of consciousness.
+**Rāga recommender, not an audio analyser.** Given a moment (`current_time`; prahar = the 3-hour block of its **local** hour, from `options.timezone` / `options.timezone_offset`, else UTC) and optional request options `dosha`, `rasa`/`mood`, `chakra`, it recommends Melakarta ragas by **prahar**, plus a chakra Solfeggio frequency for tuning. "Nāda Brahman" = sound as the substrate of consciousness.
 
 > **What it does not do (2026-10-26):** it accepts **no audio input** (`audio_ref`, `audio_data`, voice samples and `image_data` are ignored), performs **no vocal, frequency or spectral analysis**, and emits **no audio clip** (`generated_audio` is never set). Earlier copy in `docs/ENGINES.md` §10 describing "vocal pattern analysis" was wrong and has been replaced. For a chosen melakarta's just-intonation data and a rendered/hosted clip use the Raaga engine ([raaga.md](raaga.md)).
 
@@ -11,11 +11,14 @@
 
 | Input | Where | Effect |
 |---|---|---|
-| `current_time` | request top level (defaults to now) | `hour()` → prahar 1–8 → `time_recommendation` + time-based ragas (`engine.rs:44-61`) |
+| `current_time` | request top level (defaults to now), a UTC instant | local hour (see next rows) → prahar 1–8 → `time_recommendation` + time-based ragas (`engine.rs:130-135`) |
+| `options.timezone` | IANA name, e.g. `Asia/Kolkata` | offset resolved at `current_time` with `chrono-tz` (DST-correct); local hour picks the prahar. Wins over `timezone_offset`. Unknown or non-string → validation error (`TimeBasis::resolve`, engine.rs:49) |
+| `options.timezone_offset` | integer minutes east of UTC, e.g. `330`, `-300` (same as vedic-clock) | fixed offset for the local hour. Non-integer or beyond ±1080 → validation error |
+| neither zone option | — | prahar from the **UTC** hour (pre-#1520 behaviour); `time_basis.source = "utc_default"` |
 | `options.dosha` | `vata` \| `pitta` \| `kapha` | adds dosha-affinity ragas (score 0.7) and echoes `dosha_recommendation` |
 | `options.rasa` or `options.mood` | one of the 9 rasas | adds rasa ragas (score 0.7) and echoes `rasa_mapping` |
 | `options.chakra` | `root … crown` or Sanskrit names, case-insensitive | adds `chakra_frequency {chakra_name, solfeggio_hz, binaural_target_hz}` |
-| `birth_data`, `location`, `audio_ref`, `image_data` | — | **ignored** |
+| `birth_data` (incl. `birth_data.timezone`), `location`, `audio_ref`, `image_data` | — | **ignored** — the birthplace zone is not where the user is now |
 
 Output and ranges below are unchanged (they were already derived from the runtime serializer).
 
@@ -61,7 +64,13 @@ Output and ranges below are unchanged (they were already derived from the runtim
     "binaural_target_hz": 8.0                        // Hz beat-frequency
   },
   "dosha_recommendation": "vata",                   // OPTIONAL — a STRING (echo of input), not an object
-  "rasa_mapping": "shanta"                          // OPTIONAL — a STRING (echo of input), not an object
+  "rasa_mapping": "shanta",                         // OPTIONAL — a STRING (echo of input), not an object
+  "time_basis": {                                   // always present (engine.rs:365, added #1520)
+    "timezone": "Asia/Kolkata",                     // IANA name, or null when not given
+    "offset_minutes": 330,                          // offset at current_time (0 for utc_default)
+    "local_hour": 15,                               // 0–23, the hour the prahar was read from
+    "source": "options"                             // "options" | "utc_default"
+  }
 }
 ```
 
@@ -73,7 +82,7 @@ Sub-types: `PraharRecommendation` (models.rs:43) carries `secondary_ragas` + `pr
 ## 3. Ranges, constraints & invariants
 | Field | Range / domain | Notes |
 |---|---|---|
-| `prahar_number` | **1–8** | 3-hour blocks; derived from `current_time.hour()` (engine.rs:44, models.rs:91-103). Boundaries: 1=06–09, 2=09–12, 3=12–15, 4=15–18, 5=18–21, 6=21–00, 7=00–03, 8=03–06 |
+| `prahar_number` | **1–8** | 3-hour blocks; derived from `time_basis.local_hour` (engine.rs:135, models.rs:91-103). E.g. `10:00Z` + `Asia/Kolkata` → 15:30 → 4; with no zone → 10 → 2. Boundaries: 1=06–09, 2=09–12, 3=12–15, 4=15–18, 5=18–21, 6=21–00, 7=00–03, 8=03–06 |
 | `prahar_name` | 8 fixed strings | Pratah / Sangava / Madhyahna / Aparahna / Sayahna / Pradosha / Nisha / Brahma Muhurta (models.rs:120-131) |
 | `dosha_dominance` | `kapha`\|`pitta`\|`vata` | prahar→dosha map (engine.rs:147-154); note prahars 7 & 8 are both `vata` |
 | `energy_quality` | enum (8) | ascending/expansive/peak/sustaining/transitional/inward/deep/awakening (engine.rs:157-168) |
@@ -85,8 +94,9 @@ Sub-types: `PraharRecommendation` (models.rs:43) carries `secondary_ragas` + `pr
 | `chakra_name` | echo of input string | accepts Sanskrit ("Muladhara") **or** English ("root"); case-insensitive (data.rs:172-202). Unknown chakra → `chakra_frequency` omitted entirely |
 | swaras (`arohanam`/`avarohanam`) | 8-note arrays | ascending/descending scale; tokens `sa ri1 ga3 ma1 pa dha1 ni3 sa` (varianted swaras 1–3) |
 | `dosha_recommendation` / `rasa_mapping` | string or absent | present only when `dosha` / (`rasa`\|`mood`) option supplied (engine.rs:76-98) |
+| `time_basis` | object, always present | `timezone` IANA string or `null`; `offset_minutes` −1080…1080; `local_hour` 0–23; `source` `options` \| `utc_default` |
 
-**Invariants.** `recommendations` is sorted score-descending after de-dup by `raga_number` (engine.rs:101-103). `time_recommendation` + `recommendations` are **always** present (validator enforces, engine.rs:300-308); `chakra_frequency`, `dosha_recommendation`, `rasa_mapping` are conditional on input options. The witness prompt is non-empty or the call errors (engine.rs:259-263). **Output co-varies with wall-clock hour** — the same birth data yields a different prahar/raga each 3-hour block (cache key is hour-granular, engine.rs:341-363).
+**Invariants.** `recommendations` is sorted score-descending after de-dup by `raga_number` (engine.rs:101-103). `time_recommendation` + `recommendations` are **always** present (validator enforces, engine.rs:300-308); `chakra_frequency`, `dosha_recommendation`, `rasa_mapping` are conditional on input options. The witness prompt is non-empty or the call errors (engine.rs:259-263). **Output co-varies with the caller's local hour** — the same birth data yields a different prahar/raga each 3-hour block. The cache key is hour-granular and keys on the time basis (source, zone, offset, local hour), so callers in different zones never share an entry (engine.rs:436-471).
 
 ## 4. Component & brand archetype
 **Today** (`Nadabrahman.tsx`): an **all-text** view — a gold mantra box (only if `result.mantra` present, line 204), a 3-cell grid (Chakra+element / Dosha / Rasa+emotion, lines 211-232), and a "Sound Practices" tag row where each resolvable raga gets ▶ **play** and ⬇ **WAV** buttons backed by a real Web-Audio/Strudel synth (`getRaagaPlayer`, lines 234-272). Below: an **audio-source toggle** (Suno recording vs. live Strudel) and a collapsible **V2 control bar** — timbre (sine/sitar/bansuri/sarangi), gamaka (kampita/andolana/kurula/nokku/sphurita), tala (7 options), breath (7 prāṇāyāma patterns), lines 274-355. If none of `chakra_frequency` / `mantra` / `dosha` is present it falls back to `GenericEngineView` (line 200). **No visualization** — zero SVG/canvas, no waveform; it is a player + metadata panel, not a geometric figure.
@@ -107,7 +117,7 @@ Sub-types: `PraharRecommendation` (models.rs:43) carries `secondary_ragas` + `pr
 | bija mantra + `note` (from data file) | acoustic readout at the core — **needs engine fix to ship, see §7** |
 
 ## 6. Dynamics
-**Time-driven, near-live.** Unlike the one-shot Vedic engines, output depends on `current_time.hour()` → the recommended prahar/raga **changes every 3 hours**; the cache key is hour-granular (engine.rs:341-363), so a re-fetch after a block boundary returns new data. Within a block it's stable. The **audio layer is fully interactive** (client-side): play/stop/download, source switching, and V2 timbre/gamaka/tala/breath all mutate playback live via `getRaagaPlayer()` without re-fetching engine output (Nadabrahman.tsx:104-198). `dosha`/`rasa`/`chakra` are **request options**, not birth data — changing them re-runs the engine. `consciousness_level` (0–5) is envelope-level and may gate interpretive depth; `required_phase` is 0 (available to everyone, engine.rs:249-251). Wave-2: the waveform should animate in sync with actual playback (oscilloscope), idle to a slow breath when stopped.
+**Time-driven, near-live.** Unlike the one-shot Vedic engines, output depends on the local hour of `current_time` (per `time_basis`) → the recommended prahar/raga **changes every 3 hours**; the cache key is hour-granular and zone-aware (engine.rs:436-471), so a re-fetch after a block boundary returns new data. Within a block it's stable. The **audio layer is fully interactive** (client-side): play/stop/download, source switching, and V2 timbre/gamaka/tala/breath all mutate playback live via `getRaagaPlayer()` without re-fetching engine output (Nadabrahman.tsx:104-198). `dosha`/`rasa`/`chakra` are **request options**, not birth data — changing them re-runs the engine. `consciousness_level` (0–5) is envelope-level and may gate interpretive depth; `required_phase` is 0 (available to everyone, engine.rs:249-251). Wave-2: the waveform should animate in sync with actual playback (oscilloscope), idle to a slow breath when stopped.
 
 ## 7. Open questions / assumptions
 - **OpenAPI stub is fiction (confirmed).** `NadabrahmanResultSchema` (types.rs:291) advertises `root_frequency_hz` (432.0), `suggested_raga` ("Bhairavi"), `mantra_seed` ("AUM") — **the engine emits none of them.** There is no 432 Hz anywhere (frequencies are the 396–963 Solfeggio ladder), no top-level `suggested_raga` (it's `time_recommendation.primary_raga.raga_name` + `recommendations[]`), and no `mantra_seed`. Do **not** build against the stub. ⚠️
