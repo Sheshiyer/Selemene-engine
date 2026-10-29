@@ -357,7 +357,7 @@ Every native Rust engine's calculate envelope (and each native entry in a workfl
 | nadabrahman | `native` | never |
 | financial-biosensor | `composed-native-rust` | never (absent contributors lower `coverage`; they are not a fallback) |
 
-Swiss Ephemeris keeps its state per thread on Linux, so every calculation runs under `engine_human_design::lock_ephemeris()`, which applies the resolved ephemeris path to each thread on first use; Moshier substitution is read from the flags each calculation returns. Biofield's vedic path uses the same ephemeris but does not yet report Moshier.
+Swiss Ephemeris keeps its state per thread on Linux, so every calculation runs under `engine_human_design::lock_ephemeris()`, which applies the resolved ephemeris path to each thread on first use; Moshier substitution is read from the flags each calculation returns.
 
 Bridge (TypeScript) engines keep the block their sidecar emits; a malformed sidecar block is dropped, not replaced. Input defaulting (an unknown timezone resolved to UTC, a missing birth time treated as noon) is not reported as a fallback.
 
