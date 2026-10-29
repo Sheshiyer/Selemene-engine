@@ -1118,6 +1118,67 @@ mod tests {
     }
 
     #[test]
+    fn sacred_geometry_sidecar_fixture_round_trips_provenance_and_detail() {
+        // GH #1401: replay a real sacred-geometry sidecar response (kept in sync
+        // with the engine by ts-engines/tests/sacred_geometry_provenance.test.ts
+        // `probe:bridge-fixture`). The five-field provenance block must reach the
+        // reserved key intact, and the engine's result.provenance_detail must
+        // pass through unchanged so callers can still tell lookup from
+        // not-implemented geometry and rendering.
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/sacred-geometry/bridge-round-trip-seed-1401.json"
+        ))
+        .expect("sacred-geometry fixture is valid JSON");
+        let sidecar = fixture["sidecar_response"].clone();
+        let response: crate::ts_client::TsEngineResponse = serde_json::from_value(sidecar.clone())
+            .expect("sacred-geometry sidecar response must deserialize");
+
+        let output = ts_response_into_output(response, 0);
+
+        let stashed = output
+            .result
+            .get(CONTRACT_PROVENANCE_KEY)
+            .cloned()
+            .expect("bridge stashes provenance under the reserved key");
+        assert_eq!(stashed, sidecar["provenance"]);
+        let parsed: noesis_core::contract::Provenance = serde_json::from_value(stashed.clone())
+            .expect("five-field block parses under deny_unknown_fields");
+        assert_eq!(
+            parsed.runtime_kind,
+            noesis_core::contract::RuntimeKind::TypeScript
+        );
+        assert!(!parsed.cached);
+        assert!(!parsed.fallback_used);
+        assert!(parsed.backend_id.is_none());
+        assert!(parsed.provider_id.is_none());
+        assert_eq!(parsed.implementation_version, "1.0.0");
+        // The sidecar sends the integer `1`; the typed field holds it as f64, so
+        // a re-serialized block reads `1.0` (same JSON number, unequal `Value`).
+        assert_eq!(parsed.confidence, Some(1.0));
+
+        let detail = &output.result["provenance_detail"];
+        assert_eq!(detail, &sidecar["result"]["provenance_detail"]);
+        assert_eq!(detail["form"]["kind"], "symbolic_lookup");
+        assert_eq!(detail["form_selection"]["kind"], "seeded_random");
+        assert_eq!(detail["calculated_geometry"]["status"], "not_implemented");
+        assert_eq!(detail["rendered_artifact"]["status"], "not_implemented");
+        assert_eq!(detail["svg_preview"]["status"], "rejected");
+
+        // Every other engine field crosses untouched; the bridge only adds the
+        // reserved provenance key (sacred-geometry emits no media).
+        let mut expected_result = sidecar["result"].clone();
+        expected_result.as_object_mut().unwrap().insert(
+            CONTRACT_PROVENANCE_KEY.to_string(),
+            sidecar["provenance"].clone(),
+        );
+        assert_eq!(output.result, expected_result);
+
+        assert_eq!(output.engine_id, "sacred-geometry");
+        assert!(!output.metadata.fallback_used);
+        assert!(output.metadata.provider_id.is_none());
+    }
+
+    #[test]
     fn generated_media_deserializes_from_ts_top_level() {
         let response: crate::ts_client::TsEngineResponse = serde_json::from_value(json!({
             "engine_id": "raaga",
