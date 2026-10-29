@@ -633,6 +633,12 @@ fn local_to_utc<Z: TimeZone>(zone: &Z, local: &NaiveDateTime) -> DateTime<Utc> {
 // PanchangaEngine — ConsciousnessEngine implementation
 // ---------------------------------------------------------------------------
 
+/// `mode: "daily"` computes for `current_time` (cosmic weather); any other
+/// mode computes the natal Panchanga from `birth_data`.
+fn is_daily_mode(input: &EngineInput) -> bool {
+    input.options.get("mode").and_then(|v| v.as_str()) == Some("daily")
+}
+
 /// The Panchanga consciousness engine.
 ///
 /// Stateless — all configuration comes through `EngineInput`.
@@ -669,9 +675,7 @@ impl ConsciousnessEngine for PanchangaEngine {
 
         // Determine mode: "daily" uses current_time (today) for cosmic weather;
         // default uses birth_data.date for the natal birth panchanga.
-        let use_daily = input.options.get("mode").and_then(|v| v.as_str()) == Some("daily");
-
-        let (result, fallback_used) = if use_daily {
+        let (result, fallback_used) = if is_daily_mode(&input) {
             // Daily mode: `current_time` is already the UTC instant. The
             // positions depend only on it; the birth timezone, when given,
             // only picks the local date for the vara (UTC otherwise).
@@ -800,14 +804,32 @@ impl ConsciousnessEngine for PanchangaEngine {
         })
     }
 
+    /// Covers every input the result depends on: the mode; in daily mode the
+    /// instant and the timezone (vara); in birth mode the date, the time as
+    /// given (a missing time is flagged in the result, so it differs from an
+    /// explicit "12:00"), the timezone and the coordinates.
     fn cache_key(&self, input: &EngineInput) -> String {
         let birth = input.birth_data.as_ref();
-        let date = birth.map(|b| b.date.as_str()).unwrap_or("");
-        let time = birth.and_then(|b| b.time.as_deref()).unwrap_or("12:00");
-        let lat = birth.map(|b| b.latitude).unwrap_or(0.0);
-        let lon = birth.map(|b| b.longitude).unwrap_or(0.0);
+        let timezone = birth.map(|b| b.timezone.as_str()).unwrap_or("");
 
-        let raw = format!("panchanga:{}:{}:{:.6}:{:.6}", date, time, lat, lon);
+        let raw = if is_daily_mode(input) {
+            format!(
+                "panchanga:daily:{}:{}",
+                input
+                    .current_time
+                    .to_rfc3339_opts(chrono::SecondsFormat::Nanos, true),
+                timezone
+            )
+        } else {
+            format!(
+                "panchanga:birth:{}:{}:{}:{:.6}:{:.6}",
+                birth.map(|b| b.date.as_str()).unwrap_or(""),
+                birth.and_then(|b| b.time.as_deref()).unwrap_or("-"),
+                timezone,
+                birth.map(|b| b.latitude).unwrap_or(0.0),
+                birth.map(|b| b.longitude).unwrap_or(0.0),
+            )
+        };
         let hash = Sha256::digest(raw.as_bytes());
         format!("panchanga:{:x}", hash)
     }
@@ -1103,6 +1125,46 @@ mod tests {
         let k2 = engine.cache_key(&input);
         assert_eq!(k1, k2);
         assert!(k1.starts_with("panchanga:"));
+    }
+
+    /// Inputs that change the result must change the cache key; inputs the
+    /// mode ignores must not.
+    #[test]
+    fn test_cache_key_covers_mode_instant_and_timezone() {
+        let engine = PanchangaEngine::new();
+        let key = |input: &EngineInput| engine.cache_key(input);
+        let t1 = Utc.with_ymd_and_hms(2026, 5, 13, 10, 0, 0).unwrap();
+        let t2 = Utc.with_ymd_and_hms(2026, 5, 14, 10, 0, 0).unwrap();
+
+        // Daily mode: the instant and the timezone matter...
+        let daily = daily_input(t1, Some("Asia/Kolkata"));
+        assert_ne!(key(&daily), key(&daily_input(t2, Some("Asia/Kolkata"))));
+        assert_ne!(key(&daily), key(&daily_input(t1, Some("America/New_York"))));
+        assert_ne!(key(&daily), key(&daily_input(t1, None)));
+        // ...the birth date does not.
+        let mut other_birth = daily.clone();
+        other_birth.birth_data.as_mut().unwrap().date = "2000-01-01".into();
+        assert_eq!(key(&daily), key(&other_birth));
+
+        // Birth mode: the timezone and a missing time matter...
+        let birth = birth_input("1991-08-13", "13:31", "Asia/Kolkata");
+        assert_ne!(
+            key(&birth),
+            key(&birth_input("1991-08-13", "13:31", "+00:00"))
+        );
+        let noon = birth_input("1991-08-13", "12:00", "Asia/Kolkata");
+        let mut no_time = noon.clone();
+        no_time.birth_data.as_mut().unwrap().time = None;
+        assert_ne!(key(&noon), key(&no_time));
+        // ...`current_time` does not.
+        let mut later = birth.clone();
+        later.current_time = t2;
+        assert_eq!(key(&birth), key(&later));
+
+        // Same birth data in the two modes gives different keys.
+        let mut as_birth = daily.clone();
+        as_birth.options.clear();
+        assert_ne!(key(&daily), key(&as_birth));
     }
 
     #[test]
