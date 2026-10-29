@@ -115,13 +115,12 @@ fn generate_advanced_prompt(
     };
 
     format!(
-        "You are in the conscious field of {}'s influence, nested within {}'s container, illuminated by {}'s immediate presence. What karmic patterns are ripening? What is seeking release through {}? Beyond the themes of {} and {}, what wants to be witnessed in pure awareness?{}",
-        current_period.pratyantardasha.planet.as_str(),
-        current_period.antardasha.planet.as_str(),
+        "You are in the conscious field of {}'s influence, nested within {}'s container, illuminated by {}'s immediate presence. What karmic patterns are ripening? What is seeking release through the challenges you meet ({})? Beyond the openings of {}, what wants to be witnessed in pure awareness?{}",
         current_period.mahadasha.planet.as_str(),
-        enrichment.challenges.join(" and "),
-        enrichment.opportunities.join(", "),
+        current_period.antardasha.planet.as_str(),
+        current_period.pratyantardasha.planet.as_str(),
         enrichment.challenges.join(", "),
+        enrichment.opportunities.join(", "),
         next_transition_text
     )
 }
@@ -263,6 +262,20 @@ mod tests {
 
         // Should be inquiry-based
         assert!(prompt.contains("?"));
+    }
+
+    #[test]
+    fn test_advanced_prompt_orders_dasha_levels_outer_to_inner() {
+        let current = create_test_current_period();
+        let upcoming = vec![];
+
+        let prompt = generate_witness_prompt(&current, &upcoming, 6);
+
+        // Mahadasha (Venus) is the outer field, antardasha (Mercury) the
+        // container, pratyantardasha (Jupiter) the immediate presence.
+        assert!(prompt.contains("conscious field of Venus's influence"));
+        assert!(prompt.contains("nested within Mercury's container"));
+        assert!(prompt.contains("illuminated by Jupiter's immediate presence"));
     }
 
     #[test]
