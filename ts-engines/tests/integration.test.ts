@@ -298,6 +298,35 @@ describe('Enneagram Engine', () => {
     expect((data as any).result.assessment.primaryType.number).toBeLessThanOrEqual(9)
   })
 
+  it('serializes typeSource and provenance over HTTP for both paths (GH #1311)', async () => {
+    const lookup = await apiCall('POST', '/engines/enneagram/calculate', {
+      consciousness_level: 1,
+      parameters: { type: 4 },
+    })
+    expect(lookup.status).toBe(200)
+    expect((lookup.data as any).result.typeSource).toBe('user-supplied')
+    expect((lookup.data as any).provenance.backend_id).toBe('enneagram-type-lookup')
+    expect((lookup.data as any).provenance.confidence).toBeUndefined()
+
+    const assessed = await apiCall('POST', '/engines/enneagram/calculate', {
+      consciousness_level: 1,
+      parameters: { answers: Array(45).fill(3) },
+    })
+    expect(assessed.status).toBe(200)
+    expect((assessed.data as any).result.typeSource).toBe('assessment')
+    expect((assessed.data as any).provenance.backend_id).toBe('enneagram-assessment')
+    expect((assessed.data as any).provenance.confidence).toBe(0)
+  })
+
+  it('rejects malformed answers with 422 INVALID_ENNEAGRAM_ANSWERS', async () => {
+    const { status, data } = await apiCall('POST', '/engines/enneagram/calculate', {
+      consciousness_level: 1,
+      parameters: { answers: 'not-an-array' },
+    })
+    expect(status).toBe(422)
+    expect((data as any).error_code).toBe('INVALID_ENNEAGRAM_ANSWERS')
+  })
+
   it('returns type in range 1-9', async () => {
     const { status, data } = await apiCall('POST', '/engines/enneagram/calculate', {
       consciousness_level: 1,

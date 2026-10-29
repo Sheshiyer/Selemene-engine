@@ -5,6 +5,7 @@
 
 import type {
   ConsciousnessEngine,
+  ContractProvenance,
   EngineInput,
   EngineMetadata,
   EngineOutput,
@@ -29,8 +30,25 @@ import {
   generateTypeWitnessPrompts,
 } from './witness'
 
+/**
+ * Where the named type came from (GH #1311). 'assessment' = scored from the
+ * caller's answers; 'user-supplied' = the caller asserted the type and the
+ * engine only looked it up; 'none' = no type was named.
+ */
+type TypeSource = 'assessment' | 'user-supplied' | 'none'
+
+/** provenance.backend_id per path, so callers that only read provenance can tell them apart. */
+const BACKEND_ID: Record<TypeSource, string> = {
+  assessment: 'enneagram-assessment',
+  'user-supplied': 'enneagram-type-lookup',
+  none: 'enneagram-question-catalogue',
+}
+
 interface EnneagramResult {
   mode: 'assessment' | 'lookup' | 'questions'
+  typeSource: TypeSource
+  /** Wing the caller supplied with a direct lookup (validated adjacent). */
+  suppliedWing?: number
   assessment?: AssessmentResultOutput
   typeAnalysis?: TypeAnalysisOutput
   questions?: QuestionOutput[]
@@ -42,6 +60,11 @@ interface AssessmentResultOutput {
   wing: TypeSummary
   confidence: number
   tritype?: number[]
+  /** Answers that mapped onto one of the questions (extras beyond the last question are ignored). */
+  answeredCount: number
+  questionCount: number
+  /** Answers outside the 1-5 scale that were clamped before scoring. */
+  clampedCount: number
   note: string
 }
 
@@ -128,7 +151,7 @@ export class EnneagramEngine implements ConsciousnessEngine {
   async calculate(input: EngineInput): Promise<EngineOutput> {
     const startTime = performance.now()
 
-    const answers = input.parameters.answers as number[] | undefined
+    const answers = this.validateAnswers(input.parameters.answers)
     const typeParam = input.parameters.type as number | undefined
     const wingParam = input.parameters.wing as number | undefined
     const includeAssessment = input.parameters.includeAssessment as boolean | undefined
@@ -141,7 +164,7 @@ export class EnneagramEngine implements ConsciousnessEngine {
     // Mode 1: Assessment with answers provided
     if (answers && answers.length > 0) {
       const assessmentResult = calculateFromAnswerArray(answers)
-      result = this.buildAssessmentResult(assessmentResult)
+      result = this.buildAssessmentResult(assessmentResult, answers)
       witnessPrompts = generateAssessmentWitnessPrompts(
         assessmentResult.primaryType,
         assessmentResult.wing,
@@ -190,6 +213,7 @@ export class EnneagramEngine implements ConsciousnessEngine {
     else {
       result = {
         mode: 'questions',
+        typeSource: 'none',
         questions: [],
       }
       witnessPrompts = [
@@ -210,7 +234,51 @@ export class EnneagramEngine implements ConsciousnessEngine {
       witness_prompts: witnessPrompts,
       calculated_at: new Date().toISOString(),
       processing_time_ms: Math.round(endTime - startTime),
+      provenance: this.buildProvenance(result),
     }
+  }
+
+  /**
+   * Everything here is computed in-process from static data (./assessment.ts,
+   * ./wisdom.ts): there is no provider, cache or fallback path, so
+   * fallback_used is always false. Confidence is only claimed for an
+   * assessment, where it is the score separation between the top two types
+   * scaled by how much of the questionnaire was answered. A user-supplied
+   * lookup or the question catalogue omits confidence: nothing was assessed.
+   */
+  private buildProvenance(result: EnneagramResult): ContractProvenance {
+    const provenance: ContractProvenance = {
+      runtime_kind: 'typescript',
+      implementation_version: this.metadata().version,
+      cached: false,
+      fallback_used: false,
+      backend_id: BACKEND_ID[result.typeSource],
+    }
+    if (result.assessment) {
+      const { confidence, answeredCount, questionCount } = result.assessment
+      provenance.confidence = Math.round(confidence * (answeredCount / questionCount) * 100) / 100
+    }
+    return provenance
+  }
+
+  private validateAnswers(answers: unknown): number[] | undefined {
+    if (answers === undefined) return undefined
+    if (!Array.isArray(answers)) {
+      throw new EngineValidationError(
+        'Invalid answers: must be an array of numbers on the 1-5 scale.',
+        'INVALID_ENNEAGRAM_ANSWERS',
+        { provided_type: typeof answers },
+      )
+    }
+    const badIndex = answers.findIndex((a) => typeof a !== 'number' || !Number.isFinite(a))
+    if (badIndex !== -1) {
+      throw new EngineValidationError(
+        `Invalid answer at index ${badIndex}: must be a finite number on the 1-5 scale.`,
+        'INVALID_ENNEAGRAM_ANSWERS',
+        { index: badIndex },
+      )
+    }
+    return answers
   }
 
   private validateType(type: number): EnneagramNumber {
@@ -255,12 +323,15 @@ export class EnneagramEngine implements ConsciousnessEngine {
     return wing as EnneagramNumber
   }
 
-  private buildAssessmentResult(assessment: AssessmentResult): EnneagramResult {
+  private buildAssessmentResult(assessment: AssessmentResult, answers: number[]): EnneagramResult {
     const primaryType = getEnneagramType(assessment.primaryType)
     const wingType = getEnneagramType(assessment.wing)
+    const questionCount = getAssessmentQuestions().length
+    const scored = answers.slice(0, questionCount)
 
     return {
       mode: 'assessment',
+      typeSource: 'assessment',
       assessment: {
         scores: assessment.scores.map((s) => ({
           type: s.type,
@@ -278,6 +349,9 @@ export class EnneagramEngine implements ConsciousnessEngine {
         },
         confidence: Math.round(assessment.confidence * 100) / 100,
         tritype: assessment.tritype,
+        answeredCount: scored.length,
+        questionCount,
+        clampedCount: scored.filter((a) => a < 1 || a > 5).length,
         note: 'These results indicate pattern tendencies, not fixed identity. The Enneagram is a tool for self-observation, not labeling.',
       },
       typeAnalysis: this.buildTypeAnalysis(assessment.primaryType),
@@ -287,6 +361,8 @@ export class EnneagramEngine implements ConsciousnessEngine {
   private buildTypeLookupResult(type: EnneagramNumber, wing?: EnneagramNumber): EnneagramResult {
     return {
       mode: 'lookup',
+      typeSource: 'user-supplied',
+      suppliedWing: wing,
       typeAnalysis: this.buildTypeAnalysis(type, wing),
     }
   }
@@ -342,6 +418,7 @@ export class EnneagramEngine implements ConsciousnessEngine {
 
     return {
       mode: 'questions',
+      typeSource: 'none',
       questions: questions.map((q) => ({
         id: q.id,
         text: q.text,

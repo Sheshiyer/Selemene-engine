@@ -214,18 +214,21 @@ Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 
 ## 14. Enneagram Engine
 
-**9 personality types** — Core type, wing, tritype, integration/disintegration arrows, instinctual variants.
+**9 personality types** — Core type, wing, tritype (assessment only), integration/disintegration arrows, centers.
 
-**Input:** `date, name`  
+**Input:** `parameters.answers` (45 numbers, 1-5) for an assessment, or `parameters.type` (1-9) plus optional `parameters.wing` for a direct lookup  
 **Endpoint:** `POST /api/v1/engines/enneagram/calculate`
 
 ### Returns
-- Core type (1-9)
-- Wing tendency
-- Tritype combination
+- Core type (1-9) and `result.typeSource`: `assessment` (scored from answers), `user-supplied` (direct lookup) or `none` (question catalogue)
+- Wing tendency (assessment) or `suppliedWing` (lookup)
+- Tritype combination (assessment, only when confidence ≥ 0.3)
 - Integration/disintegration paths
-- Instinctual stacking (sp/sx/so)
 - Centers of intelligence
+- Instinctual stacking (sp/sx/so): **not implemented**
+
+### Provenance
+`provenance` is always present: `runtime_kind: typescript`, `fallback_used: false` (no provider, cache or fallback path exists), and `backend_id` naming the path (`enneagram-assessment`, `enneagram-type-lookup`, `enneagram-question-catalogue`). `confidence` is set **only** for an assessment: top-two score separation × answered/45. A direct lookup omits it because nothing was assessed. Malformed answers fail with `422 INVALID_ENNEAGRAM_ANSWERS`; out-of-scale answers are clamped and counted in `assessment.clampedCount`.
 
 <br>
 
