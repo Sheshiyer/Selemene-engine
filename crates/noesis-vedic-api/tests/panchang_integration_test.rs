@@ -133,9 +133,10 @@ fn test_hora_sequence() {
 fn test_choghadiya_sequence() {
     use choghadiya::*;
 
-    // Sunday day starts with Shubh
+    // Sunday day starts with Udveg (the Sun's Choghadiya)
     let sunday_day = ChoghadiyaSequence::get_day_sequence("Sunday");
-    assert_eq!(sunday_day[0].0, ChoghadiyaName::Shubh);
+    assert_eq!(sunday_day[0].0, ChoghadiyaName::Udveg);
+    assert_eq!(sunday_day[0].2, "Sun");
 
     // Saturday day starts with Kaal
     let saturday_day = ChoghadiyaSequence::get_day_sequence("Saturday");
