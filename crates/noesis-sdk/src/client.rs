@@ -573,4 +573,61 @@ mod tests {
         // Expected minimum ~30ms + 60ms exponential backoff.
         assert!(elapsed_ms >= 85, "elapsed_ms={elapsed_ms}");
     }
+
+    #[tokio::test]
+    async fn sacred_geometry_calculate_round_trips_api_envelope() {
+        // GH #1401: serve the real noesis-api envelope for sacred-geometry
+        // (pinned by noesis-api `sacred_geometry_api_envelope_matches_committed_fixture`)
+        // and read it back through `calculate`, the path the TUI uses.
+        let envelope: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/sacred-geometry/api-envelope-seed-1401.json"
+        ))
+        .unwrap();
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/api/v1/engines/sacred-geometry/calculate"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(envelope.clone()))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let client = NoesisClient::builder()
+            .base_url(server.uri())
+            .api_key("test-key")
+            .build()
+            .unwrap();
+        let input = EngineInput {
+            birth_data: None,
+            current_time: chrono::Utc::now(),
+            location: None,
+            precision: noesis_core::Precision::Standard,
+            options: std::collections::HashMap::new(),
+        };
+
+        let output = client.calculate("sacred-geometry", input).await.unwrap();
+
+        // Per-part provenance lives inside `result`, so it survives intact.
+        assert_eq!(
+            output.result["provenance_detail"],
+            envelope["result"]["provenance_detail"]
+        );
+        assert_eq!(
+            output.result["provenance_detail"]["rendered_artifact"]["status"],
+            "not_implemented"
+        );
+        assert_eq!(output.engine_id, "sacred-geometry");
+        assert_eq!(output.metadata.backend, "typescript");
+        assert!(!output.metadata.fallback_used);
+        assert!(output.metadata.provider_id.is_none());
+
+        // Known gap: `noesis_core::EngineOutput` has no field for the
+        // envelope's top-level contract `provenance` block, so the SDK drops
+        // it (runtime_kind, implementation_version, confidence). Only the
+        // fallback/provider flags survive, via `metadata`. If the SDK gains a
+        // provenance field, replace this with a round-trip assertion.
+        assert!(envelope.get("provenance").is_some());
+        assert!(serde_json::to_value(&output)
+            .unwrap()
+            .get("provenance")
+            .is_none());
+    }
 }
