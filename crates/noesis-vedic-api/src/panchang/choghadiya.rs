@@ -5,6 +5,9 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::clock::{in_period, split_span};
+use super::hora::Planet;
+
 /// Collection of all Choghadiya periods for a day
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChoghadiyaTimings {
@@ -21,13 +24,14 @@ pub struct ChoghadiyaTimings {
 }
 
 impl ChoghadiyaTimings {
-    /// Get the current Choghadiya based on time
+    /// Get the current Choghadiya for a local `HH:MM` (or `HH:MM:SS`) time.
+    ///
+    /// Each Choghadiya covers `[start, end)`; night ones may cross midnight.
     pub fn get_current(&self, current_time: &str) -> Option<&Choghadiya> {
-        let all: Vec<&Choghadiya> = self.day.iter().chain(self.night.iter()).collect();
-
-        all.iter()
-            .find(|c| current_time >= c.start.as_str() && current_time <= c.end.as_str())
-            .copied()
+        self.day
+            .iter()
+            .chain(self.night.iter())
+            .find(|c| in_period(current_time, &c.start, &c.end))
     }
 
     /// Get all favorable Choghadiyas for starting new activities
@@ -195,78 +199,68 @@ pub enum ActivityCategory {
 
 /// Day-wise Choghadiya sequences
 ///
-/// Each day of the week has a different starting Choghadiya.
-/// The sequence is always: UD → CH → LA → AM → KA → SH → RO (for day)
-/// and: SH → AM → CH → RO → LA → UD → KA (for night)
+/// Each Choghadiya belongs to a planet: Udveg (Sun), Char (Venus),
+/// Labh (Mercury), Amrit (Moon), Kaal (Saturn), Shubh (Jupiter), Rog (Mars).
+/// By day the sequence starts with the weekday lord's Choghadiya and steps
+/// through the Hora order (Sun → Venus → Mercury → Moon → Saturn → Jupiter →
+/// Mars): UD → CH → LA → AM → KA → SH → RO.
+/// By night it starts with the lord five weekdays on and steps five places
+/// in that order: SH → AM → CH → RO → KA → LA → UD.
+/// The eighth period repeats the first.
 pub struct ChoghadiyaSequence;
+
+/// The Hora order of planets, which also orders the Choghadiyas.
+const HORA_ORDER: [Planet; 7] = [
+    Planet::Sun,
+    Planet::Venus,
+    Planet::Mercury,
+    Planet::Moon,
+    Planet::Saturn,
+    Planet::Jupiter,
+    Planet::Mars,
+];
 
 impl ChoghadiyaSequence {
     /// Get the day sequence for a given day of week
-    ///
-    /// The pattern repeats every 7 periods for the day
     pub fn get_day_sequence(day: &str) -> Vec<(ChoghadiyaName, ChoghadiyaNature, &'static str)> {
-        let base_sequence = [
-            (ChoghadiyaName::Udveg, ChoghadiyaNature::Bad, "Mercury"),
-            (ChoghadiyaName::Char, ChoghadiyaNature::Medium, "Venus"),
-            (ChoghadiyaName::Labh, ChoghadiyaNature::Good, "Jupiter"),
-            (ChoghadiyaName::Amrit, ChoghadiyaNature::Good, "Moon"),
-            (ChoghadiyaName::Kaal, ChoghadiyaNature::Bad, "Saturn"),
-            (ChoghadiyaName::Shubh, ChoghadiyaNature::Good, "Sun"),
-            (ChoghadiyaName::Rog, ChoghadiyaNature::Bad, "Mars"),
-        ];
-
-        // Each day starts at a different position in the sequence
-        let start_offset = match day.to_lowercase().as_str() {
-            "sunday" | "sun" => 5,    // Starts with Shubh
-            "monday" | "mon" => 3,    // Starts with Amrit
-            "tuesday" | "tue" => 6,   // Starts with Rog
-            "wednesday" | "wed" => 0, // Starts with Udveg
-            "thursday" | "thu" => 2,  // Starts with Labh
-            "friday" | "fri" => 1,    // Starts with Char
-            "saturday" | "sat" => 4,  // Starts with Kaal
-            _ => 0,
-        };
-
-        // Generate 8 periods (some Choghadiyas repeat)
-        let mut sequence = Vec::with_capacity(8);
-        for i in 0..8 {
-            let idx = (start_offset + i) % 7;
-            sequence.push(base_sequence[idx]);
-        }
-
-        sequence
+        Self::sequence(Self::lord_index(day), 1)
     }
 
     /// Get the night sequence for a given day of week
     pub fn get_night_sequence(day: &str) -> Vec<(ChoghadiyaName, ChoghadiyaNature, &'static str)> {
-        let base_sequence = [
-            (ChoghadiyaName::Shubh, ChoghadiyaNature::Good, "Sun"),
-            (ChoghadiyaName::Amrit, ChoghadiyaNature::Good, "Moon"),
-            (ChoghadiyaName::Char, ChoghadiyaNature::Medium, "Venus"),
-            (ChoghadiyaName::Rog, ChoghadiyaNature::Bad, "Mars"),
-            (ChoghadiyaName::Kaal, ChoghadiyaNature::Bad, "Saturn"),
-            (ChoghadiyaName::Labh, ChoghadiyaNature::Good, "Jupiter"),
-            (ChoghadiyaName::Udveg, ChoghadiyaNature::Bad, "Mercury"),
-        ];
+        Self::sequence(Self::lord_index(day) + 5, 5)
+    }
 
-        let start_offset = match day.to_lowercase().as_str() {
-            "sunday" | "sun" => 0,    // Starts with Shubh
-            "monday" | "mon" => 1,    // Starts with Amrit
-            "tuesday" | "tue" => 3,   // Starts with Rog
-            "wednesday" | "wed" => 6, // Starts with Udveg
-            "thursday" | "thu" => 5,  // Starts with Labh
-            "friday" | "fri" => 2,    // Starts with Char
-            "saturday" | "sat" => 4,  // Starts with Kaal
-            _ => 0,
-        };
+    /// Position of the weekday lord in the Hora order (Sunday if unknown).
+    fn lord_index(day: &str) -> usize {
+        let lord = super::hora::HoraSequence::get_starting_planet(day);
+        HORA_ORDER.iter().position(|p| *p == lord).unwrap_or(0)
+    }
 
-        let mut sequence = Vec::with_capacity(8);
-        for i in 0..8 {
-            let idx = (start_offset + i) % 7;
-            sequence.push(base_sequence[idx]);
-        }
+    fn sequence(
+        start: usize,
+        step: usize,
+    ) -> Vec<(ChoghadiyaName, ChoghadiyaNature, &'static str)> {
+        (0..8)
+            .map(|i| {
+                let ruler = HORA_ORDER[(start + step * i) % 7];
+                let (name, nature) = choghadiya_of(ruler);
+                (name, nature, ruler.as_str())
+            })
+            .collect()
+    }
+}
 
-        sequence
+/// The Choghadiya ruled by a planet, with its nature.
+fn choghadiya_of(ruler: Planet) -> (ChoghadiyaName, ChoghadiyaNature) {
+    match ruler {
+        Planet::Sun => (ChoghadiyaName::Udveg, ChoghadiyaNature::Bad),
+        Planet::Venus => (ChoghadiyaName::Char, ChoghadiyaNature::Medium),
+        Planet::Mercury => (ChoghadiyaName::Labh, ChoghadiyaNature::Good),
+        Planet::Moon => (ChoghadiyaName::Amrit, ChoghadiyaNature::Good),
+        Planet::Saturn => (ChoghadiyaName::Kaal, ChoghadiyaNature::Bad),
+        Planet::Jupiter => (ChoghadiyaName::Shubh, ChoghadiyaNature::Good),
+        Planet::Mars => (ChoghadiyaName::Rog, ChoghadiyaNature::Bad),
     }
 }
 
@@ -361,35 +355,35 @@ pub fn calculate_choghadiya(
     }
 }
 
-/// Calculate Choghadiyas for a single period
+/// Calculate Choghadiyas for a single period (day or night) by dividing
+/// `start_time`→`end_time` into equal parts.
+///
+/// Returns no Choghadiyas if either time cannot be parsed.
 fn calculate_period_choghadiya(
     sequence: &[(ChoghadiyaName, ChoghadiyaNature, &'static str)],
-    _start_time: &str,
-    _end_time: &str,
+    start_time: &str,
+    end_time: &str,
 ) -> Vec<Choghadiya> {
-    let mut choghadiyas = Vec::new();
+    let Some(spans) = split_span(start_time, end_time, sequence.len() as u32) else {
+        return Vec::new();
+    };
 
-    // Simplified: assumes each Choghadiya is approximately 90 minutes
-    // (12 hours / 8 = 1.5 hours)
-    let duration_minutes = 90;
-
-    for (i, (name, nature, ruler)) in sequence.iter().enumerate() {
-        let start_hour = i + 6; // Simplified calculation
-        let end_hour = start_hour + 1;
-
-        choghadiyas.push(Choghadiya {
-            name: *name,
-            start: format!("{:02}:00", start_hour),
-            end: format!("{:02}:30", end_hour),
-            duration_minutes,
-            nature: *nature,
-            ruler: ruler.to_string(),
-            suitable_for: get_suitable_activities(*name),
-            avoid: get_activities_to_avoid(*name),
-        });
-    }
-
-    choghadiyas
+    sequence
+        .iter()
+        .zip(spans)
+        .map(
+            |((name, nature, ruler), (start, end, duration_minutes))| Choghadiya {
+                name: *name,
+                start,
+                end,
+                duration_minutes,
+                nature: *nature,
+                ruler: ruler.to_string(),
+                suitable_for: get_suitable_activities(*name),
+                avoid: get_activities_to_avoid(*name),
+            },
+        )
+        .collect()
 }
 
 /// Get recommendations for specific activities
@@ -452,22 +446,80 @@ mod tests {
         assert_eq!(ChoghadiyaNature::Good.score(), 3);
     }
 
+    use ChoghadiyaName::*;
+
+    const DAYS: [&str; 7] = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+    ];
+
+    fn names(sequence: &[(ChoghadiyaName, ChoghadiyaNature, &'static str)]) -> Vec<ChoghadiyaName> {
+        sequence.iter().map(|(name, _, _)| *name).collect()
+    }
+
     #[test]
     fn test_day_sequences() {
-        let sunday = ChoghadiyaSequence::get_day_sequence("Sunday");
-        assert_eq!(sunday[0].0, ChoghadiyaName::Shubh);
-
-        let monday = ChoghadiyaSequence::get_day_sequence("Monday");
-        assert_eq!(monday[0].0, ChoghadiyaName::Amrit);
-
-        let saturday = ChoghadiyaSequence::get_day_sequence("Saturday");
-        assert_eq!(saturday[0].0, ChoghadiyaName::Kaal);
+        // Traditional day table: starts with the weekday lord's Choghadiya.
+        let expected = [
+            [Udveg, Char, Labh, Amrit, Kaal, Shubh, Rog, Udveg],
+            [Amrit, Kaal, Shubh, Rog, Udveg, Char, Labh, Amrit],
+            [Rog, Udveg, Char, Labh, Amrit, Kaal, Shubh, Rog],
+            [Labh, Amrit, Kaal, Shubh, Rog, Udveg, Char, Labh],
+            [Shubh, Rog, Udveg, Char, Labh, Amrit, Kaal, Shubh],
+            [Char, Labh, Amrit, Kaal, Shubh, Rog, Udveg, Char],
+            [Kaal, Shubh, Rog, Udveg, Char, Labh, Amrit, Kaal],
+        ];
+        for (day, expected) in DAYS.iter().zip(expected) {
+            assert_eq!(
+                names(&ChoghadiyaSequence::get_day_sequence(day)),
+                expected,
+                "{day}"
+            );
+        }
     }
 
     #[test]
     fn test_night_sequences() {
-        let sunday_night = ChoghadiyaSequence::get_night_sequence("Sunday");
-        assert_eq!(sunday_night[0].0, ChoghadiyaName::Shubh);
+        // Traditional night table: starts with the lord five weekdays on.
+        let expected = [
+            [Shubh, Amrit, Char, Rog, Kaal, Labh, Udveg, Shubh],
+            [Char, Rog, Kaal, Labh, Udveg, Shubh, Amrit, Char],
+            [Kaal, Labh, Udveg, Shubh, Amrit, Char, Rog, Kaal],
+            [Udveg, Shubh, Amrit, Char, Rog, Kaal, Labh, Udveg],
+            [Amrit, Char, Rog, Kaal, Labh, Udveg, Shubh, Amrit],
+            [Rog, Kaal, Labh, Udveg, Shubh, Amrit, Char, Rog],
+            [Labh, Udveg, Shubh, Amrit, Char, Rog, Kaal, Labh],
+        ];
+        for (day, expected) in DAYS.iter().zip(expected) {
+            assert_eq!(
+                names(&ChoghadiyaSequence::get_night_sequence(day)),
+                expected,
+                "{day}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_rulers_and_natures() {
+        for (name, nature, ruler) in ChoghadiyaSequence::get_day_sequence("Sunday") {
+            let (expected_ruler, expected_nature) = match name {
+                Udveg => ("Sun", ChoghadiyaNature::Bad),
+                Char => ("Venus", ChoghadiyaNature::Medium),
+                Labh => ("Mercury", ChoghadiyaNature::Good),
+                Amrit => ("Moon", ChoghadiyaNature::Good),
+                Kaal => ("Saturn", ChoghadiyaNature::Bad),
+                Shubh => ("Jupiter", ChoghadiyaNature::Good),
+                Rog => ("Mars", ChoghadiyaNature::Bad),
+                KalPeriod => unreachable!("not in the seven-period cycle"),
+            };
+            assert_eq!(ruler, expected_ruler, "{name:?}");
+            assert_eq!(nature, expected_nature, "{name:?}");
+        }
     }
 
     #[test]
@@ -475,6 +527,43 @@ mod tests {
         let choghadiya = calculate_choghadiya("Sunday", "06:00", "18:00", "06:00");
         assert_eq!(choghadiya.day.len(), 8);
         assert_eq!(choghadiya.night.len(), 8);
+    }
+
+    #[test]
+    fn test_choghadiya_timings_divide_sunrise_and_sunset() {
+        // Day 06:32→18:28 = 716 min → 89.5 min each; night 18:28→06:31 = 723 min.
+        let c = calculate_choghadiya("Sunday", "06:32", "18:28", "06:31");
+        assert_eq!(
+            (c.day[0].start.as_str(), c.day[0].end.as_str()),
+            ("06:32", "08:01")
+        );
+        assert_eq!(c.day[0].duration_minutes, 89);
+        assert_eq!(c.day[4].start, "12:30");
+        assert_eq!(c.day[7].end, "18:28");
+        assert_eq!(c.night[0].start, "18:28");
+        assert_eq!(c.night[7].end, "06:31");
+        for pair in c.day.windows(2).chain(c.night.windows(2)) {
+            assert_eq!(pair[0].end, pair[1].start);
+        }
+    }
+
+    #[test]
+    fn test_get_current_crosses_midnight() {
+        let c = calculate_choghadiya("Sunday", "06:00", "18:00", "06:00");
+        // Night periods are 90 min: the 4th runs 22:30→00:00, the 5th 00:00→01:30.
+        assert_eq!(c.get_current("23:59").unwrap().name, Rog);
+        assert_eq!(c.get_current("00:00").unwrap().name, Kaal);
+        assert_eq!(c.get_current("05:59:59").unwrap().name, Shubh);
+        // Boundaries belong to the period that starts there.
+        assert_eq!(c.get_current("07:30").unwrap().name, Char);
+        assert!(c.get_current("not a time").is_none());
+    }
+
+    #[test]
+    fn test_unparseable_times_give_no_periods() {
+        let c = calculate_choghadiya("Sunday", "dawn", "18:00", "06:00");
+        assert!(c.day.is_empty());
+        assert_eq!(c.night.len(), 8);
     }
 
     #[test]

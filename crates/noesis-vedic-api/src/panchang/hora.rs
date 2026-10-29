@@ -5,6 +5,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::clock::{in_period, split_span};
+
 /// A single Hora (planetary hour)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Hora {
@@ -156,18 +158,14 @@ pub struct HoraTimings {
 }
 
 impl HoraTimings {
-    /// Get the current Hora based on time
+    /// Get the current Hora for a local `HH:MM` (or `HH:MM:SS`) time.
+    ///
+    /// Each Hora covers `[start, end)`; night Horas may cross midnight.
     pub fn get_current_hora(&self, current_time: &str) -> Option<&Hora> {
-        let all_horas: Vec<&Hora> = self
-            .day_horas
+        self.day_horas
             .iter()
             .chain(self.night_horas.iter())
-            .collect();
-
-        all_horas
-            .iter()
-            .find(|h| current_time >= h.start.as_str() && current_time <= h.end.as_str())
-            .copied()
+            .find(|h| in_period(current_time, &h.start, &h.end))
     }
 
     /// Get Horas ruled by a specific planet
@@ -304,23 +302,23 @@ pub fn calculate_hora_timings(
     }
 }
 
-/// Calculate Horas for a single period (day or night)
+/// Calculate Horas for a single period (day or night) by dividing
+/// `start_time`→`end_time` into equal parts, one per planet.
+///
+/// Returns no Horas if either time cannot be parsed.
 fn calculate_period_horas(
     planets: &[Planet],
-    _start_time: &str,
-    _end_time: &str,
+    start_time: &str,
+    end_time: &str,
     start_number: u8,
 ) -> Vec<Hora> {
+    let Some(spans) = split_span(start_time, end_time, planets.len() as u32) else {
+        return Vec::new();
+    };
     let mut horas = Vec::new();
 
-    // Simplified calculation - in real implementation would parse times
-    // and divide the period into 12 equal parts
-    let _duration_minutes = 60; // Simplified: 1 hour per Hora
-
-    for (i, planet) in planets.iter().enumerate() {
+    for (i, (planet, (start, end, _))) in planets.iter().zip(spans).enumerate() {
         let hora_num = start_number + i as u8;
-        let start_hour = hora_num - 1;
-        let end_hour = hora_num;
 
         let quality = match planet {
             Planet::Sun => "Power and authority",
@@ -337,8 +335,8 @@ fn calculate_period_horas(
         horas.push(Hora {
             number: hora_num,
             ruler: *planet,
-            start: format!("{:02}:00", start_hour),
-            end: format!("{:02}:00", end_hour),
+            start,
+            end,
             is_favorable,
             quality: quality.to_string(),
         });
@@ -414,6 +412,37 @@ mod tests {
         assert_eq!(timings.day_horas.len(), 12);
         assert_eq!(timings.night_horas.len(), 12);
         assert_eq!(timings.total_horas(), 24);
+    }
+
+    #[test]
+    fn test_hora_timings_divide_sunrise_and_sunset() {
+        // Day 06:32→18:28 = 716 min → 59 min 40 s per Hora; night is 723 min.
+        let t = calculate_hora_timings("Sunday", "06:32", "18:28", "06:31");
+        assert_eq!(t.day_horas[0].start, "06:32");
+        assert_eq!(t.day_horas[0].end, "07:31");
+        assert_eq!(t.day_horas[6].start, "12:30");
+        assert_eq!(t.day_horas[11].end, "18:28");
+        assert_eq!(t.night_horas[0].start, "18:28");
+        assert_eq!(t.night_horas[0].number, 13);
+        assert_eq!(t.night_horas[11].end, "06:31");
+        let all: Vec<&Hora> = t.day_horas.iter().chain(t.night_horas.iter()).collect();
+        for pair in all.windows(2) {
+            assert_eq!(pair[0].end, pair[1].start);
+        }
+    }
+
+    #[test]
+    fn test_get_current_hora_crosses_midnight() {
+        let t = calculate_hora_timings("Sunday", "06:00", "18:00", "06:00");
+        // Night Horas are 60 min; 00:30 is the 19th Hora (18:00 + 6 h).
+        let hora = t.get_current_hora("00:30").unwrap();
+        assert_eq!(hora.number, 19);
+        assert_eq!(hora.start, "00:00");
+        // Sunday's 19th Hora: Sun-based cycle index 18 % 7 = 4 → Saturn.
+        assert_eq!(hora.ruler, Planet::Saturn);
+        // A boundary belongs to the Hora that starts there.
+        assert_eq!(t.get_current_hora("07:00").unwrap().number, 2);
+        assert_eq!(t.get_current_hora("05:59").unwrap().number, 24);
     }
 
     #[test]
