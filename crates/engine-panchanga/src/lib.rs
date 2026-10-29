@@ -4,7 +4,9 @@
 //! Migrated from the original Selemene Engine with ConsciousnessEngine trait implementation.
 
 use async_trait::async_trait;
-use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
+use chrono::{
+    DateTime, Duration, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Utc,
+};
 use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
 use noesis_core::{CalculationMetadata, ValidationResult};
 use serde::{Deserialize, Serialize};
@@ -142,16 +144,20 @@ fn to_sidereal_longitude(tropical_longitude: f64) -> f64 {
     (tropical_longitude - LAHIRI_AYANAMSA_DEGREES).rem_euclid(360.0)
 }
 
+fn parse_local_datetime(date: &str, time: &str) -> Option<NaiveDateTime> {
+    let local_date = NaiveDate::parse_from_str(date, "%Y-%m-%d").ok()?;
+    let local_time = NaiveTime::parse_from_str(time, "%H:%M")
+        .or_else(|_| NaiveTime::parse_from_str(time, "%H:%M:%S"))
+        .ok()?;
+    Some(NaiveDateTime::new(local_date, local_time))
+}
+
 fn parse_local_datetime_to_utc(
     date: &str,
     time: &str,
     tz_offset_hours: f64,
 ) -> Option<chrono::DateTime<Utc>> {
-    let local_date = NaiveDate::parse_from_str(date, "%Y-%m-%d").ok()?;
-    let local_time = NaiveTime::parse_from_str(time, "%H:%M")
-        .or_else(|_| NaiveTime::parse_from_str(time, "%H:%M:%S"))
-        .ok()?;
-    let local_dt = NaiveDateTime::new(local_date, local_time);
+    let local_dt = parse_local_datetime(date, time)?;
     let offset_seconds = (tz_offset_hours * 3600.0).round() as i64;
     let utc_dt = local_dt - chrono::Duration::seconds(offset_seconds);
     Some(Utc.from_utc_datetime(&utc_dt))
@@ -490,40 +496,78 @@ fn generate_witness_prompt(result: &PanchangaResult) -> String {
 }
 
 // ---------------------------------------------------------------------------
-// Timezone offset helper
+// Timezone resolution
 // ---------------------------------------------------------------------------
 
-/// Derive a numeric UTC offset from a timezone string.
-///
-/// Supports IANA names for a handful of common zones and explicit
-/// "+HH:MM" / "-HH:MM" offsets. Defaults to 0.0 (UTC) if unknown.
-fn tz_offset_from_string(tz: &str) -> f64 {
-    // Try explicit numeric offset first: "+05:30", "-08:00", etc.
-    if tz.starts_with('+') || tz.starts_with('-') {
-        let parts: Vec<&str> = tz[1..].split(':').collect();
-        let sign: f64 = if tz.starts_with('-') { -1.0 } else { 1.0 };
-        let hours: f64 = parts.first().and_then(|s| s.parse().ok()).unwrap_or(0.0);
-        let minutes: f64 = parts.get(1).and_then(|s| s.parse().ok()).unwrap_or(0.0);
-        return sign * (hours + minutes / 60.0);
+/// A `birth_data.timezone` value: an IANA zone, resolved with its daylight
+/// saving rules, or a fixed UTC offset.
+#[derive(Debug, Clone, Copy)]
+enum Zone {
+    Iana(chrono_tz::Tz),
+    Fixed(chrono::FixedOffset),
+}
+
+/// Parse a timezone string: any IANA name (`"Asia/Kolkata"`,
+/// `"America/New_York"`), a `±HH:MM` or `±HH` offset, or one of the standard
+/// time abbreviations the earlier lookup table accepted that are not IANA
+/// names (`PST`, `CST`, `AEST`). Anything else is an error rather than UTC.
+fn parse_zone(tz: &str) -> Result<Zone, EngineError> {
+    let unknown = || {
+        EngineError::ValidationError(format!(
+            "unknown timezone {tz:?}: expected an IANA zone name such as \"Asia/Kolkata\" \
+             or a UTC offset such as \"+05:30\""
+        ))
+    };
+    let fixed = |hours: i32| chrono::FixedOffset::east_opt(hours * 3600).map(Zone::Fixed);
+
+    if let Some(rest) = tz.strip_prefix('+').or_else(|| tz.strip_prefix('-')) {
+        let (hours, minutes) = rest.split_once(':').unwrap_or((rest, "00"));
+        let all_digits =
+            |s: &str| (1..=2).contains(&s.len()) && s.bytes().all(|b| b.is_ascii_digit());
+        if !all_digits(hours) || minutes.len() != 2 || !all_digits(minutes) {
+            return Err(unknown());
+        }
+        let (hours, minutes): (i32, i32) = (hours.parse().unwrap(), minutes.parse().unwrap());
+        let sign = if tz.starts_with('-') { -1 } else { 1 };
+        if hours > 14 || minutes >= 60 {
+            return Err(unknown());
+        }
+        return chrono::FixedOffset::east_opt(sign * (hours * 3600 + minutes * 60))
+            .map(Zone::Fixed)
+            .ok_or_else(unknown);
     }
 
-    // Common IANA zone names (enough for MVP)
     match tz {
-        "Asia/Kolkata" | "Asia/Calcutta" => 5.5,
-        "Asia/Tokyo" => 9.0,
-        "Asia/Shanghai" | "Asia/Hong_Kong" => 8.0,
-        "Asia/Dubai" => 4.0,
-        "Asia/Kathmandu" => 5.75,
-        "Europe/London" | "GMT" | "UTC" => 0.0,
-        "Europe/Paris" | "Europe/Berlin" | "CET" => 1.0,
-        "Europe/Moscow" => 3.0,
-        "America/New_York" | "US/Eastern" | "EST" => -5.0,
-        "America/Chicago" | "US/Central" | "CST" => -6.0,
-        "America/Denver" | "US/Mountain" | "MST" => -7.0,
-        "America/Los_Angeles" | "US/Pacific" | "PST" => -8.0,
-        "Pacific/Honolulu" | "HST" => -10.0,
-        "Australia/Sydney" | "AEST" => 10.0,
-        _ => 0.0,
+        "PST" => fixed(-8),
+        "CST" => fixed(-6),
+        "AEST" => fixed(10),
+        _ => tz.parse::<chrono_tz::Tz>().ok().map(Zone::Iana),
+    }
+    .ok_or_else(unknown)
+}
+
+impl Zone {
+    /// The UTC instant of a local wall-clock time.
+    fn local_to_utc(&self, local: &NaiveDateTime) -> DateTime<Utc> {
+        match self {
+            Zone::Iana(tz) => local_to_utc(tz, local),
+            Zone::Fixed(offset) => local_to_utc(offset, local),
+        }
+    }
+}
+
+/// A wall time repeated when clocks go back resolves to the earlier instant;
+/// one skipped when clocks go forward is read with the offset in force before
+/// the change (as Python's `fold=0` does).
+fn local_to_utc<Z: TimeZone>(zone: &Z, local: &NaiveDateTime) -> DateTime<Utc> {
+    match zone.from_local_datetime(local) {
+        LocalResult::Single(dt) | LocalResult::Ambiguous(dt, _) => dt.with_timezone(&Utc),
+        LocalResult::None => {
+            let before = zone
+                .offset_from_utc_datetime(&(*local - Duration::days(1)))
+                .fix();
+            Utc.from_utc_datetime(&(*local - Duration::seconds(before.local_minus_utc().into())))
+        }
     }
 }
 
@@ -580,19 +624,18 @@ impl ConsciousnessEngine for PanchangaEngine {
                 )
             })?;
             let time_str = birth.time.as_deref().unwrap_or("12:00");
-            let tz_offset = tz_offset_from_string(&birth.timezone);
 
             // Reject what Swiss Ephemeris cannot parse instead of serving a
             // mean-longitude result computed from a defaulted Julian Day.
-            if parse_local_datetime_to_utc(&birth.date, time_str, tz_offset).is_none() {
-                return Err(EngineError::ValidationError(
+            let local = parse_local_datetime(&birth.date, time_str).ok_or_else(|| {
+                EngineError::ValidationError(
                     "birth_data.date must be YYYY-MM-DD and birth_data.time HH:MM or HH:MM:SS"
                         .into(),
-                ));
-            }
+                )
+            })?;
+            let zone = parse_zone(&birth.timezone)?;
 
-            let mut computed =
-                compute_panchanga_reporting_fallback(&birth.date, time_str, tz_offset);
+            let mut computed = compute_panchanga_at_instant(&zone.local_to_utc(&local));
             computed.0.birth_time_assumed = birth.time.is_none();
             computed
         };
@@ -1180,6 +1223,103 @@ mod tests {
         assert_eq!(without.lunar_longitude, reference.lunar_longitude);
         // 10:00Z, not 04:30Z: the Julian Day is that of the instant itself.
         assert!((without.julian_day - 2_461_173.916_666_7).abs() < 1e-6);
+    }
+
+    fn birth_input(date: &str, time: &str, timezone: &str) -> EngineInput {
+        let mut input = test_input();
+        input.birth_data = Some(BirthData {
+            date: date.to_string(),
+            time: Some(time.to_string()),
+            timezone: timezone.to_string(),
+            ..test_birth_data()
+        });
+        input
+    }
+
+    async fn birth_result(date: &str, time: &str, timezone: &str) -> PanchangaResult {
+        let output = PanchangaEngine::new()
+            .calculate(birth_input(date, time, timezone))
+            .await
+            .unwrap_or_else(|e| panic!("{date} {time} {timezone}: {e:?}"));
+        result_of(&output)
+    }
+
+    fn jd_of(y: i32, mo: u32, d: u32, h: u32, mi: u32) -> f64 {
+        julian_day_from_utc(&Utc.with_ymd_and_hms(y, mo, d, h, mi, 0).unwrap())
+    }
+
+    /// #1521: IANA zones resolve with daylight saving at the instant.
+    /// Europe/London switches GMT -> BST at 01:00Z on 2026-03-29 and back at
+    /// 01:00Z on 2026-10-25.
+    #[tokio::test]
+    async fn test_iana_zone_resolves_dst_on_both_sides_of_change() {
+        // Spring forward: before (GMT, +0) and after (BST, +1).
+        let before = birth_result("2026-03-29", "00:30", "Europe/London").await;
+        assert_eq!(before.julian_day, jd_of(2026, 3, 29, 0, 30));
+        let after = birth_result("2026-03-29", "02:30", "Europe/London").await;
+        assert_eq!(after.julian_day, jd_of(2026, 3, 29, 1, 30));
+        // 01:30 does not exist that night: read with the pre-change offset.
+        let skipped = birth_result("2026-03-29", "01:30", "Europe/London").await;
+        assert_eq!(skipped.julian_day, jd_of(2026, 3, 29, 1, 30));
+
+        // Fall back: 01:30 happens twice; the earlier (BST) instant is used.
+        let repeated = birth_result("2026-10-25", "01:30", "Europe/London").await;
+        assert_eq!(repeated.julian_day, jd_of(2026, 10, 25, 0, 30));
+        let after_fall = birth_result("2026-10-25", "02:30", "Europe/London").await;
+        assert_eq!(after_fall.julian_day, jd_of(2026, 10, 25, 2, 30));
+
+        // Same wall time, summer vs winter, in a negative-offset zone.
+        let winter = birth_result("2026-01-15", "12:00", "America/New_York").await;
+        assert_eq!(winter.julian_day, jd_of(2026, 1, 15, 17, 0));
+        let summer = birth_result("2026-07-15", "12:00", "America/New_York").await;
+        assert_eq!(summer.julian_day, jd_of(2026, 7, 15, 16, 0));
+    }
+
+    /// Zones outside the old 14-arm table resolve instead of becoming UTC,
+    /// and fixed offsets keep working.
+    #[tokio::test]
+    async fn test_any_iana_zone_and_fixed_offsets_resolve() {
+        let sao_paulo = birth_result("2000-02-14", "03:15", "America/Sao_Paulo").await;
+        // Brazilian summer time (-02:00) was in force in February 2000.
+        assert_eq!(sao_paulo.julian_day, jd_of(2000, 2, 14, 5, 15));
+
+        let iana = birth_result("1991-08-13", "13:31", "Asia/Kolkata").await;
+        for tz in ["+05:30", "+5:30", "Asia/Calcutta"] {
+            assert_eq!(
+                birth_result("1991-08-13", "13:31", tz).await.julian_day,
+                iana.julian_day
+            );
+        }
+        let negative = birth_result("2026-01-15", "12:00", "-03:00").await;
+        assert_eq!(negative.julian_day, jd_of(2026, 1, 15, 15, 0));
+        let whole_hours = birth_result("2026-01-15", "12:00", "+09").await;
+        assert_eq!(whole_hours.julian_day, jd_of(2026, 1, 15, 3, 0));
+        let legacy = birth_result("2026-07-15", "12:00", "PST").await;
+        assert_eq!(legacy.julian_day, jd_of(2026, 7, 15, 20, 0));
+    }
+
+    #[tokio::test]
+    async fn test_unknown_timezone_rejected_not_treated_as_utc() {
+        let engine = PanchangaEngine::new();
+        for tz in [
+            "Mars/Olympus_Mons",
+            "",
+            "Kolkata",
+            "+5x",
+            "+05:75",
+            "+15:00",
+            "05:30",
+        ] {
+            match engine
+                .calculate(birth_input("1991-08-13", "13:31", tz))
+                .await
+            {
+                Err(EngineError::ValidationError(msg)) => {
+                    assert!(msg.contains("unknown timezone"), "{tz:?}: {msg}")
+                }
+                other => panic!("{tz:?}: expected ValidationError, got {other:?}"),
+            }
+        }
     }
 
     #[tokio::test]
