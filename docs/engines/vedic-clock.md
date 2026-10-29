@@ -46,7 +46,25 @@ Unlike the other Vedic engines (panchanga/vimshottari/transits), this one is **n
   },
   "upcoming_transitions": [                 // OPTIONAL — JSON key, NOT the struct's `upcoming` (engine.rs:185)
     { "time": "13:00", "description": "Small Intestine time begins", "new_organ": "SmallIntestine", "new_dosha": null }
-  ]
+  ],
+  "vedic_day": {                           // ALWAYS present (#1523); engine.rs `add_vedic_time`
+    "status": "computed",                  // or "not_computed" (+ not_computed_reason, detail, omitted)
+    "date": "2026-03-08", "weekday": "Sunday",       // local date whose sunrise starts this Vedic day
+    "sunrise": "2026-03-08T06:31:37+05:30", "sunset": "2026-03-08T18:29:23+05:30",
+    "next_sunrise": "2026-03-09T06:31:00+05:30",
+    "location": { "latitude": 12.9716, "longitude": 77.5946, "source": "options" }, // options | location | birth_data
+    "sun_event_method": "noaa-solar-position", "sun_event_altitude_deg": -0.833
+  },
+  "hora": {                                // ONLY when vedic_day.status == "computed"
+    "number": 6, "ruler": "Jupiter", "period": "day",
+    "start": "2026-03-08T11:30:41+05:30", "end": "2026-03-08T12:30:30+05:30",
+    "is_favorable": true, "recommendations": [ { "activity": "…", "quality": "favorable", "reason": "Jupiter Hora" } ]
+  },
+  "choghadiya": {                          // ONLY when vedic_day.status == "computed"
+    "number": 4, "name": "Amrit", "meaning": "Nectar", "nature": "good", "ruler": "Moon", "period": "day",
+    "start": "2026-03-08T11:00:47+05:30", "end": "2026-03-08T12:30:30+05:30",
+    "suitable_for": ["General", "Starting new ventures", "Medical"], "avoid": [], "recommendations": [ … ]
+  }
 }
 ```
 
@@ -69,9 +87,14 @@ Unlike the other Vedic engines (panchanga/vimshottari/transits), this one is **n
 | `activity` (input + echoed) | `Meditation\|Exercise\|Work\|Eating\|Sleep\|Creative\|Social` | 7 values (models.rs:177); parsed lowercase from `options.activity` (engine.rs:98) |
 | `upcoming_transitions[]` | look-ahead **6 h** | `new_organ` set on organ hops, `new_dosha` on dosha hops; never both (engine.rs:200-224) |
 | `recommendation.panchanga_quality` | `null` or `"Rating: description"` | non-null only when `tithi_index` and/or `nakshatra_index` supplied (integration.rs:35) |
+| `vedic_day.not_computed_reason` | `location_missing\|no_sunrise_or_sunset` | no location supplied, or polar day/night; `hora`/`choghadiya` are then omitted, never guessed |
+| location | lat −90…90, lon −180…180 | `options.latitude`+`options.longitude` → `location` → `birth_data`; out of range, non-numeric, or only one of the pair → `ValidationError` |
+| `hora.number` | **1–24** | 1–12 divide sunrise→sunset, 13–24 sunset→next sunrise; first hora = weekday lord, then Sun→Venus→Mercury→Moon→Saturn→Jupiter→Mars (vedic_time.rs) |
+| `choghadiya.number` | **1–8** per `period` | day/night halves divided by 8; day starts with the weekday lord's choghadiya, night five places on (vedic_time.rs) |
+| sunrise/sunset accuracy | within ~10 s of Swiss Ephemeris `swe_rise_trans` below ±60° latitude | apparent upper limb with refraction, offline (sun.rs) |
 | `consciousness_level` | **0–5** (envelope) | input `options.consciousness_level`, default **2** (engine.rs:291); gates witness-prompt depth |
 
-**Invariants:** organ + dosha are **pure functions of `local_hour`** (which derives from `current_time` + `timezone.offset_minutes`) — they co-vary, never independent. `local_hour` fully determines `current_organ`, `current_dosha`, `synthesis`, and `upcoming_transitions`. No ephemeris / sidereal longitudes are involved (this is a wall-clock engine, not an astronomical one).
+**Invariants:** organ + dosha are **pure functions of `local_hour`** (which derives from `current_time` + `timezone.offset_minutes`) — they co-vary, never independent. `local_hour` fully determines `current_organ`, `current_dosha`, `synthesis`, and `upcoming_transitions`. No ephemeris / sidereal longitudes are involved in the organ/dosha part. `vedic_day`/`hora`/`choghadiya` are functions of `current_time`, location, and `timezone.offset_minutes` (the offset picks the local date, hence the weekday); sunrise/sunset come from offline solar-position arithmetic (sun.rs), with no network call. Replays must pin all three inputs.
 
 ## 4. Component & brand archetype
 **Today** (`VedicClock.tsx`): a **12-segment radial organ clock** (240×240 SVG donut, `SEG_DEG=30`, `R_OUTER=100`/`R_INNER=60`) — each segment colored by TCM element, the active organ filled emerald (`rgba(16,181,167,0.5)`) + bright stroke, organ abbreviations (LU, HT…) rotated to read outward, a live **clock hand** (`new Date()`, 3 AM = top/−90°, 15°/hr), a small center dot, and a center label (organ name + time range). Below the ring: text cells for organ/element, emotion/virtue, recommendation, dosha/period/rasa, and "Peak Organs Today" tags. Palette is already on-brand (gold `#C5A017`, emerald, water-indigo `rgba(11,80,251)`).
