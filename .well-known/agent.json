@@ -78,11 +78,11 @@
     {
       "id": "vedic-clock",
       "name": "Vedic Clock",
-      "description": "TCM organ meridian clock and Ayurvedic dosha timing for optimal daily scheduling",
-      "tags": ["vedic", "ayurveda", "timing", "dosha", "muhurta"],
+      "description": "TCM organ meridian clock, Ayurvedic dosha timing, and hora/choghadiya from local sunrise and sunset (needs latitude/longitude)",
+      "tags": ["vedic", "ayurveda", "timing", "dosha", "hora", "choghadiya"],
       "examples": [
         "What is the current Vedic time?",
-        "What muhurta is active right now?"
+        "Which hora and choghadiya are active right now?"
       ]
     },
     {

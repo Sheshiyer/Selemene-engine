@@ -2,7 +2,7 @@
 name = "engine-vedic-clock"
 version.workspace = true
 edition = "2021"
-description = "VedicClock-TCM consciousness engine — organ clock + Vedic time integration"
+description = "VedicClock-TCM consciousness engine — organ clock, dosha periods, hora and choghadiya"
 
 [features]
 openapi = []

@@ -4,7 +4,7 @@
 //! based on TCM organ clock and Vedic time cycles.
 
 use async_trait::async_trait;
-use chrono::Utc;
+use chrono::{DateTime, FixedOffset, SecondsFormat, Utc};
 use noesis_core::{
     CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
     ValidationResult,
@@ -13,11 +13,19 @@ use serde_json::{json, Value};
 use std::time::Instant;
 
 use crate::calculator::{get_current_organ, get_local_hour};
+use crate::choghadiya_integration::{activity_label, recommendations_for_choghadiya_period};
 use crate::dosha::get_dosha_for_hour;
+use crate::hora_integration::recommendations_for_hora_period;
 use crate::integration::{get_temporal_recommendation, synthesize_organ_dosha};
 use crate::models::{Activity, UpcomingTransition, VedicClockResult};
 use crate::recommendations::{get_optimal_timing, is_favorable_now};
+use crate::sun::{SUN_EVENT_ALTITUDE_DEG, SUN_EVENT_METHOD};
+use crate::vedic_time::{
+    choghadiya_at, hora_at, hora_is_favorable, vedic_day_for, ChoghadiyaPeriod, HoraPeriod,
+    VedicDay,
+};
 use crate::witness::generate_witness_prompt;
+use noesis_vedic_api::panchang::{get_activities_to_avoid, get_suitable_activities};
 
 /// VedicClock-TCM consciousness engine
 pub struct VedicClockEngine {
@@ -29,6 +37,28 @@ pub struct VedicClockEngine {
 struct TimezoneResolution {
     offset_minutes: i32,
     source: &'static str,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct LocationResolution {
+    latitude: f64,
+    longitude: f64,
+    source: &'static str,
+}
+
+/// Hora and Choghadiya for the instant, or why they were not computed.
+enum VedicTime {
+    Computed {
+        location: LocationResolution,
+        day: VedicDay,
+        hora: HoraPeriod,
+        choghadiya: ChoghadiyaPeriod,
+    },
+    NotComputed {
+        reason: &'static str,
+        detail: &'static str,
+        location: Option<LocationResolution>,
+    },
 }
 
 impl VedicClockEngine {
@@ -90,6 +120,183 @@ impl VedicClockEngine {
         }
     }
 
+    /// Resolve the observer location used for sunrise/sunset.
+    /// Priority:
+    /// 1) options.latitude + options.longitude
+    /// 2) input.location
+    /// 3) birth_data latitude/longitude
+    ///
+    /// Returns `Ok(None)` when no location was supplied; never guesses one.
+    fn resolve_location(input: &EngineInput) -> Result<Option<LocationResolution>, EngineError> {
+        let option = |key: &str| -> Result<Option<f64>, EngineError> {
+            match input.options.get(key) {
+                None | Some(Value::Null) => Ok(None),
+                Some(value) => value.as_f64().map(Some).ok_or_else(|| {
+                    EngineError::ValidationError(format!("options.{key} must be a number"))
+                }),
+            }
+        };
+
+        let resolved = match (option("latitude")?, option("longitude")?) {
+            (Some(latitude), Some(longitude)) => Some(LocationResolution {
+                latitude,
+                longitude,
+                source: "options",
+            }),
+            (None, None) => input
+                .location
+                .as_ref()
+                .map(|loc| LocationResolution {
+                    latitude: loc.latitude,
+                    longitude: loc.longitude,
+                    source: "location",
+                })
+                .or_else(|| {
+                    input.birth_data.as_ref().map(|birth| LocationResolution {
+                        latitude: birth.latitude,
+                        longitude: birth.longitude,
+                        source: "birth_data",
+                    })
+                }),
+            _ => {
+                return Err(EngineError::ValidationError(
+                    "options.latitude and options.longitude must be supplied together".to_string(),
+                ))
+            }
+        };
+
+        if let Some(location) = &resolved {
+            let valid = location.latitude.is_finite()
+                && location.longitude.is_finite()
+                && (-90.0..=90.0).contains(&location.latitude)
+                && (-180.0..=180.0).contains(&location.longitude);
+            if !valid {
+                return Err(EngineError::ValidationError(format!(
+                    "{} latitude/longitude out of range: ({}, {})",
+                    location.source, location.latitude, location.longitude
+                )));
+            }
+        }
+
+        Ok(resolved)
+    }
+
+    /// Compute hora and choghadiya from local sunrise/sunset, offline.
+    fn compute_vedic_time(
+        datetime: DateTime<Utc>,
+        timezone: &TimezoneResolution,
+        location: Option<LocationResolution>,
+    ) -> VedicTime {
+        let Some(location) = location else {
+            return VedicTime::NotComputed {
+                reason: "location_missing",
+                detail: "hora and choghadiya need local sunrise and sunset; supply \
+                         options.latitude/longitude, location, or birth_data",
+                location: None,
+            };
+        };
+
+        match vedic_day_for(
+            datetime,
+            location.latitude,
+            location.longitude,
+            timezone.offset_minutes,
+        ) {
+            Some(day) => VedicTime::Computed {
+                hora: hora_at(&day, datetime),
+                choghadiya: choghadiya_at(&day, datetime),
+                location,
+                day,
+            },
+            None => VedicTime::NotComputed {
+                reason: "no_sunrise_or_sunset",
+                detail: "the Sun does not rise or set at this latitude on this date",
+                location: Some(location),
+            },
+        }
+    }
+
+    /// Add `vedic_day`, and `hora`/`choghadiya` when computed, to the result.
+    fn add_vedic_time(output: &mut Value, vedic_time: &VedicTime, offset_minutes: i32) {
+        let local = |instant: &DateTime<Utc>| -> String {
+            match FixedOffset::east_opt(offset_minutes * 60) {
+                Some(tz) => instant
+                    .with_timezone(&tz)
+                    .to_rfc3339_opts(SecondsFormat::Secs, true),
+                None => instant.to_rfc3339_opts(SecondsFormat::Secs, true),
+            }
+        };
+        let location_json = |location: &LocationResolution| {
+            json!({
+                "latitude": location.latitude,
+                "longitude": location.longitude,
+                "source": location.source,
+            })
+        };
+
+        match vedic_time {
+            VedicTime::Computed {
+                location,
+                day,
+                hora,
+                choghadiya,
+            } => {
+                output["vedic_day"] = json!({
+                    "status": "computed",
+                    "date": day.date.to_string(),
+                    "weekday": weekday_name(day.weekday),
+                    "sunrise": local(&day.sunrise),
+                    "sunset": local(&day.sunset),
+                    "next_sunrise": local(&day.next_sunrise),
+                    "location": location_json(location),
+                    "sun_event_method": SUN_EVENT_METHOD,
+                    "sun_event_altitude_deg": SUN_EVENT_ALTITUDE_DEG,
+                });
+                output["hora"] = json!({
+                    "number": hora.number,
+                    "ruler": hora.ruler.as_str(),
+                    "period": hora.half.as_str(),
+                    "start": local(&hora.start),
+                    "end": local(&hora.end),
+                    "is_favorable": hora_is_favorable(hora.ruler),
+                    "recommendations": recommendations_for_hora_period(hora),
+                });
+                output["choghadiya"] = json!({
+                    "number": choghadiya.number,
+                    "name": choghadiya.name.as_str(),
+                    "meaning": choghadiya.name.meaning(),
+                    "nature": choghadiya.nature.as_str(),
+                    "ruler": choghadiya.ruler.as_str(),
+                    "period": choghadiya.half.as_str(),
+                    "start": local(&choghadiya.start),
+                    "end": local(&choghadiya.end),
+                    "suitable_for": get_suitable_activities(choghadiya.name)
+                        .into_iter()
+                        .map(activity_label)
+                        .collect::<Vec<_>>(),
+                    "avoid": get_activities_to_avoid(choghadiya.name)
+                        .into_iter()
+                        .map(activity_label)
+                        .collect::<Vec<_>>(),
+                    "recommendations": recommendations_for_choghadiya_period(choghadiya),
+                });
+            }
+            VedicTime::NotComputed {
+                reason,
+                detail,
+                location,
+            } => {
+                output["vedic_day"] = json!({
+                    "status": "not_computed",
+                    "not_computed_reason": reason,
+                    "detail": detail,
+                    "omitted": ["hora", "choghadiya"],
+                    "location": location.as_ref().map(location_json),
+                });
+            }
+        }
+    }
+
     /// Extract optional activity from input options
     fn get_activity(options: &std::collections::HashMap<String, Value>) -> Option<Activity> {
         options
@@ -129,6 +336,7 @@ impl VedicClockEngine {
         activity: Option<Activity>,
         datetime: chrono::DateTime<Utc>,
         timezone: &TimezoneResolution,
+        vedic_time: &VedicTime,
     ) -> Value {
         let local_hour = get_local_hour(datetime, timezone.offset_minutes);
         let mut output = json!({
@@ -185,6 +393,8 @@ impl VedicClockEngine {
             output["upcoming_transitions"] = json!(upcoming);
         }
 
+        Self::add_vedic_time(&mut output, vedic_time, timezone.offset_minutes);
+
         output
     }
 
@@ -227,6 +437,18 @@ impl VedicClockEngine {
     }
 }
 
+fn weekday_name(weekday: chrono::Weekday) -> &'static str {
+    match weekday {
+        chrono::Weekday::Sun => "Sunday",
+        chrono::Weekday::Mon => "Monday",
+        chrono::Weekday::Tue => "Tuesday",
+        chrono::Weekday::Wed => "Wednesday",
+        chrono::Weekday::Thu => "Thursday",
+        chrono::Weekday::Fri => "Friday",
+        chrono::Weekday::Sat => "Saturday",
+    }
+}
+
 impl Default for VedicClockEngine {
     fn default() -> Self {
         Self::new()
@@ -252,11 +474,15 @@ impl ConsciousnessEngine for VedicClockEngine {
 
         // Get parameters
         let timezone = Self::resolve_timezone(&input);
+        let location = Self::resolve_location(&input)?;
         let activity = Self::get_activity(&input.options);
         let (tithi, nakshatra) = Self::get_panchanga_indices(&input.options);
 
         // Use current_time from input
         let datetime = input.current_time;
+
+        // Hora and choghadiya, bounded by local sunrise/sunset
+        let vedic_time = Self::compute_vedic_time(datetime, &timezone, location);
 
         // Calculate current organ and dosha
         let current_organ = get_current_organ(datetime, timezone.offset_minutes);
@@ -307,7 +533,7 @@ impl ConsciousnessEngine for VedicClockEngine {
 
         Ok(EngineOutput {
             engine_id: self.engine_id.clone(),
-            result: self.build_result(&result, activity, datetime, &timezone),
+            result: self.build_result(&result, activity, datetime, &timezone, &vedic_time),
             witness_prompt,
             consciousness_level,
             metadata: CalculationMetadata {
@@ -317,7 +543,8 @@ impl ConsciousnessEngine for VedicClockEngine {
                 cached: false,
                 timestamp: Utc::now(),
                 engine_version: env!("CARGO_PKG_VERSION").to_string(),
-                // Local organ-clock computation; no provider or fallback branch.
+                // Local organ-clock and offline sunrise computation; no provider
+                // or fallback branch.
                 fallback_used: false,
                 provider_id: None,
             },
@@ -378,10 +605,22 @@ impl ConsciousnessEngine for VedicClockEngine {
         let local_hour = get_local_hour(input.current_time, timezone.offset_minutes);
         let hour_bucket = local_hour / 2; // Group by 2-hour windows
 
-        format!(
+        let key = format!(
             "vedic-clock:h{}:tz{}:a{:?}:t{:?}:n{:?}",
             hour_bucket, timezone.offset_minutes, activity, tithi, nakshatra
-        )
+        );
+
+        // Hora and choghadiya boundaries fall at arbitrary instants and depend
+        // on location, so a located request is keyed to its exact instant.
+        match Self::resolve_location(input) {
+            Ok(Some(location)) => format!(
+                "{key}:lat{:.6}:lon{:.6}:s{}",
+                location.latitude,
+                location.longitude,
+                input.current_time.timestamp()
+            ),
+            _ => key,
+        }
     }
     fn as_any(&self) -> &dyn std::any::Any {
         self
