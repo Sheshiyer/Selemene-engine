@@ -231,12 +231,12 @@ Traditional Book of Changes divination system.
 
 ## 15. Sacred Geometry Engine
 
-**Platonic solids & geometric patterns** — Generates sacred geometry constructions, calculates proportions (phi, pi, √2), and maps to energetic resonances.
+**Platonic solids & geometric patterns** — Symbolic lookup of a sacred form (description, symbolism, elements, numerology, meditation prompt) from a static table, plus templated witness prompts. TypeScript engine (`ts-engines/src/engines/sacred-geometry`), reached through `noesis-bridge`.
 
-**Input:** `parameters (shape, size, proportions)`  
+**Input:** `parameters.form` (optional; seeded selection when omitted), `parameters.intention`, optional `parameters.svg_template`  
 **Endpoint:** `POST /api/v1/engines/sacred-geometry/calculate`
 
-Includes Flower of Life, Metatron's Cube, Sri Yantra, Golden Spiral.
+Includes Flower of Life, Metatron's Cube, Sri Yantra, Golden Spiral. Emits a contracts/v1 `provenance` block (`fallback_used: false`, `confidence: 1`) and `result.provenance_detail`, which labels each part as symbolic lookup, requested vs seeded selection, caller-template validation or templated narrative. Calculated geometry (ratios, constructions) and rendered artifacts are **not implemented** and are marked so in the response; `svg_preview` only validates a caller-supplied SVG.
 
 <br>
 
