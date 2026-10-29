@@ -1,0 +1,111 @@
+# Handoff: Witness Alchemist Field v2
+
+Handoff from a claude.ai session on Fri 30 Oct 2026, 04:36 IST. Read this file, then `tasks/todo.md`, then start on the first unchecked P0 item.
+
+## What this is
+
+**Witness Alchemist Field** is a single-page Human Design field for Shesh Iyer (Witness Alchemist). It is published as a claude.ai artifact:
+
+- Live page: https://claude.ai/artifact/UuPvCDpJbSyYg8K7nNm11v (private to Shesh)
+- The page has eight rooms, routed by hash: `#sky` (home, three.js night sky with Western/Vedic toggle; 2D SVG wheel under reduced motion, low power or no WebGL), `#today`, `#design`, `#keys`, `#engines` (the eight Selemene engines), `#jyotish` (sidereal chart North/South, dasha drill-down, day Panchanga, Sade Sati, transit aspects; Lagna Scorpio 12°07' is a Swiss Ephemeris figure from compute.py), `#timeline`, `#map`, `#folio`.
+- All transit data is precomputed daily (06:00 IST) from 30 Oct 2026 to 31 Dec 2030 and embedded in the page. The page opens on today's IST date by itself.
+
+To republish the same URL, use a session that has the claude.ai Artifact tool: publish the rebuilt `witness-alchemist-field.html` with `url` set to the link above. Read the artifact first; a publish without a prior read is refused. If your Claude Code session has no Artifact tool, build and preview locally, then republish from claude.ai.
+
+## Subject data (verified)
+
+| Item | Value |
+|---|---|
+| Birth | 13 Aug 1991, 13:31 IST (08:01 UT), Bangalore 12.9716°N, 77.5946°E |
+| Design moment | 13 May 1991, 13:59 IST (88° solar arc) |
+| Type, Strategy, Authority | Generator, To Respond, Sacral |
+| Profile | 2/4 |
+| Definition | Split, specifically a **wide split** (needs two gates to bridge: 7+29, 8+29, or channel 20-34) |
+| Cross | Right Angle Cross of Explanation 4/49 \| 23/43 |
+| Channels | 23-43 Structuring, 42-53 Maturation |
+| Defined centers | Ajna, Throat, Sacral, Root. Head, Heart, Spleen completely open; G holds 1, 46; Solar Plexus holds 49 |
+| Variables | **PRL DRL**: Determination Thirst/Cold (Right); Environment Shores (Left); Motivation Hope (Right); View Probability (Left). Confirmed against Shesh's HumDes bodygraph |
+| Node method | **True node.** Mean node would put Design Node in 61 and define the Head, which contradicts the HumDes chart |
+| Vedic (Lahiri) | Lagna Scorpio 12°07' Anuradha p3; Moon Virgo 9°49' Uttara Phalguni p4; Jupiter Cancer 29°46' exalted, 9th house, Atmakaraka |
+| Vimshottari | Jupiter MD from **14 Sep 2026** (Selemene; source of truth) to Sep 2042. Jupiter/Jupiter AD to 1 Nov 2028. Jupiter/Jupiter/Jupiter PD to 27 Dec 2026 IST |
+| Birth Panchanga (Selemene) | Chaturthi (Shukla), Uttara Phalguni, Siddha yoga, Vishti karana, Mangalavara |
+| Numerology (Selemene) | Life Path 5, Expression 1, Soul Urge 11, Personality 8, Birthday 4, Chaldean name 11 |
+
+Full activations are in `chart.json`. Selemene's Human Design engine matches every gate and line of this computation.
+
+### Gene Keys sphere mapping (matches HumDes; an earlier draft had this wrong)
+
+| Sphere | Key | Source |
+|---|---|---|
+| Life's Work | 4.2 | P Sun |
+| Evolution | 49.2 | P Earth |
+| Radiance | 23.4 | D Sun |
+| Purpose | 43.4 | D Earth |
+| Attraction | 24.4 | D Moon |
+| IQ | 59.5 | P Venus |
+| EQ | 47.1 | P Mars |
+| SQ | 52.1 | D Venus |
+| Vocation | 62.2 | D Mars |
+| Culture | 31.5 | D Jupiter |
+| Pearl | 4.5 | P Jupiter |
+
+The Selemene Gene Keys engine returns only the four Activation spheres, so keep the Venus and Pearl mapping above.
+
+## Files in this bundle
+
+| File | Role |
+|---|---|
+| `compute.py` | Natal, design and one transit snapshot via pyswisseph (Moshier) → `chart.json` |
+| `daily.py` | Daily transit records + event list (ingresses, stations, exact contacts, eclipses) → `sky.json` |
+| `extra.py` | Adds astrocartography MC/IC/ASC/DSC lines, daily transit MC, daily sidereal positions, Vimshottari periods, land outline → `sky.json`. **Run after `daily.py`**; re-running `daily.py` alone drops these fields |
+| `land.js` | world-atlas land-110m → equirectangular SVG path `land.txt` |
+| `content.js` | Folio reading text as blocks (`h1`, `h2`, `p`, `note`, `table`) |
+| `dict.js` | Gate names, Gene Keys spectra, channels, personal channel notes, center texts, spheres, cities |
+| `app.html` | Page template with `%%SKY%%`, `%%CONTENT%%`, `%%DICT%%` placeholders |
+| `room-sky.js`, `room-engines.js`, `room-jyotish.js` | The Sky (home) and Engines rooms; `build.py` inlines them at `%%ROOMS%%` |
+| `build.py` | Assembles `witness-alchemist-field.html`; bundles `selemene/*.json` into `%%ENGINES%%` and takes the Mahadasha start from the Vimshottari response |
+| `t.js` | jsdom smoke test across all rooms (needs `npm i jsdom@24.1.0`) |
+| `selemene/calc-*.json` | Selemene engine responses for the natal chart, 30 Oct 2026 (no key inside) |
+| `design-system/README.md`, `tokens.json` | Tryambakam Noesis design system, copied from the artifact Shesh selected |
+
+Build:
+
+```bash
+pip install pyswisseph --break-system-packages
+npm i world-atlas@2.0.2 topojson-client@3.1.0 jsdom@24.1.0
+python3 compute.py && python3 daily.py && python3 extra.py
+node land.js   # only if land.txt is missing; extra.py reads land.txt
+node -e "require('fs').writeFileSync('content.json',JSON.stringify(require('./content.js')))"
+python3 build.py && node t.js
+```
+
+## Selemene engine
+
+- Repo: `/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine`
+- Base URL: `https://selemene.tryambakam.space/api/v1`, header `X-API-Key`
+- Key: `SELEMENE_API_KEY` in `/Volumes/madara/sec-key/.env`. **Never print it, commit it, or put it in the page.**
+- Request body: `{"birth_data":{"name","date":"1991-08-13","time":"13:31","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"},"consciousness_level":3}` to `POST /engines/{id}/calculate`
+- Engines this key can run: panchanga, vimshottari, transits, human-design, gene-keys, numerology, biorhythm, vedic-clock
+- Refused (403, free tier): biofield, nadabrahman, raaga, i-ching, sacred-geometry. Untested: tarot, enneagram, workflows, `/witness/interpret`
+- Credits: 50 on the free tier; engine calls did not use any
+- Transits engine is sidereal and returns aspects to natal planets, `period_quality`, retrogrades and `sade_sati` (inactive: Moon Virgo, Saturn Pisces)
+- Vedic Clock is time-of-call specific: current hora, choghadiya, dosha, organ, and `upcoming_transitions`
+
+## Constraints that shape the build
+
+- **Artifact CSP.** Scripts load only from cdnjs, jsDelivr, unpkg; no `fetch` to other hosts. The page cannot call Selemene. Live data must arrive through a scheduled task that writes to the artifact's database (`db` capability) or republishes the page.
+- **Design system.** Tryambakam Noesis. Instrument voice on void for operating rooms; Folio voice on parchment for the reading only; never mix voices on one screen. Gold is line and type, never a large fill. One easing curve `cubic-bezier(0.19,1,0.22,1)`. Lexicon: field, room, witness, instrument, engine; banned: journey, path, healing, manifesting, "AI", dashboard, archive, library. Panchang and Satoshi fall back to Unbounded and Manrope (Google Fonts).
+- **Copy rules.** No prediction, no diagnosis. Witness, do not forecast. Direct, affirmative sentences, no filler.
+- **No edition history in the artifact.** The earlier reading is context only. Do not show "what changed", "previous reading", "corrected" or "upgraded edition" language anywhere.
+
+## Open decision (ask Shesh before building P1)
+
+How the daily scheduled task gets the key: (a) the task requires Shesh's Mac and reads `/Volumes/madara/sec-key/.env` each morning, so the Mac must be awake around 05:30 IST; or (b) Shesh stores the key somewhere the task can reach without the Mac.
+
+## Known data points worth reusing
+
+- 30 Oct 2026: Mars in 7 plus South Node in 29 bridge the wide split; single definition with motor to Throat until 1 Nov.
+- Jupiter return on P Jupiter 4.5: 25 Oct 2026, 31 Jan 2027, 21 Jun 2027 (tropical). Sidereal returns 29 Oct 2026, 26 Jan 2027, 24 Jun 2027.
+- Nodes on the cross (NN 49 / SN 4): 24 Nov 2026 to 7 Apr 2027, exact on P Earth 13 Mar 2027.
+- Pluto over D Saturn 41.6: 30 Mar 2027, 17 Jun 2027, 29 Jan 2028, 5 Sep 2028, 1 Dec 2028.
+- Nodal return (NN 54): 20 Sep 2028 onward, exact on natal nodes Sep to Oct 2028.

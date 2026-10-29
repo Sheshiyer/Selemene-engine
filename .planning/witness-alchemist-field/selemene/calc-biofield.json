@@ -1,0 +1,1 @@
+{"contract_version":"v1","status":403,"error_code":"ENGINE_SCOPE_FORBIDDEN","message":"This API key is not permitted to execute engine 'biofield'.","error":"This API key is not permitted to execute engine 'biofield'.","details":{"engine_id":"biofield","required_permission":"biofield:read"},"trace_id":"086c6821-8eda-4d15-8a17-23e5543bf812"}
