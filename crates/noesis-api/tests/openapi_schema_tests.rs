@@ -272,3 +272,37 @@ async fn test_engine_output_result_references_engine_union_schema() {
         "EngineOutput.result should reference EngineResultData schema"
     );
 }
+
+/// #1191: the Panchanga result schema documents which path produced the
+/// longitudes and whether the birth time was assumed.
+#[tokio::test]
+async fn panchanga_result_schema_documents_provenance_fields() {
+    let spec = openapi_spec().await;
+    let schemas = spec["components"]["schemas"]
+        .as_object()
+        .expect("components.schemas object");
+    let panchanga = &schemas["PanchangaResultSchema"];
+    let properties = schema_properties(panchanga, schemas);
+    assert!(properties.contains("position_source"));
+    assert!(properties.contains("birth_time_assumed"));
+    assert_eq!(
+        panchanga["properties"]["birth_time_assumed"]["type"],
+        "boolean"
+    );
+
+    let source = &schemas["PanchangaPositionSourceSchema"];
+    let values: BTreeSet<&str> = source["enum"]
+        .as_array()
+        .expect("position source enum")
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    assert_eq!(
+        values,
+        BTreeSet::from([
+            "swiss_ephemeris_files",
+            "swiss_ephemeris_moshier",
+            "mean_longitude"
+        ])
+    );
+}

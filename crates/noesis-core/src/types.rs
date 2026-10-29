@@ -225,6 +225,26 @@ pub struct PanchangaResultSchema {
     pub paksha: String,
     #[schema(example = "Punarvasu")]
     pub nakshatra: String,
+    /// Path that produced the solar and lunar longitudes behind tithi,
+    /// nakshatra, yoga and karana. Absent only on results serialized before
+    /// the field existed.
+    #[schema(nullable = true)]
+    pub position_source: Option<PanchangaPositionSourceSchema>,
+    /// The birth time was missing and local noon was assumed. Input
+    /// defaulting, not a calculation fallback.
+    #[schema(example = false)]
+    pub birth_time_assumed: bool,
+}
+
+/// Mirrors `engine_panchanga::PositionSource`. Only `swiss_ephemeris_files`
+/// is a non-fallback source.
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum PanchangaPositionSourceSchema {
+    SwissEphemerisFiles,
+    SwissEphemerisMoshier,
+    MeanLongitude,
 }
 
 #[cfg(feature = "openapi")]
