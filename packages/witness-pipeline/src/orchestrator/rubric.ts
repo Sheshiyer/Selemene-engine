@@ -36,6 +36,27 @@ const GUARDRAILS: Record<string, RegExp[]> = {
   'family-lineage': [/will have children/i, /infertile/i, /parent will die/i, /child will/i],
 };
 
+// Where a clause starts: sentence ends, semicolons, line breaks and contrastive turns.
+const CLAUSE_BREAK_RE = /[.!?;:\n]|\b(?:but|however|yet|although|though)\b/gi;
+const NEGATION_RE = /\b(?:not|no|nothing|never|none|nor|neither|cannot|without|rather than)\b|n't\b/i;
+
+/**
+ * Whether `output` asserts a guardrail phrase rather than ruling it out. The
+ * safeguards ask the model to say what a reading cannot tell ("nothing here
+ * says you will marry"), so a match negated earlier in its clause is the
+ * safeguard working, not a breach.
+ */
+function assertsGuardrail(re: RegExp, output: string): boolean {
+  const global = new RegExp(re.source, 'gi');
+  for (const match of output.matchAll(global)) {
+    const before = output.slice(0, match.index);
+    let clauseStart = 0;
+    for (const brk of before.matchAll(CLAUSE_BREAK_RE)) clauseStart = (brk.index ?? 0) + brk[0].length;
+    if (!NEGATION_RE.test(before.slice(clauseStart))) return true;
+  }
+  return false;
+}
+
 const SECTION_THRESHOLDS: Record<string, { minFacts: number; minLayers: number }> = {
   opening: { minFacts: 1, minLayers: 2 },
   'convergence-map': { minFacts: 6, minLayers: 4 },
@@ -100,7 +121,7 @@ export function auditSectionOutput(input: AuditSectionInput): AuditedSectionRubr
   const integratedLayerCount = LAYERS.filter(([, re]) => re.test(input.output)).length;
   const thresholds = SECTION_THRESHOLDS[input.sectionId] ?? DEFAULT_THRESHOLDS;
   const guardrailViolations = (GUARDRAILS[input.sectionId] ?? [])
-    .filter((re) => re.test(input.output))
+    .filter((re) => assertsGuardrail(re, input.output))
     .map((re) => re.source);
 
   const engineFacts = extractKeyFactsFromEngines(input.engineResults || []);

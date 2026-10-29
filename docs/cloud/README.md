@@ -69,6 +69,7 @@ OmniRoute has two other roles.
 |---|---|---|
 | `workers/llm-proxy`, which serves Urania's narrator and WitnessRun interpretation through `NARRATOR_LLM_URL` | KV `OMNIROUTE_API_KEY` and `OMNIROUTE_MODEL` | Command Code, Nebius, NVIDIA, Kimi |
 | `noesis-witness` (Rust, `/witness/interpret`) | env `OMNIROUTE_API_KEY` and `OMNIROUTE_MODEL`, plus optional `OMNIROUTE_BASE_URL` | NVIDIA, then OpenRouter |
+| Written L0 readings (Rust, `/assets/jobs`) | the same, plus optional `OMNIROUTE_READING_MODEL` | NVIDIA, then OpenRouter |
 | `witness-pipeline` scripts (L0 reports) | env `OMNIROUTE_API_KEY` and `OMNIROUTE_MODEL` | Command Code, NVIDIA, OpenRouter, OpenAI |
 
 Each path stays inert until **both** the key and the model are set. No model
@@ -84,6 +85,14 @@ npx wrangler deploy
 
 For the Rust witness, set `OMNIROUTE_API_KEY` and `OMNIROUTE_MODEL` on the
 Railway `Selemene-engine` service (staging first). Urania needs no change.
+
+Written readings stream each section, because OmniRoute closes non-streamed
+requests after 30 seconds. A reading is twelve sections written in turn, so
+pick a writing combo for `OMNIROUTE_READING_MODEL`. On 2026-10-29,
+`noesis-write` (Claude Sonnet) wrote a section in under a minute, while
+`noesis-review` routed to a reasoning model that spent about three minutes per
+section, mostly reasoning. Without `OMNIROUTE_READING_MODEL`, readings use
+`OMNIROUTE_MODEL`.
 
 ### b. External model rail for cloud sessions
 

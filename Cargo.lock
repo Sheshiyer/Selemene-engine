@@ -2637,6 +2637,7 @@ dependencies = [
  "opentelemetry",
  "rand 0.8.6",
  "redis",
+ "regex",
  "reqwest",
  "sentry",
  "sentry-tower",
@@ -2657,6 +2658,7 @@ dependencies = [
  "utoipa-swagger-ui",
  "uuid",
  "wiremock",
+ "yaml-rust2",
 ]
 
 [[package]]

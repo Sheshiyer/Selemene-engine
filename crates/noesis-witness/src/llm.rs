@@ -14,14 +14,26 @@
 //! table); OmniRoute uses `OMNIROUTE_MODEL` for every role because its model
 //! ids are deployment-specific. A failed OmniRoute call retries via NVIDIA, then
 //! OpenRouter; a failed NVIDIA call retries via OpenRouter.
+//!
+//! Long-form writing (`for_reading` + `complete_with_budget`) streams the
+//! response: OmniRoute closes non-streamed requests after 30 seconds, and a
+//! report section can take minutes. `OMNIROUTE_READING_MODEL` picks a writing
+//! model for readings, falling back to `OMNIROUTE_MODEL`.
 
 use serde::{Deserialize, Serialize};
 use std::env;
+use std::time::Duration;
 use tracing::{debug, warn};
 
 const NVIDIA_BASE_URL: &str = "https://integrate.api.nvidia.com/v1";
 const OPENROUTER_BASE_URL: &str = "https://openrouter.ai/api/v1";
 const OMNIROUTE_DEFAULT_BASE_URL: &str = "https://omniroute.thoughtseed.space/v1";
+/// Upper bound for one non-streamed completion.
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(300);
+/// Upper bound for one streamed completion (a long report section).
+const STREAM_TIMEOUT: Duration = Duration::from_secs(20 * 60);
+/// A stream that sends nothing (not even a keep-alive) for this long is dead.
+const STREAM_IDLE_TIMEOUT: Duration = Duration::from_secs(120);
 
 // Tier → (model_id, max_tokens) for the Witness Dyad.
 // Mirrors nvidia-routing.ts — single source of truth is the TS file;
@@ -66,6 +78,17 @@ impl OmniRouteConfig {
             model: non_empty("OMNIROUTE_MODEL")?,
         })
     }
+}
+
+/// A completed chat call and where it was answered.
+#[derive(Clone, Debug)]
+pub struct Completion {
+    pub text: String,
+    pub provider: LlmProvider,
+    /// The model id sent to the provider (OmniRoute's are deployment-specific).
+    pub model: String,
+    /// The model the provider reports having used, when it says.
+    pub served_model: Option<String>,
 }
 
 pub struct LlmClient {
@@ -127,6 +150,8 @@ struct ChatRequest {
     messages: Vec<ChatMessage>,
     max_tokens: u32,
     temperature: f32,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    stream: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -138,6 +163,8 @@ struct ChatMessage {
 #[derive(Deserialize)]
 struct ChatResponse {
     choices: Vec<ChatChoice>,
+    #[serde(default)]
+    model: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -179,6 +206,36 @@ impl LlmClient {
         })
     }
 
+    /// Like `for_tier`, with `OMNIROUTE_READING_MODEL` (when set) as the
+    /// OmniRoute model, for long-form readings.
+    pub fn for_reading(tier: &str) -> Option<Self> {
+        let mut client = Self::for_tier(tier)?;
+        let reading_model = env::var("OMNIROUTE_READING_MODEL")
+            .ok()
+            .filter(|v| !v.trim().is_empty());
+        if let (Some(cfg), Some(model)) = (client.omniroute.as_mut(), reading_model) {
+            cfg.model = model;
+        }
+        Some(client)
+    }
+
+    /// A client for an explicit OmniRoute gateway, without reading the
+    /// environment or configuring fallbacks.
+    pub fn omniroute(base_url: &str, api_key: &str, model: &str, tier: &str) -> Self {
+        Self {
+            client: reqwest::Client::new(),
+            omniroute: Some(OmniRouteConfig {
+                base_url: base_url.trim_end_matches('/').to_string(),
+                api_key: api_key.to_string(),
+                model: model.to_string(),
+            }),
+            nvidia_api_key: None,
+            openrouter_api_key: None,
+            provider: LlmProvider::OmniRoute,
+            tier: tier.to_string(),
+        }
+    }
+
     /// Send a chat completion for a specific agent role.
     /// Tries the primary provider first, then each configured fallback.
     pub async fn complete_for_role(
@@ -187,12 +244,38 @@ impl LlmClient {
         system: &str,
         user: &str,
     ) -> Result<String, String> {
-        let (model, max_tokens) = model_for_tier(&self.tier, role);
+        let (_, max_tokens) = model_for_tier(&self.tier, role);
+        self.complete(role, system, user, max_tokens, false)
+            .await
+            .map(|completion| completion.text)
+    }
+
+    /// Like `complete_for_role`, with the caller's output budget, streamed
+    /// so it can run for minutes, reporting which provider and model answered.
+    pub async fn complete_with_budget(
+        &self,
+        role: &str,
+        system: &str,
+        user: &str,
+        max_tokens: u32,
+    ) -> Result<Completion, String> {
+        self.complete(role, system, user, max_tokens, true).await
+    }
+
+    async fn complete(
+        &self,
+        role: &str,
+        system: &str,
+        user: &str,
+        max_tokens: u32,
+        stream: bool,
+    ) -> Result<Completion, String> {
+        let (model, _) = model_for_tier(&self.tier, role);
 
         let mut provider = self.provider.clone();
         loop {
             match self
-                .complete_with_provider(&provider, model, system, user, max_tokens)
+                .complete_with_provider(&provider, model, system, user, max_tokens, stream)
                 .await
             {
                 Ok(t) => return Ok(t),
@@ -219,7 +302,8 @@ impl LlmClient {
         system: &str,
         user: &str,
         max_tokens: u32,
-    ) -> Result<String, String> {
+        stream: bool,
+    ) -> Result<Completion, String> {
         let (base_url, api_key, model) = match provider {
             LlmProvider::OmniRoute => {
                 let cfg = self
@@ -259,14 +343,20 @@ impl LlmClient {
             ],
             max_tokens,
             temperature: 0.82,
+            stream,
         };
 
         debug!("[witness-llm] POST {url} model={model} provider={provider:?}");
 
-        let resp = self
+        let mut resp = self
             .client
             .post(&url)
             .bearer_auth(api_key)
+            .timeout(if stream {
+                STREAM_TIMEOUT
+            } else {
+                REQUEST_TIMEOUT
+            })
             .json(&body)
             .send()
             .await
@@ -279,11 +369,31 @@ impl LlmClient {
             return Err(format!("LLM API error {status}: {text}"));
         }
 
+        if stream {
+            let mut raw = Vec::new();
+            loop {
+                match tokio::time::timeout(STREAM_IDLE_TIMEOUT, resp.chunk()).await {
+                    Err(_) => return Err("LLM stream stalled".to_string()),
+                    Ok(Err(e)) => return Err(format!("LLM stream failed: {e}")),
+                    Ok(Ok(None)) => break,
+                    Ok(Ok(Some(bytes))) => raw.extend_from_slice(&bytes),
+                }
+            }
+            let streamed = parse_stream(&String::from_utf8_lossy(&raw))?;
+            return Ok(Completion {
+                text: streamed.text,
+                provider: provider.clone(),
+                model: model.to_string(),
+                served_model: streamed.served_model,
+            });
+        }
+
         let parsed: ChatResponse = resp
             .json()
             .await
             .map_err(|e| format!("failed to parse LLM response: {e}"))?;
 
+        let served_model = parsed.model.filter(|m| !m.is_empty());
         parsed
             .choices
             .into_iter()
@@ -295,14 +405,102 @@ impl LlmClient {
                     .filter(|s| !s.is_empty())
                     .or(c.message.reasoning_content)
             })
-            .map(|s| s.trim().to_string())
+            .map(|s| Completion {
+                text: s.trim().to_string(),
+                provider: provider.clone(),
+                model: model.to_string(),
+                served_model: served_model.clone(),
+            })
             .ok_or_else(|| "LLM returned empty choices".to_string())
     }
+}
+
+/// The text and model of a streamed (server-sent events) completion.
+#[derive(Debug, PartialEq)]
+struct Streamed {
+    text: String,
+    served_model: Option<String>,
+}
+
+/// Collect a chat completion stream. Keep-alive chunks are skipped; reasoning
+/// text is used only when the model sent no content.
+fn parse_stream(raw: &str) -> Result<Streamed, String> {
+    let mut content = String::new();
+    let mut reasoning = String::new();
+    let mut served_model = None;
+    for line in raw.lines() {
+        let Some(data) = line.strip_prefix("data:").map(str::trim) else {
+            continue;
+        };
+        if data.is_empty() || data == "[DONE]" {
+            continue;
+        }
+        let chunk: serde_json::Value =
+            serde_json::from_str(data).map_err(|e| format!("bad LLM stream chunk: {e}"))?;
+        if let Some(error) = chunk.get("error") {
+            return Err(format!("LLM stream error: {error}"));
+        }
+        if let Some(model) = chunk["model"].as_str() {
+            if !model.is_empty() && model != "keepalive" {
+                served_model = Some(model.to_string());
+            }
+        }
+        let delta = &chunk["choices"][0]["delta"];
+        if let Some(text) = delta["content"].as_str() {
+            content.push_str(text);
+        }
+        if let Some(text) = delta["reasoning_content"].as_str() {
+            reasoning.push_str(text);
+        }
+    }
+    let text = if content.trim().is_empty() {
+        reasoning
+    } else {
+        content
+    };
+    if text.trim().is_empty() {
+        return Err("LLM stream returned no text".to_string());
+    }
+    Ok(Streamed {
+        text: text.trim().to_string(),
+        served_model,
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_stream_collects_content_and_skips_keepalives() {
+        let raw = concat!(
+            "data: {\"id\":\"chatcmpl-keepalive\",\"model\":\"keepalive\",\"choices\":[{\"index\":0,\"delta\":{}}]}\n\n",
+            "data: {\"model\":\"claude-haiku-5-5\",\"choices\":[{\"delta\":{\"content\":\"# Opening\\n\"}}]}\n\n",
+            "data: {\"model\":\"claude-haiku-5-5\",\"choices\":[{\"delta\":{\"content\":\"Words.\"}}]}\n\n",
+            "data: {\"model\":\"claude-haiku-5-5\",\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}]}\n\n",
+            "data: [DONE]\n"
+        );
+        assert_eq!(
+            parse_stream(raw).unwrap(),
+            Streamed {
+                text: "# Opening\nWords.".into(),
+                served_model: Some("claude-haiku-5-5".into())
+            }
+        );
+    }
+
+    #[test]
+    fn a_stream_falls_back_to_reasoning_and_reports_errors() {
+        let reasoning =
+            "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"Only this.\"}}]}\n";
+        assert_eq!(parse_stream(reasoning).unwrap().text, "Only this.");
+        assert!(
+            parse_stream("data: {\"error\":{\"message\":\"upstream\"}}\n")
+                .unwrap_err()
+                .contains("upstream")
+        );
+        assert!(parse_stream("data: [DONE]\n").is_err());
+    }
 
     #[test]
     fn omniroute_is_the_default_when_configured() {

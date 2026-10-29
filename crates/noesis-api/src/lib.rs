@@ -11,11 +11,13 @@ mod biofield_client;
 mod capabilities;
 pub mod cf_access;
 mod config;
+pub mod desktop_auth;
 pub mod error;
 pub mod error_mapper;
 mod handlers;
 mod living_reading_publication;
 mod logging;
+pub mod reading;
 mod middleware;
 pub use middleware::ApiKeyPrincipal;
 pub mod workflow_parity;
@@ -140,6 +142,9 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::auth::forgot_password,
         handlers::auth::reset_password,
         handlers::auth::change_password,
+        handlers::desktop_auth::authorize,
+        handlers::desktop_auth::token,
+        handlers::desktop_auth::revoke,
         handlers::biofield::create_session,
         handlers::biofield::close_session,
         handlers::biofield::get_session,
@@ -151,6 +156,8 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::biofield::create_baseline,
         handlers::biofield::create_export,
         handlers::assets::generate,
+        handlers::assets::start_job,
+        handlers::assets::get_job,
     ),
     components(
         schemas(
@@ -296,6 +303,9 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::auth::RegisterRequest,
             handlers::auth::RegisterResponse,
             handlers::auth::LoginRequest,
+            handlers::desktop_auth::DesktopTokenRequest,
+            handlers::desktop_auth::DesktopTokenResponse,
+            handlers::desktop_auth::DesktopRevokeRequest,
             handlers::auth::LoginResponse,
             handlers::auth::ForgotPasswordRequest,
             handlers::auth::ForgotPasswordResponse,
@@ -321,6 +331,7 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::assets::AssetGenerateRequest,
             handlers::assets::AssetGenerateResponse,
             handlers::assets::AssetPass,
+            handlers::assets::AssetJobResponse,
             // Rich intake contract types (for report_level, subjects[], normalized_location, relationship_context)
             noesis_core::intake::NormalizedLocation,
             noesis_core::intake::ReportSubjectInput,
@@ -808,12 +819,25 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             get(handlers::living_reading_invites::resolve_invitation),
         );
 
+    // Public desktop sign-in endpoints: authenticated by PKCE code or refresh
+    // token rather than a session, so they sit outside auth_middleware but are
+    // rate limited by IP.
+    let desktop_token_routes = Router::new()
+        .route("/desktop/token", post(handlers::desktop_auth::token))
+        .route("/desktop/revoke", post(handlers::desktop_auth::revoke))
+        .layer(axum_middleware::from_fn_with_state(
+            rate_limiter.clone(),
+            middleware::rate_limit_middleware,
+        ));
+
     let api_v1 = Router::new()
         .route(
             "/auth/change-password",
             post(handlers::auth::change_password),
         )
         .route("/auth/logout", post(handlers::auth::logout))
+        // Desktop sign-in starts here in the browser; requires a Cloudflare Access identity.
+        .route("/desktop/authorize", get(handlers::desktop_auth::authorize))
         .route(
             "/users/me",
             get(handlers::users::get_me).patch(handlers::users::update_me),
@@ -1099,6 +1123,8 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         )
         // Additive premium asset surface (witness-pipeline backed)
         .route("/assets/generate", post(handlers::assets::generate))
+        .route("/assets/jobs", post(handlers::assets::start_job))
+        .route("/assets/jobs/:job_id", get(handlers::assets::get_job))
         // Layers are applied bottom-to-top, so rate_limit runs AFTER auth
         .layer(axum_middleware::from_fn_with_state(
             rate_limiter.clone(),
@@ -1108,7 +1134,8 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             state.clone(),
             middleware::auth_middleware,
         ))
-        .merge(auth_routes);
+        .merge(auth_routes)
+        .merge(desktop_token_routes);
     // NOTE: auth_routes (register, login, forgot-password, reset-password) are
     // intentionally merged AFTER the auth_middleware layer above, which means they are
     // NOT covered by that middleware. This is correct — they are public endpoints.

@@ -49,6 +49,24 @@ describe('auditSectionOutput', () => {
     expect(rubric.guardrail_violations.length).toBeGreaterThan(0);
   });
 
+  it('does not count a safeguard that rules a claim out as a breach', () => {
+    const audit = (sectionId: string, output: string) => auditSectionOutput({
+      sectionId,
+      title: sectionId,
+      targetWords: 20,
+      output,
+      modelRequested: 'tier-default',
+      modelUsed: 'tier-default',
+      latencyMs: 10,
+    });
+    // Wording from a real model-written L0 reading.
+    expect(audit('love-marriage', 'Nothing in the timeline says you will marry, remain married, or separate.').guardrail_gate).toBe('pass');
+    expect(audit('health', 'They do not establish susceptibility, diagnosis, or certainty.').guardrail_gate).toBe('pass');
+    expect(audit('family-lineage', 'The overlay cannot say whether you will have children, what a child will be like.').guardrail_gate).toBe('pass');
+    expect(audit('love-marriage', 'This is not fate, but you will marry in 2027.').guardrail_gate).toBe('fail');
+    expect(audit('family-lineage', 'Your first child will be a leader.').guardrail_gate).toBe('fail');
+  });
+
   it('uses stricter deterministic thresholds for kundali timeline sections', () => {
     const rubric = auditSectionOutput({
       sectionId: 'master-timeline',
