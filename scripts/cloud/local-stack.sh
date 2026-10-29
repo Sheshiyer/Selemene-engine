@@ -12,6 +12,12 @@
 #
 # Optional: SIDECARS=1 also starts the MediaPipe (8001) and biofield CV
 # (8002) Python sidecars in a Python 3.11 venv.
+#
+# Witness and L0 readings use OmniRoute when OMNIROUTE_MODEL is set
+# (OMNIROUTE_BASE_URL defaults to the Thoughtseed gateway). Set
+# OMNIROUTE_API_KEY too; in a Claude cloud environment that stores the key
+# as a network secret, the egress proxy adds the credential, so any
+# placeholder works.
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
@@ -77,6 +83,7 @@ start() {
     ENGINE_SCOPE_MODE=enforce BILLING_MODE=free \
     PYTHON_BIOFIELD_URL=http://127.0.0.1:8002 SELEMENE_FACE_CV_URL=http://127.0.0.1:8001 \
     SWISS_EPHEMERIS_PATH="$repo/data/ephemeris" \
+    OMNIROUTE_API_KEY="${OMNIROUTE_API_KEY:-${OMNIROUTE_MODEL:+network-secret}}" \
     "$repo/target/debug/noesis-server"
   wait_for api "http://127.0.0.1:$API_PORT/health" 180
 
