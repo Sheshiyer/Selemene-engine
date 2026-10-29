@@ -4,7 +4,8 @@
  * The engine's output mixes three different kinds of truth, and callers must
  * be able to tell them apart:
  *   - symbolic lookup  : form data read from the static SACRED_FORMS table
- *   - calculated geometry : none today -- must be marked not_implemented
+ *   - calculated geometry : computed per form (GH #1524); forms without a
+ *                           faithful construction stay not_implemented
  *   - rendered artifact   : none today -- svg_preview only validates a
  *                           caller-supplied template; nothing is rendered
  *
@@ -50,8 +51,8 @@ describe('SacredGeometryEngine provenance (GH #1401)', () => {
     expect(detail.form).toEqual({ kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' })
     expect(detail.form_selection).toEqual({ kind: 'requested' })
     expect(detail.meditation).toEqual({ kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' })
-    expect(detail.calculated_geometry.status).toBe('not_implemented')
-    expect(typeof detail.calculated_geometry.reason).toBe('string')
+    expect(detail.calculated_geometry.status).toBe('calculated')
+    expect(typeof detail.calculated_geometry.construction).toBe('string')
     expect(detail.rendered_artifact.status).toBe('not_implemented')
     expect(typeof detail.rendered_artifact.reason).toBe('string')
     expect(detail.svg_preview.kind).toBe('caller_template_validation')

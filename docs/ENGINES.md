@@ -234,12 +234,12 @@ Esoteric calculation engines built in TypeScript, bridged to main Rust API.
 
 ## 15. Sacred Geometry Engine
 
-**Platonic solids & geometric patterns** — Symbolic lookup of a sacred form (description, symbolism, elements, numerology, meditation prompt) from a static table, plus templated witness prompts. TypeScript engine (`ts-engines/src/engines/sacred-geometry`), reached through `noesis-bridge`.
+**Platonic solids & geometric patterns** — Symbolic lookup of a sacred form (description, symbolism, elements, numerology, meditation prompt) from a static table, numeric construction data for the form, plus templated witness prompts. TypeScript engine (`ts-engines/src/engines/sacred-geometry`), reached through `noesis-bridge`.
 
 **Input:** `parameters.form` (optional; seeded selection when omitted), `parameters.intention`, optional `parameters.svg_template`  
 **Endpoint:** `POST /api/v1/engines/sacred-geometry/calculate`
 
-Includes Flower of Life, Metatron's Cube, Sri Yantra, Golden Spiral. Emits a contracts/v1 `provenance` block (`fallback_used: false`, `confidence: 1`) and `result.provenance_detail`, which labels each part as symbolic lookup, requested vs seeded selection, caller-template validation or templated narrative. Calculated geometry (ratios, constructions) and rendered artifacts are **not implemented** and are marked so in the response; `svg_preview` only validates a caller-supplied SVG.
+Includes Flower of Life, Metatron's Cube, Sri Yantra, Golden Spiral. Emits a contracts/v1 `provenance` block (`fallback_used: false`, `confidence: 1`) and `result.provenance_detail`, which labels each part as symbolic lookup, requested vs seeded selection, caller-template validation or templated narrative. `result.geometry` carries numeric construction data computed from each form's definition (circles, polygons, polylines, lines, points and named measures in a relative frame inside the unit circle, plus 3D vertices and edges for the Platonic solids), with the rule named in `construction`; the shape is `ts-engines/src/engines/sacred-geometry/geometry.schema.json`, and `provenance_detail.calculated_geometry` is `calculated`. Sri Yantra has no faithful construction yet, so its `geometry` is `null` and the section stays `not_implemented` with a reason. Nothing is rendered: clients draw from the numbers, `rendered_artifact` is `not_implemented`, and `svg_preview` only validates a caller-supplied SVG.
 
 <br>
 
