@@ -1297,6 +1297,7 @@ dependencies = [
  "chrono",
  "chrono-tz",
  "engine-human-design",
+ "libswisseph-sys",
  "noesis-core",
  "serde",
  "serde_json",

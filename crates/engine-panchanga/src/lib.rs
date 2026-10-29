@@ -7,10 +7,13 @@ use async_trait::async_trait;
 use chrono::{
     DateTime, Duration, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Utc,
 };
-use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
+use engine_human_design::ephemeris::{lock_ephemeris, EphemerisCalculator, HDPlanet};
+use libswisseph_sys::tuple_result::simple::{swe_get_ayanamsa_ut, swe_set_sid_mode};
+use libswisseph_sys::SE_SIDM_LAHIRI;
 use noesis_core::{CalculationMetadata, ValidationResult};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use std::sync::PoisonError;
 use std::time::Instant;
 
 pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutput};
@@ -136,12 +139,20 @@ const VARA_NAMES: [&str; 7] = [
     "Shanivara (Saturday)",
 ];
 
-/// Approximate Lahiri ayanamsa used to convert tropical longitudes to sidereal.
-const LAHIRI_AYANAMSA_DEGREES: f64 = 23.72;
+/// Lahiri ayanamsa in degrees at a UT Julian Day, from the Swiss Ephemeris
+/// `SE_SIDM_LAHIRI` sidereal mode (the same source engine-transits uses).
+pub fn lahiri_ayanamsa(jd_ut: f64) -> f64 {
+    // Sidereal mode is global Swiss Ephemeris state; hold the shared lock.
+    let _guard = lock_ephemeris().unwrap_or_else(PoisonError::into_inner);
+    unsafe {
+        swe_set_sid_mode(SE_SIDM_LAHIRI as i32, 0.0, 0.0);
+        swe_get_ayanamsa_ut(jd_ut)
+    }
+}
 
-/// Convert tropical longitude to sidereal longitude using Lahiri ayanamsa.
-fn to_sidereal_longitude(tropical_longitude: f64) -> f64 {
-    (tropical_longitude - LAHIRI_AYANAMSA_DEGREES).rem_euclid(360.0)
+/// Convert tropical longitude to sidereal longitude for a given ayanamsa.
+fn to_sidereal_longitude(tropical_longitude: f64, ayanamsa: f64) -> f64 {
+    (tropical_longitude - ayanamsa).rem_euclid(360.0)
 }
 
 fn parse_local_datetime(date: &str, time: &str) -> Option<NaiveDateTime> {
@@ -264,6 +275,11 @@ pub struct PanchangaResult {
     pub lunar_longitude: f64,
     /// Julian Day Number used for the calculation
     pub julian_day: f64,
+    /// Lahiri ayanamsa (degrees) for `julian_day`, subtracted from the
+    /// tropical longitudes. `None` only when deserializing a result serialized
+    /// before this field existed (those used a fixed 23.72°).
+    #[serde(default)]
+    pub ayanamsa_degrees: Option<f64>,
 
     /// Path that produced the longitudes. `None` only when deserializing a
     /// result serialized before this field existed.
@@ -465,8 +481,9 @@ fn build_result(
     position_source: PositionSource,
     tz_offset_hours: f64,
 ) -> (PanchangaResult, bool) {
-    let solar_lng = to_sidereal_longitude(solar_lng_tropical);
-    let lunar_lng = to_sidereal_longitude(lunar_lng_tropical);
+    let ayanamsa = lahiri_ayanamsa(jd);
+    let solar_lng = to_sidereal_longitude(solar_lng_tropical, ayanamsa);
+    let lunar_lng = to_sidereal_longitude(lunar_lng_tropical, ayanamsa);
 
     let tithi_val = calculate_tithi(solar_lng, lunar_lng);
     let nakshatra_val = calculate_nakshatra(lunar_lng);
@@ -505,6 +522,7 @@ fn build_result(
         solar_longitude: solar_lng,
         lunar_longitude: lunar_lng,
         julian_day: jd,
+        ayanamsa_degrees: Some(ayanamsa),
         position_source: Some(position_source),
         birth_time_assumed: false,
     };
@@ -1396,6 +1414,36 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(output.result["vara_basis"], "local_date");
+    }
+
+    /// #1521: the ayanamsa is Lahiri for the date, not a fixed 23.72°.
+    #[test]
+    fn test_lahiri_ayanamsa_varies_with_date() {
+        // Lahiri's defining epoch, 1956-03-21 00:00: 23°15'00.658" true, less
+        // 0.004658° nutation for the mean value Swiss Ephemeris returns.
+        let historical = lahiri_ayanamsa(jd_of(1956, 3, 21, 0, 0));
+        assert!((historical - 23.2456).abs() < 1e-4, "1956: {historical}");
+        let j2000 = lahiri_ayanamsa(2_451_545.0);
+        assert!((j2000 - 23.8571).abs() < 1e-4, "J2000: {j2000}");
+        let in_2026 = lahiri_ayanamsa(jd_of(2026, 5, 13, 10, 0));
+        assert!((in_2026 - 24.2254).abs() < 1e-4, "2026: {in_2026}");
+    }
+
+    #[tokio::test]
+    async fn test_result_reports_the_ayanamsa_it_applied() {
+        let instant = Utc.with_ymd_and_hms(2026, 5, 13, 10, 0, 0).unwrap();
+        let output = PanchangaEngine::new()
+            .calculate(daily_input(instant, None))
+            .await
+            .unwrap();
+        let pr = result_of(&output);
+        let ayanamsa = pr.ayanamsa_degrees.expect("ayanamsa reported");
+        assert_eq!(ayanamsa, lahiri_ayanamsa(pr.julian_day));
+        assert_eq!(output.result["ayanamsa_degrees"], ayanamsa);
+
+        let (_, tropical_moon) = precise_tropical_positions(&instant).unwrap();
+        let expected = (tropical_moon - ayanamsa).rem_euclid(360.0);
+        assert!((pr.lunar_longitude - expected).abs() < 1e-9);
     }
 
     #[tokio::test]

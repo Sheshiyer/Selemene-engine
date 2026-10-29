@@ -5,11 +5,11 @@
     "karana_index": 2,
     "karana_name": "Kaulava",
     "karana_value": 11.0,
-    "lunar_longitude": 79.5530998589048,
+    "lunar_longitude": 79.43935063463579,
     "nakshatra_index": 5,
     "nakshatra_name": "Ardra",
-    "nakshatra_value": 5.96648248941786,
-    "solar_longitude": 16.843124642780197,
+    "nakshatra_value": 5.957951297597684,
+    "solar_longitude": 16.729375418511182,
     "tithi_index": 5,
     "tithi_name": "Shashthi (Shukla)",
     "tithi_value": 5.225831268010384,
@@ -17,7 +17,7 @@
     "vara_name": "Guruvara (Thursday)",
     "yoga_index": 7,
     "yoga_name": "Dhriti",
-    "yoga_value": 7.229716837626374
+    "yoga_value": 7.212654453986023
   },
   "witness_prompt": "You were born under Tithi Shashthi (Shukla) and Nakshatra Ardra. The Tithi reflects the angle between Sun and Moon at your birth — a mirror of the dance between your conscious will and emotional nature. What pattern do you notice when your intentions and feelings are misaligned?",
   "consciousness_level": 0,
