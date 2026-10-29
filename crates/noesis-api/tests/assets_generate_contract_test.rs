@@ -576,8 +576,16 @@ async fn assets_generate_akshay_humdes_solo_l0() {
     assert_eq!(first_loc["latitude"].as_f64().unwrap(), 12.9767936);
     assert_eq!(first_loc["longitude"].as_f64().unwrap(), 77.590082);
 
+    // /assets/generate renders sections from engine values without a model,
+    // so the gate must not claim the reading is ready (#1525).
     let quality = sp["quality"].as_object().expect("quality object");
-    assert_eq!(quality["gate_status"].as_str().unwrap_or(""), "ready");
+    assert_eq!(quality["gate_status"].as_str().unwrap_or(""), "blocked");
+    assert_eq!(sp["audit"]["passed"], false);
+    assert_eq!(sp["audit"]["blockers"][0], "sections_not_model_written");
+    assert_eq!(
+        sp["register"], json["register"],
+        "source pack register matches the response"
+    );
     let sections = quality["sections"]
         .as_array()
         .expect("sections rubric matrix");

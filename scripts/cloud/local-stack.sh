@@ -17,7 +17,8 @@
 # (OMNIROUTE_BASE_URL defaults to the Thoughtseed gateway). Set
 # OMNIROUTE_API_KEY too; in a Claude cloud environment that stores the key
 # as a network secret, the egress proxy adds the credential, so any
-# placeholder works.
+# placeholder works. OMNIROUTE_READING_MODEL (e.g. noesis-write) picks the
+# model for written L0 readings (/api/v1/assets/jobs).
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."

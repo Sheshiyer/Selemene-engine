@@ -17,6 +17,7 @@ pub mod error_mapper;
 mod handlers;
 mod living_reading_publication;
 mod logging;
+pub mod reading;
 mod middleware;
 pub use middleware::ApiKeyPrincipal;
 pub mod workflow_parity;
@@ -155,6 +156,8 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::biofield::create_baseline,
         handlers::biofield::create_export,
         handlers::assets::generate,
+        handlers::assets::start_job,
+        handlers::assets::get_job,
     ),
     components(
         schemas(
@@ -328,6 +331,7 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::assets::AssetGenerateRequest,
             handlers::assets::AssetGenerateResponse,
             handlers::assets::AssetPass,
+            handlers::assets::AssetJobResponse,
             // Rich intake contract types (for report_level, subjects[], normalized_location, relationship_context)
             noesis_core::intake::NormalizedLocation,
             noesis_core::intake::ReportSubjectInput,
@@ -1119,6 +1123,8 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         )
         // Additive premium asset surface (witness-pipeline backed)
         .route("/assets/generate", post(handlers::assets::generate))
+        .route("/assets/jobs", post(handlers::assets::start_job))
+        .route("/assets/jobs/:job_id", get(handlers::assets::get_job))
         // Layers are applied bottom-to-top, so rate_limit runs AFTER auth
         .layer(axum_middleware::from_fn_with_state(
             rate_limiter.clone(),

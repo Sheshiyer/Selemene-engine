@@ -1,4 +1,5 @@
 pub mod admin_repository;
+pub mod asset_job_repository;
 pub mod billing_repository;
 pub mod biofield_repository;
 pub mod desktop_session_repository;

@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 99,
-  "route_count": 105,
+  "path_count": 101,
+  "route_count": 107,
   "routes": [
     {
       "path": "/auth/register",
@@ -1115,6 +1115,28 @@
         {
           "method": "POST",
           "handler": "handlers::assets::generate"
+        }
+      ]
+    },
+    {
+      "path": "/assets/jobs",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::assets::start_job"
+        }
+      ]
+    },
+    {
+      "path": "/assets/jobs/:job_id",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::assets::get_job"
         }
       ]
     }
