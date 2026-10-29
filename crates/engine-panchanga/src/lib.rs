@@ -4,7 +4,7 @@
 //! Migrated from the original Selemene Engine with ConsciousnessEngine trait implementation.
 
 use async_trait::async_trait;
-use chrono::{NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
 use engine_human_design::ephemeris::{EphemerisCalculator, HDPlanet};
 use noesis_core::{CalculationMetadata, ValidationResult};
 use serde::{Deserialize, Serialize};
@@ -157,14 +157,19 @@ fn parse_local_datetime_to_utc(
     Some(Utc.from_utc_datetime(&utc_dt))
 }
 
-fn precise_tropical_positions(date: &str, time: &str, tz_offset_hours: f64) -> Option<(f64, f64)> {
-    let utc_dt = parse_local_datetime_to_utc(date, time, tz_offset_hours)?;
+fn precise_tropical_positions(utc_dt: &DateTime<Utc>) -> Option<(f64, f64)> {
     let ephemeris = EphemerisCalculator::new("");
-    let sun = ephemeris.get_planet_position(HDPlanet::Sun, &utc_dt).ok()?;
-    let moon = ephemeris
-        .get_planet_position(HDPlanet::Moon, &utc_dt)
-        .ok()?;
+    let sun = ephemeris.get_planet_position(HDPlanet::Sun, utc_dt).ok()?;
+    let moon = ephemeris.get_planet_position(HDPlanet::Moon, utc_dt).ok()?;
     Some((sun.longitude, moon.longitude))
+}
+
+/// Julian Day (UT) of a UTC instant, seconds included.
+fn julian_day_from_utc(utc_dt: &DateTime<Utc>) -> f64 {
+    const UNIX_EPOCH_JD: f64 = 2_440_587.5;
+    UNIX_EPOCH_JD
+        + utc_dt.timestamp() as f64 / 86_400.0
+        + utc_dt.timestamp_subsec_nanos() as f64 / 86_400e9
 }
 
 // ---------------------------------------------------------------------------
@@ -379,14 +384,33 @@ pub fn compute_panchanga_reporting_fallback(
     time: &str,
     tz_offset_hours: f64,
 ) -> (PanchangaResult, bool) {
-    let jd = calculate_julian_day(date, time, tz_offset_hours);
+    match parse_local_datetime_to_utc(date, time, tz_offset_hours) {
+        Some(utc_dt) => compute_panchanga_at_instant(&utc_dt),
+        // Swiss Ephemeris needs a parsed instant; keep the original
+        // mean-longitude path for input only the Meeus formula accepts.
+        None => {
+            let jd = calculate_julian_day(date, time, tz_offset_hours);
+            build_result(
+                jd,
+                calculate_solar_position(jd),
+                calculate_lunar_position(jd),
+                PositionSource::MeanLongitude,
+            )
+        }
+    }
+}
+
+/// Compute the Panchanga for a UTC instant, reporting whether a fallback was
+/// used as [`compute_panchanga_reporting_fallback`] does.
+pub fn compute_panchanga_at_instant(utc_dt: &DateTime<Utc>) -> (PanchangaResult, bool) {
+    let jd = julian_day_from_utc(utc_dt);
 
     // Prefer local Swiss Ephemeris positions for correct transition timing,
     // but retain the original mean-longitude fallback if ephemeris access fails.
     // Moshier substitution inside Swiss Ephemeris is a fallback too.
     engine_human_design::ephemeris::reset_moshier_observed();
     let (solar_lng_tropical, lunar_lng_tropical, position_source) =
-        match precise_tropical_positions(date, time, tz_offset_hours) {
+        match precise_tropical_positions(utc_dt) {
             Some((sun, moon)) if engine_human_design::ephemeris::moshier_observed() => {
                 (sun, moon, PositionSource::SwissEphemerisMoshier)
             }
@@ -397,6 +421,15 @@ pub fn compute_panchanga_reporting_fallback(
                 PositionSource::MeanLongitude,
             ),
         };
+    build_result(jd, solar_lng_tropical, lunar_lng_tropical, position_source)
+}
+
+fn build_result(
+    jd: f64,
+    solar_lng_tropical: f64,
+    lunar_lng_tropical: f64,
+    position_source: PositionSource,
+) -> (PanchangaResult, bool) {
     let solar_lng = to_sidereal_longitude(solar_lng_tropical);
     let lunar_lng = to_sidereal_longitude(lunar_lng_tropical);
 
@@ -536,41 +569,33 @@ impl ConsciousnessEngine for PanchangaEngine {
         // default uses birth_data.date for the natal birth panchanga.
         let use_daily = input.options.get("mode").and_then(|v| v.as_str()) == Some("daily");
 
-        let (date_str, time_str, tz_offset, birth_time_assumed) = if use_daily {
-            // Daily mode: use today's date from current_time, birth timezone for offset
-            let today = input.current_time.format("%Y-%m-%d").to_string();
-            let now_time = input.current_time.format("%H:%M").to_string();
-            let tz = input
-                .birth_data
-                .as_ref()
-                .map(|b| tz_offset_from_string(&b.timezone))
-                .unwrap_or(0.0);
-            (today, now_time, tz, false)
+        let (result, fallback_used) = if use_daily {
+            // Daily mode: `current_time` is already the UTC instant. The
+            // positions depend only on it, never on the birth timezone.
+            compute_panchanga_at_instant(&input.current_time)
         } else {
             let birth = input.birth_data.as_ref().ok_or_else(|| {
                 EngineError::CalculationError(
                     "birth_data is required for Panchanga calculations".into(),
                 )
             })?;
-            (
-                birth.date.clone(),
-                birth.time.as_deref().unwrap_or("12:00").to_string(),
-                tz_offset_from_string(&birth.timezone),
-                birth.time.is_none(),
-            )
+            let time_str = birth.time.as_deref().unwrap_or("12:00");
+            let tz_offset = tz_offset_from_string(&birth.timezone);
+
+            // Reject what Swiss Ephemeris cannot parse instead of serving a
+            // mean-longitude result computed from a defaulted Julian Day.
+            if parse_local_datetime_to_utc(&birth.date, time_str, tz_offset).is_none() {
+                return Err(EngineError::ValidationError(
+                    "birth_data.date must be YYYY-MM-DD and birth_data.time HH:MM or HH:MM:SS"
+                        .into(),
+                ));
+            }
+
+            let mut computed =
+                compute_panchanga_reporting_fallback(&birth.date, time_str, tz_offset);
+            computed.0.birth_time_assumed = birth.time.is_none();
+            computed
         };
-
-        // Reject what Swiss Ephemeris cannot parse instead of serving a
-        // mean-longitude result computed from a defaulted Julian Day.
-        if parse_local_datetime_to_utc(&date_str, &time_str, tz_offset).is_none() {
-            return Err(EngineError::ValidationError(
-                "birth_data.date must be YYYY-MM-DD and birth_data.time HH:MM or HH:MM:SS".into(),
-            ));
-        }
-
-        let (mut result, fallback_used) =
-            compute_panchanga_reporting_fallback(&date_str, &time_str, tz_offset);
-        result.birth_time_assumed = birth_time_assumed;
         let witness_prompt = generate_witness_prompt(&result);
 
         let result_json = serde_json::to_value(&result).map_err(|e| {
@@ -1114,6 +1139,47 @@ mod tests {
             "daily and birth vara should differ but both returned {} ({})",
             daily_pr.vara_index, daily_pr.vara_name
         );
+    }
+
+    fn daily_input(current_time: chrono::DateTime<Utc>, timezone: Option<&str>) -> EngineInput {
+        let mut options = HashMap::new();
+        options.insert("mode".to_string(), serde_json::json!("daily"));
+        EngineInput {
+            birth_data: timezone.map(|tz| BirthData {
+                timezone: tz.to_string(),
+                ..test_birth_data()
+            }),
+            current_time,
+            location: None,
+            precision: Precision::Standard,
+            options,
+        }
+    }
+
+    /// #1521: daily mode treats `current_time` as the UTC instant it is. The
+    /// birth timezone must not shift it a second time.
+    #[tokio::test]
+    async fn test_daily_mode_positions_independent_of_birth_timezone() {
+        let engine = PanchangaEngine::new();
+        let instant = Utc.with_ymd_and_hms(2026, 5, 13, 10, 0, 0).unwrap();
+        let reference = compute_panchanga_at_instant(&instant).0;
+
+        let without = result_of(&engine.calculate(daily_input(instant, None)).await.unwrap());
+        for tz in ["Asia/Kolkata", "+05:30", "America/New_York"] {
+            let with = result_of(
+                &engine
+                    .calculate(daily_input(instant, Some(tz)))
+                    .await
+                    .unwrap(),
+            );
+            assert_eq!(with.tithi_name, without.tithi_name, "{tz}");
+            assert_eq!(with.nakshatra_name, without.nakshatra_name, "{tz}");
+            assert_eq!(with.lunar_longitude, without.lunar_longitude, "{tz}");
+            assert_eq!(with.julian_day, without.julian_day, "{tz}");
+        }
+        assert_eq!(without.lunar_longitude, reference.lunar_longitude);
+        // 10:00Z, not 04:30Z: the Julian Day is that of the instant itself.
+        assert!((without.julian_day - 2_461_173.916_666_7).abs() < 1e-6);
     }
 
     #[tokio::test]
