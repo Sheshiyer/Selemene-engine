@@ -1295,7 +1295,9 @@ version = "3.3.1"
 dependencies = [
  "async-trait",
  "chrono",
+ "chrono-tz",
  "engine-human-design",
+ "libswisseph-sys",
  "noesis-core",
  "serde",
  "serde_json",
