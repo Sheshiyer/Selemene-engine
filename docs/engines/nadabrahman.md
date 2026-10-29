@@ -25,19 +25,19 @@ Output and ranges below are unchanged (they were already derived from the runtim
 ## 1. Identity
 | | |
 |---|---|
-| `engine_id` | `nadabrahman` (engine.rs:37; asserted engine.rs:399) |
+| `engine_id` | `nadabrahman` (engine.rs:124; asserted engine.rs:659) |
 | Domain crate | `crates/engine-nadabrahman/src/` — output type `NadaBrahmanAnalysis` (models.rs:55) |
-| Runtime serializer | **`engine.rs:171` `serialize_result`** — the JSON the API actually returns (authoritative; differs from the struct, see §2) |
+| Runtime serializer | **`engine.rs:261` `serialize_result`** — the JSON the API actually returns (authoritative; differs from the struct, see §2) |
 | Data files (embedded) | `data/nadabrahman/{melakarta_ragas.json, time_raga_mappings.json, chakra_frequencies.json}` (data.rs:13–15) |
 | Renderer | `apps/noesis-web/src/components/engines/Nadabrahman.tsx` |
 | Renderer raga DB | `apps/noesis-web/src/lib/raaga/melakartas.ts` (`MELAKARTAS`, 72 entries — melakartas.ts:78) |
-| Fixture (real values) | **none** — no `tests/` dir; reference values taken from unit-test assertions (data.rs:255–280, engine.rs:460–465) and the embedded JSON |
+| Fixture (real values) | **none** — no `tests/` dir; reference values taken from unit-test assertions (data.rs:255–280, engine.rs:718–726) and the embedded JSON |
 | OpenAPI stub | `noesis-core/src/types.rs:291` (`NadabrahmanResultSchema`) — **fictional, see §7** |
 | Runtime source | `engine-nadabrahman` crate (standalone; no vedic-api path) |
 
 ## 2. Output schema
 
-**Runtime JSON (authoritative — exactly what `serialize_result` emits, engine.rs:171–228):**
+**Runtime JSON (authoritative — exactly what `serialize_result` emits, engine.rs:261–318):**
 ```jsonc
 {
   "time_recommendation": {                          // always present
@@ -45,15 +45,15 @@ Output and ranges below are unchanged (they were already derived from the runtim
     "prahar_number": 1,                             // 1–8
     "time_range": "06:00-09:00",                    // models.rs:134-145
     "primary_raga": { "raga_number": 15, "raga_name": "Mayamalavagowla", "reason": "…" },
-    "dosha_dominance": "kapha",                      // kapha|pitta|vata (engine.rs:147-154)
-    "energy_quality": "ascending"                    // engine.rs:157-168
+    "dosha_dominance": "kapha",                      // kapha|pitta|vata (engine.rs:237-244)
+    "energy_quality": "ascending"                    // engine.rs:247-258
     // NOTE: secondary_ragas exists on the struct (models.rs:48) but is NOT serialized here
   },
   "recommendations": [                              // always present, ≤5, score-desc
     {
       "raga_number": 15, "raga_name": "Mayamalavagowla",
       "reason": "…", "score": 1.0,                  // f64, see §3
-      "arohanam":  ["sa","ri1","ga3","ma1","pa","dha1","ni3","sa"],  // enriched if raga known (engine.rs:184-189)
+      "arohanam":  ["sa","ri1","ga3","ma1","pa","dha1","ni3","sa"],  // enriched if raga known (engine.rs:274-279)
       "avarohanam":["sa","ni3","dha1","pa","ma1","ga3","ri1","sa"],
       "mood": "devotional", "therapeutic_qualities": ["…"]
     }
@@ -84,19 +84,19 @@ Sub-types: `PraharRecommendation` (models.rs:43) carries `secondary_ragas` + `pr
 |---|---|---|
 | `prahar_number` | **1–8** | 3-hour blocks; derived from `time_basis.local_hour` (engine.rs:135, models.rs:91-103). E.g. `10:00Z` + `Asia/Kolkata` → 15:30 → 4; with no zone → 10 → 2. Boundaries: 1=06–09, 2=09–12, 3=12–15, 4=15–18, 5=18–21, 6=21–00, 7=00–03, 8=03–06 |
 | `prahar_name` | 8 fixed strings | Pratah / Sangava / Madhyahna / Aparahna / Sayahna / Pradosha / Nisha / Brahma Muhurta (models.rs:120-131) |
-| `dosha_dominance` | `kapha`\|`pitta`\|`vata` | prahar→dosha map (engine.rs:147-154); note prahars 7 & 8 are both `vata` |
-| `energy_quality` | enum (8) | ascending/expansive/peak/sustaining/transitional/inward/deep/awakening (engine.rs:157-168) |
+| `dosha_dominance` | `kapha`\|`pitta`\|`vata` | prahar→dosha map (engine.rs:237-244); note prahars 7 & 8 are both `vata` |
+| `energy_quality` | enum (8) | ascending/expansive/peak/sustaining/transitional/inward/deep/awakening (engine.rs:247-258) |
 | `raga_number` | **1–72** | Melakarta system; full DB has 72 ragas (data.rs:211). Renderer also clamps 1–72 (Nadabrahman.tsx:38,44) |
-| `recommendations[]` length | **0–5** | truncated to 5 after dedup+sort (engine.rs:103); renderer further `.slice(0,6)` (Nadabrahman.tsx:238) |
-| `score` | **f64, ~0.5–1.0** | primary = `1.0 − i·0.05`; secondary = `0.7 − i·0.1` (data.rs:101,118); dosha/rasa hits = `0.7` (data.rs:146,163); fallback raga = `0.5` (engine.rs:53). **Not normalized**, can be ≤0 for long secondary lists |
+| `recommendations[]` length | **0–5** | truncated to 5 after dedup+sort (engine.rs:193); renderer further `.slice(0,6)` (Nadabrahman.tsx:238) |
+| `score` | **f64, ~0.5–1.0** | primary = `1.0 − i·0.05`; secondary = `0.7 − i·0.1` (data.rs:101,118); dosha/rasa hits = `0.7` (data.rs:146,163); fallback raga = `0.5` (engine.rs:143). **Not normalized**, can be ≤0 for long secondary lists |
 | `solfeggio_hz` | **396 / 417 / 528 / 639 / 741 / 852 / 963 Hz** | the 7-chakra Solfeggio ladder (chakra_frequencies.json; root=396 & heart=639 asserted data.rs:261,278) |
 | `binaural_target_hz` | **0.5 / 4 / 6 / 8 / 10 / 12 / 14 Hz** | beat-frequency per chakra (chakra_frequencies.json); delta/theta/alpha range, not audible tones |
 | `chakra_name` | echo of input string | accepts Sanskrit ("Muladhara") **or** English ("root"); case-insensitive (data.rs:172-202). Unknown chakra → `chakra_frequency` omitted entirely |
 | swaras (`arohanam`/`avarohanam`) | 8-note arrays | ascending/descending scale; tokens `sa ri1 ga3 ma1 pa dha1 ni3 sa` (varianted swaras 1–3) |
-| `dosha_recommendation` / `rasa_mapping` | string or absent | present only when `dosha` / (`rasa`\|`mood`) option supplied (engine.rs:76-98) |
+| `dosha_recommendation` / `rasa_mapping` | string or absent | present only when `dosha` / (`rasa`\|`mood`) option supplied (engine.rs:166-188) |
 | `time_basis` | object, always present | `timezone` IANA string or `null`; `offset_minutes` −1080…1080; `local_hour` 0–23; `source` `options` \| `utc_default` |
 
-**Invariants.** `recommendations` is sorted score-descending after de-dup by `raga_number` (engine.rs:101-103). `time_recommendation` + `recommendations` are **always** present (validator enforces, engine.rs:300-308); `chakra_frequency`, `dosha_recommendation`, `rasa_mapping` are conditional on input options. The witness prompt is non-empty or the call errors (engine.rs:259-263). **Output co-varies with the caller's local hour** — the same birth data yields a different prahar/raga each 3-hour block. The cache key is hour-granular and keys on the time basis (source, zone, offset, local hour), so callers in different zones never share an entry (engine.rs:436-471).
+**Invariants.** `recommendations` is sorted score-descending after de-dup by `raga_number` (engine.rs:191-193). `time_recommendation` + `recommendations` are **always** present (validator enforces, engine.rs:395-403); `chakra_frequency`, `dosha_recommendation`, `rasa_mapping` are conditional on input options. The witness prompt is non-empty or the call errors (engine.rs:350-354). **Output co-varies with the caller's local hour** — the same birth data yields a different prahar/raga each 3-hour block. The cache key is hour-granular and keys on the time basis (source, zone, offset, local hour), so callers in different zones never share an entry (engine.rs:436-471).
 
 ## 4. Component & brand archetype
 **Today** (`Nadabrahman.tsx`): an **all-text** view — a gold mantra box (only if `result.mantra` present, line 204), a 3-cell grid (Chakra+element / Dosha / Rasa+emotion, lines 211-232), and a "Sound Practices" tag row where each resolvable raga gets ▶ **play** and ⬇ **WAV** buttons backed by a real Web-Audio/Strudel synth (`getRaagaPlayer`, lines 234-272). Below: an **audio-source toggle** (Suno recording vs. live Strudel) and a collapsible **V2 control bar** — timbre (sine/sitar/bansuri/sarangi), gamaka (kampita/andolana/kurula/nokku/sphurita), tala (7 options), breath (7 prāṇāyāma patterns), lines 274-355. If none of `chakra_frequency` / `mantra` / `dosha` is present it falls back to `GenericEngineView` (line 200). **No visualization** — zero SVG/canvas, no waveform; it is a player + metadata panel, not a geometric figure.
@@ -117,13 +117,13 @@ Sub-types: `PraharRecommendation` (models.rs:43) carries `secondary_ragas` + `pr
 | bija mantra + `note` (from data file) | acoustic readout at the core — **needs engine fix to ship, see §7** |
 
 ## 6. Dynamics
-**Time-driven, near-live.** Unlike the one-shot Vedic engines, output depends on the local hour of `current_time` (per `time_basis`) → the recommended prahar/raga **changes every 3 hours**; the cache key is hour-granular and zone-aware (engine.rs:436-471), so a re-fetch after a block boundary returns new data. Within a block it's stable. The **audio layer is fully interactive** (client-side): play/stop/download, source switching, and V2 timbre/gamaka/tala/breath all mutate playback live via `getRaagaPlayer()` without re-fetching engine output (Nadabrahman.tsx:104-198). `dosha`/`rasa`/`chakra` are **request options**, not birth data — changing them re-runs the engine. `consciousness_level` (0–5) is envelope-level and may gate interpretive depth; `required_phase` is 0 (available to everyone, engine.rs:249-251). Wave-2: the waveform should animate in sync with actual playback (oscilloscope), idle to a slow breath when stopped.
+**Time-driven, near-live.** Unlike the one-shot Vedic engines, output depends on the local hour of `current_time` (per `time_basis`) → the recommended prahar/raga **changes every 3 hours**; the cache key is hour-granular and zone-aware (engine.rs:436-471), so a re-fetch after a block boundary returns new data. Within a block it's stable. The **audio layer is fully interactive** (client-side): play/stop/download, source switching, and V2 timbre/gamaka/tala/breath all mutate playback live via `getRaagaPlayer()` without re-fetching engine output (Nadabrahman.tsx:104-198). `dosha`/`rasa`/`chakra` are **request options**, not birth data — changing them re-runs the engine. `consciousness_level` (0–5) is envelope-level and may gate interpretive depth; `required_phase` is 0 (available to everyone, engine.rs:339-341). Wave-2: the waveform should animate in sync with actual playback (oscilloscope), idle to a slow breath when stopped.
 
 ## 7. Open questions / assumptions
 - **OpenAPI stub is fiction (confirmed).** `NadabrahmanResultSchema` (types.rs:291) advertises `root_frequency_hz` (432.0), `suggested_raga` ("Bhairavi"), `mantra_seed` ("AUM") — **the engine emits none of them.** There is no 432 Hz anywhere (frequencies are the 396–963 Solfeggio ladder), no top-level `suggested_raga` (it's `time_recommendation.primary_raga.raga_name` + `recommendations[]`), and no `mantra_seed`. Do **not** build against the stub. ⚠️
-- **Renderer reads fields the engine never emits (confirmed, highest-impact).** `Nadabrahman.tsx` reads `chakra_frequency.mantra` (81), `.frequency_hz` (82), `.note` (83), `.element` (216); top-level `result.mantra` (81); and treats `rasa_mapping` as an **object** with `.rasa/.name/.emotion` (79,228-229). The engine emits `chakra_frequency` = `{chakra_name, solfeggio_hz, binaural_target_hz}` only (engine.rs:212-216) and `rasa_mapping` as a **plain string** (engine.rs:223). Net effect at runtime: the **mantra box never shows** (no `mantra` field), the **Hz line never shows** (renderer reads `frequency_hz`, engine emits `solfeggio_hz`), `note`/`element` are blank, and the Rasa cell renders `String(undefined)` → "undefined". The data **exists** in `chakra_frequencies.json` (each chakra has `note` C–B, `bija_mantra` LAM/VAM/RAM/YAM/HAM/OM/Silence, `element`) but `serialize_result` drops it. **Fix is one-sided: enrich the serializer** to pass through `note`, `mantra`/bija, `element`, and rename/alias `solfeggio_hz`→`frequency_hz` (or fix the renderer). Until then the panel is mostly empty unless a `chakra` option is sent. ⚠️
-- **`secondary_ragas` is computed but not serialized.** `PraharRecommendation.secondary_ragas` is populated (engine.rs:61) but `serialize_result` omits it from `time_recommendation` (engine.rs:196-207). They do still reach the client folded into the top-level `recommendations[]`. Confirm Wave-2 doesn't need the primary/secondary split.
+- **Renderer reads fields the engine never emits (confirmed, highest-impact).** `Nadabrahman.tsx` reads `chakra_frequency.mantra` (81), `.frequency_hz` (82), `.note` (83), `.element` (216); top-level `result.mantra` (81); and treats `rasa_mapping` as an **object** with `.rasa/.name/.emotion` (79,228-229). The engine emits `chakra_frequency` = `{chakra_name, solfeggio_hz, binaural_target_hz}` only (engine.rs:302-306) and `rasa_mapping` as a **plain string** (engine.rs:313). Net effect at runtime: the **mantra box never shows** (no `mantra` field), the **Hz line never shows** (renderer reads `frequency_hz`, engine emits `solfeggio_hz`), `note`/`element` are blank, and the Rasa cell renders `String(undefined)` → "undefined". The data **exists** in `chakra_frequencies.json` (each chakra has `note` C–B, `bija_mantra` LAM/VAM/RAM/YAM/HAM/OM/Silence, `element`) but `serialize_result` drops it. **Fix is one-sided: enrich the serializer** to pass through `note`, `mantra`/bija, `element`, and rename/alias `solfeggio_hz`→`frequency_hz` (or fix the renderer). Until then the panel is mostly empty unless a `chakra` option is sent. ⚠️
+- **`secondary_ragas` is computed but not serialized.** `PraharRecommendation.secondary_ragas` is populated (engine.rs:151) but `serialize_result` omits it from `time_recommendation` (engine.rs:286-297). They do still reach the client folded into the top-level `recommendations[]`. Confirm Wave-2 doesn't need the primary/secondary split.
 - **`score` is unbounded below.** Secondary scores `0.7 − i·0.1` go negative for the 8th+ secondary raga; truncation to 5 usually hides this, but don't assume `score ∈ [0,1]` when mapping to opacity/size.
-- **No fixture exists.** Values in §3 are from unit-test assertions + the embedded JSON, not a captured API response. A golden fixture (`crates/engine-nadabrahman/tests/`) would lock the runtime shape — currently the only guard is the validator (engine.rs:291-339).
+- **No fixture exists.** Values in §3 are from unit-test assertions + the embedded JSON, not a captured API response. A golden fixture (`crates/engine-nadabrahman/tests/`) would lock the runtime shape — currently the only guard is the validator (engine.rs:386-434).
 - **Renderer dispatch path unverified.** Could not locate the `engine_id → <Nadabrahman>` mapping via grep (likely a dynamic registry); assumed standard routing on `engine_id === "nadabrahman"`. Confirm in the engine-result router before relying on it.
-- **`chakra_name` is the raw input echo**, not normalized to Sanskrit (engine.rs:113). If the renderer keys colors off a canonical name, normalize first (the lookup already knows both forms, data.rs:182-186).
+- **`chakra_name` is the raw input echo**, not normalized to Sanskrit (engine.rs:202). If the renderer keys colors off a canonical name, normalize first (the lookup already knows both forms, data.rs:182-186).
