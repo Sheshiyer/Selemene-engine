@@ -183,8 +183,8 @@ fn julian_day_from_utc(utc_dt: &DateTime<Utc>) -> f64 {
 // ---------------------------------------------------------------------------
 
 /// Which path produced the solar and lunar longitudes that tithi, nakshatra,
-/// yoga and karana are derived from. Vara is calendar arithmetic on the Julian
-/// Day and does not depend on it.
+/// yoga and karana are derived from. Vara is calendar arithmetic on the local
+/// date and does not depend on it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PositionSource {
@@ -203,6 +203,16 @@ impl PositionSource {
     pub fn is_fallback(self) -> bool {
         self != PositionSource::SwissEphemerisFiles
     }
+}
+
+/// The day a vara is the weekday of.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum VaraBasis {
+    /// The local civil date (midnight to midnight) at the location's UTC
+    /// offset. Sunrise-based reckoning would need sunrise for the location,
+    /// which this engine does not compute.
+    LocalDate,
 }
 
 /// Structured Panchanga calculation result.
@@ -243,6 +253,10 @@ pub struct PanchangaResult {
     pub vara_index: u8,
     /// Vara name
     pub vara_name: String,
+    /// The day the vara was taken from. `None` only when deserializing a
+    /// result serialized before this field existed (those used the UTC date).
+    #[serde(default)]
+    pub vara_basis: Option<VaraBasis>,
 
     /// Solar longitude in degrees (0..360)
     pub solar_longitude: f64,
@@ -366,7 +380,9 @@ pub fn calculate_karana(tithi: f64) -> f64 {
     karana_slot_from_tithi(tithi) as f64
 }
 
-/// Calculate Vara (day of the week, 0 = Sunday .. 6 = Saturday).
+/// Calculate Vara (day of the week, 0 = Sunday .. 6 = Saturday) of the civil
+/// date containing `jd`. Pass the local Julian Day (UT Julian Day plus the
+/// UTC offset in days) for the local weekday.
 pub fn calculate_vara(jd: f64) -> i32 {
     let day_number = (jd + 1.5) as i64;
     (day_number % 7) as i32
@@ -391,7 +407,7 @@ pub fn compute_panchanga_reporting_fallback(
     tz_offset_hours: f64,
 ) -> (PanchangaResult, bool) {
     match parse_local_datetime_to_utc(date, time, tz_offset_hours) {
-        Some(utc_dt) => compute_panchanga_at_instant(&utc_dt),
+        Some(utc_dt) => compute_panchanga_at_instant(&utc_dt, tz_offset_hours),
         // Swiss Ephemeris needs a parsed instant; keep the original
         // mean-longitude path for input only the Meeus formula accepts.
         None => {
@@ -401,14 +417,20 @@ pub fn compute_panchanga_reporting_fallback(
                 calculate_solar_position(jd),
                 calculate_lunar_position(jd),
                 PositionSource::MeanLongitude,
+                tz_offset_hours,
             )
         }
     }
 }
 
 /// Compute the Panchanga for a UTC instant, reporting whether a fallback was
-/// used as [`compute_panchanga_reporting_fallback`] does.
-pub fn compute_panchanga_at_instant(utc_dt: &DateTime<Utc>) -> (PanchangaResult, bool) {
+/// used as [`compute_panchanga_reporting_fallback`] does. `tz_offset_hours`
+/// is the local UTC offset at that instant; it only selects the local date
+/// for the vara and never moves the positions.
+pub fn compute_panchanga_at_instant(
+    utc_dt: &DateTime<Utc>,
+    tz_offset_hours: f64,
+) -> (PanchangaResult, bool) {
     let jd = julian_day_from_utc(utc_dt);
 
     // Prefer local Swiss Ephemeris positions for correct transition timing,
@@ -427,7 +449,13 @@ pub fn compute_panchanga_at_instant(utc_dt: &DateTime<Utc>) -> (PanchangaResult,
                 PositionSource::MeanLongitude,
             ),
         };
-    build_result(jd, solar_lng_tropical, lunar_lng_tropical, position_source)
+    build_result(
+        jd,
+        solar_lng_tropical,
+        lunar_lng_tropical,
+        position_source,
+        tz_offset_hours,
+    )
 }
 
 fn build_result(
@@ -435,6 +463,7 @@ fn build_result(
     solar_lng_tropical: f64,
     lunar_lng_tropical: f64,
     position_source: PositionSource,
+    tz_offset_hours: f64,
 ) -> (PanchangaResult, bool) {
     let solar_lng = to_sidereal_longitude(solar_lng_tropical);
     let lunar_lng = to_sidereal_longitude(lunar_lng_tropical);
@@ -445,7 +474,7 @@ fn build_result(
     let karana_val = calculate_karana(tithi_val);
     let karana_slot = karana_slot_from_tithi(tithi_val);
     let (karana_idx, karana_name) = karana_identity(karana_slot);
-    let vara_val = calculate_vara(jd);
+    let vara_val = calculate_vara(jd + tz_offset_hours / 24.0);
 
     let tithi_idx = (tithi_val.floor() as usize).min(29);
     let nakshatra_idx = (nakshatra_val.floor() as usize).min(26);
@@ -471,6 +500,7 @@ fn build_result(
 
         vara_index: vara_idx as u8,
         vara_name: VARA_NAMES[vara_idx].to_string(),
+        vara_basis: Some(VaraBasis::LocalDate),
 
         solar_longitude: solar_lng,
         lunar_longitude: lunar_lng,
@@ -547,6 +577,16 @@ fn parse_zone(tz: &str) -> Result<Zone, EngineError> {
 }
 
 impl Zone {
+    /// UTC offset in hours in force at `utc_dt`.
+    fn offset_hours_at(&self, utc_dt: &DateTime<Utc>) -> f64 {
+        let seconds = match self {
+            Zone::Iana(tz) => tz.offset_from_utc_datetime(&utc_dt.naive_utc()).fix(),
+            Zone::Fixed(offset) => *offset,
+        }
+        .local_minus_utc();
+        seconds as f64 / 3600.0
+    }
+
     /// The UTC instant of a local wall-clock time.
     fn local_to_utc(&self, local: &NaiveDateTime) -> DateTime<Utc> {
         match self {
@@ -615,8 +655,13 @@ impl ConsciousnessEngine for PanchangaEngine {
 
         let (result, fallback_used) = if use_daily {
             // Daily mode: `current_time` is already the UTC instant. The
-            // positions depend only on it, never on the birth timezone.
-            compute_panchanga_at_instant(&input.current_time)
+            // positions depend only on it; the birth timezone, when given,
+            // only picks the local date for the vara (UTC otherwise).
+            let tz_offset = match input.birth_data.as_ref() {
+                Some(birth) => parse_zone(&birth.timezone)?.offset_hours_at(&input.current_time),
+                None => 0.0,
+            };
+            compute_panchanga_at_instant(&input.current_time, tz_offset)
         } else {
             let birth = input.birth_data.as_ref().ok_or_else(|| {
                 EngineError::CalculationError(
@@ -635,7 +680,8 @@ impl ConsciousnessEngine for PanchangaEngine {
             })?;
             let zone = parse_zone(&birth.timezone)?;
 
-            let mut computed = compute_panchanga_at_instant(&zone.local_to_utc(&local));
+            let utc_dt = zone.local_to_utc(&local);
+            let mut computed = compute_panchanga_at_instant(&utc_dt, zone.offset_hours_at(&utc_dt));
             computed.0.birth_time_assumed = birth.time.is_none();
             computed
         };
@@ -1205,7 +1251,7 @@ mod tests {
     async fn test_daily_mode_positions_independent_of_birth_timezone() {
         let engine = PanchangaEngine::new();
         let instant = Utc.with_ymd_and_hms(2026, 5, 13, 10, 0, 0).unwrap();
-        let reference = compute_panchanga_at_instant(&instant).0;
+        let reference = compute_panchanga_at_instant(&instant, 0.0).0;
 
         let without = result_of(&engine.calculate(daily_input(instant, None)).await.unwrap());
         for tz in ["Asia/Kolkata", "+05:30", "America/New_York"] {
@@ -1320,6 +1366,36 @@ mod tests {
                 other => panic!("{tz:?}: expected ValidationError, got {other:?}"),
             }
         }
+    }
+
+    /// #1521: the vara is the weekday of the local date, so it turns over at
+    /// local midnight, not UTC midnight. Asia/Kolkata is UTC+05:30: 18:30Z
+    /// on Wednesday 2026-05-13 is midnight going into Thursday there.
+    #[tokio::test]
+    async fn test_vara_turns_over_at_local_midnight_in_positive_offset_zone() {
+        let engine = PanchangaEngine::new();
+        let before = Utc.with_ymd_and_hms(2026, 5, 13, 18, 20, 0).unwrap(); // 23:50 IST
+        let after = Utc.with_ymd_and_hms(2026, 5, 13, 18, 40, 0).unwrap(); // 00:10 IST
+
+        let daily = |t| engine.calculate(daily_input(t, Some("Asia/Kolkata")));
+        let wed = result_of(&daily(before).await.unwrap());
+        let thu = result_of(&daily(after).await.unwrap());
+        assert_eq!(wed.vara_name, "Budhavara (Wednesday)");
+        assert_eq!(thu.vara_name, "Guruvara (Thursday)");
+        assert_eq!(thu.vara_basis, Some(VaraBasis::LocalDate));
+
+        // Without a timezone daily mode reads the UTC date: still Wednesday.
+        let utc = result_of(&engine.calculate(daily_input(after, None)).await.unwrap());
+        assert_eq!(utc.vara_name, "Budhavara (Wednesday)");
+
+        // Birth mode: 02:00 Thursday in Kolkata is 20:30Z Wednesday.
+        let birth = birth_result("2026-05-14", "02:00", "Asia/Kolkata").await;
+        assert_eq!(birth.vara_name, "Guruvara (Thursday)");
+        let output = engine
+            .calculate(birth_input("2026-05-14", "02:00", "Asia/Kolkata"))
+            .await
+            .unwrap();
+        assert_eq!(output.result["vara_basis"], "local_date");
     }
 
     #[tokio::test]
