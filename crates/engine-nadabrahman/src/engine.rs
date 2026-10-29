@@ -4,7 +4,8 @@
 //! time of day, dosha constitution, mood/rasa, and chakra frequencies.
 
 use async_trait::async_trait;
-use chrono::Utc;
+use chrono::{FixedOffset, Offset, Utc};
+use chrono_tz::Tz;
 use noesis_core::{
     CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
     ValidationResult,
@@ -20,6 +21,92 @@ use crate::models::{
     ChakraFrequency, NadaBrahmanAnalysis, Prahar, PraharRecommendation, RagaRecommendation,
 };
 use crate::witness::generate_witness_prompt;
+
+/// Largest accepted `options.timezone_offset`, in minutes (±18:00).
+const MAX_OFFSET_MINUTES: i64 = 18 * 60;
+
+/// The clock used to place `current_time` in a prahar.
+///
+/// `current_time` is a UTC instant; the prahar is a local time-of-day concept,
+/// so the caller's zone decides which 3-hour block applies.
+#[derive(Debug, Clone, PartialEq)]
+struct TimeBasis {
+    /// IANA zone name, when `options.timezone` was given
+    timezone: Option<String>,
+    /// Offset from UTC at `current_time`, in minutes
+    offset_minutes: i32,
+    /// Local clock hour (0-23) used for the prahar
+    local_hour: u32,
+    /// "options" when a zone was supplied, "utc_default" otherwise
+    source: &'static str,
+}
+
+impl TimeBasis {
+    /// Resolve the local clock from options, in order:
+    /// 1) `options.timezone` (IANA name, offset resolved at the instant so DST applies)
+    /// 2) `options.timezone_offset` (minutes east of UTC, e.g. 330 for IST, -300 for EST)
+    /// 3) UTC
+    fn resolve(input: &EngineInput) -> Result<Self, EngineError> {
+        let instant = input.current_time;
+
+        if let Some(value) = input.options.get("timezone") {
+            let name = value.as_str().ok_or_else(|| {
+                EngineError::ValidationError(
+                    "options.timezone must be an IANA zone name string".to_string(),
+                )
+            })?;
+            let tz: Tz = name.parse().map_err(|_| {
+                EngineError::ValidationError(format!(
+                    "options.timezone '{}' is not a known IANA zone",
+                    name
+                ))
+            })?;
+            let local = instant.with_timezone(&tz);
+            return Ok(Self {
+                timezone: Some(tz.name().to_string()),
+                offset_minutes: local.offset().fix().local_minus_utc() / 60,
+                local_hour: local.hour(),
+                source: "options",
+            });
+        }
+
+        if let Some(value) = input.options.get("timezone_offset") {
+            let minutes = value
+                .as_i64()
+                .filter(|m| m.abs() <= MAX_OFFSET_MINUTES)
+                .ok_or_else(|| {
+                    EngineError::ValidationError(format!(
+                        "options.timezone_offset must be whole minutes within ±{}",
+                        MAX_OFFSET_MINUTES
+                    ))
+                })? as i32;
+            let offset = FixedOffset::east_opt(minutes * 60)
+                .expect("bounded by MAX_OFFSET_MINUTES, well inside ±24h");
+            return Ok(Self {
+                timezone: None,
+                offset_minutes: minutes,
+                local_hour: instant.with_timezone(&offset).hour(),
+                source: "options",
+            });
+        }
+
+        Ok(Self {
+            timezone: None,
+            offset_minutes: 0,
+            local_hour: instant.hour(),
+            source: "utc_default",
+        })
+    }
+
+    fn to_json(&self) -> Value {
+        json!({
+            "timezone": self.timezone,
+            "offset_minutes": self.offset_minutes,
+            "local_hour": self.local_hour,
+            "source": self.source,
+        })
+    }
+}
 
 /// NadaBrahman consciousness engine
 ///
@@ -40,9 +127,12 @@ impl NadaBrahmanEngine {
     }
 
     /// Perform the NadaBrahman analysis
-    fn analyze(&self, input: &EngineInput) -> Result<NadaBrahmanAnalysis, EngineError> {
-        let hour = input.current_time.hour();
-        let prahar = Prahar::from_hour(hour);
+    fn analyze(
+        &self,
+        input: &EngineInput,
+        time_basis: &TimeBasis,
+    ) -> Result<NadaBrahmanAnalysis, EngineError> {
+        let prahar = Prahar::from_hour(time_basis.local_hour);
 
         // Get time-based recommendations
         let time_ragas = get_prahar_ragas(prahar.number());
@@ -253,7 +343,8 @@ impl ConsciousnessEngine for NadaBrahmanEngine {
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
         let start = Instant::now();
 
-        let analysis = self.analyze(&input)?;
+        let time_basis = TimeBasis::resolve(&input)?;
+        let analysis = self.analyze(&input, &time_basis)?;
         let witness_prompt = generate_witness_prompt(&analysis);
 
         if witness_prompt.is_empty() {
@@ -270,7 +361,8 @@ impl ConsciousnessEngine for NadaBrahmanEngine {
             .unwrap_or(0);
 
         let elapsed = start.elapsed();
-        let result = Self::serialize_result(&analysis);
+        let mut result = Self::serialize_result(&analysis);
+        result["time_basis"] = time_basis.to_json();
 
         Ok(EngineOutput {
             engine_id: self.engine_id.clone(),
@@ -342,8 +434,22 @@ impl ConsciousnessEngine for NadaBrahmanEngine {
     }
 
     fn cache_key(&self, input: &EngineInput) -> String {
-        // Cache key based on time (hour granularity) + options
-        let hour = input.current_time.hour();
+        // Cache key based on local time (hour granularity) + time basis + options.
+        // An unresolvable zone keys on the raw options; calculate() rejects it.
+        let basis = match TimeBasis::resolve(input) {
+            Ok(b) => format!(
+                "{}:{}:{}:h{}",
+                b.source,
+                b.timezone.as_deref().unwrap_or("-"),
+                b.offset_minutes,
+                b.local_hour
+            ),
+            Err(_) => format!(
+                "invalid:{:?}:{:?}",
+                input.options.get("timezone"),
+                input.options.get("timezone_offset")
+            ),
+        };
         let dosha = input
             .options
             .get("dosha")
@@ -360,7 +466,7 @@ impl ConsciousnessEngine for NadaBrahmanEngine {
             .and_then(|v| v.as_str())
             .unwrap_or("none");
 
-        let raw = format!("nadabrahman:h{}:d{}:r{}:c{}", hour, dosha, rasa, chakra);
+        let raw = format!("nadabrahman:{}:d{}:r{}:c{}", basis, dosha, rasa, chakra);
         let hash = format!("{:x}", Sha256::digest(raw.as_bytes()));
         format!("nadabrahman:{}", hash)
     }
@@ -397,6 +503,154 @@ mod tests {
             precision: Precision::Standard,
             options,
         }
+    }
+
+    /// Synthetic fixed instant with options, for time-basis tests.
+    fn input_at(rfc3339: &str, opts: Vec<(&str, Value)>) -> EngineInput {
+        let mut input = create_test_input_with_options(opts);
+        input.current_time = chrono::DateTime::parse_from_rfc3339(rfc3339)
+            .unwrap()
+            .with_timezone(&Utc);
+        input
+    }
+
+    async fn prahar_and_basis(input: EngineInput) -> (u64, Value) {
+        let output = NadaBrahmanEngine::new().calculate(input).await.unwrap();
+        let prahar = output.result["time_recommendation"]["prahar_number"]
+            .as_u64()
+            .unwrap();
+        (prahar, output.result["time_basis"].clone())
+    }
+
+    #[tokio::test]
+    async fn test_iana_kolkata_uses_local_hour() {
+        // 10:00Z is 15:30 IST -> 4th prahar (15:00-18:00), not the 2nd.
+        let input = input_at(
+            "2026-03-10T10:00:00Z",
+            vec![("timezone", json!("Asia/Kolkata"))],
+        );
+        let (prahar, basis) = prahar_and_basis(input).await;
+        assert_eq!(prahar, 4);
+        assert_eq!(basis["timezone"], json!("Asia/Kolkata"));
+        assert_eq!(basis["offset_minutes"], json!(330));
+        assert_eq!(basis["local_hour"], json!(15));
+        assert_eq!(basis["source"], json!("options"));
+    }
+
+    #[tokio::test]
+    async fn test_iana_negative_zone_follows_dst() {
+        // America/New_York: 10:00Z is 05:00 EST in January (8th prahar)
+        // and 06:00 EDT in July (1st prahar).
+        let winter = input_at(
+            "2026-01-15T10:00:00Z",
+            vec![("timezone", json!("America/New_York"))],
+        );
+        let (prahar, basis) = prahar_and_basis(winter).await;
+        assert_eq!(prahar, 8);
+        assert_eq!(basis["offset_minutes"], json!(-300));
+        assert_eq!(basis["local_hour"], json!(5));
+
+        let summer = input_at(
+            "2026-07-15T10:00:00Z",
+            vec![("timezone", json!("America/New_York"))],
+        );
+        let (prahar, basis) = prahar_and_basis(summer).await;
+        assert_eq!(prahar, 1);
+        assert_eq!(basis["offset_minutes"], json!(-240));
+        assert_eq!(basis["local_hour"], json!(6));
+    }
+
+    #[tokio::test]
+    async fn test_offset_half_hour() {
+        // +330 min: 10:00Z -> 15:30 local -> 4th prahar.
+        let input = input_at(
+            "2026-03-10T10:00:00Z",
+            vec![("timezone_offset", json!(330))],
+        );
+        let (prahar, basis) = prahar_and_basis(input).await;
+        assert_eq!(prahar, 4);
+        assert_eq!(basis["timezone"], Value::Null);
+        assert_eq!(basis["offset_minutes"], json!(330));
+        assert_eq!(basis["local_hour"], json!(15));
+        assert_eq!(basis["source"], json!("options"));
+    }
+
+    #[tokio::test]
+    async fn test_offset_negative_crosses_midnight() {
+        // -300 min: 02:00Z -> 21:00 the previous day -> 6th prahar.
+        let input = input_at(
+            "2026-03-10T02:00:00Z",
+            vec![("timezone_offset", json!(-300))],
+        );
+        let (prahar, basis) = prahar_and_basis(input).await;
+        assert_eq!(prahar, 6);
+        assert_eq!(basis["offset_minutes"], json!(-300));
+        assert_eq!(basis["local_hour"], json!(21));
+    }
+
+    #[tokio::test]
+    async fn test_no_zone_defaults_to_utc() {
+        let input = input_at("2026-03-10T10:00:00Z", vec![]);
+        let (prahar, basis) = prahar_and_basis(input).await;
+        assert_eq!(prahar, 2);
+        assert_eq!(basis["timezone"], Value::Null);
+        assert_eq!(basis["offset_minutes"], json!(0));
+        assert_eq!(basis["local_hour"], json!(10));
+        assert_eq!(basis["source"], json!("utc_default"));
+    }
+
+    #[tokio::test]
+    async fn test_timezone_takes_precedence_over_offset() {
+        let input = input_at(
+            "2026-03-10T10:00:00Z",
+            vec![
+                ("timezone", json!("Asia/Kolkata")),
+                ("timezone_offset", json!(-300)),
+            ],
+        );
+        let (prahar, basis) = prahar_and_basis(input).await;
+        assert_eq!(prahar, 4);
+        assert_eq!(basis["timezone"], json!("Asia/Kolkata"));
+    }
+
+    #[tokio::test]
+    async fn test_invalid_time_basis_is_rejected() {
+        let engine = NadaBrahmanEngine::new();
+        for opts in [
+            vec![("timezone", json!("Mars/Olympus_Mons"))],
+            vec![("timezone", json!(330))],
+            vec![("timezone_offset", json!(5.5))],
+            vec![("timezone_offset", json!(2000))],
+        ] {
+            let input = input_at("2026-03-10T10:00:00Z", opts.clone());
+            let err = engine.calculate(input).await.unwrap_err();
+            assert!(
+                matches!(err, EngineError::ValidationError(_)),
+                "{:?} should be a validation error, got {:?}",
+                opts,
+                err
+            );
+        }
+    }
+
+    #[test]
+    fn test_cache_key_uses_time_basis() {
+        let engine = NadaBrahmanEngine::new();
+        let at = "2026-03-10T10:00:00Z";
+        let utc = engine.cache_key(&input_at(at, vec![]));
+        let ist = engine.cache_key(&input_at(at, vec![("timezone", json!("Asia/Kolkata"))]));
+        let ist_offset = engine.cache_key(&input_at(at, vec![("timezone_offset", json!(330))]));
+        let est = engine.cache_key(&input_at(at, vec![("timezone_offset", json!(-300))]));
+        assert_ne!(utc, ist);
+        assert_ne!(utc, est);
+        assert_ne!(ist, est);
+        // Same local hour but a different reported basis must not share an entry.
+        assert_ne!(ist, ist_offset);
+        // Stable for identical input.
+        assert_eq!(
+            ist,
+            engine.cache_key(&input_at(at, vec![("timezone", json!("Asia/Kolkata"))]))
+        );
     }
 
     #[tokio::test]

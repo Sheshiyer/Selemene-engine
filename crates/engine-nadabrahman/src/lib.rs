@@ -32,6 +32,13 @@
 //! - `rasa` / `mood` (string): Emotional quality — one of the 9 rasas
 //! - `chakra` (string): Target chakra — "root", "sacral", "solar_plexus", "heart", "throat", "third_eye", "crown"
 //! - `consciousness_level` (u8): User's consciousness level 0-5
+//! - `timezone` (string): IANA zone (e.g. "Asia/Kolkata") used to read the local
+//!   hour of `current_time` for the prahar; takes precedence over `timezone_offset`
+//! - `timezone_offset` (integer): minutes east of UTC (e.g. 330, -300), as in vedic-clock
+//!
+//! With neither, the prahar is read from the UTC hour. The result's `time_basis`
+//! reports `{timezone, offset_minutes, local_hour, source}` where `source` is
+//! `"options"` or `"utc_default"`.
 
 pub mod data;
 pub mod engine;
