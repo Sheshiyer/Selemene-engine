@@ -26,7 +26,7 @@ use sha2::{Digest, Sha256};
 use sqlx::PgPool;
 
 /// JWT lifetime — 1 hour for security (#697).
-const JWT_LIFETIME_HOURS: i64 = 1;
+pub const JWT_LIFETIME_HOURS: i64 = 1;
 
 /// JWT claims structure
 #[derive(Debug, Serialize, Deserialize)]

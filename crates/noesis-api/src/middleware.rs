@@ -97,6 +97,13 @@ pub async fn request_logging_middleware(req: Request, next: Next) -> Response {
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ApiKeyPrincipal;
 
+/// Marks a request authenticated by a person in a browser (Cloudflare Access,
+/// or the development bypass), as opposed to a bearer JWT or API key. Desktop
+/// sign-in only issues codes to interactive principals, so a stolen desktop
+/// token can never mint further sessions.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct InteractivePrincipal;
+
 pub async fn auth_middleware(
     State(state): State<crate::AppState>,
     mut req: Request,
@@ -111,6 +118,7 @@ pub async fn auth_middleware(
                 .and_then(|v| v.to_str().ok());
             if let Some(user) = crate::cf_access::development_auth_user(expected, provided) {
                 req.extensions_mut().insert(user);
+                req.extensions_mut().insert(InteractivePrincipal);
                 return Ok(next.run(req).await);
             }
         }
@@ -168,6 +176,7 @@ pub async fn auth_middleware(
                             user.consciousness_level,
                             &roles,
                         ));
+                    req.extensions_mut().insert(InteractivePrincipal);
                     return Ok(next.run(req).await);
                 }
                 Err(e) => {

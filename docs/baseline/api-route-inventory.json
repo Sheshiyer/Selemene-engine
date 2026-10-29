@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 96,
-  "route_count": 102,
+  "path_count": 99,
+  "route_count": 105,
   "routes": [
     {
       "path": "/auth/register",
@@ -61,6 +61,28 @@
       ]
     },
     {
+      "path": "/desktop/token",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::desktop_auth::token"
+        }
+      ]
+    },
+    {
+      "path": "/desktop/revoke",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::desktop_auth::revoke"
+        }
+      ]
+    },
+    {
       "path": "/auth/change-password",
       "auth_requirement": "bearer_or_api_key",
       "uses_orchestrator": false,
@@ -79,6 +101,17 @@
         {
           "method": "POST",
           "handler": "handlers::auth::logout"
+        }
+      ]
+    },
+    {
+      "path": "/desktop/authorize",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::desktop_auth::authorize"
         }
       ]
     },
