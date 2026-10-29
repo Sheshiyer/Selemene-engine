@@ -1118,6 +1118,98 @@ mod tests {
     }
 
     #[test]
+    fn i_ching_provenance_and_derivation_survive_bridge_round_trip() {
+        // #1341: i-ching emits the seven-field block (no backend/provider) and
+        // keeps per-value origins in result.derivation. Shape mirrors a seed-42
+        // three-coin cast: line values [7,8,8,6,7,7], line 4 changing, 42 -> 25.
+        let provenance = json!({
+            "runtime_kind": "typescript",
+            "implementation_version": "1.1.0",
+            "cached": false,
+            "fallback_used": false,
+            "confidence": 1
+        });
+        let derivation = json!({
+            "line_values": {
+                "origin": "cast",
+                "method": "seeded_three_coin_simulation",
+                "seed_source": "request"
+            },
+            "primary_hexagram": {"origin": "derived", "derived_from": ["line_values"]},
+            "changing_lines": {
+                "origin": "derived",
+                "derived_from": ["line_values"],
+                "positions": [4]
+            },
+            "relating_hexagram": {
+                "origin": "derived",
+                "derived_from": ["primary_hexagram", "changing_lines"],
+                "flipped_positions": [4]
+            },
+            "changing_line_texts": {
+                "origin": "unavailable",
+                "reason": "Changing-line texts are not bundled; none are returned or generated."
+            }
+        });
+        let casting = json!({
+            "algorithm_version": "1.1.0",
+            "method": "three_coins",
+            "selection_mode": "seeded_coin_simulation",
+            "line_order": "bottom_to_top",
+            "line_values": [7, 8, 8, 6, 7, 7]
+        });
+        // Each hexagram carries its own text provenance; it must not be
+        // confused with the contract block.
+        let hexagram_provenance = json!({"changing_line_texts": "unavailable"});
+        let response: crate::ts_client::TsEngineResponse = serde_json::from_value(json!({
+            "engine_id": "i-ching",
+            "result": {
+                "primary_hexagram": {"number": 42, "provenance": hexagram_provenance.clone()},
+                "changing_lines": [4],
+                "relating_hexagram": {"number": 25, "provenance": hexagram_provenance.clone()},
+                "casting": casting.clone(),
+                "derivation": derivation.clone(),
+                "seed": 42
+            },
+            "witness_prompts": [],
+            "calculated_at": "2026-10-29T00:00:00.000Z",
+            "processing_time_ms": 1.0,
+            "provenance": provenance.clone()
+        }))
+        .expect("i-ching response with provenance must deserialize");
+
+        let output = ts_response_into_output(response, 0);
+        let stashed = output.result[CONTRACT_PROVENANCE_KEY].clone();
+        assert_eq!(stashed, provenance);
+        let parsed: noesis_core::contract::Provenance = serde_json::from_value(stashed)
+            .expect("i-ching block parses under deny_unknown_fields");
+        assert_eq!(
+            parsed.runtime_kind,
+            noesis_core::contract::RuntimeKind::TypeScript
+        );
+        assert_eq!(parsed.implementation_version, "1.1.0");
+        assert!(!parsed.cached);
+        assert!(!parsed.fallback_used);
+        assert!(parsed.backend_id.is_none());
+        assert!(parsed.provider_id.is_none());
+        assert_eq!(parsed.confidence, Some(1.0));
+        assert!(!output.metadata.fallback_used);
+        assert!(output.metadata.provider_id.is_none());
+
+        // Cast vs derived values cross the bridge unchanged.
+        assert_eq!(output.result["derivation"], derivation);
+        assert_eq!(output.result["casting"], casting);
+        assert_eq!(output.result["changing_lines"], json!([4]));
+        assert_eq!(output.result["primary_hexagram"]["number"], 42);
+        assert_eq!(output.result["relating_hexagram"]["number"], 25);
+        assert_eq!(
+            output.result["primary_hexagram"]["provenance"],
+            hexagram_provenance
+        );
+        assert!(output.result.get("provenance").is_none());
+    }
+
+    #[test]
     fn generated_media_deserializes_from_ts_top_level() {
         let response: crate::ts_client::TsEngineResponse = serde_json::from_value(json!({
             "engine_id": "raaga",
