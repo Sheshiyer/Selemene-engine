@@ -5071,6 +5071,57 @@ mod p4_contract_tests {
             .is_none());
         assert_eq!(wire["generated_image"]["b64_json"], "iVBORw0KGgo=");
     }
+    #[test]
+    fn sacred_geometry_api_envelope_matches_committed_fixture() {
+        // GH #1401: build the real /calculate envelope from the sacred-geometry
+        // sidecar fixture (bridge -> ApiEngineOutputResponse) and pin it as the
+        // API-side fixture that the Rust SDK, TUI renderer and TS SDK probes
+        // consume. Set UPDATE_SACRED_GEOMETRY_FIXTURE=1 to rewrite it.
+        const ENVELOPE_PATH: &str = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../ts-engines/tests/fixtures/sacred-geometry/api-envelope-seed-1401.json"
+        );
+        let sidecar: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/sacred-geometry/bridge-round-trip-seed-1401.json"
+        ))
+        .unwrap();
+        let response: noesis_bridge::ts_client::TsEngineResponse =
+            serde_json::from_value(sidecar["sidecar_response"].clone()).unwrap();
+        let mut output = noesis_bridge::ts_response_into_output(response, 0);
+        // The bridge stamps its own crate version; pin it so releases don't churn the fixture.
+        output.metadata.engine_version = "fixture".to_string();
+
+        let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
+        let wire = serde_json::to_value(&envelope).unwrap();
+
+        if std::env::var_os("UPDATE_SACRED_GEOMETRY_FIXTURE").is_some() {
+            let mut text = serde_json::to_string_pretty(&wire).unwrap();
+            text.push('\n');
+            std::fs::write(ENVELOPE_PATH, text).unwrap();
+        }
+        let committed: Value =
+            serde_json::from_str(&std::fs::read_to_string(ENVELOPE_PATH).unwrap()).unwrap();
+        assert_eq!(
+            wire, committed,
+            "api envelope drifted from the committed fixture"
+        );
+
+        // The bridge block is lifted to the top level and stripped from result;
+        // the engine's own per-part provenance stays inside result.
+        assert_eq!(wire["provenance"]["fallback_used"], false);
+        assert_eq!(wire["provenance"]["runtime_kind"], "typescript");
+        assert!(wire["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+        assert_eq!(
+            wire["result"]["provenance_detail"],
+            sidecar["sidecar_response"]["result"]["provenance_detail"]
+        );
+        assert_eq!(
+            wire["result"]["provenance_detail"]["calculated_geometry"]["status"],
+            "not_implemented"
+        );
+    }
 
     #[test]
     fn invalid_contract_provenance_is_dropped_not_leaked() {
