@@ -1204,6 +1204,101 @@ mod tests {
             .is_none());
     }
 
+    /// Enneagram (GH #1311): the two provenance shapes `ts-engines/src/engines/enneagram/engine.ts`
+    /// emits must cross the bridge verbatim and stay distinguishable. An assessment carries
+    /// `backend_id: enneagram-assessment` plus confidence; a user-supplied direct lookup
+    /// carries `backend_id: enneagram-type-lookup` and no confidence. The engine-owned
+    /// `typeSource` / `suppliedWing` / answer-coverage fields must survive alongside.
+    /// Blocks below were captured from the TS engine (35 of 45 synthetic answers; type 4 wing 5).
+    #[test]
+    fn enneagram_assessment_and_lookup_provenance_survive_round_trip() {
+        let assessment_provenance = json!({
+            "runtime_kind": "typescript",
+            "implementation_version": "1.0.0",
+            "cached": false,
+            "fallback_used": false,
+            "backend_id": "enneagram-assessment",
+            "confidence": 0.78
+        });
+        let response: TsEngineResponse = serde_json::from_value(json!({
+            "engine_id": "enneagram",
+            "result": {
+                "mode": "assessment",
+                "typeSource": "assessment",
+                "assessment": {
+                    "primaryType": {"number": 7},
+                    "confidence": 1,
+                    "answeredCount": 35,
+                    "questionCount": 45,
+                    "clampedCount": 0
+                }
+            },
+            "witness_prompts": [],
+            "calculated_at": "2026-10-29T00:00:00Z",
+            "processing_time_ms": 1.0,
+            "provenance": assessment_provenance
+        }))
+        .expect("enneagram assessment response should deserialize");
+        let assessed = ts_response_into_output(response, 1);
+
+        assert_eq!(
+            assessed.result[CONTRACT_PROVENANCE_KEY],
+            assessment_provenance
+        );
+        let parsed: noesis_core::contract::Provenance =
+            serde_json::from_value(assessed.result[CONTRACT_PROVENANCE_KEY].clone())
+                .expect("enneagram assessment block parses against contract::Provenance");
+        assert_eq!(parsed.backend_id.as_deref(), Some("enneagram-assessment"));
+        assert_eq!(parsed.confidence, Some(0.78));
+        assert!(parsed.provider_id.is_none());
+        assert!(!assessed.metadata.fallback_used);
+        assert!(assessed.metadata.provider_id.is_none());
+        assert_eq!(assessed.result["typeSource"], "assessment");
+        assert_eq!(assessed.result["assessment"]["answeredCount"], 35);
+        assert_eq!(assessed.result["assessment"]["questionCount"], 45);
+        assert_eq!(assessed.result["assessment"]["clampedCount"], 0);
+
+        let lookup_provenance = json!({
+            "runtime_kind": "typescript",
+            "implementation_version": "1.0.0",
+            "cached": false,
+            "fallback_used": false,
+            "backend_id": "enneagram-type-lookup"
+        });
+        let response: TsEngineResponse = serde_json::from_value(json!({
+            "engine_id": "enneagram",
+            "result": {
+                "mode": "lookup",
+                "typeSource": "user-supplied",
+                "suppliedWing": 5,
+                "typeAnalysis": {"type": {"number": 4}}
+            },
+            "witness_prompts": [],
+            "calculated_at": "2026-10-29T00:00:00Z",
+            "processing_time_ms": 1.0,
+            "provenance": lookup_provenance
+        }))
+        .expect("enneagram lookup response should deserialize");
+        let looked = ts_response_into_output(response, 1);
+
+        assert_eq!(looked.result[CONTRACT_PROVENANCE_KEY], lookup_provenance);
+        let parsed: noesis_core::contract::Provenance =
+            serde_json::from_value(looked.result[CONTRACT_PROVENANCE_KEY].clone())
+                .expect("enneagram lookup block parses against contract::Provenance");
+        assert_eq!(parsed.backend_id.as_deref(), Some("enneagram-type-lookup"));
+        // A user-supplied type must not gain an assessment confidence in transit.
+        assert!(parsed.confidence.is_none());
+        assert!(looked.result[CONTRACT_PROVENANCE_KEY]
+            .get("confidence")
+            .is_none());
+        assert!(!looked.metadata.fallback_used);
+        assert_eq!(looked.result["typeSource"], "user-supplied");
+        assert_eq!(looked.result["suppliedWing"], 5);
+
+        // Re-serialising the parsed lookup block must not invent a confidence either.
+        assert_eq!(serde_json::to_value(&parsed).unwrap(), lookup_provenance);
+    }
+
     #[test]
     fn ts_response_without_provenance_leaves_result_untouched() {
         let response: TsEngineResponse = serde_json::from_value(json!({
