@@ -166,12 +166,22 @@ impl BiofieldEngine {
             .birth_data
             .as_ref()
             .ok_or_else(|| EngineError::ValidationError("birth_data is required".to_string()))?;
+        // Synchronous: every Swiss Ephemeris call in `analyze` runs on this
+        // thread, so the per-thread Moshier observation covers them.
+        engine_human_design::reset_moshier_observed();
         let result = self.analyzer.analyze(birth_data, input.current_time)?;
+        // Swiss Ephemeris substituted Moshier for the .se1 files.
+        let fallback_used = engine_human_design::moshier_observed();
+        let fallback_reason = fallback_used.then(|| {
+            "Swiss Ephemeris .se1 files unavailable; planetary positions computed with the \
+             built-in Moshier ephemeris"
+                .to_string()
+        });
         let provenance = Provenance {
             backend: "vedic-ephemeris",
             precision: format!("{:?}", input.precision),
-            fallback_used: false,
-            fallback_reason: None,
+            fallback_used,
+            fallback_reason,
             birth_data_provided: true,
             consent_granted: Self::consent_granted(input),
             capture_reading_id: None,
@@ -350,7 +360,8 @@ struct Provenance {
     /// `biofield-capture` engine, which owns the persisted reading.)
     backend: &'static str,
     precision: String,
-    /// `true` whenever the result is simulated.
+    /// `true` whenever the result is simulated, or the vedic path ran on the
+    /// built-in Moshier ephemeris instead of the `.se1` files.
     fallback_used: bool,
     fallback_reason: Option<String>,
     birth_data_provided: bool,
@@ -420,7 +431,8 @@ impl ConsciousnessEngine for BiofieldEngine {
         };
         let backend = provenance.backend;
         let precision = provenance.precision.clone();
-        // Mock and capture-mock paths are fallbacks; the vedic path is real.
+        // Mock and capture-mock paths are fallbacks; the vedic path is one only
+        // when Swiss Ephemeris substituted Moshier.
         let fallback_used = provenance.fallback_used;
 
         if witness_prompt.is_empty() {
@@ -632,6 +644,7 @@ impl ConsciousnessEngine for BiofieldEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::DateTime;
     use noesis_core::{BirthData, Precision};
     use std::collections::HashMap;
 
@@ -1091,6 +1104,81 @@ mod tests {
         assert_eq!(prov["consent_granted"], json!(true));
         let validation = engine.validate(&output).await.unwrap();
         assert!(validation.valid, "{:?}", validation.messages);
+    }
+
+    /// Happy path on a fresh OS thread: libswisseph state is per-thread on
+    /// Linux, so this proves the ephemeris path is applied there and the
+    /// observation does not report a false Moshier fallback.
+    #[test]
+    fn test_provenance_vedic_on_fresh_thread_reports_no_moshier() {
+        assert!(
+            engine_human_design::resolve_ephemeris_path().is_some(),
+            "probe needs .se1 files (SWISS_EPHEMERIS_PATH or data/ephemeris)"
+        );
+        let output = std::thread::spawn(|| {
+            let runtime = tokio::runtime::Builder::new_current_thread()
+                .build()
+                .unwrap();
+            runtime
+                .block_on(BiofieldEngine::new().calculate(create_vedic_input()))
+                .unwrap()
+        })
+        .join()
+        .unwrap();
+        assert_eq!(output.metadata.backend, "vedic-ephemeris");
+        assert!(!output.metadata.fallback_used);
+        assert_eq!(output.result["provenance"]["fallback_used"], json!(false));
+        assert!(output.result["provenance"]["fallback_reason"].is_null());
+    }
+
+    /// Boundary: a missing birth time is defaulted to 12:00 UTC (input
+    /// defaulting, not a fallback) and is not reported anywhere in the output.
+    #[tokio::test]
+    async fn test_missing_birth_time_defaults_to_noon_without_fallback() {
+        let engine = BiofieldEngine::new();
+        let current_time = DateTime::parse_from_rfc3339("2026-10-24T04:43:21Z")
+            .unwrap()
+            .with_timezone(&Utc);
+        let mut untimed = create_vedic_input();
+        untimed.current_time = current_time;
+        untimed.birth_data.as_mut().unwrap().time = None;
+        let mut noon = untimed.clone();
+        noon.birth_data.as_mut().unwrap().time = Some("12:00".to_string());
+
+        let untimed_out = engine.calculate(untimed).await.unwrap();
+        let noon_out = engine.calculate(noon).await.unwrap();
+
+        assert_eq!(untimed_out.result["metrics"], noon_out.result["metrics"]);
+        assert_eq!(
+            untimed_out.result["chakra_readings"],
+            noon_out.result["chakra_readings"]
+        );
+        assert_eq!(
+            untimed_out.result["provenance"],
+            noon_out.result["provenance"]
+        );
+        assert_eq!(
+            untimed_out.metadata.fallback_used,
+            noon_out.metadata.fallback_used
+        );
+    }
+
+    /// Invalid input is a validation error, never a silent mock.
+    #[tokio::test]
+    async fn test_invalid_birth_date_or_time_is_rejected() {
+        let engine = BiofieldEngine::new();
+        for (date, time) in [("1990-13-45", Some("14:30")), ("1990-01-01", Some("25:99"))] {
+            let mut input = create_vedic_input();
+            let birth = input.birth_data.as_mut().unwrap();
+            birth.date = date.to_string();
+            birth.time = time.map(str::to_string);
+            match engine.calculate(input).await {
+                Err(EngineError::ValidationError(msg)) => {
+                    assert!(msg.starts_with("Invalid"), "message was {msg}")
+                }
+                other => panic!("{date} {time:?}: expected ValidationError, got {other:?}"),
+            }
+        }
     }
 
     #[tokio::test]
