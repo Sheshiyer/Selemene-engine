@@ -5,6 +5,7 @@
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
 import { EngineValidationError } from '../../utils'
 import { SeededRandom, getDefaultSeed } from '../../utils/random'
+import { buildGeometry } from './geometry'
 import { SACRED_FORMS, getFormById, getFormIds } from './wisdom'
 import { generateWitnessPrompts } from './witness'
 
@@ -85,9 +86,32 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
     // Generate witness prompts
     const witnessPrompts = generateWitnessPrompts(form, intention, seed)
 
-    const endTime = performance.now()
-
     const svgPreview = this.safeSvgPreview(svgTemplate)
+
+    // Construction data is computed from the form's geometric definition
+    // (GH #1524). Forms without a faithful construction get null geometry and
+    // stay not_implemented with the reason.
+    const built = buildGeometry(form.id)
+    const geometry = 'geometry' in built ? built.geometry : null
+    const calculatedGeometry =
+      'geometry' in built
+        ? {
+            status: 'calculated',
+            kind: 'deterministic_construction',
+            source: 'geometry.buildGeometry',
+            construction: built.geometry.construction,
+            computed: {
+              circles: built.geometry.circles.length,
+              polygons: built.geometry.polygons.length,
+              polylines: built.geometry.polylines.length,
+              lines: built.geometry.lines.length,
+              points: built.geometry.points.length,
+              solid: built.geometry.solid !== undefined,
+            },
+          }
+        : { status: 'not_implemented', reason: built.unsupported.reason }
+
+    const endTime = performance.now()
 
     // Build result
     const result = {
@@ -106,22 +130,20 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
       intention: intention ?? null,
       svg_preview: svgPreview,
       seed,
+      geometry,
       // Per-part origin of this result (GH #1401). Form text is a static table
-      // lookup; this engine computes no geometry and renders no artifact, so
-      // those two parts are marked not_implemented rather than left implied.
+      // lookup; geometry is computed per form (GH #1524). Nothing is rendered:
+      // clients draw from result.geometry, so rendered_artifact stays
+      // not_implemented rather than left implied.
       provenance_detail: {
         form: { kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' },
         form_selection: formSelection,
         meditation: { kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' },
-        calculated_geometry: {
-          status: 'not_implemented',
-          reason:
-            'No ratios, coordinates or constructions are computed; numerology and elements are table values.',
-        },
+        calculated_geometry: calculatedGeometry,
         rendered_artifact: {
           status: 'not_implemented',
           reason:
-            'The engine renders no SVG or image; svg_preview only validates a caller-supplied svg_template.',
+            'The engine renders no SVG or image; clients draw result.geometry from its numbers, and svg_preview only validates a caller-supplied svg_template.',
         },
         svg_preview: { kind: 'caller_template_validation', status: svgPreview.status },
         witness_prompts: { kind: 'templated_narrative' },

@@ -100,7 +100,8 @@
       "required_phase": 2,
       "is_typescript": true,
       "result_schema": {
-        "required": ["pattern", "resonance", "interpretation"]
+        "required": ["form", "meditation", "geometry", "provenance_detail"],
+        "geometry_schema": "ts-engines/src/engines/sacred-geometry/geometry.schema.json"
       }
     },
     "sigil-forge": {
