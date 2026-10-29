@@ -1,0 +1,87 @@
+{
+  "input": {
+    "consciousness_level": 0,
+    "parameters": {
+      "svg_template": "<svg><script>x()</script></svg>"
+    },
+    "seed": 1401
+  },
+  "sidecar_response": {
+    "engine_id": "sacred-geometry",
+    "result": {
+      "form": {
+        "id": "flower-of-life",
+        "name": "Flower of Life",
+        "description": "An ancient symbol composed of multiple evenly-spaced, overlapping circles arranged in a flower-like pattern with six-fold symmetry. It is considered to contain the patterns of creation.",
+        "symbolism": "Unity, creation, and the interconnectedness of all life. Contains the blueprint for all existence - from the structure of atoms to galaxies.",
+        "elements": ["circle", "hexagon", "vesica piscis"],
+        "numerology": 6
+      },
+      "meditation": {
+        "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe.",
+        "duration_suggestion": "5-15 minutes"
+      },
+      "intention": null,
+      "svg_preview": {
+        "status": "rejected",
+        "reason": "SVG template contains disallowed script content."
+      },
+      "seed": 1401,
+      "provenance_detail": {
+        "form": {
+          "kind": "symbolic_lookup",
+          "source": "wisdom.SACRED_FORMS"
+        },
+        "form_selection": {
+          "kind": "seeded_random",
+          "seed": 1401
+        },
+        "meditation": {
+          "kind": "symbolic_lookup",
+          "source": "wisdom.SACRED_FORMS"
+        },
+        "calculated_geometry": {
+          "status": "not_implemented",
+          "reason": "No ratios, coordinates or constructions are computed; numerology and elements are table values."
+        },
+        "rendered_artifact": {
+          "status": "not_implemented",
+          "reason": "The engine renders no SVG or image; svg_preview only validates a caller-supplied svg_template."
+        },
+        "svg_preview": {
+          "kind": "caller_template_validation",
+          "status": "rejected"
+        },
+        "witness_prompts": {
+          "kind": "templated_narrative"
+        }
+      }
+    },
+    "witness_prompts": [
+      {
+        "prompt": "As you visualize Flower of Life, what patterns do you notice in your own life?",
+        "context": "Contemplating Flower of Life",
+        "themes": ["geometry", "pattern", "awareness", "circle", "hexagon", "vesica piscis"]
+      },
+      {
+        "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe. Take three breaths and notice what arises.",
+        "context": "Meditation guidance",
+        "themes": ["meditation", "presence", "visualization"]
+      },
+      {
+        "prompt": "The number 6 resonates through Flower of Life. Where does this number appear in your life?",
+        "context": "Numerological resonance",
+        "themes": ["numerology", "symbolism", "synchronicity"]
+      }
+    ],
+    "calculated_at": "2026-10-29T00:00:00.000Z",
+    "processing_time_ms": 0,
+    "provenance": {
+      "runtime_kind": "typescript",
+      "implementation_version": "1.0.0",
+      "cached": false,
+      "fallback_used": false,
+      "confidence": 1
+    }
+  }
+}
