@@ -5,11 +5,11 @@
     "karana_index": 2,
     "karana_name": "Kaulava",
     "karana_value": 4.0,
-    "lunar_longitude": 86.91497336038377,
+    "lunar_longitude": 86.98088340722695,
     "nakshatra_index": 6,
     "nakshatra_name": "Punarvasu",
-    "nakshatra_value": 6.518623002028782,
-    "solar_longitude": 65.22656777582901,
+    "nakshatra_value": 6.523566255542021,
+    "solar_longitude": 65.2924778226722,
     "tithi_index": 1,
     "tithi_name": "Dwitiya (Shukla)",
     "tithi_value": 1.80736713204623,
@@ -17,7 +17,7 @@
     "vara_name": "Guruvara (Thursday)",
     "yoga_index": 11,
     "yoga_name": "Dhruva",
-    "yoga_value": 11.410615585215957
+    "yoga_value": 11.420502092242435
   },
   "witness_prompt": "You were born under Tithi Dwitiya (Shukla) and Nakshatra Punarvasu. The Tithi reflects the angle between Sun and Moon at your birth — a mirror of the dance between your conscious will and emotional nature. What pattern do you notice when your intentions and feelings are misaligned?",
   "consciousness_level": 0,
