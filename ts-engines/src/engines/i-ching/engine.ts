@@ -60,6 +60,47 @@ export function resolveCast(lineValues: readonly number[]): {
   return { primary, relating, changingLines }
 }
 
+export type SeedSource = 'request' | 'generated'
+
+/**
+ * Per-value origin of a reading: which values were cast (seeded coin draws) or
+ * user-selected, and which were derived from them. Changing-line texts are not
+ * bundled, so they are reported as unavailable rather than substituted.
+ */
+export function castDerivation(
+  method: 'three_coins' | 'manual_selection',
+  seedSource: SeedSource,
+  cast: ReturnType<typeof resolveCast>,
+) {
+  const { relating, changingLines } = cast
+  return {
+    line_values:
+      method === 'manual_selection'
+        ? { origin: 'user_selected', method: 'manual_king_wen_selection' }
+        : { origin: 'cast', method: 'seeded_three_coin_simulation', seed_source: seedSource },
+    primary_hexagram: { origin: 'derived', derived_from: ['line_values'] },
+    changing_lines: {
+      origin: 'derived',
+      derived_from: ['line_values'],
+      positions: [...changingLines],
+    },
+    relating_hexagram: relating
+      ? {
+          origin: 'derived',
+          derived_from: ['primary_hexagram', 'changing_lines'],
+          flipped_positions: [...changingLines],
+        }
+      : {
+          origin: 'not_applicable',
+          reason: 'No changing lines (no line value of 6 or 9), so there is no relating hexagram.',
+        },
+    changing_line_texts: {
+      origin: 'unavailable',
+      reason: 'Changing-line texts are not bundled; none are returned or generated.',
+    },
+  }
+}
+
 function hexagramResult(hexagram: Hexagram): Record<string, unknown> {
   return {
     number: hexagram.number,
@@ -104,6 +145,7 @@ export class IChingEngine implements ConsciousnessEngine {
 
   async calculate(input: EngineInput): Promise<EngineOutput> {
     const startTime = performance.now()
+    const seedSource: SeedSource = input.seed === undefined ? 'generated' : 'request'
     const seed = input.seed === undefined ? getDefaultSeed() : input.seed
     validateSeed(seed)
 
@@ -137,7 +179,8 @@ export class IChingEngine implements ConsciousnessEngine {
     const lineValues = manual
       ? (getHexagramByNumber(selected as number) as Hexagram).lines.map((yang) => (yang ? 7 : 8))
       : castThreeCoinLines(seed)
-    const { primary, relating, changingLines } = resolveCast(lineValues)
+    const cast = resolveCast(lineValues)
+    const { primary, relating, changingLines } = cast
 
     return {
       engine_id: 'i-ching',
@@ -152,11 +195,25 @@ export class IChingEngine implements ConsciousnessEngine {
           line_order: 'bottom_to_top',
           line_values: lineValues,
         },
+        derivation: castDerivation(manual ? 'manual_selection' : 'three_coins', seedSource, cast),
         seed,
       },
       witness_prompts: generateWitnessPrompts(primary, relating, changingLines, seed),
       calculated_at: new Date().toISOString(),
       processing_time_ms: Math.round(performance.now() - startTime),
+      // Every value is computed in-process from the seed or the manual
+      // selection: no cache, no external backend, no fallback path. Unsupported
+      // inputs (yarrow_stalks) are rejected instead of falling back to coins.
+      // Confidence 1 means the mapping is exact for the given line values; it
+      // says nothing about the reading's meaning. Per-value origins are in
+      // result.derivation.
+      provenance: {
+        runtime_kind: 'typescript',
+        implementation_version: I_CHING_VERSION,
+        cached: false,
+        fallback_used: false,
+        confidence: 1,
+      },
     }
   }
 }
