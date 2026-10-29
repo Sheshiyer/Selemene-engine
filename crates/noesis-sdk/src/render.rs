@@ -523,4 +523,40 @@ mod tests {
         assert!(filename.starts_with("numerology_"));
         assert!(filename.ends_with(".md"));
     }
+
+    #[test]
+    fn sacred_geometry_tui_render_keeps_provenance_detail() {
+        // GH #1401: the TUI result screen and its exports go through this
+        // renderer. Feed it the sacred-geometry API envelope as the SDK
+        // deserializes it and check the per-part labels stay visible.
+        let envelope: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/sacred-geometry/api-envelope-seed-1401.json"
+        ))
+        .unwrap();
+        let output: EngineOutput = serde_json::from_value(envelope.clone()).unwrap();
+        let renderer = MarkdownRenderer::new();
+
+        let markdown = renderer.render(&output, ReportFormat::Markdown).unwrap();
+        for label in [
+            "symbolic_lookup",
+            "seeded_random",
+            "not_implemented",
+            "caller_template_validation",
+            "rejected",
+        ] {
+            assert!(markdown.contains(label), "markdown lost {label}");
+        }
+
+        let text = renderer.render(&output, ReportFormat::Text).unwrap();
+        assert!(text.contains("not_implemented"), "text export lost labels");
+
+        let json: Value =
+            serde_json::from_str(&renderer.render(&output, ReportFormat::Json).unwrap()).unwrap();
+        assert_eq!(
+            json["result"]["provenance_detail"],
+            envelope["result"]["provenance_detail"]
+        );
+        // Same gap as the SDK client: the top-level contract block is not carried.
+        assert!(json.get("provenance").is_none());
+    }
 }

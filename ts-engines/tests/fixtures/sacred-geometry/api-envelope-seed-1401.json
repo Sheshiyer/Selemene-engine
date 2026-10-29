@@ -1,0 +1,84 @@
+{
+  "calculated_at": "2026-10-29T00:00:00+00:00",
+  "consciousness_level": 0,
+  "contract_version": "v1",
+  "engine_id": "sacred-geometry",
+  "envelope_version": "1",
+  "metadata": {
+    "backend": "typescript",
+    "cached": false,
+    "calculation_time_ms": 0.0,
+    "engine_version": "fixture",
+    "fallback_used": false,
+    "precision_achieved": "exact",
+    "timestamp": "2026-10-29T00:00:00Z"
+  },
+  "processing_time_ms": 0.0,
+  "provenance": {
+    "cached": false,
+    "confidence": 1.0,
+    "fallback_used": false,
+    "implementation_version": "1.0.0",
+    "runtime_kind": "typescript"
+  },
+  "result": {
+    "form": {
+      "description": "An ancient symbol composed of multiple evenly-spaced, overlapping circles arranged in a flower-like pattern with six-fold symmetry. It is considered to contain the patterns of creation.",
+      "elements": [
+        "circle",
+        "hexagon",
+        "vesica piscis"
+      ],
+      "id": "flower-of-life",
+      "name": "Flower of Life",
+      "numerology": 6,
+      "symbolism": "Unity, creation, and the interconnectedness of all life. Contains the blueprint for all existence - from the structure of atoms to galaxies."
+    },
+    "intention": null,
+    "meditation": {
+      "duration_suggestion": "5-15 minutes",
+      "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe."
+    },
+    "provenance_detail": {
+      "calculated_geometry": {
+        "reason": "No ratios, coordinates or constructions are computed; numerology and elements are table values.",
+        "status": "not_implemented"
+      },
+      "form": {
+        "kind": "symbolic_lookup",
+        "source": "wisdom.SACRED_FORMS"
+      },
+      "form_selection": {
+        "kind": "seeded_random",
+        "seed": 1401
+      },
+      "meditation": {
+        "kind": "symbolic_lookup",
+        "source": "wisdom.SACRED_FORMS"
+      },
+      "rendered_artifact": {
+        "reason": "The engine renders no SVG or image; svg_preview only validates a caller-supplied svg_template.",
+        "status": "not_implemented"
+      },
+      "svg_preview": {
+        "kind": "caller_template_validation",
+        "status": "rejected"
+      },
+      "witness_prompts": {
+        "kind": "templated_narrative"
+      }
+    },
+    "seed": 1401,
+    "svg_preview": {
+      "reason": "SVG template contains disallowed script content.",
+      "status": "rejected"
+    }
+  },
+  "witness_prompt": "As you visualize Flower of Life, what patterns do you notice in your own life?",
+  "witness_prompts": [
+    {
+      "prompt": "As you visualize Flower of Life, what patterns do you notice in your own life?",
+      "themes": []
+    }
+  ]
+}
