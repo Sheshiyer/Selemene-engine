@@ -252,3 +252,19 @@ svg.ribbon .ev.dasha{fill:var(--gold)}
 .ribbon-legend .lg-def3{background:transparent;outline:1px dashed rgba(197,160,23,.6)}
 .ribbon-legend .lg-m2t{width:8px!important;height:8px!important;border-radius:50%;border:1.2px solid var(--gold-warm)}
 @media (max-width:700px){.panel>h3 .sub{display:none}}
+
+/* Witness dyad: Aletheios names (emerald, vesica), Pichet embodies (gold, hex) */
+.dyad{display:grid;gap:14px}
+.dyad-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s3)}
+@media (max-width:800px){.dyad-grid{grid-template-columns:minmax(0,1fr)}}
+.dyad-voice{display:grid;gap:8px;padding:var(--s2) var(--s3);border-radius:3px;border:1px solid var(--rule);background:rgba(7,11,29,.35)}
+.dyad-voice.al{border-color:rgba(16,181,167,.45)}
+.dyad-voice.pi{border-color:var(--rule-strong)}
+.dv-h{display:flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:.6875rem;letter-spacing:.2em;text-transform:uppercase}
+.dyad-voice.al .dv-h{color:var(--ev-computed)}
+.dyad-voice.pi .dv-h{color:var(--gold)}
+.dv-h b{font-weight:500}
+.dv-h span{margin-left:auto;color:var(--text-dis)}
+.dyad-voice p{margin:0;font-family:var(--f-folio);font-size:1.1875rem;line-height:1.5;color:var(--text-1)}
+.dyad-syn{margin:0;font-family:var(--f-folio);font-size:1.1875rem;line-height:1.5;color:var(--text-2);text-align:center;max-width:none}
+.dyad-q{margin:0;font-family:var(--f-engr);letter-spacing:.06em;font-size:1.0625rem;color:var(--gold);text-align:center;max-width:none}

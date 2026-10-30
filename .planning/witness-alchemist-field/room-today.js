@@ -25,7 +25,7 @@ function todayLens(r,h){
   const echo=Object.entries(core).filter(([k,v])=>v===N.day||v===N.year).map(([k,v])=>`${v===N.day?'personal day':'personal year'} ${v} repeats your ${k}`);
   const crit=DL.CYC.filter(([k])=>B[k].critical).map(([k])=>k);
   const bc=BIRTH_CLOCK;
-  return [
+  return engineDay([
     {id:'human-design',name:'Human Design',src:'e',birth:'Generator 2/4 · Sacral · wide split · channels 23-43 and 42-53',day:`${defLabel(r.def)} definition${r.m2t?' · motor to Throat':''} · ${r.cen.length} of 9 centers`,meet:R.bridges.length?`Bridged by the sky: ${R.bridges.join(', ')}. ${R.decl}`:R.decl,link:'#design'},
     {id:'gene-keys',name:'Gene Keys',src:'e',birth:"Life's Work 4.2 · Evolution 49.2 · Radiance 23.4 · Purpose 43.4",day:`Sun key ${R.sun.gate}: ${GATES[R.sun.gate][2]} → ${GATES[R.sun.gate][3]} → ${GATES[R.sun.gate][4]} · Earth key ${R.earth.gate}`,meet:touched.length?touched.join('. ')+'.':'No transit sits in your eleven sphere keys.',link:'#keys',daySrc:'f'},
     {id:'panchanga',name:'Panchanga',src:'e',birth:'Chaturthi (Shukla) · Uttara Phalguni · Siddha · Vishti · Mangalavara',day:`${P.tithi} · ${P.nak} ${P.pada} · ${P.yoga} · ${P.karana}`,meet:`Tara ${tara.n} of 9 counted from your birth star: ${tara.name}, the star of ${tara.key} in the classical count. The Moon stands in house ${cb} from your birth Moon.`,link:'#jyotish',daySrc:'f'},
@@ -33,8 +33,55 @@ function todayLens(r,h){
     {id:'transits',name:'Transits',src:'e',birth:'Moon Virgo 9°49\' · Jupiter Cancer 29°46\' exalted · Saturn Capricorn 8°31\'',day:`Jupiter in house ${jup.house} (${fromMoon(jup)} from Moon) · Saturn in house ${sat.house} (${fromMoon(sat)} from Moon) · Sade Sati ${ss.active?'active':'not active'}`,meet:asp.length?asp.map(a=>`${a.t} ${a.name.toLowerCase()} natal ${a.n} ${a.orb.toFixed(1)}°`).join(' · '):'No transit within 1.5° of a natal point.',link:'#sky',daySrc:'m'},
     {id:'numerology',name:'Numerology',src:'e',birth:nm?`Life Path ${nm.life_path.value} · Expression ${nm.expression.value} · Soul Urge ${nm.soul_urge.value} · Personality ${nm.personality.value}`:'',day:`Personal year ${N.year} · month ${N.month} · day ${N.day} (${DL.NUM_KEY[N.day]})`,meet:echo.length?cap(echo.join('; '))+'.':`Personal day ${N.day} touches none of your core numbers.`,daySrc:'f'},
     {id:'biorhythm',name:'Biorhythm',src:'e',birth:'Six cycles start at zero on 13 Aug 1991',day:DL.CYC.slice(0,3).map(([k])=>`${cap(k)} ${Math.round(B[k].pct)}% ${B[k].phase.toLowerCase()}`).join(' · '),meet:`Day ${B.days}. ${crit.length?'Crossing zero: '+crit.join(', ')+'.':'No cycle crosses zero.'} Passion ${Math.round(B.passion)}, mastery ${Math.round(B.mastery)}, wisdom ${Math.round(B.wisdom)}.`,daySrc:'m'},
-    {id:'vedic-clock',name:'Vedic Clock',src:'e',birth:bc?`Born in ${bc.A.hora.lord} hora · ${bc.A.chog.name} choghadiya · ${bc.A.organ.organ} time`:'',day:`${DL.fmtH(h)}: ${A.hora.lord} hora · ${A.chog.name} (${A.chog.meaning}) · ${A.organ.organ} · ${A.dosha.dosha}`,meet:bc&&A.hora.lord===bc.A.hora.lord?`The hora lord matches your birth hora (${bc.A.hora.lord}).`:`Day lord ${C.lord}. Rahu Kaal ${DL.fmtH(C.rahu.s)}–${DL.fmtH(C.rahu.e)}. Abhijit ${DL.fmtH(C.abhijit.s)}–${DL.fmtH(C.abhijit.e)}.`,daySrc:'m'}];
+    {id:'vedic-clock',name:'Vedic Clock',src:'e',birth:bc?`Born in ${bc.A.hora.lord} hora · ${bc.A.chog.name} choghadiya · ${bc.A.organ.organ} time`:'',day:`${DL.fmtH(h)}: ${A.hora.lord} hora · ${A.chog.name} (${A.chog.meaning}) · ${A.organ.organ} · ${A.dosha.dosha}`,meet:bc&&A.hora.lord===bc.A.hora.lord?`The hora lord matches your birth hora (${bc.A.hora.lord}).`:`Day lord ${C.lord}. Rahu Kaal ${DL.fmtH(C.rahu.s)}–${DL.fmtH(C.rahu.e)}. Abhijit ${DL.fmtH(C.abhijit.s)}–${DL.fmtH(C.abhijit.e)}.`,daySrc:'m'}], r);
 }
+
+/* ---------- The engine-held day: Selemene computes it and keeps it in readings ---------- */
+const istHM=iso=>{const t=new Date(Date.parse(iso)+5.5*36e5);return `${String(t.getUTCHours()).padStart(2,'0')}:${String(t.getUTCMinutes()).padStart(2,'0')}`};
+const istISOd=iso=>new Date(Date.parse(iso)+5.5*36e5).toISOString().slice(0,10);
+/* Where an engine day is stored, its figures replace the field's for the five day engines. */
+function engineDay(rows,r){const D=dayOf(r.d);if(!D)return rows;const at=D.moment?` at ${istHM(D.moment)} IST`:'';
+  const P=dayEng(r.d,'panchanga'),V=dayEng(r.d,'vimshottari'),T=dayEng(r.d,'transits'),B=dayEng(r.d,'biorhythm'),C=dayEng(r.d,'vedic-clock');
+  return rows.map(x=>{
+    if(x.id==='panchanga'&&P){const ni=NAKS.indexOf(P.nakshatra_name);const tara=ni>=0?DL.tara(ni,BIRTH_NAK):null;
+      return {...x,day:`${P.tithi_name} · ${P.nakshatra_name} · ${P.yoga_name} · ${P.karana_name} · ${P.vara_name}${at}`,daySrc:'e',meet:tara?`Tara ${tara.n} of 9 counted from your birth star: ${tara.name}, the star of ${tara.key} in the classical count.`:x.meet}}
+    if(x.id==='vimshottari'&&V&&V.current_period){const c=V.current_period,pe=c.pratyantardasha;const left=Math.max(0,Math.round((Date.parse(pe.end)-Date.parse(D.moment||r.d))/864e5));
+      const nx=(V.upcoming_transitions||[])[0];
+      return {...x,day:`${c.mahadasha.planet} / ${c.antardasha.planet} / ${pe.planet}`,daySrc:'e',meet:`${pe.planet} runs to ${fmtDate(istISOd(pe.end))}, ${left} days remain.${nx?` Next: ${nx.to_planet} ${String(nx.type||'').toLowerCase()} on ${fmtDate(istISOd(nx.date))}.`:''}`}}
+    if(x.id==='transits'&&T&&T.aspects){const tight=T.aspects.filter(a=>a.orb<=1.5).sort((a,b)=>a.orb-b.orb).slice(0,4);
+      return {...x,daySrc:'e',day:`${x.day.replace(/ · Sade Sati.*$/,'')} · Sade Sati ${T.sade_sati&&T.sade_sati.is_active?'active':'not active'} · period ${String(T.period_quality||'').toLowerCase()}`,
+        meet:tight.length?tight.map(a=>`${a.transiting_planet} ${a.aspect_type.toLowerCase()} natal ${a.natal_planet} ${a.orb.toFixed(2)}°`).join(' · ')+' (sidereal, engine)':'No transit within 1.5° of a natal point (engine).'}}
+    if(x.id==='biorhythm'&&B&&B.physical){const cyc=['physical','emotional','intellectual'];
+      return {...x,daySrc:'e',day:cyc.map(k=>`${cap(k)} ${Math.round(B[k].percentage)}% ${String(B[k].phase).toLowerCase()}`).join(' · '),
+        meet:`Day ${B.days_alive}. ${(B.critical_days||[]).length?'Critical days ahead: '+B.critical_days.map(d=>fmtDate(d)).join(', ')+'.':'No critical day in the next week.'} Energy ${Math.round(B.overall_energy)}.`}}
+    if(x.id==='vedic-clock'&&C&&C.hora){return {...x,meet:`${x.meet} Engine${at}: ${C.hora.ruler} hora · ${C.choghadiya?C.choghadiya.name:''}.`}}
+    return x})}
+/* No-prediction guardrail, ported from packages/witness-pipeline rubric (negation-aware per clause) */
+const GUARD=[/guarantee/i,/investment advice/i,/will become rich/i,/definitely inherit/i,/will marry/i,/inevitable/i,/must divorce/i,/spouse will be/i,/diagnos/i,/treatment/i,/\bcure\b/i,/will develop/i,/you have .*disease/i,/will have children/i,/infertile/i,/parent will die/i,/child will/i,/\bdestined\b/i,/\bwill happen\b/i,/\bis going to happen\b/i];
+const CLAUSE=/[.!?;:\n]|\b(?:but|however|yet|although|though)\b/gi,NEG=/\b(?:not|no|nothing|never|none|nor|neither|cannot|without|rather than)\b|n't\b/i;
+function guardFails(text){const out=[];for(const re of GUARD){const g=new RegExp(re.source,'gi');for(const m of String(text).matchAll(g)){const before=text.slice(0,m.index);let cs=0;for(const b of before.matchAll(CLAUSE))cs=b.index+b[0].length;if(!NEG.test(before.slice(cs))){out.push(m[0]);break}}}return out}
+function dyadPanel(D){const w=D.witness;if(!w){const why=(D.missing||[]).find(m=>m.part==='witness-dyad');
+    return `<div class="panel dyad"><h3>Witness dyad<span class="sub">not stored for this day</span></h3><p class="muted" style="margin:0">${esc(why?why.reason:'No dyad was stored for this day.')}</p></div>`}
+  const fails=guardFails([w.aletheios,w.pichet,w.synthesis,w.witness_question].join(' \n'));
+  if(fails.length)return `<div class="panel dyad"><h3>Witness dyad<span class="sub">withheld</span></h3><p class="muted" style="margin:0">The stored dyad for this day used forecast or diagnostic language (${esc(fails.join(', '))}), which the field does not show. The engine's per-engine witness prompts remain in the lens matrix.</p></div>`;
+  return `<div class="panel dyad"><h3>Witness dyad · ${fmtDate(D.date)}<span class="sub">${w.llm_powered?'Language model':'Rule-based'} · ${(w.engines_used||[]).join(', ')}</span></h3>
+   <div class="dyad-grid"><div class="dyad-voice al"><div class="dv-h">${icon('sacred-geometry',22)}<b>Aletheios</b><span>names</span></div><p>${esc(w.aletheios)}</p></div>
+    <div class="dyad-voice pi"><div class="dv-h">${icon('witness',22)}<b>Pichet</b><span>embodies</span></div><p>${esc(w.pichet)}</p></div></div>
+   <p class="dyad-syn">${esc(w.synthesis)}</p><p class="dyad-q">${esc(w.witness_question)}</p>
+   <p class="meta" style="margin:0"><span class="state w">Witness</span> Stored by the Selemene engine for ${D.moment?istHM(D.moment)+' IST':'this day'}, with no biofield capture. Checked against the field's no-prediction guardrail.</p></div>`}
+function freshChip(d){const D=dayOf(d);if(!D)return `<span class="chip"><span class="dot u"></span><span class="ev-u">No engine day stored · field figures</span></span>`;
+  const n=Object.keys(D.engines||{}).length;return `<span class="chip"><span class="dot c"></span><span class="ev-c">Engine day · ${n}/5 engines${D.witness?' · dyad':''} · ${D.anchor==='sunrise+10m'?'sunrise ':''}${D.moment?istHM(D.moment):''} IST</span></span>`}
+/* Day checks: the stored engine day against the field's own figures for the same date */
+function dayChecks(d){const D=dayOf(d);if(!D)return [];const rows=[];const r=rec(d),P=panchangaOf(r);
+  const E=id=>dayEng(d,id);const p=E('panchanga'),b=E('biorhythm'),c=E('vedic-clock'),v=E('vimshottari');
+  if(p){rows.push(['Tithi',P.tithi,p.tithi_name,P.tithi===p.tithi_name]);rows.push(['Nakshatra',P.nak,p.nakshatra_name,P.nak===p.nakshatra_name]);rows.push(['Yoga',P.yoga,p.yoga_name,P.yoga===p.yoga_name]);rows.push(['Karana',P.karana,p.karana_name,P.karana===p.karana_name]);
+    const civ=new Date(Date.parse(D.moment)+5.5*36e5),h=civ.getUTCHours()+civ.getUTCMinutes()/60,V=DL.vedic(d,h);const vara=['Ravivara','Somavara','Mangalavara','Budhavara','Guruvara','Shukravara','Shanivara'][new Date(V.C.date+'T00:00:00Z').getUTCDay()];
+    rows.push(['Vara (Vedic day at the moment)',vara,p.vara_name,p.vara_name.startsWith(vara)])}
+  if(b){const f=DL.bio(d);['physical','emotional','intellectual','intuitive','aesthetic','spiritual'].forEach(k=>rows.push([`Biorhythm ${k}`,`${f[k].pct.toFixed(2)}% ${f[k].phase}`,`${b[k].percentage.toFixed(2)}% ${b[k].phase}`,Math.abs(f[k].pct-b[k].percentage)<.01&&f[k].phase===b[k].phase]))}
+  if(c&&c.vedic_day){const C=DL.clock(c.vedic_day.date),er=c.vedic_day.sunrise.slice(11,19).split(':').map(Number),eh=er[0]+er[1]/60+er[2]/3600;rows.push(['Sunrise',DL.fmtHs(C.rise),c.vedic_day.sunrise.slice(11,19),Math.abs(C.rise-eh)<2/60]);
+    const civ=new Date(Date.parse(c.calculated_for)+5.5*36e5),h=civ.getUTCHours()+civ.getUTCMinutes()/60+civ.getUTCSeconds()/3600,V=DL.vedic(civ.toISOString().slice(0,10),h),A=DL.at(V.C,V.H);rows.push(['Hora at the moment',A.hora.lord,c.hora.ruler,A.hora.lord===c.hora.ruler]);rows.push(['Choghadiya at the moment',A.chog.name,c.choghadiya.name,A.chog.name===c.choghadiya.name])}
+  if(v&&v.current_period){const ad=SKY.ad.find(a=>a[2]<=d&&d<a[3]);let pd=null;if(ad)ad[4].forEach(x=>{if(x[1]<=d)pd=x[0]});const f=ad?`${ad[0]} / ${ad[1]} / ${pd}`:'—',e=`${v.current_period.mahadasha.planet} / ${v.current_period.antardasha.planet} / ${v.current_period.pratyantardasha.planet}`;rows.push(['Dasha',f,e,f===e])}
+  return rows}
 function provTag(s){const [c,w]=PROV[s];return `<span class="state ${c}">${w}</span>`}
 function lensMatrix(r,h){return `<div class="lens-grid" role="table" aria-label="Engines: birth, this day, where they meet">
   <div class="lens-row lens-head" role="row"><span role="columnheader">Engine</span><span role="columnheader">At birth</span><span role="columnheader">This day</span><span role="columnheader">Where they meet</span></div>
@@ -65,9 +112,11 @@ function ribbon(center){const N=31,half=15;let start=addDays(center,-half);if(st
   const [ey,eh]=TY.Events;EVENTS.filter(e=>e[0]>=days[0]&&e[0]<=days[days.length-1]).forEach(e=>{const i=days.indexOf(e[0]);if(i<0)return;s+=`<path d="M${X(i)} ${ey+4}l5 8-5 8-5-8z" class="ev ${e[1]}"><title>${fmtDate(e[0])} · ${esc(e[2])}</title></path>`});
   s+='</svg>';
   return `<div class="ribbon-wrap">${s}</div><div class="legend ribbon-legend"><span><i style="background:${BIO_COL.physical}"></i>Physical</span><span><i style="background:${BIO_COL.emotional}"></i>Emotional</span><span><i style="background:${BIO_COL.intellectual}"></i>Intellectual</span><span><i class="lg-def1"></i>Single definition</span><span><i class="lg-def2"></i>Split</span><span><i class="lg-def3"></i>Triple split</span><span><i class="lg-m2t"></i>Motor to Throat</span><span>Tara counted from Uttara Phalguni · tap a day</span></div>`}
-function verifyDrawer(){const rows=DL.verify(ENG);openDrawer(`<div class="eyebrow">Method check</div><h2>Field figures, engine methods</h2><p class="muted">The day dial and the biorhythm cycles are recomputed in the page so any date can be witnessed. Each method is checked here against the stored engine response for its call time.</p>
-  <div class="tbl"><table><thead><tr><th>Check</th><th>Field</th><th>Engine</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td class="num">${esc(r[1])}</td><td class="num">${esc(r[2])}</td><td>${r[3]?'<span class="ev-c">match</span>':'<span class="ev-u">differs</span>'}</td></tr>`).join('')}</tbody></table></div>
-  <p class="meta" style="margin-top:12px">${rows.filter(r=>r[3]).length} of ${rows.length} match. Panchanga, numerology day numbers and Tarabala are field figures by classical method; the engines return natal figures only.</p>`)}
+function verifyDrawer(){const rows=DL.verify(ENG),day=dayChecks(state.date),D=dayOf(state.date);
+  const table=rs=>`<div class="tbl"><table><thead><tr><th>Check</th><th>Field</th><th>Engine</th><th></th></tr></thead><tbody>${rs.map(r=>`<tr><td>${esc(r[0])}</td><td class="num">${esc(r[1])}</td><td class="num">${esc(r[2])}</td><td>${r[3]?'<span class="ev-c">match</span>':'<span class="ev-u">differs</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+  openDrawer(`<div class="eyebrow">Method check</div><h2>Field figures, engine methods</h2><p class="muted">The day dial and the biorhythm cycles are recomputed in the page so any date can be witnessed. Each method is checked here against the stored engine response for its call time.</p>
+  ${table(rows)}<p class="meta" style="margin-top:12px">${rows.filter(r=>r[3]).length} of ${rows.length} match.</p>
+  <h3 style="margin-top:20px">This day · ${fmtDate(state.date)}</h3>${day.length?`<p class="muted">The engine-held day${D&&D.moment?` (computed at ${istHM(D.moment)} IST)`:''} against the field's own figures. Panchanga names are compared at different moments (field 06:00 IST, engine after sunrise), so a boundary crossed in between shows as a difference.</p>${table(day)}<p class="meta" style="margin-top:12px">${day.filter(r=>r[3]).length} of ${day.length} match.</p>`:'<p class="muted">No engine day is stored for this date. Run sync_daily.py, or let the engine\'s daily field run.</p>'}`)}
 
 function rToday(){
   const r=rec(state.date),R=dayReading(r),isToday=state.date===todayIST();const C0=DL.clock(state.date);
@@ -80,7 +129,7 @@ function rToday(){
   <div class="hero"><div class="epithet">${isToday?'The sky now':'Witnessing'} · ${fmtDate(state.date)} · ${P.vara.split(' ')[0]}</div>
    <h1 class="title" style="letter-spacing:.08em">${esc(R.decl)}</h1>
    <p class="lede">${esc(R.trav)} The Moon walks ${P.nak} in ${P.tithi.toLowerCase()}; ${ad?`the dasha runs ${ad[0]} / ${ad[1]}${pd?' / '+pd:''}`:''}.</p>
-   <div class="chips"><span class="chip"><span class="dot ${r.def===1?'c':'g'}"></span>${defLabel(r.def)} definition</span><span class="chip"><span class="dot ${r.m2t?'c':'w'}"></span>${r.m2t?'Motor to Throat':'No motor to Throat'}</span><span class="chip">☽ ${P.nak} · pada ${P.pada}</span><span class="chip">${P.tithi}</span><span class="chip">Tara ${tara.n} · ${tara.name}</span><span class="chip">${SYM[A.hora.lord]} ${A.hora.lord} hora</span></div></div>
+   <div class="chips"><span class="chip"><span class="dot ${r.def===1?'c':'g'}"></span>${defLabel(r.def)} definition</span><span class="chip"><span class="dot ${r.m2t?'c':'w'}"></span>${r.m2t?'Motor to Throat':'No motor to Throat'}</span><span class="chip">☽ ${P.nak} · pada ${P.pada}</span><span class="chip">${P.tithi}</span><span class="chip">Tara ${tara.n} · ${tara.name}</span><span class="chip">${SYM[A.hora.lord]} ${A.hora.lord} hora</span>${freshChip(state.date)}</div></div>
   <div class="today-inst">
    <div class="panel inst"><h3>Bodygraph · Human Design<span class="sub">Loom</span></h3>
     <div class="inst-bar"><div class="seg" role="group" aria-label="Overlays"><button id="ovPlanets" aria-pressed="${LOOMPREF.planets}">Planets</button><button id="ovKeys" aria-pressed="${LOOMPREF.keys}">Gene Keys</button></div><span class="meta">Tap a center or a gate</span></div>
@@ -91,6 +140,7 @@ function rToday(){
     <div class="scrub dial-scrub"><span class="lab" id="dialT">${DL.fmtH(h)}</span><input type="range" id="dialH" min="0" max="24" step="0.0833" value="${((h%24)+24)%24}" aria-label="Hour of the day"><span class="lab" style="text-align:right">IST</span></div>
     <p class="meta" style="margin:0" id="dialInfo"></p></div>
   </div>
+  ${dayOf(state.date)?dyadPanel(dayOf(state.date)):''}
   <div class="panel"><h3>Lens matrix · eight engines, one day<span class="sub">Birth · this day · where they meet</span></h3><div id="lensM">${lensMatrix(r,h)}</div></div>
   <div class="panel"><h3>Ribbon · thirty-one days<span class="sub">Every engine on its own track</span></h3>${ribbon(state.date)}</div>
   <div class="grid2">

@@ -98,9 +98,14 @@ python3 build.py && node t.js
 - **Copy rules.** No prediction, no diagnosis. Witness, do not forecast. Direct, affirmative sentences, no filler.
 - **No edition history in the artifact.** The earlier reading is context only. Do not show "what changed", "previous reading", "corrected" or "upgraded edition" language anywhere.
 
-## Open decision (ask Shesh before building P1)
+## Daily refresh (decided 30 Oct 2026: the engine owns the day)
 
-How the daily scheduled task gets the key: (a) the task requires Shesh's Mac and reads `/Volumes/madara/sec-key/.env` each morning, so the Mac must be awake around 05:30 IST; or (b) Shesh stores the key somewhere the task can reach without the Mac.
+The Selemene engine computes and stores the day; the field only reads it.
+
+- **Engine side** (branch `feat/daily-field-engine`, worktree `../Selemene-engine-daily`): a daily-field module beside the API's existing daily background task. At 05:30 IST, for users whose profile preferences carry `daily_field: true`, it runs panchanga (daily mode), transits, vimshottari, biorhythm and vedic-clock ten minutes after that date's sunrise, plus the Witness Dyad with no biofield capture, and stores each as a `readings` row (`workflow_id = "daily-field"`). `GET /api/v1/daily?date=` reads a day; `POST /api/v1/daily/refresh` computes what is missing. The same branch makes `live_scores` optional and adds `current_time` on `/witness/interpret`, and fixes Panchanga daily mode, which computed IST mornings 5h30m early. **Needs merge and deploy, then opt in with `PATCH /api/v1/users/me {"preferences":{"daily_field":true}}`.**
+- **Field side:** `sync_daily.py` pulls the stored day into `selemene/daily/<date>.json` (GET `/daily`, then `/daily/refresh`; until those are deployed it makes the same engine calls, which the engine also stores in `readings`). `build.py` embeds the last 31 days. Today shows an engine-day chip, engine-sourced lens rows, the Witness Dyad panel (checked by the ported no-prediction guardrail) and day checks in the method check drawer.
+- **Last mile:** the scheduled task `witness-field-daily-sync` runs at about 06:10 IST on this Mac: sync, build, `node t.js`, republish. The key stays in `/Volumes/madara/sec-key/.env`; the Mac must be on (a missed run fires on next launch).
+- Cloudflare blocks Python's default user agent (error 1010); `sync_daily.py` sends its own.
 
 ## Known data points worth reusing
 

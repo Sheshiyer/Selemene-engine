@@ -13,7 +13,7 @@
 
 ## P1
 
-- [ ] **Daily refresh at 05:30 IST (5 pts).** Scheduled task calls Panchanga, Transits, Vedic Clock, Biorhythm, Vimshottari; writes to the artifact database; adds a short daily witness note. Blocked on the key-handling decision in HANDOFF.md.
+- [x] **Daily refresh at 05:30 IST (5 pts).** Done as engine-owned daily field (see HANDOFF); engine branch awaits deploy. Scheduled task calls Panchanga, Transits, Vedic Clock, Biorhythm, Vimshottari; writes to the artifact database; adds a short daily witness note. Blocked on the key-handling decision in HANDOFF.md.
 - [ ] **Day panels on home (3 pts).** Hora and choghadiya schedule, biorhythm curve.
 
 ## P2 (stretch)

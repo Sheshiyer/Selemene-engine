@@ -10,3 +10,6 @@
 - **Never name a scene method after a kit method.** The orrery's `setView` overwrote the stage's and recursed forever on the Orbit/Above toggle.
 - **A stage callback can fire during construction.** Declare the handle with `let S=null` before `S=K.stage(...)`; `onResize` runs inside the constructor.
 - **Fit the camera to the projected object, not the bounding radius.** A tilted ring is flatter than it is wide; fitting its radius to the vertical field of view leaves the instrument small.
+- **Let the engine own the day.** Compute and store daily data in Selemene (`readings`, daily-field workflow); the page only reads it. One-shot local pipelines drift from the engine.
+- **A day is read at sunrise, not at a clock time.** 06:00 IST falls before Bangalore sunrise for much of the year and records the previous Vedic day.
+- **Cross-checks find engine bugs.** The field-vs-engine day checks surfaced the Panchanga daily-mode timezone bug (a day early) on the first run.

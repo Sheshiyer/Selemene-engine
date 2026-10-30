@@ -179,6 +179,7 @@ svg text{font-family:var(--f-mono)}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script type="application/json" id="sky">%%SKY%%</script>
 <script type="application/json" id="engines">%%ENGINES%%</script>
+<script type="application/json" id="daily">%%DAILY%%</script>
 <script type="application/json" id="content">%%CONTENT%%</script>
 <script>%%DICT%%</script>
 <script>%%LIB%%</script>
@@ -187,6 +188,10 @@ svg text{font-family:var(--f-mono)}
 const SKY=JSON.parse(document.getElementById('sky').textContent);
 const BOOK=JSON.parse(document.getElementById('content').textContent);
 const ENG=JSON.parse(document.getElementById('engines').textContent);
+const DAILY=JSON.parse(document.getElementById('daily').textContent);
+/* the engine-held day for a date (synced from Selemene readings), or null */
+const dayOf=d=>DAILY[d]||null;
+const dayEng=(d,id)=>{const x=DAILY[d];return x&&x.engines&&x.engines[id]?x.engines[id].result:null};
 const ORDER=SKY.order, DAYS=SKY.days, EVENTS=SKY.events;
 const NAT=SKY.natal.map(n=>({side:n[0],body:n[1],lon:n[2],gate:n[3],line:n[4]}));
 const NATG=new Set(NAT.map(n=>n.gate));

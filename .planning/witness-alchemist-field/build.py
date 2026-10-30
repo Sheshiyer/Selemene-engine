@@ -73,12 +73,42 @@ if vm:
             sky['events'].append([a[2], 'dasha', f"Antardasha begins: {a[0]} / {a[1]}", 'Jupiter' if a[0] == 'Jupiter' else 'Saturn', 0])
     sky['events'].sort()
 
+# The engine-held daily field, synced by sync_daily.py: the last 31 days, trimmed to what the page reads.
+import glob as _glob
+def _trim_day(d):
+    keep = {
+        'panchanga': ['tithi_name', 'nakshatra_name', 'yoga_name', 'karana_name', 'vara_name', 'tithi_value', 'nakshatra_value'],
+        'transits': ['aspects', 'period_quality', 'retrograde_planets', 'sade_sati'],
+        'vimshottari': ['current_period', 'upcoming_transitions'],
+        'biorhythm': ['target_date', 'days_alive', 'physical', 'emotional', 'intellectual', 'intuitive', 'aesthetic', 'spiritual', 'overall_energy', 'critical_days'],
+        'vedic-clock': ['calculated_for', 'hora', 'choghadiya', 'current_organ', 'current_dosha', 'vedic_day'],
+    }
+    eng = {}
+    for k, v in (d.get('engines') or {}).items():
+        env = v.get('result') or {}
+        res = env.get('result') or {}
+        trimmed = {f: res[f] for f in keep.get(k, []) if f in res}
+        if k == 'vedic-clock':
+            for f in ('hora', 'choghadiya'):
+                if f in trimmed:
+                    trimmed[f] = {x: trimmed[f].get(x) for x in ('ruler', 'name', 'number', 'start', 'end', 'meaning', 'nature', 'is_favorable') if x in trimmed[f]}
+        eng[k] = {'result': trimmed, 'calculated_at': env.get('calculated_at'), 'version': (env.get('metadata') or {}).get('engine_version'), 'prompt': env.get('witness_prompt')}
+    w = (d.get('witness') or {}).get('result')
+    return {'date': d['date'], 'moment': d.get('moment'), 'anchor': d.get('moment_anchor'), 'source': d.get('source'),
+            'fetched_at': d.get('fetched_at'), 'complete': d.get('complete'), 'engines': eng, 'witness': w, 'missing': d.get('missing', [])}
+DAILY = {}
+for _f in sorted(_glob.glob('selemene/daily/*.json'))[-31:]:
+    _d = json.load(open(_f))
+    DAILY[_d['date']] = _trim_day(_d)
+print('daily days embedded:', len(DAILY))
+
 dump = lambda o: json.dumps(o, separators=(',', ':'), ensure_ascii=False).replace('</', '<\\/')
 page = open('app.html').read()
 out = (page.replace('%%SKY%%', dump(sky))
            .replace('%%CONTENT%%', dump(json.load(open('content.json'))))
            .replace('%%CSS%%', open('field.css').read())
            .replace('%%ENGINES%%', dump(ENG))
+           .replace('%%DAILY%%', dump(DAILY))
            .replace('%%DICT%%', open('dict.js').read())
            .replace('%%LIB%%', open('icons.js').read() + '\n' + open('kit3d.js').read() + '\n' + open('daylens.js').read())
            .replace('%%ROOMS%%', '\n'.join(open(f).read() for f in ('room-sky.js', 'room-engines.js', 'room-mandala.js', 'loom3d.js', 'arm3d.js', 'room-jyotish.js', 'dial3d.js', 'room-today.js'))))
