@@ -12,8 +12,8 @@ swe.set_sid_mode(swe.SIDM_LAHIRI)
 for day in sky['days']:
     y,m,d=map(int,day['d'].split('-')); j=swe.julday(y,m,d,0.5)
     day['mc']=mcs(j)
-    day['sid']=[round(swe.calc_ut(j,p,F|swe.FLG_SIDEREAL)[0][0],1) for p in (swe.MOON,swe.SUN,swe.JUPITER,swe.SATURN,swe.TRUE_NODE,swe.MARS)]
-    for p in day['p']: p[3]=round(p[3],1)
+    day['sid']=[round(swe.calc_ut(j,p,F|swe.FLG_SIDEREAL)[0][0],1)%360 for p in (swe.MOON,swe.SUN,swe.JUPITER,swe.SATURN,swe.TRUE_NODE,swe.MARS)]
+    for p in day['p']: p[3]=round(p[3],1)%360  # keep rounded longitudes in [0, 360)
 # natal astro lines
 birth=swe.julday(1991,8,13,8+1/60); gst=swe.sidtime(birth)*15
 lines={}

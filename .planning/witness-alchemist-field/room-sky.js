@@ -10,7 +10,7 @@ const NATAL_AYAN=(()=>{try{return ENG['human-design'].result.personality_activat
 function ayanOf(r){return ((r.p[0][3]-r.sid[1])%360+360)%360}
 const norm=l=>((l%360)+360)%360;
 function sidInfo(lon,ayan){const s=norm(lon-ayan),n=Math.floor(s/(360/27)),pada=Math.floor((s%(360/27))/(360/108))+1;return {lon:s,sign:RASHI[Math.floor(s/30)],deg:s%30,nak:NAKS[n],pada}}
-const fmtDeg=d=>`${Math.floor(d)}°${String(Math.round((d%1)*60)).padStart(2,'0')}'`;
+const fmtDeg=d=>{const m=Math.round(d*60);return `${Math.floor(m/60)}°${String(m%60).padStart(2,'0')}'`};
 function angDiff(a,b){return Math.abs(((a-b+540)%360)-180)}
 function aspectBetween(a,b){const d=angDiff(a,b);for(const [n,ang,orb,col] of ASPECTS){if(Math.abs(d-ang)<=orb)return {name:n,orb:Math.abs(d-ang),col}}return null}
 const SKYPREF=(()=>{const d={mode:'western',gates:false,natal:true,lines:true,view:'orbit'};try{return Object.assign(d,JSON.parse(localStorage.getItem('wa-sky')||'{}'))}catch(e){return d}})();

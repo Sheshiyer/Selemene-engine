@@ -197,7 +197,7 @@ const PNAME=b=>b==='NorthNode'?'North Node':b==='SouthNode'?'South Node':b;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const SIGNS=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
-const fmtLon=l=>{const s=Math.floor(l/30),d=l%30;return `${SIGNS[s]} ${Math.floor(d)}°${String(Math.round((d%1)*60)).padStart(2,'0')}'`};
+const fmtLon=l=>{const m=Math.round((((l%360)+360)%360)*60)%21600,s=Math.floor(m/1800),r=m%1800;return `${SIGNS[s]} ${Math.floor(r/60)}°${String(r%60).padStart(2,'0')}'`};
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmtDate=s=>{const [y,m,d]=s.split('-').map(Number);return `${d} ${MON[m-1]} ${y}`};
 const dayMs=864e5, START=Date.parse(DAYS[0].d+'T00:00:00Z');

@@ -13,6 +13,10 @@ import json
 sky = json.load(open('sky.json'))
 # Dasha events come from the antardasha table, not from hard-coded dates.
 sky['events'] = [e for e in sky['events'] if e[1] != 'dasha']
+# rounding can land a longitude on 360.0; keep every stored ecliptic longitude in [0, 360)
+for _d in sky['days']:
+    for _p in _d['p']: _p[3] = round(_p[3] % 360, 2)
+    _d['sid'] = [round(v % 360, 2) for v in _d['sid']]
 for a in sky['ad']:
     if a[2] >= '2026-10-25':
         sky['events'].append([a[2], 'dasha', f"Antardasha begins: {a[0]} / {a[1]}",

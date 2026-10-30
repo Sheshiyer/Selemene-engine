@@ -53,7 +53,7 @@ while d<=end:
     P=pos(j); row={'d':d.strftime('%Y-%m-%d'),'p':[]}
     gates=[]
     for n in ORDER:
-        lon,sp=P[n]; g,l=gl(lon); row['p'].append([g,l,1 if sp<0 and n not in('Earth',) else 0,round(lon,2)])
+        lon,sp=P[n]; g,l=gl(lon); row['p'].append([g,l,1 if sp<0 and n not in('Earth',) else 0,round(lon,2)%360])
         if n!='Moon': gates.append(g)
     chans,defined,ncomp,m2t=analyse(gates)
     row['ch']=chans; row['cen']=defined; row['def']=ncomp; row['m2t']=1 if m2t else 0
