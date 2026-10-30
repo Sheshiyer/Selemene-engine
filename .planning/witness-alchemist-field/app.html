@@ -260,12 +260,18 @@ function bodygraph(el,r){
 const BG_LEGEND=`<div class="legend"><span><i style="background:var(--gold)"></i>Your channels</span><span><i style="background:var(--emerald)"></i>Completed by transit (computed)</span><span><i style="background:var(--violet-glow)"></i>Transit only</span><span>Tap a center or gate</span></div>`;
 
 /* ---------- reading of the day ---------- */
+/* the actual route between two centers through the day's defined channels (breadth-first) */
+function centerRoute(r,from,to){const adj={};r.ch.forEach(([k])=>{const [g1,g2]=k.split('-').map(Number),c1=GATES[g1][1],c2=GATES[g2][1];(adj[c1]=adj[c1]||[]).push([c2,k]);(adj[c2]=adj[c2]||[]).push([c1,k])});
+  const prev={[from]:null},q=[from];while(q.length){const c=q.shift();if(c===to)break;for(const [n,k] of adj[c]||[])if(!(n in prev)){prev[n]=[c,k];q.push(n)}}
+  if(!(to in prev))return null;const path=[];let c=to;while(prev[c]){path.unshift({center:c,via:prev[c][1]});c=prev[c][0]}return path}
+function routeText(path){if(!path||!path.length)return 'through the day\'s channels';const nm=c=>c==='G'?'the G Center':c==='SolarPlexus'?'the Solar Plexus':'the '+c;
+  if(path.length===1)return `directly through Channel ${path[0].via}`;return 'through '+path.slice(0,-1).map(p=>nm(p.center)).join(' and ')+` (channels ${path.map(p=>p.via).join(', ')})`}
 function dayReading(r){
   const tp=tPos(r), sun=tp[0], earth=tp[1];
   const bridges=r.ch.filter(c=>c[1]==='bridge').map(c=>c[0]);
   const addC=r.cen.filter(c=>!NATAL_CEN.has(c));
   let decl,trav;
-  if(r.def===1&&r.m2t){decl='Wide split bridged. Motor reaches the Throat.';trav='Transits supply both bridge gates at once. Your Sacral reaches your voice through the G Center, so knowing and doing move as one motion. Execute what your Sacral already said yes to; this definition is borrowed and will pass.'}
+  if(r.def===1&&r.m2t){const route=centerRoute(r,'Sacral','Throat');decl='Wide split bridged. Motor reaches the Throat.';trav=`Transits supply the gates your split is missing. Your Sacral reaches your voice ${routeText(route)}, so knowing and doing move as one motion. Execute what your Sacral already said yes to; this definition is borrowed and will pass.`}
   else if(r.def===1){decl='One circuit today.';trav='Your two islands are joined by transit. Thinking-work and doing-work share a gear for now. Use it to finish, not to begin from the mind.'}
   else if(addC.includes('SolarPlexus')){decl='An emotional wave runs through you.';trav='A transit defines your Solar Plexus. Your authority stays Sacral, but mood colours the gut response. Ask the same yes-or-no question on two different days before long commitments.'}
   else if(bridges.length){decl='Your design is lit from outside.';trav=`Transits complete ${bridges.length} channel${bridges.length>1?'s':''} with your gates. Notice where energy arrives that is not normally yours, and respond rather than reach.`}

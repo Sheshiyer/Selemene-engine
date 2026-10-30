@@ -41,12 +41,17 @@ const DL=(()=>{
     return {hora:f(C.horas),chog:f(C.chog),organ:C.organs.find(o=>{const s=o.s%24,e=o.e%24;return s<e?(s<=oh&&oh<e):(oh>=s||oh<e)}),dosha:C.doshas.find(o=>{const s=o.s%24,e=o.e%24;return s<e?(s<=oh&&oh<e):(oh>=s||oh<e)})}}
   /* Biorhythm: the engine's six sine cycles counted from birth, and its three composites */
   const CYC=[['physical',23],['emotional',28],['intellectual',33],['intuitive',38],['aesthetic',43],['spiritual',53]];
-  function bio(date){const d=Math.round((dms(date)-dms(BIRTH.date))/864e5);const out={days:d};
-    CYC.forEach(([k,P])=>{const v=Math.sin(2*Math.PI*d/P),vn=Math.sin(2*Math.PI*(d+1)/P),vp=Math.sin(2*Math.PI*(d-1)/P);const cd=d%P;
-      const crit=Math.sign(v)!==Math.sign(vn)||Math.sign(v)!==Math.sign(vp)||Math.abs(v)<.06;
-      out[k]={value:v,pct:(v+1)/2*100,cycle_day:cd,phase:v>.95?'Peak':v<-.95?'Low':vn>v?'Rising':'Falling',critical:crit,period:P}});
+  // ported from crates/engine-biorhythm/src/calculator.rs: phase_label, is_critical_day, days_until_peak, days_until_critical
+  const isCrit=(n,P)=>Math.abs(Math.sin(2*Math.PI*n/P))<Math.abs(Math.sin(2*Math.PI*1/P));
+  const untilPeak=(n,P)=>{const ph=(n%P)/P,dist=ph<=.25?.25-ph:1.25-ph;const k=Math.ceil(dist*P);return k===0?P:k};
+  const untilCrit=(n,P)=>{const ph=(n%P)/P;let m=Infinity;for(const t of [.5,1]){if(ph<t){const k=Math.ceil((t-ph)*P);if(k>0&&k<m)m=k}}return m===Infinity?Math.ceil((1-ph)*P):m};
+  const phaseOf=(v,n,P)=>isCrit(n,P)?'Critical':v>.95?'Peak':v<-.95?'Low':Math.cos(2*Math.PI*n/P)>0?'Rising':'Falling';
+  const daysAlive=date=>Math.round((dms(date)-dms(BIRTH.date))/864e5);
+  function bio(date){const d=daysAlive(date);const out={days:d};
+    CYC.forEach(([k,P])=>{const v=Math.sin(2*Math.PI*d/P);out[k]={value:v,pct:(v+1)/2*100,cycle_day:((d%P)+P)%P,phase:phaseOf(v,d,P),critical:isCrit(d,P),until_peak:untilPeak(d,P),until_critical:untilCrit(d,P),period:P}});
     out.passion=(out.physical.pct+out.emotional.pct)/2;out.mastery=(out.physical.pct+out.intellectual.pct)/2;out.wisdom=(out.emotional.pct+out.intellectual.pct)/2;
     out.energy=CYC.reduce((a,[k])=>a+out[k].pct,0)/6;return out}
+  function criticalDays(date,window){const d=daysAlive(date),out=[];for(let o=1;o<=window;o++){const n=d+o;if(isCrit(n,23)||isCrit(n,28)||isCrit(n,33))out.push(addD(date,o))}return out}
   /* Numerology: personal year, month and day by the Pythagorean method, masters kept */
   const red=n=>{while(n>9&&n!==11&&n!==22&&n!==33)n=String(n).split('').reduce((a,b)=>a+ +b,0);return n};
   const digits=s=>String(s).split('').reduce((a,b)=>a+ +b,0);
@@ -70,9 +75,11 @@ const DL=(()=>{
       rows.push(['Organ at call',A.organ.organ,vc.current_organ.organ,A.organ.organ.replace(/ /g,'').toLowerCase()===vc.current_organ.organ.toLowerCase()]);rows.push(['Dosha at call',A.dosha.dosha,vc.current_dosha.dosha,A.dosha.dosha===vc.current_dosha.dosha])}
     const br=ENGR.biorhythm&&ENGR.biorhythm.result;
     if(br){const B=bio(br.target_date);rows.push(['Biorhythm days alive',String(B.days),String(br.days_alive),B.days===br.days_alive]);
-      CYC.forEach(([k])=>rows.push([`Biorhythm ${k}`,B[k].pct.toFixed(2)+'%',br[k].percentage.toFixed(2)+'%',Math.abs(B[k].pct-br[k].percentage)<.01]));
-      rows.push(['Biorhythm energy',B.energy.toFixed(2),br.overall_energy.toFixed(2),Math.abs(B.energy-br.overall_energy)<.01])}
+      CYC.forEach(([k])=>{const e=br[k],f=B[k];rows.push([`Biorhythm ${k}`,`${f.pct.toFixed(2)}% · ${f.phase}${f.critical?' · critical':''} · peak ${f.until_peak}d · zero ${f.until_critical}d`,`${e.percentage.toFixed(2)}% · ${e.phase}${e.is_critical?' · critical':''} · peak ${e.days_until_peak}d · zero ${e.days_until_critical}d`,
+        Math.abs(f.pct-e.percentage)<.01&&f.phase===e.phase&&f.critical===e.is_critical&&f.until_peak===e.days_until_peak&&f.until_critical===e.days_until_critical])});
+      rows.push(['Biorhythm energy',B.energy.toFixed(2),br.overall_energy.toFixed(2),Math.abs(B.energy-br.overall_energy)<.01]);
+      const cd=criticalDays(br.target_date,(br.forecast||[]).length||7);rows.push(['Biorhythm critical days',cd.join(', ')||'none',(br.critical_days||[]).join(', ')||'none',cd.join()===(br.critical_days||[]).join()])}
     return rows}
-  return {sunTimes,clock,vedic,at,bio,personal,tara,chandra,verify,fmtH,fmtHs,NUM_KEY,CHOG,HORA_KEY,CYC,TARA,addD};
+  return {sunTimes,clock,vedic,at,bio,criticalDays,personal,tara,chandra,verify,fmtH,fmtHs,NUM_KEY,CHOG,HORA_KEY,CYC,TARA,addD};
 })();
 if(typeof module!=='undefined')module.exports=DL;
