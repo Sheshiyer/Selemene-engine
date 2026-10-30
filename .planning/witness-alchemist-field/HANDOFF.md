@@ -126,3 +126,13 @@ The field now lives in the render-bible world: void ground, one warm key, a gold
 | `img/` | 17 engine stills and the trinity-hex mark, downscaled from the design system's Instruments Codex Dark set |
 
 Every 3D scene has a 2D path (no WebGL or low-power device) and a static path under reduced motion. `node t.js` exercises the 2D paths; the WebGL paths were checked in a browser at 1440x900 and 375x812.
+
+## Today as a multi-engine day (30 Oct 2026, third pass)
+
+| File | Role |
+|---|---|
+| `daylens.js` | Engine methods recomputed for any date: NOAA sunrise/sunset, hora, choghadiya, organ and dosha clocks, Rahu Kaal, Abhijit, biorhythm, personal year/month/day, Tarabala, Chandrabala. `DL.verify(ENG)` checks them against the stored Vedic Clock and Biorhythm responses (16 of 16 match) |
+| `dial3d.js` | The Day Dial: the Vedic Clock engine's object as a 24-hour bronze face with hora, choghadiya, organ and dosha rings, an hour hand and a 2D fallback |
+| `room-today.js` | Today: loom (with Planets and Gene Keys overlays) beside the dial, an eight-engine lens matrix (birth, this day, where they meet, provenance per cell) and a 31-day ribbon (definition, Moon nakshatra, tithi phase, Tarabala, biorhythm, events) |
+
+Provenance words on the page: **Engine** is read from a stored response; **Field · engine method** is recomputed by a method checked against the engine; **Field** is a classical or Swiss Ephemeris computation the engines do not return.

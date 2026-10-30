@@ -60,6 +60,9 @@ const K3=(()=>{
   // annulus band (ring of bronze) lying in XZ
   function band(r0,r1,h,seg){const s=new THREE.Shape();s.absarc(0,0,r1,0,Math.PI*2,false);const hole=new THREE.Path();hole.absarc(0,0,r0,0,Math.PI*2,true);s.holes.push(hole);const g=new THREE.ExtrudeGeometry(s,{depth:h,bevelEnabled:true,bevelThickness:.08,bevelSize:.08,bevelSegments:2,curveSegments:seg||160});g.rotateX(-Math.PI/2);return g}
 
+  // ring sector in XZ between longitudes a0<a1 (degrees)
+  function sector(r0,r1,a0,a1,h,bev){const s=new THREE.Shape();s.absarc(0,0,r1,a0*Math.PI/180,a1*Math.PI/180,false);s.absarc(0,0,r0,a1*Math.PI/180,a0*Math.PI/180,true);s.closePath();return prism(s,h,bev==null?.05:bev)}
+
   /* ---- labels: crisp canvas sprites held at a constant pixel size ---- */
   const FONT={mono:'"JetBrains Mono","SF Mono",ui-monospace,monospace',disp:'Unbounded,Panchang,sans-serif',engr:'Cinzel,"Trajan Pro",serif',sans:'Manrope,Satoshi,system-ui,sans-serif'};
   function textCanvas(text,o){const px=(o.px||12)*2,pad=Math.ceil(px*.35);const c=document.createElement('canvas'),g=c.getContext('2d');const font=`${o.weight||500} ${px}px ${FONT[o.font||'mono']}`;g.font=font;
@@ -162,10 +165,10 @@ const K3=(()=>{
   }
 
   /* ---- one live stage per room: survives same-room re-renders, disposed on room change ---- */
-  const ST={room:null,inst:null};
-  function mount(room,host,make){if(ST.inst&&ST.room===room&&ST.inst.attach){ST.inst.attach(host);return {inst:ST.inst,fresh:false}}release();ST.room=room;ST.inst=make(host);return {inst:ST.inst,fresh:true}}
-  function release(){if(ST.inst){try{ST.inst.dispose()}catch(e){}ST.inst=null;ST.room=null}}
-  function current(room){return ST.room===room?ST.inst:null}
+  const ST={room:null,slots:{}};
+  function mount(room,host,make,slot){slot=slot||'main';if(ST.room!==room)release();ST.room=room;const cur=ST.slots[slot];if(cur&&cur.attach){cur.attach(host);return {inst:cur,fresh:false}}const inst=make(host);ST.slots[slot]=inst;return {inst,fresh:true}}
+  function release(){Object.values(ST.slots).forEach(i=>{try{i.dispose()}catch(e){}});ST.slots={};ST.room=null}
+  function current(room,slot){return ST.room===room?ST.slots[slot||'main']||null:null}
 
-  return {HEX,col,EASE,bezier,reduced,lowPower,webgl,ok,stage,mount,release,current,hexPts,hexShape,prism,loopXZ,circleXZ,arcXZ,band,P,label,engrave,glow,halo,starfield,patina,rand};
+  return {HEX,col,EASE,bezier,reduced,lowPower,webgl,ok,stage,mount,release,current,hexPts,hexShape,prism,sector,loopXZ,circleXZ,arcXZ,band,P,label,engrave,glow,halo,starfield,patina,rand};
 })();

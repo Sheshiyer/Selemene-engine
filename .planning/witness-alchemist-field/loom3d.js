@@ -61,11 +61,23 @@ function loom3d(host,r0){
     for(const g in pins){const n=NATG.has(+g),t=st.tg.has(+g);const p=pins[g];const key=n&&t?'both':n?'natal':t?'transit':'off';if(p.state!==key){p.state=key;p.p.material=pm[key];p.p.scale.z=key==='off'?.6:1.5;
         const old=p.l.material.map;const nl=K.label(String(g),{font:'mono',px:8,color:key==='off'?'#75838E':key==='natal'?'#070B1D':'#F0EDE3'});p.l.material.map=nl.material.map;nl.material.dispose();old&&old.dispose()}}
     S.invalidate()}
+  // overlays: today's planets at their gates; the eleven Gene Keys spheres at their natal gates
+  const ov=new T.Group();root.add(ov);let ovOpt={planets:false,keys:false};
+  function overlays(){while(ov.children.length){const c=ov.children.pop();if(c.material){if(c.material.map)c.material.map.dispose();c.material.dispose()}}
+    if(ovOpt.planets){const by={};tPos(cur).forEach(t=>{(by[t.gate]=by[t.gate]||[]).push(SYM[t.body])});
+      for(const g in by){if(!GOFF[g])continue;const [x,y]=gxy(+g);const l=S.track(K.label(by[g].join(''),{font:'mono',px:12,color:'#E6B84D',bg:'rgba(7,11,29,.78)'}));l.center.set(.5,-.55);l.position.set(X(x),Y(y),depth+1.4);l.renderOrder=14;ov.add(l)}}
+    if(ovOpt.keys){const tg=new Set(tPos(cur).filter(t=>t.body!=='Moon').map(t=>t.gate));const by={};
+      SPHERES.forEach(sp=>{const n=NAT.find(x=>x.side===sp.src[0]&&x.body===sp.src[1]);if(!n||!GOFF[n.gate])return;(by[n.gate]=by[n.gate]||{n,names:[]}).names.push(sp.name)});
+      let alt=0;const placed=[];Object.values(by).sort((a,b)=>gxy(a.n.gate)[1]-gxy(b.n.gate)[1]).forEach(({n,names})=>{const [x,y]=gxy(n.gate);const hit=tg.has(n.gate);const side=x<196?'L':x>204?'R':(alt++%2?'L':'R');
+        let yy=Y(y);while(placed.some(p=>p.side===side&&Math.abs(p.y-yy)<1.5))yy-=1.6;placed.push({side,y:yy});
+        const l=S.track(K.label(names.map(s=>s.toUpperCase()).join(' · ')+' '+n.gate,{font:'mono',px:8,track:.1,color:hit?'#67D4C7':'#C2CBD1',bg:'rgba(7,11,29,.82)'}));
+        l.center.set(side==='L'?1.12:-.12,.5);l.position.set(X(x),yy,depth+1.4);l.renderOrder=13;ov.add(l)})}
+    S.invalidate()}
   apply(r0,false);
   // intro: the plate rises, sockets seat, then the wires light
   if(!RM){S.view.dist=fit()*1.4;S.view.pitch=.35;S.place();root.position.y=-6;
     S.tween(1500,kk=>{S.view.dist=fit()*(1.4-.4*kk);S.view.pitch=.35+(.1-.35)*kk;S.place();root.position.y=-6*(1-kk)});
     Object.values(wires).forEach((w,i)=>{if(w.type){w.g.setDrawRange(0,0);S.tween(900+i*30,kk=>{w.g.setDrawRange(0,Math.floor(w.full*kk/6)*6)})}})}
   else{S.view.dist=fit();S.place()}
-  return Object.assign(S,{update(r){apply(r,true)}});
+  return Object.assign(S,{update(r){apply(r,true);overlays()},overlay(o){ovOpt=Object.assign(ovOpt,o);overlays()}});
 }

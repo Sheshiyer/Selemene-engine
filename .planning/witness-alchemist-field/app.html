@@ -304,42 +304,6 @@ window.addEventListener('hashchange',route);
 
 %%ROOMS%%
 
-/* Today */
-function rToday(){
-  const r=rec(state.date),R=dayReading(r),tp=tPos(r),isToday=state.date===todayIST();
-  const next=EVENTS.filter(e=>e[0]>=state.date&&e[0]<=addDays(state.date,30)).slice(0,12);
-  // vedic
-  const sid=r.sid, nak=NAKS[Math.floor(sid[0]/(360/27))], pada=Math.floor((sid[0]%(360/27))/(360/108))+1;
-  const house=l=>((Math.floor(l/30)-7+12)%12)+1;
-  const ad=SKY.ad.find(a=>a[2]<=state.date&&state.date<a[3]);
-  let pd=null; if(ad){for(let i=0;i<ad[4].length;i++){if(ad[4][i][1]<=state.date)pd=ad[4][i][0]}}
-  // gene keys spheres touched
-  const touched=SPHERES.filter(sp=>{const n=NAT.find(x=>x.side===sp.src[0]&&x.body===sp.src[1]);return tp.some(t=>t.body!=='Moon'&&t.gate===n.gate)}).map(sp=>{const n=NAT.find(x=>x.side===sp.src[0]&&x.body===sp.src[1]);return {sp,n,by:tp.filter(t=>t.body!=='Moon'&&t.gate===n.gate).map(t=>PNAME(t.body))}});
-  // transit MC lines near Bangalore
-  const mcNear=BODIES.map((b,i)=>({b,lon:r.mc[i]})).filter(x=>x.b!=='Moon').map(x=>({...x,d:Math.abs(((x.lon-77.59+540)%360)-180)})).sort((a,b)=>a.d-b.d)[0];
-  $('#main').innerHTML=`<section class="room">
-  <div class="hero"><div class="epithet">${isToday?'The sky now':'Witnessing'} · ${fmtDate(state.date)} · 06:00 IST</div>
-  <p class="decl">${R.decl}</p><p class="lede">${R.trav}</p>
-  <div class="chips"><span class="chip"><span class="dot ${r.def===1?'c':'g'}"></span>${r.def===1?'Single definition':'Split definition'}</span><span class="chip"><span class="dot ${r.m2t?'c':'w'}"></span>${r.m2t?'Motor to Throat':'No motor to Throat'}</span><span class="chip"><span class="dot g"></span>${r.cen.length} of 9 centers defined</span>${R.addC.includes('SolarPlexus')?'<span class="chip"><span class="dot u"></span><span class="ev-u">Emotional overlay</span></span>':''}<span class="chip">Sun ${R.sun.gate}.${R.sun.line} · Earth ${R.earth.gate}.${R.earth.line}</span></div></div>
-  <div class="grid2">
-   <div class="panel"><h3>Your design under today's sky</h3><div class="bg-wrap" id="bgToday"></div>${BG_LEGEND}</div>
-   <div style="display:grid;gap:var(--s3);align-content:start;min-width:0">
-    <div class="panel"><h3>Theme of the day</h3><p style="margin-bottom:6px"><b>Sun in Gate ${R.sun.gate}, ${GATES[R.sun.gate][0]}.</b> ${GATES[R.sun.gate][2]} moves to ${GATES[R.sun.gate][3]}.</p><p class="muted" style="margin:0">Earth grounds it in Gate ${R.earth.gate}, ${GATES[R.earth.gate][0]}: ${GATES[R.earth.gate][2]} to ${GATES[R.earth.gate][3]}.${NATG.has(R.sun.gate)?` The Sun is in one of your own gates: ${natalIn(R.sun.gate).map(natLabel).join(', ')}.`:''}</p></div>
-    <div class="panel"><h3>Channels active today</h3><div class="list">${r.ch.map(([k,t])=>`<button class="item" data-ch="${k}"><span class="tag ${t==='natal'?'natal':t==='bridge'?'c':'w'}">${t==='natal'?'yours':t==='bridge'?'bridged':'transit'}</span><span><b>${k} ${CHANNELS[k][0]}</b><small>${CH_NOTE[k]||CHANNELS[k][1]+' circuit, carried by the sky. Felt as background weather in your aura.'}</small></span></button>`).join('')}</div></div>
-    ${r.con.length?`<div class="panel"><h3>Exact contacts (within 1°)</h3><div class="list">${r.con.map(c=>{const n=NAT.find(x=>x.side===c[1]&&x.body===c[2]);return `<button class="item" data-gate="${n.gate}"><span class="k">${SYM[c[0]]||''} ${c[3]}°</span><span><b>Transit ${PNAME(c[0])} on your ${c[1]==='P'?'Personality':'Design'} ${PNAME(c[2])}</b><small>Gate ${n.gate}.${n.line} ${GATES[n.gate][0]}: ${GATES[n.gate][3]}</small></span></button>`}).join('')}</div></div>`:''}
-   </div></div>
-  <div><div class="divider"><span></span></div><h2>Four lenses, one moment</h2><div class="grid4">
-   <div class="panel"><h3>Human Design</h3><p style="margin:0">${R.bridges.length?`Bridged: ${R.bridges.map(k=>k+' '+CHANNELS[k][0]).join(', ')}.`:'No channels bridged.'} ${R.addC.length?'Defined by transit: '+R.addC.map(c=>c.replace('SolarPlexus','Solar Plexus')).join(', ')+'.':''}</p></div>
-   <div class="panel"><h3>Gene Keys</h3><p style="margin:0">${touched.length?touched.map(t=>`${t.by.join(' and ')} in your ${t.sp.name} key ${t.n.gate}.`).join(' '):'No transit touches your eleven sphere keys today.'}</p></div>
-   <div class="panel"><h3>Vedic</h3><p style="margin:0">${ad?`Dasha ${ad[0]} / ${ad[1]}${pd?' / '+pd:''}.`:''} Moon in ${nak} pada ${pada}. Jupiter in ${RASHI[Math.floor(sid[2]/30)]}, your house ${house(sid[2])} of ${HOUSE_KEY[house(sid[2])-1]}.</p></div>
-   <div class="panel"><h3>Astrocartography</h3><p style="margin:0">At 06:00 IST the transiting ${PNAME(mcNear.b)} culminates nearest Bangalore, its MC line ${Math.round(mcNear.d)}° of longitude away at ${mcNear.lon.toFixed(1)}°. <a href="#map" style="color:var(--gold)">Open the map</a>.</p></div>
-  </div></div>
-  <div class="grid2">
-   <div class="panel"><h3>The sky, gate by gate</h3><div class="tbl"><table><thead><tr><th>Body</th><th>Gate</th><th>Position</th><th>Contact</th></tr></thead><tbody>${tp.map(t=>`<tr class="click" data-gate="${t.gate}"><td><span class="sym">${SYM[t.body]}</span>${PNAME(t.body)}</td><td class="num">${t.gate}.${t.line}${t.retro?' R':''}</td><td class="num">${fmtLon(t.lon)}</td><td>${NATG.has(t.gate)?'<span class="tag natal">your gate</span>':''}</td></tr>`).join('')}</tbody></table></div></div>
-   <div class="panel"><h3>Next thirty days</h3><div>${next.length?next.map(evRow).join(''):'<p class="muted">No major events in the next thirty days.</p>'}</div><a class="pill sm" href="#timeline" style="margin-top:8px">Full timeline</a></div>
-  </div></section>`;
-  bodygraph($('#bgToday'),r);
-  wire($('#main'));}
 function wire(root){root.querySelectorAll('[data-gate]').forEach(b=>{if(!b.closest('svg'))b.onclick=()=>showGate(+b.dataset.gate)});
   root.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{const k=b.dataset.ch,[a,c]=k.split('-').map(Number);openDrawer(`<div class="eyebrow">${CHANNELS[k][1]} circuit</div><h2>Channel ${k} ${CHANNELS[k][0]}</h2><p>${CH_NOTE[k]||'A transit channel carried by the sky. You feel it as weather in your aura rather than as your own definition.'}</p><div class="chips"><button class="chip" data-g2="${a}">Gate ${a} ${GATES[a][0]}</button><button class="chip" data-g2="${c}">Gate ${c} ${GATES[c][0]}</button></div>${channelWindow(k)}`);$('#drawerBody').querySelectorAll('[data-g2]').forEach(x=>x.onclick=()=>showGate(+x.dataset.g2))});
   root.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{setDate(b.dataset.ev);if(state.room!=='today')location.hash='#today'})}
