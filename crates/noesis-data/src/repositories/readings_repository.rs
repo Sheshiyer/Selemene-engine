@@ -2,6 +2,19 @@ use crate::models::reading::{NewReading, Reading, ReadingSyncRecord};
 use sqlx::{Error, PgPool};
 use uuid::Uuid;
 
+/// Holds one user's daily-field day while it lives: a transaction-scoped Postgres
+/// advisory lock, released by `release` or when dropped (the transaction ends).
+pub struct DailyDayLock {
+    tx: sqlx::Transaction<'static, sqlx::Postgres>,
+}
+
+impl DailyDayLock {
+    /// End the hold now rather than at drop.
+    pub async fn release(self) -> Result<(), Error> {
+        self.tx.rollback().await
+    }
+}
+
 pub struct ReadingsRepository {
     pool: PgPool,
 }
@@ -164,6 +177,17 @@ impl ReadingsRepository {
         .await?;
 
         Ok(row)
+    }
+
+    /// Wait for, then hold, the daily-field run for one user and date across every API
+    /// process sharing this database, so concurrent runs agree on the stored moment.
+    pub async fn lock_daily_day(&self, user_id: Uuid, date: &str) -> Result<DailyDayLock, Error> {
+        let mut tx = self.pool.begin().await?;
+        sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))")
+            .bind(format!("daily-field:{user_id}:{date}"))
+            .execute(&mut *tx)
+            .await?;
+        Ok(DailyDayLock { tx })
     }
 
     /// Store one daily-field part unless that user already has it for that date.

@@ -8,8 +8,9 @@
 //! user's own profile, then the Witness Dyad for that moment with no biofield
 //! capture. Each result is stored as a reading with `workflow_id = "daily-field"` and the
 //! date in `input_data.daily_date`, so a rerun for the same date computes only what is
-//! missing. Runs for one user's day take turns in each process, and a unique index
-//! (migration 044) keeps one row per part across processes.
+//! missing. Runs for one user's day take turns, in each process and across processes
+//! (a Postgres advisory lock), so the day's moment is chosen once; a unique index
+//! (migration 044) keeps one row per part.
 //!
 //! - `GET  /api/v1/daily?date=YYYY-MM-DD` returns the stored bundle (no computation).
 //! - `POST /api/v1/daily/refresh` computes what is missing for a date (default today, IST).
@@ -325,8 +326,14 @@ pub(crate) async fn run_daily(
     let (birth, lat, lng) = profile_inputs(state, uid).await?;
     let date_s = date.format("%Y-%m-%d").to_string();
 
+    // Runs for this day take turns: first within the process, then across processes,
+    // so the moment below is chosen once and every later run reuses the stored one.
     let lock = day_lock(uid, date);
     let _turn = lock.lock().await;
+    let held = repo
+        .lock_daily_day(uid, &date_s)
+        .await
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, "DAILY_LOCK_FAILED", e.to_string()))?;
 
     let stored_rows = repo
         .list_daily_field(uid, &date_s)
@@ -415,6 +422,10 @@ pub(crate) async fn run_daily(
                 }
             }
         }
+    }
+
+    if let Err(e) = held.release().await {
+        tracing::debug!(error = %e, "daily field: lock release deferred to connection reset");
     }
 
     // One usage event per run that computed anything: the day counts as one call.
