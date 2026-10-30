@@ -86,13 +86,25 @@ pub async fn interpret(
     Ok(Json(interpret_core(&state, &user, is_api_key, req).await))
 }
 
-/// The witness dyad, shared by `POST /witness/interpret` and the daily-field job.
+/// The witness dyad for `POST /witness/interpret`.
 pub(crate) async fn interpret_core(
     state: &AppState,
     user: &AuthUser,
     is_api_key: bool,
     req: WitnessInterpretRequest,
 ) -> WitnessInterpretResponse {
+    interpret_grounded(state, user, is_api_key, req).await.0
+}
+
+/// The witness dyad, plus the engines whose results it was actually given
+/// (`engines_available`: allowed by scope and returned without error). The daily-field
+/// job uses that list to keep a witness that lacked its day context out of storage.
+pub(crate) async fn interpret_grounded(
+    state: &AppState,
+    user: &AuthUser,
+    is_api_key: bool,
+    req: WitnessInterpretRequest,
+) -> (WitnessInterpretResponse, Vec<String>) {
     // Engine permission scopes (API-key principals): an engine the key is not
     // entitled to is not executed and does not appear in engines_available.
     let allows = |engine_id: &str| {
@@ -299,14 +311,17 @@ pub(crate) async fn interpret_core(
             });
         }
 
-        return WitnessInterpretResponse {
-            aletheios: llm_result.aletheios,
-            pichet: llm_result.pichet,
-            synthesis: llm_result.synthesis,
-            witness_question: llm_result.witness_question,
-            engines_used: llm_result.engines_used,
-            llm_powered: true,
-        };
+        return (
+            WitnessInterpretResponse {
+                aletheios: llm_result.aletheios,
+                pichet: llm_result.pichet,
+                synthesis: llm_result.synthesis,
+                witness_question: llm_result.witness_question,
+                engines_used: llm_result.engines_used,
+                llm_powered: true,
+            },
+            engines_available,
+        );
     }
 
     // Fallback: rule-based dyad from biofield metrics and available engine context
@@ -346,14 +361,17 @@ pub(crate) async fn interpret_core(
         });
     }
 
-    WitnessInterpretResponse {
-        aletheios,
-        pichet,
-        synthesis,
-        witness_question,
-        engines_used,
-        llm_powered: false,
-    }
+    (
+        WitnessInterpretResponse {
+            aletheios,
+            pichet,
+            synthesis,
+            witness_question,
+            engines_used,
+            llm_powered: false,
+        },
+        engines_available,
+    )
 }
 
 /// What the dyad log records for biofield: the scores when captured, an explicit

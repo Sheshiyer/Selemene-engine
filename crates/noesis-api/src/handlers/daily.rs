@@ -16,7 +16,7 @@
 //! - A background task runs the refresh at 05:30 IST for users whose profile
 //!   preferences carry `daily_field: true` (set through `PATCH /api/v1/users/me`).
 
-use crate::handlers::witness::{interpret_core, WitnessInterpretRequest};
+use crate::handlers::witness::{interpret_grounded, WitnessInterpretRequest};
 use crate::AppState;
 use axum::{
     extract::{Extension, Json, Query, State},
@@ -38,6 +38,10 @@ use uuid::Uuid;
 pub const DAILY_WORKFLOW: &str = "daily-field";
 /// The engines whose results change with the day.
 pub const DAY_ENGINES: [&str; 5] = ["panchanga", "transits", "vimshottari", "biorhythm", "vedic-clock"];
+/// The day engines the Witness Dyad reads. A dyad is stored only when it was given all
+/// of them, so one computed without its day context stays missing and is recomputed by
+/// the next refresh that can reach them.
+pub const WITNESS_GROUNDING: [&str; 4] = ["panchanga", "transits", "vimshottari", "biorhythm"];
 /// `engine_id` under which the day's Witness Dyad is stored.
 pub const WITNESS_ID: &str = "witness-dyad";
 /// Bump when the inputs a daily reading is computed from change meaning.
@@ -357,26 +361,45 @@ pub(crate) async fn run_daily(
     }
 
     if !stored.iter().any(|s| s == WITNESS_ID) {
-        let started = std::time::Instant::now();
-        let dyad = interpret_core(
-            state,
-            user,
-            is_api_key,
-            WitnessInterpretRequest {
-                birth_data: Some(birth.clone()),
-                live_scores: None,
-                current_time: Some(moment),
-                ..Default::default()
-            },
-        )
-        .await;
-        let ms = Some(started.elapsed().as_secs_f64() * 1000.0);
-        let question = Some(dyad.witness_question.clone());
-        let reading = new_reading(uid, WITNESS_ID, date, moment, anchor, lat, lng, serde_json::to_value(&dyad).unwrap_or_default(), question, level as i16, ms);
-        match repo.save_daily_reading(&reading).await {
-            Ok(Some(_)) => computed += 1,
-            Ok(None) => {}
-            Err(e) => skipped.push(MissingPart { part: WITNESS_ID.into(), reason: format!("storage: {e}") }),
+        let out_of_scope: Vec<&str> = WITNESS_GROUNDING
+            .into_iter()
+            .filter(|e| !crate::engine_scope_allows(user, is_api_key, e, "daily-field"))
+            .collect();
+        if !out_of_scope.is_empty() {
+            skipped.push(MissingPart {
+                part: WITNESS_ID.into(),
+                reason: format!("witness needs {} in this key's scope", out_of_scope.join(", ")),
+            });
+        } else {
+            let started = std::time::Instant::now();
+            let (dyad, available) = interpret_grounded(
+                state,
+                user,
+                is_api_key,
+                WitnessInterpretRequest {
+                    birth_data: Some(birth.clone()),
+                    live_scores: None,
+                    current_time: Some(moment),
+                    ..Default::default()
+                },
+            )
+            .await;
+            let lacking = missing_grounding(&available);
+            if !lacking.is_empty() {
+                skipped.push(MissingPart {
+                    part: WITNESS_ID.into(),
+                    reason: format!("witness ran without {}; not stored, retried on the next refresh", lacking.join(", ")),
+                });
+            } else {
+                let ms = Some(started.elapsed().as_secs_f64() * 1000.0);
+                let question = Some(dyad.witness_question.clone());
+                let reading = new_reading(uid, WITNESS_ID, date, moment, anchor, lat, lng, serde_json::to_value(&dyad).unwrap_or_default(), question, level as i16, ms);
+                match repo.save_daily_reading(&reading).await {
+                    Ok(Some(_)) => computed += 1,
+                    Ok(None) => {}
+                    Err(e) => skipped.push(MissingPart { part: WITNESS_ID.into(), reason: format!("storage: {e}") }),
+                }
+            }
         }
     }
 
@@ -385,6 +408,11 @@ pub(crate) async fn run_daily(
         crate::billing::emit_usage_event(&user.user_id, "workflow:daily-field", &user.tier);
     }
     Ok(skipped)
+}
+
+/// The day engines a witness was not given, out of the ones it reads.
+fn missing_grounding(available: &[String]) -> Vec<&'static str> {
+    WITNESS_GROUNDING.into_iter().filter(|e| !available.iter().any(|a| a == e)).collect()
 }
 
 /// The moment and anchor a stored daily row was computed for.
@@ -633,6 +661,19 @@ mod tests {
         let parts: Vec<&str> = b.missing.iter().map(|m| m.part.as_str()).collect();
         assert_eq!(parts, vec!["vimshottari", "biorhythm", "vedic-clock", WITNESS_ID]);
         assert!(b.missing.iter().any(|m| m.part == "vedic-clock" && m.reason.contains("scope")));
+    }
+
+    #[test]
+    fn a_witness_is_grounded_only_with_every_day_engine_it_reads() {
+        let all: Vec<String> = ["biorhythm", "human-design", "panchanga", "transits", "vimshottari"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+        assert!(missing_grounding(&all).is_empty());
+        let partial: Vec<String> = ["panchanga", "biorhythm"].iter().map(|s| s.to_string()).collect();
+        assert_eq!(missing_grounding(&partial), vec!["transits", "vimshottari"]);
+        assert_eq!(missing_grounding(&[]), WITNESS_GROUNDING.to_vec());
+        assert!(WITNESS_GROUNDING.iter().all(|e| DAY_ENGINES.contains(e)));
     }
 
     #[tokio::test]
