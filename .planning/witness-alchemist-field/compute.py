@@ -36,7 +36,7 @@ for lbl,j in [('personality',birth),('design',design),('transit',now)]:
         g=gl(v['lon']); r='R' if v['speed']<0 else ' '
         res[lbl][n]=dict(lon=v['lon'],gate=g[0],line=g[1],color=g[2],tone=g[3],base=g[4],retro=v['speed']<0)
         print(f"{n:10s} {fmt(v['lon'])} {r} {g[0]}.{g[1]}  c{g[2]} t{g[3]} b{g[4]}")
-json.dump(res,open('/home/claude/hd/chart.json','w'),indent=1)
+json.dump(res,open('chart.json','w'),indent=1)  # the bundle's own chart.json, read by daily.py and transits.py
 # Vedic: sidereal Lahiri moon, asc
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 flags=swe.FLG_SIDEREAL|swe.FLG_MOSEPH

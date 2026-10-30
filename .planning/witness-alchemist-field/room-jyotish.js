@@ -67,7 +67,7 @@ function dashaPanel(){
 }
 
 function rJyotish(){
-  const r=rec(state.date),isToday=state.date===todayIST(),P=panchangaOf(r),ss=sadeSati(r.sid[3]),T=todaySid(r),V=ENG.vimshottari.result,TR=ENG.transits.result;
+  const r=rec(state.date),isToday=state.date===todayIST(),snap=state.date===istISO(ENG.transits.at),P=panchangaOf(r),ss=sadeSati(r.sid[3]),T=todaySid(r),V=ENG.vimshottari.result,TR=ENG.transits.result;
   const list=chartPlanets(JYPREF.show,r);
   const aspToday=[];for(const t of T)for(const n of NATAL_SID){const a=aspectBetween(t.lon,n.lon);if(a&&a.orb<=2)aspToday.push({t,n,a})}aspToday.sort((x,y)=>x.a.orb-y.a.orb);
   const moonN=NATAL_SID.find(p=>p.body==='Moon'),jup=T.find(p=>p.body==='Jupiter'),sat=T.find(p=>p.body==='Saturn');
@@ -88,7 +88,7 @@ function rJyotish(){
   <div><div class="divider"><span></span></div><h2>Dasha</h2><div id="jyDasha">${dashaPanel()}</div></div>
   <div class="grid2">
    <div class="panel"><h3>Sky today, sidereal</h3><div class="tbl"><table><thead><tr><th>Graha</th><th>Rashi</th><th>Nakshatra</th><th>House</th></tr></thead><tbody>${T.filter(p=>!['Uranus','Neptune','Pluto'].includes(p.body)).map(p=>`<tr class="click" data-k="transit" data-b="${p.body}"><td><span class="sym">${SYM[p.body]||''}</span>${p.body}${p.retro?' ʳ':''}</td><td class="num">${p.sign} ${fmtDeg(p.deg)}</td><td>${p.nak} ${p.pada}</td><td class="num">${p.house}</td></tr>`).join('')}</tbody></table></div></div>
-   <div class="panel"><h3>Transit aspects to the birth chart</h3><div class="tbl"><table><thead><tr><th>Transit</th><th>Aspect</th><th>Natal</th><th>Orb</th></tr></thead><tbody>${(isToday||state.date===istDate(ENG.transits.at)?TR.aspects.filter(a=>a.orb<=3).map(a=>`<tr><td>${a.transiting_planet}</td><td>${a.aspect_type}</td><td>${a.natal_planet}</td><td class="num">${a.orb.toFixed(2)}°</td></tr>`):aspToday.map(x=>`<tr><td>${x.t.body}</td><td>${x.a.name}</td><td>${x.n.body}</td><td class="num">${x.a.orb.toFixed(2)}°</td></tr>`)).join('')||'<tr><td colspan="4" class="muted">None within orb.</td></tr>'}</tbody></table></div><p class="meta" style="margin:8px 0 0">${isToday?'Engine aspects for '+istStamp(ENG.transits.at)+', period quality '+TR.period_quality+'.':'Field aspects within 2°, conjunction, opposition, square and trine.'}</p></div>
+   <div class="panel"><h3>Transit aspects to the birth chart</h3><div class="tbl"><table><thead><tr><th>Transit</th><th>Aspect</th><th>Natal</th><th>Orb</th></tr></thead><tbody>${(snap?TR.aspects.filter(a=>a.orb<=3).map(a=>`<tr><td>${a.transiting_planet}</td><td>${a.aspect_type}</td><td>${a.natal_planet}</td><td class="num">${a.orb.toFixed(2)}°</td></tr>`):aspToday.map(x=>`<tr><td>${x.t.body}</td><td>${x.a.name}</td><td>${x.n.body}</td><td class="num">${x.a.orb.toFixed(2)}°</td></tr>`)).join('')||'<tr><td colspan="4" class="muted">None within orb.</td></tr>'}</tbody></table></div><p class="meta" style="margin:8px 0 0">${snap?'Engine aspects for '+istStamp(ENG.transits.at)+', period quality '+TR.period_quality+'.':'Field aspects within 2°, conjunction, opposition, square and trine.'}</p></div>
   </div></section>`;
   const set=(k,v)=>{JYPREF[k]=v;try{localStorage.setItem('wa-jy',JSON.stringify(JYPREF))}catch(e){}rJyotish()};
   $('#jyNorth').onclick=()=>set('layout','north');$('#jySouth').onclick=()=>set('layout','south');
@@ -109,3 +109,5 @@ function armStage(){const V=ENG.vimshottari.result,c=V.current_period;
    <div class="hud arm-hud">${rd('Mahadasha · engine',`<span class="g">${DASHA_SYM[c.mahadasha.planet]} ${c.mahadasha.planet}</span> · ${istDate(c.mahadasha.start)} to ${istDate(c.mahadasha.end)}`)}${ad?rd('Antardasha',`${DASHA_SYM[ad[1]]} ${ad[1]} · to ${fmtDate(ad[3])}`):''}${pd?rd('Pratyantardasha',`${DASHA_SYM[pd]} ${pd} · ${fmtDate(pdS)} to ${fmtDate(pdE)}`):''}</div>
    ${nx?`<div class="hud arm-hud-r"><div class="shift"><span class="k">Next shift · engine</span><span class="d">${istDate(nx.date)}</span><span class="v">${DASHA_SYM[nx.from_planet]||''} ${nx.from_planet} → ${DASHA_SYM[nx.to_planet]||''} ${nx.to_planet} · ${cap(nx.type)}</span></div></div>`:''}
    <div class="hud arm-hud-b"><span class="readout"><span class="k">Rings</span><span class="v">Outer mahadasha · middle antardasha · inner pratyantardasha</span></span><span class="k">Tap a ring to drill in</span></div></div>`}
+
+function istISO(iso){return iso?new Date(Date.parse(iso)+5.5*36e5).toISOString().slice(0,10):''}
