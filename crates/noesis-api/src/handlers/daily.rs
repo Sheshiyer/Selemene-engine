@@ -132,7 +132,7 @@ async fn sunrise_moment(
     if !crate::engine_scope_allows(user, is_api_key, "vedic-clock", "daily-field") {
         return (day_moment(date), "fixed-06:00-ist");
     }
-    let probe = engine_input("vedic-clock", birth, noon_ist(date), lat, lng, user);
+    let probe = engine_input("vedic-clock", birth, noon_ist(date), date, lat, lng, user);
     match state.orchestrator.execute_engine("vedic-clock", probe, user.consciousness_level).await {
         Ok(out) => match sunrise_from_clock(&out.result, date) {
             Some(rise) => (rise + Duration::minutes(AFTER_SUNRISE_MINUTES), "sunrise+10m"),
@@ -215,7 +215,15 @@ async fn profile_inputs(
     Ok((birth, wlat, wlng))
 }
 
-fn engine_input(engine_id: &str, birth: &BirthData, moment: DateTime<Utc>, lat: f64, lng: f64, user: &AuthUser) -> EngineInput {
+fn engine_input(
+    engine_id: &str,
+    birth: &BirthData,
+    moment: DateTime<Utc>,
+    date: NaiveDate,
+    lat: f64,
+    lng: f64,
+    user: &AuthUser,
+) -> EngineInput {
     let mut options: HashMap<String, Value> = HashMap::new();
     options.insert("user_id".to_string(), json!(user.user_id));
     options.insert("consciousness_level".to_string(), json!(user.consciousness_level));
@@ -223,6 +231,11 @@ fn engine_input(engine_id: &str, birth: &BirthData, moment: DateTime<Utc>, lat: 
         // Panchanga for the day, not for birth.
         "panchanga" => {
             options.insert("mode".to_string(), json!("daily"));
+        }
+        // Cycles are counted for the IST date: sunrise before 05:30 IST is still the
+        // previous UTC day.
+        "biorhythm" => {
+            options.insert("target_date".to_string(), json!(date.format("%Y-%m-%d").to_string()));
         }
         // The clock is read where the day is witnessed, in IST.
         "vedic-clock" => {
@@ -341,7 +354,7 @@ pub(crate) async fn run_daily(
         let started = std::time::Instant::now();
         match state
             .orchestrator
-            .execute_engine(engine_id, engine_input(engine_id, &birth, moment, lat, lng, user), level)
+            .execute_engine(engine_id, engine_input(engine_id, &birth, moment, date, lat, lng, user), level)
             .await
         {
             Ok(output) => {
@@ -376,6 +389,7 @@ pub(crate) async fn run_daily(
                 state,
                 user,
                 is_api_key,
+                Some(date),
                 WitnessInterpretRequest {
                     birth_data: Some(birth.clone()),
                     live_scores: None,
@@ -661,6 +675,35 @@ mod tests {
         let parts: Vec<&str> = b.missing.iter().map(|m| m.part.as_str()).collect();
         assert_eq!(parts, vec!["vimshottari", "biorhythm", "vedic-clock", WITNESS_ID]);
         assert!(b.missing.iter().any(|m| m.part == "vedic-clock" && m.reason.contains("scope")));
+    }
+
+    #[test]
+    fn biorhythm_is_counted_for_the_ist_date_not_the_utc_instant() {
+        let d = NaiveDate::from_ymd_opt(2026, 10, 30).unwrap();
+        // Sunrise in the far east of India: 05:05 IST, still 29 Oct in UTC.
+        let moment = Utc.with_ymd_and_hms(2026, 10, 29, 23, 35, 0).unwrap();
+        let birth = BirthData {
+            name: None,
+            date: "1991-08-13".into(),
+            time: None,
+            latitude: 27.0,
+            longitude: 95.0,
+            timezone: "Asia/Kolkata".into(),
+        };
+        let user = AuthUser {
+            user_id: Uuid::nil().to_string(),
+            tier: "free".into(),
+            permissions: vec![],
+            rate_limit: 0,
+            consciousness_level: 0,
+            jti: None,
+            token_exp: None,
+        };
+        let bio = engine_input("biorhythm", &birth, moment, d, 27.0, 95.0, &user);
+        assert_eq!(bio.options["target_date"], "2026-10-30");
+        assert_eq!(bio.current_time, moment, "the instant itself is kept");
+        let transits = engine_input("transits", &birth, moment, d, 27.0, 95.0, &user);
+        assert!(!transits.options.contains_key("target_date"));
     }
 
     #[test]

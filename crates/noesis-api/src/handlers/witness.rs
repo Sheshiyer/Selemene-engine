@@ -93,16 +93,20 @@ pub(crate) async fn interpret_core(
     is_api_key: bool,
     req: WitnessInterpretRequest,
 ) -> WitnessInterpretResponse {
-    interpret_grounded(state, user, is_api_key, req).await.0
+    interpret_grounded(state, user, is_api_key, None, req).await.0
 }
 
 /// The witness dyad, plus the engines whose results it was actually given
 /// (`engines_available`: allowed by scope and returned without error). The daily-field
 /// job uses that list to keep a witness that lacked its day context out of storage.
+/// `calendar_date`, when given, is the local date date-based engines (biorhythm) count
+/// for; the daily job passes its IST date, since an early sunrise is still the previous
+/// UTC day. Astronomical engines keep the instant in `current_time`.
 pub(crate) async fn interpret_grounded(
     state: &AppState,
     user: &AuthUser,
     is_api_key: bool,
+    calendar_date: Option<chrono::NaiveDate>,
     req: WitnessInterpretRequest,
 ) -> (WitnessInterpretResponse, Vec<String>) {
     // Engine permission scopes (API-key principals): an engine the key is not
@@ -156,7 +160,16 @@ pub(crate) async fn interpret_grounded(
             .insert("mode".to_string(), serde_json::json!("daily"));
         inp
     };
-    let biorhythm_input = make_input(bd.clone());
+    let biorhythm_input = {
+        let mut inp = make_input(bd.clone());
+        if let Some(day) = calendar_date {
+            inp.options.insert(
+                "target_date".to_string(),
+                serde_json::json!(day.format("%Y-%m-%d").to_string()),
+            );
+        }
+        inp
+    };
     let hd_input = make_input(bd.clone());
     let numerology_input = make_input(bd.clone());
     let transits_input = make_input(bd.clone());
