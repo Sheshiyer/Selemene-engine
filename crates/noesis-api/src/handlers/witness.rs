@@ -21,12 +21,18 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 /// Request body for the witness interpret endpoint.
-#[derive(Deserialize, ToSchema)]
+#[derive(Deserialize, ToSchema, Default)]
 pub struct WitnessInterpretRequest {
     /// Birth data for engine calculations (optional — skips birth-dependent engines if absent).
     pub birth_data: Option<BirthData>,
-    /// Live biofield composite scores from PIP camera analysis.
-    pub live_scores: LiveBiofieldScores,
+    /// Live biofield composite scores from PIP camera analysis. Optional: without a
+    /// capture the dyad is grounded in engine results only and never cites biofield values.
+    #[serde(default)]
+    pub live_scores: Option<LiveBiofieldScores>,
+    /// Moment to witness (RFC 3339). Defaults to now. Lets a client or the daily-field job
+    /// produce a dated reading; panchanga still runs in daily mode for this moment.
+    #[serde(default)]
+    pub current_time: Option<chrono::DateTime<Utc>>,
     /// Legacy compatibility field; ignored. Access uses the authenticated user phase.
     #[serde(default)]
     #[allow(dead_code)]
@@ -49,7 +55,7 @@ pub struct WitnessInterpretRequest {
 }
 
 /// Witness Dyad interpretation response.
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, ToSchema, Clone, Debug)]
 pub struct WitnessInterpretResponse {
     /// Aletheios — Left Pillar: truth-revealing, contemplative.
     pub aletheios: String,
@@ -76,13 +82,47 @@ pub async fn interpret(
     Json(req): Json<WitnessInterpretRequest>,
 ) -> Result<Json<WitnessInterpretResponse>, (StatusCode, Json<crate::error_mapper::ErrorResponse>)>
 {
+    let is_api_key = api_key_principal.is_some();
+    Ok(Json(interpret_core(&state, &user, is_api_key, req).await))
+}
+
+/// The local day a reading belongs to, for engines whose answer follows the calendar
+/// rather than the instant: biorhythm counts `date`, and daily Panchanga reads the
+/// instant on `timezone`'s wall clock instead of the natal timezone. An early sunrise
+/// is still the previous UTC day, and a natal timezone abroad is another day again.
+pub(crate) struct CalendarDay {
+    pub date: chrono::NaiveDate,
+    pub timezone: String,
+}
+
+/// The witness dyad for `POST /witness/interpret`.
+pub(crate) async fn interpret_core(
+    state: &AppState,
+    user: &AuthUser,
+    is_api_key: bool,
+    req: WitnessInterpretRequest,
+) -> WitnessInterpretResponse {
+    interpret_grounded(state, user, is_api_key, None, req).await.0
+}
+
+/// The witness dyad, plus the engines whose results it was actually given
+/// (`engines_available`: allowed by scope and returned without error). The daily-field
+/// job uses that list to keep a witness that lacked its day context out of storage.
+/// `calendar`, when given, is the local day the reading belongs to (the daily job passes
+/// its IST day). Astronomical engines keep the instant in `current_time`.
+pub(crate) async fn interpret_grounded(
+    state: &AppState,
+    user: &AuthUser,
+    is_api_key: bool,
+    calendar: Option<&CalendarDay>,
+    req: WitnessInterpretRequest,
+) -> (WitnessInterpretResponse, Vec<String>) {
     // Engine permission scopes (API-key principals): an engine the key is not
     // entitled to is not executed and does not appear in engines_available.
-    let is_api_key = api_key_principal.is_some();
     let allows = |engine_id: &str| {
-        crate::engine_scope_allows(&user, is_api_key, engine_id, "witness/interpret")
+        crate::engine_scope_allows(user, is_api_key, engine_id, "witness/interpret")
     };
-    let now = Utc::now();
+    let now = req.current_time.unwrap_or_else(Utc::now);
     // Engine authorization must come only from the authenticated identity.
     // The legacy request field remains accepted but cannot raise or lower access.
     let consciousness_level = user.consciousness_level;
@@ -126,9 +166,21 @@ pub async fn interpret(
         let mut inp = make_input(bd.clone());
         inp.options
             .insert("mode".to_string(), serde_json::json!("daily"));
+        if let (Some(day), Some(birth)) = (calendar, inp.birth_data.as_mut()) {
+            birth.timezone = day.timezone.clone();
+        }
         inp
     };
-    let biorhythm_input = make_input(bd.clone());
+    let biorhythm_input = {
+        let mut inp = make_input(bd.clone());
+        if let Some(day) = calendar {
+            inp.options.insert(
+                "target_date".to_string(),
+                serde_json::json!(day.date.format("%Y-%m-%d").to_string()),
+            );
+        }
+        inp
+    };
     let hd_input = make_input(bd.clone());
     let numerology_input = make_input(bd.clone());
     let transits_input = make_input(bd.clone());
@@ -216,7 +268,10 @@ pub async fn interpret(
     };
 
     // ── Compute engines_available for persistence ─────────────────────────────
-    let mut engines_available = vec!["biofield".to_string()];
+    let mut engines_available: Vec<String> = vec![];
+    if ctx.live_scores.is_some() {
+        engines_available.push("biofield".into());
+    }
     if ctx.panchanga.is_some() {
         engines_available.push("panchanga".into());
     }
@@ -255,7 +310,7 @@ pub async fn interpret(
                 user_id: uid,
                 tier: tier_for_persist,
                 consciousness_level: consciousness_level as i16,
-                live_scores: serde_json::to_value(&req.live_scores).unwrap_or_default(),
+                live_scores: live_scores_record(req.live_scores.as_ref()),
                 relationship_mode: serde_json::to_string(&relationship_mode)
                     .unwrap_or_else(|_| "None".into())
                     .trim_matches('"')
@@ -280,14 +335,17 @@ pub async fn interpret(
             });
         }
 
-        return Ok(Json(WitnessInterpretResponse {
-            aletheios: llm_result.aletheios,
-            pichet: llm_result.pichet,
-            synthesis: llm_result.synthesis,
-            witness_question: llm_result.witness_question,
-            engines_used: llm_result.engines_used,
-            llm_powered: true,
-        }));
+        return (
+            WitnessInterpretResponse {
+                aletheios: llm_result.aletheios,
+                pichet: llm_result.pichet,
+                synthesis: llm_result.synthesis,
+                witness_question: llm_result.witness_question,
+                engines_used: llm_result.engines_used,
+                llm_powered: true,
+            },
+            engines_available,
+        );
     }
 
     // Fallback: rule-based dyad from biofield metrics and available engine context
@@ -302,7 +360,7 @@ pub async fn interpret(
             user_id: uid,
             tier: tier_for_persist,
             consciousness_level: consciousness_level as i16,
-            live_scores: serde_json::to_value(&req.live_scores).unwrap_or_default(),
+            live_scores: live_scores_record(req.live_scores.as_ref()),
             relationship_mode: serde_json::to_string(&relationship_mode)
                 .unwrap_or_else(|_| "None".into())
                 .trim_matches('"')
@@ -327,14 +385,26 @@ pub async fn interpret(
         });
     }
 
-    Ok(Json(WitnessInterpretResponse {
-        aletheios,
-        pichet,
-        synthesis,
-        witness_question,
-        engines_used,
-        llm_powered: false,
-    }))
+    (
+        WitnessInterpretResponse {
+            aletheios,
+            pichet,
+            synthesis,
+            witness_question,
+            engines_used,
+            llm_powered: false,
+        },
+        engines_available,
+    )
+}
+
+/// What the dyad log records for biofield: the scores when captured, an explicit
+/// marker otherwise (the column is NOT NULL and a missing capture is a fact worth keeping).
+fn live_scores_record(scores: Option<&LiveBiofieldScores>) -> Value {
+    match scores {
+        Some(sc) => serde_json::to_value(sc).unwrap_or_default(),
+        None => serde_json::json!({ "captured": false }),
+    }
 }
 
 async fn run_engine(
@@ -362,7 +432,9 @@ fn rule_based_dyad(
     ctx: &WitnessContext,
     tier: &str,
 ) -> (String, String, String, String, Vec<String>) {
-    let scores = &ctx.live_scores;
+    let Some(scores) = ctx.live_scores.as_ref() else {
+        return noesis_witness::engine_grounded_witness_dyad(ctx);
+    };
     let level = ctx.consciousness_level;
     let mut engines_used = vec!["biofield".to_string()];
 
