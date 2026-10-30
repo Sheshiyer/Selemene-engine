@@ -537,14 +537,19 @@ impl ConsciousnessEngine for PanchangaEngine {
         let use_daily = input.options.get("mode").and_then(|v| v.as_str()) == Some("daily");
 
         let (date_str, time_str, tz_offset, birth_time_assumed) = if use_daily {
-            // Daily mode: use today's date from current_time, birth timezone for offset
-            let today = input.current_time.format("%Y-%m-%d").to_string();
-            let now_time = input.current_time.format("%H:%M").to_string();
+            // Daily mode: the instant `current_time`, read on the local wall clock of the
+            // birth timezone. `current_time` is UTC, so it is shifted into local time before
+            // formatting; formatting the UTC value and then applying the offset again would
+            // compute the day `tz` hours early (an IST reading 5h30m early, which put the
+            // vara a day behind for the first 5h30m after local midnight... and after sunrise).
             let tz = input
                 .birth_data
                 .as_ref()
                 .map(|b| tz_offset_from_string(&b.timezone))
                 .unwrap_or(0.0);
+            let local = input.current_time + chrono::Duration::seconds((tz * 3600.0).round() as i64);
+            let today = local.format("%Y-%m-%d").to_string();
+            let now_time = local.format("%H:%M").to_string();
             (today, now_time, tz, false)
         } else {
             let birth = input.birth_data.as_ref().ok_or_else(|| {
@@ -912,6 +917,27 @@ mod tests {
             "Pratipada (Shukla)"
         );
         assert!((0.0..30.0).contains(&before) && (0.0..30.0).contains(&after));
+    }
+
+    /// Daily mode reads `current_time` on the local wall clock of the birth timezone.
+    /// Regression: the UTC value was formatted as local time and shifted again, so an
+    /// IST morning was computed 5h30m early and the vara fell on the previous day.
+    #[tokio::test]
+    async fn daily_mode_reads_current_time_in_the_local_timezone() {
+        let mut input = test_input();
+        input.birth_data.as_mut().unwrap().timezone = "Asia/Kolkata".to_string();
+        // 06:22:41 IST on Friday 30 Oct 2026, ten minutes after Bangalore sunrise.
+        input.current_time = chrono::DateTime::parse_from_rfc3339("2026-10-30T00:52:41Z")
+            .unwrap()
+            .with_timezone(&chrono::Utc);
+        input
+            .options
+            .insert("mode".to_string(), serde_json::json!("daily"));
+        let output = PanchangaEngine::new().calculate(input).await.unwrap();
+        let result = result_of(&output);
+        assert_eq!(result.vara_name, "Shukravara (Friday)");
+        let expected_jd = calculate_julian_day("2026-10-30", "06:22", 5.5);
+        assert!((result.julian_day - expected_jd).abs() < 1e-6, "jd {} vs {}", result.julian_day, expected_jd);
     }
 
     /// Daily mode reads the time from `current_time`, so nothing is assumed.
