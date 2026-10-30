@@ -28,11 +28,6 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:var(--s3) var(--s8)}
-/* Masthead */
-.mast{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;padding-top:var(--s2);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.capsule{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2);background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-card);padding:10px var(--s2);box-shadow:var(--sh-capsule)}
-.wordmark{font-family:var(--f-engr);font-size:.875rem;letter-spacing:.24em;font-weight:600;color:var(--gold);white-space:nowrap;display:flex;align-items:center;gap:10px}
-.wordmark small{font-family:var(--f-disp);font-size:.625rem;letter-spacing:.2em;color:var(--silver);font-weight:500}
 .pill{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:var(--r-pill);border:1px solid var(--rule);background:transparent;cursor:pointer;font-family:var(--f-disp);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-2);text-decoration:none;transition:border-color .3s var(--ease),color .3s var(--ease)}
 .pill:hover{border-color:var(--rule-strong);color:var(--text-1)}
 .pill[aria-current="page"],.pill[aria-pressed="true"]{color:var(--gold);border-color:var(--rule-strong)}
@@ -153,51 +148,6 @@ svg text{font-family:var(--f-mono)}
 .folio .maplink{display:inline-flex;margin-top:var(--s2);min-height:44px;align-items:center;padding:0 18px;border-radius:var(--r-pill);background:var(--indigo);color:var(--parchment);font-family:var(--f-disp);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
 .foot{margin-top:var(--s5);text-align:center;font-family:var(--f-mono);font-size:.75rem;letter-spacing:.16em;color:var(--text-3);text-transform:uppercase}
 
-/* Menu: one scrolling row of rooms, the active diamond leads */
-nav.rooms{display:flex;gap:4px;flex:1;min-width:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;mask-image:linear-gradient(90deg,#000 92%,transparent)}
-nav.rooms::-webkit-scrollbar{display:none}
-nav.rooms .pill{flex:none}
-.capsule{row-gap:8px}
-@media (max-width:1100px){nav.rooms{flex:1 0 100%;order:3}}
-@media (max-width:700px){.capsule{padding:8px 12px}.wordmark small{display:none}.datebar{width:100%;justify-content:space-between}.datebar input{flex:1;min-width:0}}
-/* Sky room (Mandala voice: one glyph, few words) */
-.sky-wrap{position:relative;border:1px solid var(--rule);border-radius:var(--r-card);overflow:hidden;background:var(--void);aspect-ratio:16/10;min-height:360px;max-height:78vh;touch-action:none}
-@media (max-width:700px){.sky-wrap{aspect-ratio:4/5;min-height:420px}}
-.sky-layer{position:absolute;inset:0}
-.sky-wrap canvas,.sky-wrap svg.wheel{display:block;width:100%;height:100%}
-.sky-hud{position:absolute;left:12px;right:12px;top:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;pointer-events:none;z-index:2}
-.sky-hud>*{pointer-events:auto}
-.sky-hud .seg{display:inline-flex;border:1px solid var(--rule);border-radius:var(--r-pill);overflow:hidden;background:rgba(7,11,29,.7);backdrop-filter:blur(6px)}
-.sky-hud .seg button{min-height:36px;padding:0 14px;border:0;background:transparent;cursor:pointer;font-family:var(--f-disp);font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-2)}
-.sky-hud .seg button[aria-pressed="true"]{color:var(--gold);background:rgba(197,160,23,.1)}
-.sky-hud .chip{background:rgba(7,11,29,.7);backdrop-filter:blur(6px);min-height:36px}
-.sky-hud button.chip[aria-pressed="true"]{color:var(--gold);border-color:var(--rule-strong)}
-.sky-foot{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;font-family:var(--f-mono);font-size:.6875rem;letter-spacing:.08em;color:var(--text-3);pointer-events:none;z-index:2}
-.sky-foot .legend{margin:0}
-.sky-decl{text-align:center;display:grid;gap:10px;justify-items:center;padding:var(--s3) 0 0}
-.sky-decl .decl{max-width:28ch}
-.sky-decl .lede{text-align:center}
-.rooms-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s2)}
-@media (max-width:900px){.rooms-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.room-card{display:grid;gap:4px;padding:var(--s2) var(--s3);border:1px solid var(--rule);border-radius:var(--r-card);background:var(--surface);color:var(--text-1);text-decoration:none;min-height:88px;transition:border-color .3s var(--ease)}
-.room-card:hover{border-color:var(--rule-strong)}
-.room-card b{font-family:var(--f-disp);font-weight:500;font-size:.875rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
-.room-card small{color:var(--text-2);font-size:.875rem;line-height:1.5}
-svg.wheel text{font-family:var(--f-mono);fill:var(--text-3)}
-svg.wheel .pl{cursor:pointer}
-/* Engines room */
-.eng-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s2)}
-@media (max-width:1100px){.eng-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:560px){.eng-grid{grid-template-columns:minmax(0,1fr)}}
-.eng{display:grid;align-content:start;gap:10px;text-align:left;padding:var(--s3);border:1px solid var(--rule);border-radius:var(--r-card);background:var(--surface);color:var(--text-1);cursor:pointer;min-width:0;transition:border-color .3s var(--ease)}
-.eng:hover{border-color:var(--rule-strong)}
-.eng .ey{display:flex;justify-content:space-between;gap:8px;align-items:center}
-.eng h3{margin:0}
-.eng .big{font-family:var(--f-engr);font-size:1.5rem;letter-spacing:.06em;line-height:1.2;color:var(--text-1)}
-.eng .rows{display:grid;gap:4px;font-size:.875rem;color:var(--text-2)}
-.eng .rows span b{color:var(--text-1);font-weight:500}
-.eng .q{font-family:var(--f-folio);font-style:italic;font-size:1.0625rem;color:var(--text-2);border-left:2px solid var(--rule-strong);padding-left:12px}
-.eng.locked{cursor:default;opacity:.7}
 .bars{display:grid;gap:5px}
 .bars div{display:grid;grid-template-columns:76px minmax(0,1fr) 36px;gap:8px;align-items:center;font-family:var(--f-mono);font-size:.6875rem;color:var(--text-3)}
 .bars i{display:block;height:4px;border-radius:2px;background:var(--rule)}
@@ -205,23 +155,25 @@ svg.wheel .pl{cursor:pointer}
 .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;font-size:.875rem}
 .kv dt{font-family:var(--f-mono);font-size:.75rem;color:var(--text-3);padding-top:2px}
 .kv dd{margin:0;color:var(--text-1)}
+%%CSS%%
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
 <div class="hexbg" aria-hidden="true"></div>
-<header class="mast">
-  <div class="capsule">
-    <div class="wordmark"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0L16 8 8 16 0 8Z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 4L12 8 8 12 4 8Z" fill="currentColor"/></svg>NOESIS <small>Witness Alchemist</small></div>
-    <nav class="rooms" id="rooms" aria-label="Rooms"></nav>
-    <div class="datebar" id="datebar">
-      <button class="icon-btn" id="prevDay" aria-label="Previous day">‹</button>
-      <input type="date" id="dateIn" aria-label="Date to witness">
-      <button class="icon-btn" id="nextDay" aria-label="Next day">›</button>
-      <button class="pill sm" id="nowBtn">Today</button>
-    </div>
+<nav class="rail" id="rail" aria-label="Rooms"><a class="rail-mark" href="#sky" id="railMark" aria-label="Noesis, the Sky room"></a><div class="rail-rooms" id="railRooms"></div><div class="rail-foot" aria-hidden="true"><i class="dmd"></i><span>137</span></div></nav>
+<header class="topbar" id="topbar">
+  <a class="tb-mark" href="#sky" id="tbMark" aria-label="Noesis"></a>
+  <div class="crumb" id="crumb" aria-live="polite"></div>
+  <div class="datebar" id="datebar">
+    <button class="icon-btn" id="prevDay" aria-label="Previous day"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 3L5 8l5 5"/></svg></button>
+    <input type="date" id="dateIn" aria-label="Date to witness">
+    <button class="icon-btn" id="nextDay" aria-label="Next day"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3l5 5-5 5"/></svg></button>
+    <button class="pill sm" id="nowBtn">Today</button>
   </div>
 </header>
 <main class="wrap" id="main"></main>
+<nav class="dock" id="dock" aria-label="Rooms"></nav>
+<div class="sheet" id="sheet" hidden><div class="sheet-in"><div class="sheet-head"><span class="eyebrow">All rooms</span><button class="icon-btn" id="sheetClose" aria-label="Close">×</button></div><div class="sheet-grid" id="sheetGrid"></div></div></div>
 <aside class="drawer" id="drawer" hidden aria-live="polite"><button class="icon-btn close" id="drawerClose" aria-label="Close">×</button><div id="drawerBody"></div></aside>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -229,6 +181,7 @@ svg.wheel .pl{cursor:pointer}
 <script type="application/json" id="engines">%%ENGINES%%</script>
 <script type="application/json" id="content">%%CONTENT%%</script>
 <script>%%DICT%%</script>
+<script>%%LIB%%</script>
 <script>
 (function(){
 const SKY=JSON.parse(document.getElementById('sky').textContent);
@@ -287,6 +240,7 @@ function gxy(g){const c=CPOS[GATES[g][1]],o=GOFF[g];return [c[0]+o[0],c[1]+o[1]]
 function shape(c){const [x,y]=CPOS[c];switch(c){case'Head':return `M${x} ${y-36}L${x+34} ${y+24}L${x-34} ${y+24}Z`;case'Ajna':return `M${x-34} ${y-26}L${x+34} ${y-26}L${x} ${y+34}Z`;case'Throat':return rr(x-40,y-36,80,72,10);case'G':return `M${x} ${y-44}L${x+44} ${y}L${x} ${y+44}L${x-44} ${y}Z`;case'Heart':return `M${x} ${y-26}L${x+26} ${y+20}L${x-26} ${y+20}Z`;case'Spleen':return `M${x-30} ${y-44}L${x+30} ${y}L${x-30} ${y+44}Z`;case'SolarPlexus':return `M${x+30} ${y-44}L${x-30} ${y}L${x+30} ${y+44}Z`;case'Sacral':return rr(x-42,y-40,84,80,10);case'Root':return rr(x-42,y-40,84,80,10)}}
 function rr(x,y,w,h,r){return `M${x+r} ${y}H${x+w-r}Q${x+w} ${y} ${x+w} ${y+r}V${y+h-r}Q${x+w} ${y+h} ${x+w-r} ${y+h}H${x+r}Q${x} ${y+h} ${x} ${y+h-r}V${y+r}Q${x} ${y} ${x+r} ${y}Z`}
 function bodygraph(el,r){
+  if(K3.ok()){el.classList.add('stage','loom-stage');el.innerHTML='';try{const {inst,fresh}=K3.mount(state.room,el,h=>loom3d(h,r));if(!fresh)inst.update(r);return}catch(e){console.warn('loom',e);K3.release();el.classList.remove('stage','loom-stage')}}
   const tg=new Set(), tByGate={};
   if(r) tPos(r).forEach(t=>{if(t.body!=='Moon'){tg.add(t.gate);(tByGate[t.gate]=tByGate[t.gate]||[]).push(t.body)}});
   const chs=r?r.ch:NATAL_CH.map(k=>[k,'natal']);
@@ -319,16 +273,28 @@ function dayReading(r){
   return {decl,trav,sun,earth,bridges,addC}}
 
 /* ---------- rooms ---------- */
-const ROOMS=[['sky','Sky'],['today','Today'],['design','Design'],['keys','Keys'],['engines','Engines'],['jyotish','Jyotish'],['timeline','Timeline'],['map','Map'],['folio','Folio']];
+const ROOMS=[['sky','Sky'],['today','Today'],['design','Design'],['keys','Keys'],['jyotish','Jyotish'],['engines','Engines'],['timeline','Timeline'],['map','Map'],['folio','Folio']];
+const DOCK=['sky','today','engines','jyotish','folio'];
 const ROOM_TXT={sky:'The night sky over your design, Western or Vedic.',today:'Your bodygraph under this day: channels, contacts, lenses.',design:'The permanent architecture: type, profile, centers, cross.',keys:'Eleven spheres of the hologenetic profile.',engines:'Eight Selemene engines, each figure traced to its response.',jyotish:'Sidereal chart, dasha, Panchanga and Sade Sati.',timeline:'Ingresses, stations, contacts, eclipses and dasha to 2030.',map:'Planetary lines over the land at birth.',folio:'The reading, in full, on parchment.'};
-$('#rooms').innerHTML=ROOMS.map(([id,l])=>`<a class="pill" href="#${id}" data-room="${id}">${l}</a>`).join('');
+const HEXO='<svg class="hexo" viewBox="0 0 48 42" aria-hidden="true"><polygon points="12,1 36,1 47,21 36,41 12,41 1,21"/></svg>';
+const roomLink=(id,l,cls)=>`<a class="rm ${cls||''}" href="#${id}" data-room="${id}"><span class="hx">${HEXO}${icon(id==='design'?'design':id,26)}</span><span>${l}</span></a>`;
+$('#railRooms').innerHTML=ROOMS.map(([id,l])=>roomLink(id,l)).join('');
+$('#railMark').innerHTML=icon('witness',44);$('#tbMark').innerHTML=icon('witness',30)+'<b>NOESIS</b>';
+$('#dock').innerHTML=DOCK.map(id=>roomLink(id,ROOMS.find(r=>r[0]===id)[1])).join('')+`<a class="rm" href="#" id="dockMore" data-more="1"><span class="hx">${HEXO}<svg class="gl" width="26" height="26" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="14" cy="24" r="2.2"/><circle cx="24" cy="24" r="2.2"/><circle cx="34" cy="24" r="2.2"/></svg></span><span>More</span></a>`;
+$('#sheetGrid').innerHTML=ROOMS.map(([id,l])=>roomLink(id,l)).join('');
+$('#dockMore').onclick=e=>{e.preventDefault();$('#sheet').hidden=false;$('#sheetClose').focus()};
+$('#sheetClose').onclick=()=>{$('#sheet').hidden=true};$('#sheet').onclick=e=>{if(e.target.id==='sheet')$('#sheet').hidden=true};
+$('#sheetGrid').addEventListener('click',()=>{$('#sheet').hidden=true});
+let lastRoom=null;
 function render(){
-  const room=state.room; document.querySelectorAll('#rooms .pill').forEach(a=>a.setAttribute('aria-current',a.dataset.room===room?'page':'false'));
+  const room=state.room; document.querySelectorAll('[data-room]').forEach(a=>{if(a.dataset.room===room)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+  const more=$('#dockMore');if(more){if(!DOCK.includes(room))more.setAttribute('aria-current','page');else more.removeAttribute('aria-current')}
+  $('#crumb').innerHTML=`Witness Alchemist<i>/</i><b>${ROOMS.find(r=>r[0]===room)[1]}</b>`;
+  if(lastRoom!==room){K3.release();lastRoom=room}
+  $('#main').classList.remove('full');
   $('#dateIn').value=state.date; $('#dateIn').min=DAYS[0].d; $('#dateIn').max=DAYS[DAYS.length-1].d;
   $('#datebar').style.visibility=room==='folio'?'hidden':'visible';
-  if(window.skyDispose)window.skyDispose();
   ({sky:rSky,today:rToday,design:rDesign,keys:rKeys,engines:rEngines,jyotish:rJyotish,timeline:rTimeline,map:rMap,folio:rFolio})[room]();
-  const cur=document.querySelector('#rooms .pill[aria-current="page"]');if(cur&&cur.scrollIntoView)cur.scrollIntoView({block:'nearest',inline:'nearest'});
 }
 function setDate(s){state.date=clampDate(s);render()}
 $('#prevDay').onclick=()=>setDate(addDays(state.date,-1));$('#nextDay').onclick=()=>setDate(addDays(state.date,1));

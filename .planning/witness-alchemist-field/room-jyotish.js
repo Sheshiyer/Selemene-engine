@@ -75,8 +75,9 @@ function rJyotish(){
   <div class="hero"><div class="epithet">Jyotish · Lahiri · ${isToday?'the sky now':'witnessing'} · ${fmtDate(r.d)}</div><p class="decl">${V.current_period.mahadasha.planet} dasha. Moon in ${P.nak}.</p>
    <p class="lede">Lagna ${RASHI[LAGNA_SIGN]}, Moon ${moonN.sign} in ${moonN.nak}. Today Jupiter sits in your house ${jup.house} and Saturn in your house ${sat.house}. ${ss.active?ss.phase+'.':'Sade Sati is not active.'}</p>
    <div class="chips"><span class="chip"><span class="dot c"></span><span class="ev-c">Engine: birth positions, dasha, aspects</span></span><span class="chip"><span class="dot w"></span><span class="ev-w">Field: today's positions and Panchanga</span></span></div></div>
+  ${armStage()}
   <div class="grid2">
-   <div class="panel"><div class="ey" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px"><h3 style="margin:0">Rashi chart</h3><div class="toggles"><button class="pill sm" id="jyNorth" aria-pressed="${JYPREF.layout==='north'}">North</button><button class="pill sm" id="jySouth" aria-pressed="${JYPREF.layout==='south'}">South</button><span style="width:8px"></span><button class="pill sm" id="jyNatal" aria-pressed="${JYPREF.show==='natal'}">Birth</button><button class="pill sm" id="jyBoth" aria-pressed="${JYPREF.show==='both'}">Both</button><button class="pill sm" id="jyToday" aria-pressed="${JYPREF.show==='today'}">Today</button></div></div>
+   <div class="panel"><div class="ey" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px"><h3 style="margin:0">Rashi chart</h3><div style="display:flex;gap:6px;flex-wrap:wrap"><div class="seg" role="group" aria-label="Layout"><button id="jyNorth" aria-pressed="${JYPREF.layout==='north'}">North</button><button id="jySouth" aria-pressed="${JYPREF.layout==='south'}">South</button></div><div class="seg" role="group" aria-label="Show"><button id="jyNatal" aria-pressed="${JYPREF.show==='natal'}">Birth</button><button id="jyBoth" aria-pressed="${JYPREF.show==='both'}">Both</button><button id="jyToday" aria-pressed="${JYPREF.show==='today'}">Today</button></div></div></div>
     <div class="bg-wrap" id="jyChart">${JYPREF.layout==='north'?northChart(list):southChart(list)}</div>
     <div class="legend"><span><i style="background:var(--gold-warm)"></i>Birth (engine)</span><span><i style="background:var(--emerald)"></i>${fmtDate(r.d)} (field)</span><span>ʳ retrograde</span></div><p class="meta" style="margin:8px 0 0">Lagna ${RASHI[LAGNA_SIGN]} ${fmtDeg(LAGNA_SID%30)} from the Swiss Ephemeris at birth. Tap a graha.</p></div>
    <div style="display:grid;gap:var(--s3);align-content:start;min-width:0">
@@ -93,6 +94,18 @@ function rJyotish(){
   $('#jyNorth').onclick=()=>set('layout','north');$('#jySouth').onclick=()=>set('layout','south');
   $('#jyNatal').onclick=()=>set('show','natal');$('#jyBoth').onclick=()=>set('show','both');$('#jyToday').onclick=()=>set('show','today');
   $('#main').querySelectorAll('[data-b]').forEach(el=>el.addEventListener('click',()=>showGraha(el.dataset.k,el.dataset.b,r)));
-  const wireDasha=()=>{$('#jyDasha').querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{jyState.md=b.dataset.md;jyState.ad=null;$('#jyDasha').innerHTML=dashaPanel();wireDasha()});$('#jyDasha').querySelectorAll('[data-ad]').forEach(b=>b.onclick=()=>{jyState.ad=b.dataset.ad;$('#jyDasha').innerHTML=dashaPanel();wireDasha()})};
+  const wireDasha=()=>{$('#jyDasha').querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{jyState.md=b.dataset.md;jyState.ad=null;$('#jyDasha').innerHTML=dashaPanel();wireDasha();armSync()});$('#jyDasha').querySelectorAll('[data-ad]').forEach(b=>b.onclick=()=>{jyState.ad=b.dataset.ad;$('#jyDasha').innerHTML=dashaPanel();wireDasha();armSync()})};
   wireDasha();
+  window.onArmPick=()=>{$('#jyDasha').innerHTML=dashaPanel();wireDasha()};
+  const ah=$('#armHost');if(ah){if(K3.ok()){try{const {inst,fresh}=K3.mount('jyotish',ah,h=>arm3d(h));if(!fresh)inst.update()}catch(e){console.warn('armillary',e);K3.release();ah.remove()}}else ah.remove()}
 }
+
+function armSync(){const o=K3.current('jyotish');if(o)o.sync()}
+function armStage(){const V=ENG.vimshottari.result,c=V.current_period;
+  const nx=(V.upcoming_transitions||[]).find(u=>u.date.slice(0,10)>state.date);
+  const rd=(k,v)=>`<div class="readout"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  const ad=SKY.ad.find(a=>a[2]<=state.date&&state.date<a[3]);let pd=null,pdS=null,pdE=null;if(ad){ad[4].forEach((p,i)=>{if(p[1]<=state.date){pd=p[0];pdS=p[1];pdE=i+1<ad[4].length?ad[4][i+1][1]:ad[3]}})}
+  return `<div class="stage arm-stage" id="armHost" style="border:1px solid var(--rule);border-radius:4px">
+   <div class="hud arm-hud">${rd('Mahadasha · engine',`<span class="g">${DASHA_SYM[c.mahadasha.planet]} ${c.mahadasha.planet}</span> · ${istDate(c.mahadasha.start)} to ${istDate(c.mahadasha.end)}`)}${ad?rd('Antardasha',`${DASHA_SYM[ad[1]]} ${ad[1]} · to ${fmtDate(ad[3])}`):''}${pd?rd('Pratyantardasha',`${DASHA_SYM[pd]} ${pd} · ${fmtDate(pdS)} to ${fmtDate(pdE)}`):''}</div>
+   ${nx?`<div class="hud arm-hud-r"><div class="shift"><span class="k">Next shift · engine</span><span class="d">${istDate(nx.date)}</span><span class="v">${DASHA_SYM[nx.from_planet]||''} ${nx.from_planet} → ${DASHA_SYM[nx.to_planet]||''} ${nx.to_planet} · ${cap(nx.type)}</span></div></div>`:''}
+   <div class="hud arm-hud-b"><span class="readout"><span class="k">Rings</span><span class="v">Outer mahadasha · middle antardasha · inner pratyantardasha</span></span><span class="k">Tap a ring to drill in</span></div></div>`}

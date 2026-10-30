@@ -19,7 +19,7 @@ function engEyebrow(id){const e=ENG[id];return `<div class="ey"><span class="eye
 function engFoot(id){const e=ENG[id];return `<span class="meta">${e.backend||'engine'} · v${e.version||''} · ${istStamp(e.at)}</span>`}
 
 /* Summaries on the cards */
-function engCard(id){
+function engBody(id){
   const r=E(id);if(!r)return '';let body='';
   switch(id){
     case 'human-design':{const agree=NAT.filter(n=>{const a=r[(n.side==='P'?'personality':'design')+'_activations'][n.body.toLowerCase()];return a&&a.gate===n.gate&&a.line===n.line}).length;
@@ -36,6 +36,9 @@ function engCard(id){
     case 'biorhythm':{const C=['physical','emotional','intellectual','intuitive','aesthetic','spiritual'];
       body=`<div class="big">${Math.round(r.overall_energy)}% energy</div><div class="bars">${C.map(c=>`<div><span>${cap(c)}</span><i><b style="width:${Math.max(2,Math.round(r[c].percentage))}%;background:${r[c].is_critical?'var(--terracotta)':r[c].value>=0?'var(--emerald)':'var(--violet-glow)'}"></b></i><span>${Math.round(r[c].percentage)}%</span></div>`).join('')}</div><span class="meta">Day ${r.days_alive} · ${r.target_date} · critical: ${r.critical_days.length?r.critical_days.join(', '):'none'}</span>`;break}
   }
+  return body;
+}
+function engCard(id){const body=engBody(id);if(!body)return '';
   return `<button class="eng" data-eng="${id}">${engEyebrow(id)}<h3>${ENGINE_META[id][1]}</h3>${body}${ENG[id].prompt?`<p class="q" style="margin:0">${esc(ENG[id].prompt)}</p>`:''}${engFoot(id)}</button>`;
 }
 
@@ -65,14 +68,3 @@ function showEngine(id){
   wire($('#drawerBody'));
 }
 
-function rEngines(){
-  const ok=ENGINE_ORDER.filter(E),locked=LOCKED_ORDER.filter(id=>ENG[id]&&!ENG[id].result);
-  $('#main').innerHTML=`<section class="room">
-  <div class="hero"><div class="epithet">Engine pool · natal · ${istDate(ENG['human-design']&&ENG['human-design'].at)}</div><p class="decl">${ok.length} engines. One chart.</p>
-   <p class="lede">Each figure below is read straight from a Selemene response for your birth data. Nothing is interpolated. Tap an engine for its full return; the Vedic Clock and Biorhythm answer for the moment they were called.</p>
-   <div class="chips"><span class="chip"><span class="dot c"></span><span class="ev-c">Computed by engine</span></span><span class="chip"><span class="dot u"></span><span class="ev-u">${locked.length} locked on this key</span></span><span class="chip">selemene.tryambakam.space</span></div></div>
-  <div class="eng-grid">${ok.map(engCard).join('')}</div>
-  ${locked.length?`<div><div class="divider"><span></span></div><h2>Locked on this key</h2><div class="eng-grid">${locked.map(id=>`<div class="eng locked"><div class="ey"><span class="eyebrow">${ENGINE_META[id][0]}</span><span class="tag" style="color:var(--ev-unresolved);border-color:rgba(198,93,59,.5)">${ENG[id].status||403}</span></div><p class="muted" style="margin:0">${esc(ENG[id].error||'ENGINE_SCOPE_FORBIDDEN').replace(/_/g,' ').toLowerCase()}. Opens when the key tier allows.</p></div>`).join('')}</div></div>`:''}
-  </section>`;
-  $('#main').querySelectorAll('[data-eng]').forEach(b=>b.onclick=()=>showEngine(b.dataset.eng));
-}

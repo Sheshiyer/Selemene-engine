@@ -10,7 +10,7 @@ Handoff from a claude.ai session on Fri 30 Oct 2026, 04:36 IST. Read this file, 
 - The page has eight rooms, routed by hash: `#sky` (home, three.js night sky with Western/Vedic toggle; 2D SVG wheel under reduced motion, low power or no WebGL), `#today`, `#design`, `#keys`, `#engines` (the eight Selemene engines), `#jyotish` (sidereal chart North/South, dasha drill-down, day Panchanga, Sade Sati, transit aspects; Lagna Scorpio 12°07' is a Swiss Ephemeris figure from compute.py), `#timeline`, `#map`, `#folio`.
 - All transit data is precomputed daily (06:00 IST) from 30 Oct 2026 to 31 Dec 2030 and embedded in the page. The page opens on today's IST date by itself.
 
-To republish the same URL, use a session that has the claude.ai Artifact tool: publish the rebuilt `witness-alchemist-field.html` with `url` set to the link above. Read the artifact first; a publish without a prior read is refused. If your Claude Code session has no Artifact tool, build and preview locally, then republish from claude.ai.
+To republish the same URL, use a session that has the claude.ai Artifact tool: publish the rebuilt `witness-alchemist-field.html` with `url` set to the link above, `root` set to this folder, and `files` mapping each `img/...` path (17 engine stills plus `img/trinity-hex.jpg`) to itself. The page loads those images by relative path; leaving `files` out keeps the ones already published. Read the artifact first; a publish without a prior read is refused. If your Claude Code session has no Artifact tool, build and preview locally, then republish from claude.ai.
 
 ## Subject data (verified)
 
@@ -109,3 +109,20 @@ How the daily scheduled task gets the key: (a) the task requires Shesh's Mac and
 - Nodes on the cross (NN 49 / SN 4): 24 Nov 2026 to 7 Apr 2027, exact on P Earth 13 Mar 2027.
 - Pluto over D Saturn 41.6: 30 Mar 2027, 17 Jun 2027, 29 Jan 2028, 5 Sep 2028, 1 Dec 2028.
 - Nodal return (NN 54): 20 Sep 2028 onward, exact on natal nodes Sep to Oct 2028.
+
+## 3D instrument layer (30 Oct 2026, second pass)
+
+The field now lives in the render-bible world: void ground, one warm key, a gold rim, dark bronze with gold as line, one glass per object carrying evidence state.
+
+| File | Role |
+|---|---|
+| `kit3d.js` | Shared stage: renderer, PMREM studio env, bronze/gold/glass materials, hex and band geometry, constant-pixel labels, starfield, orbit/tilt/pinch/keys, picking, tweens on the brand curve, render-on-demand, one live stage per room (`K3.mount`/`K3.release`) |
+| `icons.js` | Line-art glyphs drawn in code: nine rooms, seventeen engines, witness mark, medallion frame |
+| `field.css` | Shell (left rail, phone dock, top bar with breadcrumb), numbered hairline instrument frames, stage and HUD styles |
+| `room-sky.js` | Home: bronze orrery (emerald beads on arms, turning zodiac band, birth studs, 64-gate ring, aspect arcs), day scrubber with play, telemetry flanks, room medallions |
+| `room-mandala.js` | Engines: 19-cell Engine Mandala plate with Instruments Codex Dark stills, lift-on-hover, idle tour, keyboard walk, InstrumentMotion readout |
+| `loom3d.js` | Today and Design: nine-socket bodygraph loom; channels draw along the wire on date change |
+| `arm3d.js` | Jyotish: dasha armillary, three rings precessing under one index, synced with the drill-down columns |
+| `img/` | 17 engine stills and the trinity-hex mark, downscaled from the design system's Instruments Codex Dark set |
+
+Every 3D scene has a 2D path (no WebGL or low-power device) and a static path under reduced motion. `node t.js` exercises the 2D paths; the WebGL paths were checked in a browser at 1440x900 and 375x812.

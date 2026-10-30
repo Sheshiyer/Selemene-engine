@@ -28,11 +28,6 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:var(--s3) var(--s8)}
-/* Masthead */
-.mast{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;padding-top:var(--s2);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.capsule{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2);background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-card);padding:10px var(--s2);box-shadow:var(--sh-capsule)}
-.wordmark{font-family:var(--f-engr);font-size:.875rem;letter-spacing:.24em;font-weight:600;color:var(--gold);white-space:nowrap;display:flex;align-items:center;gap:10px}
-.wordmark small{font-family:var(--f-disp);font-size:.625rem;letter-spacing:.2em;color:var(--silver);font-weight:500}
 .pill{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:var(--r-pill);border:1px solid var(--rule);background:transparent;cursor:pointer;font-family:var(--f-disp);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-2);text-decoration:none;transition:border-color .3s var(--ease),color .3s var(--ease)}
 .pill:hover{border-color:var(--rule-strong);color:var(--text-1)}
 .pill[aria-current="page"],.pill[aria-pressed="true"]{color:var(--gold);border-color:var(--rule-strong)}
@@ -153,51 +148,6 @@ svg text{font-family:var(--f-mono)}
 .folio .maplink{display:inline-flex;margin-top:var(--s2);min-height:44px;align-items:center;padding:0 18px;border-radius:var(--r-pill);background:var(--indigo);color:var(--parchment);font-family:var(--f-disp);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
 .foot{margin-top:var(--s5);text-align:center;font-family:var(--f-mono);font-size:.75rem;letter-spacing:.16em;color:var(--text-3);text-transform:uppercase}
 
-/* Menu: one scrolling row of rooms, the active diamond leads */
-nav.rooms{display:flex;gap:4px;flex:1;min-width:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;mask-image:linear-gradient(90deg,#000 92%,transparent)}
-nav.rooms::-webkit-scrollbar{display:none}
-nav.rooms .pill{flex:none}
-.capsule{row-gap:8px}
-@media (max-width:1100px){nav.rooms{flex:1 0 100%;order:3}}
-@media (max-width:700px){.capsule{padding:8px 12px}.wordmark small{display:none}.datebar{width:100%;justify-content:space-between}.datebar input{flex:1;min-width:0}}
-/* Sky room (Mandala voice: one glyph, few words) */
-.sky-wrap{position:relative;border:1px solid var(--rule);border-radius:var(--r-card);overflow:hidden;background:var(--void);aspect-ratio:16/10;min-height:360px;max-height:78vh;touch-action:none}
-@media (max-width:700px){.sky-wrap{aspect-ratio:4/5;min-height:420px}}
-.sky-layer{position:absolute;inset:0}
-.sky-wrap canvas,.sky-wrap svg.wheel{display:block;width:100%;height:100%}
-.sky-hud{position:absolute;left:12px;right:12px;top:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;pointer-events:none;z-index:2}
-.sky-hud>*{pointer-events:auto}
-.sky-hud .seg{display:inline-flex;border:1px solid var(--rule);border-radius:var(--r-pill);overflow:hidden;background:rgba(7,11,29,.7);backdrop-filter:blur(6px)}
-.sky-hud .seg button{min-height:36px;padding:0 14px;border:0;background:transparent;cursor:pointer;font-family:var(--f-disp);font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-2)}
-.sky-hud .seg button[aria-pressed="true"]{color:var(--gold);background:rgba(197,160,23,.1)}
-.sky-hud .chip{background:rgba(7,11,29,.7);backdrop-filter:blur(6px);min-height:36px}
-.sky-hud button.chip[aria-pressed="true"]{color:var(--gold);border-color:var(--rule-strong)}
-.sky-foot{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;font-family:var(--f-mono);font-size:.6875rem;letter-spacing:.08em;color:var(--text-3);pointer-events:none;z-index:2}
-.sky-foot .legend{margin:0}
-.sky-decl{text-align:center;display:grid;gap:10px;justify-items:center;padding:var(--s3) 0 0}
-.sky-decl .decl{max-width:28ch}
-.sky-decl .lede{text-align:center}
-.rooms-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s2)}
-@media (max-width:900px){.rooms-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.room-card{display:grid;gap:4px;padding:var(--s2) var(--s3);border:1px solid var(--rule);border-radius:var(--r-card);background:var(--surface);color:var(--text-1);text-decoration:none;min-height:88px;transition:border-color .3s var(--ease)}
-.room-card:hover{border-color:var(--rule-strong)}
-.room-card b{font-family:var(--f-disp);font-weight:500;font-size:.875rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
-.room-card small{color:var(--text-2);font-size:.875rem;line-height:1.5}
-svg.wheel text{font-family:var(--f-mono);fill:var(--text-3)}
-svg.wheel .pl{cursor:pointer}
-/* Engines room */
-.eng-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s2)}
-@media (max-width:1100px){.eng-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:560px){.eng-grid{grid-template-columns:minmax(0,1fr)}}
-.eng{display:grid;align-content:start;gap:10px;text-align:left;padding:var(--s3);border:1px solid var(--rule);border-radius:var(--r-card);background:var(--surface);color:var(--text-1);cursor:pointer;min-width:0;transition:border-color .3s var(--ease)}
-.eng:hover{border-color:var(--rule-strong)}
-.eng .ey{display:flex;justify-content:space-between;gap:8px;align-items:center}
-.eng h3{margin:0}
-.eng .big{font-family:var(--f-engr);font-size:1.5rem;letter-spacing:.06em;line-height:1.2;color:var(--text-1)}
-.eng .rows{display:grid;gap:4px;font-size:.875rem;color:var(--text-2)}
-.eng .rows span b{color:var(--text-1);font-weight:500}
-.eng .q{font-family:var(--f-folio);font-style:italic;font-size:1.0625rem;color:var(--text-2);border-left:2px solid var(--rule-strong);padding-left:12px}
-.eng.locked{cursor:default;opacity:.7}
 .bars{display:grid;gap:5px}
 .bars div{display:grid;grid-template-columns:76px minmax(0,1fr) 36px;gap:8px;align-items:center;font-family:var(--f-mono);font-size:.6875rem;color:var(--text-3)}
 .bars i{display:block;height:4px;border-radius:2px;background:var(--rule)}
@@ -205,23 +155,220 @@ svg.wheel .pl{cursor:pointer}
 .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;font-size:.875rem}
 .kv dt{font-family:var(--f-mono);font-size:.75rem;color:var(--text-3);padding-top:2px}
 .kv dd{margin:0;color:var(--text-1)}
+/* ===== Instrument shell: rail (desktop), dock (phone), top bar with breadcrumb and date instrument ===== */
+:root{--rail:92px;--tb:64px}
+body{padding-left:var(--rail)}
+.rail{position:fixed;z-index:26;left:0;top:0;bottom:0;width:var(--rail);display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 0 calc(14px + env(safe-area-inset-bottom,0px));padding-left:env(safe-area-inset-left,0px);background:linear-gradient(180deg,rgba(7,11,29,.97),rgba(9,13,30,.94));border-right:1px solid var(--rule);overflow-y:auto;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail::after{content:"";position:absolute;top:0;bottom:0;right:-1px;width:1px;background:linear-gradient(180deg,transparent,rgba(197,160,23,.55) 30%,rgba(197,160,23,.55) 70%,transparent);opacity:.5;pointer-events:none}
+.rail-mark{display:grid;place-items:center;width:60px;height:60px;margin-bottom:10px;color:var(--gold)}
+.rail-mark svg{width:44px;height:44px;filter:drop-shadow(0 0 6px rgba(197,160,23,.35))}
+.rail-rooms{display:grid;gap:2px;width:100%;justify-items:center}
+.rm{position:relative;display:grid;justify-items:center;gap:3px;width:84px;padding:7px 0 6px;color:var(--silver);text-decoration:none;border-radius:6px;transition:color .3s var(--ease)}
+.rm .hx{position:relative;width:48px;height:42px;display:grid;place-items:center}
+.rm .hx svg.hexo{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.rm .hx svg.hexo polygon{fill:transparent;stroke:transparent;stroke-width:1.2;transition:stroke .3s var(--ease),fill .3s var(--ease)}
+.rm .hx svg.gl{position:relative;width:26px;height:26px}
+.rm span{font-family:var(--f-mono);font-size:.625rem;line-height:1.2;letter-spacing:.14em;text-transform:uppercase}
+.rm:hover{color:var(--text-1)}
+.rm:hover .hx svg.hexo polygon{stroke:var(--rule-strong)}
+.rm[aria-current="page"]{color:var(--gold)}
+.rm[aria-current="page"] .hx svg.hexo polygon{stroke:var(--gold);fill:rgba(197,160,23,.06)}
+.rm[aria-current="page"] .hx{filter:drop-shadow(0 0 8px rgba(197,160,23,.35))}
+.rm[aria-current="page"]::before{content:"";position:absolute;left:-4px;top:50%;width:3px;height:28px;margin-top:-20px;background:var(--gold);border-radius:2px}
+.rail-foot{margin-top:auto;display:grid;justify-items:center;gap:6px;padding-top:12px;font-family:var(--f-mono);font-size:.625rem;letter-spacing:.2em;color:var(--text-dis)}
+.dmd{display:block;width:7px;height:7px;border:1px solid var(--gold);transform:rotate(45deg)}
+.gl .lens{fill:var(--emerald);stroke:none}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:var(--s2);min-height:var(--tb);padding:calc(env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 0 var(--s3);background:rgba(7,11,29,.84);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--rule)}
+.tb-mark{display:none;align-items:center;gap:10px;color:var(--gold);text-decoration:none;flex:none}
+.tb-mark svg{width:30px;height:30px}
+.tb-mark b{font-family:var(--f-engr);font-weight:600;font-size:.875rem;letter-spacing:.24em;color:var(--gold)}
+.crumb{flex:1;min-width:0;font-family:var(--f-mono);font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb i{font-style:normal;color:var(--text-dis);margin:0 .6em}
+.crumb b{font-weight:500;color:var(--ev-computed)}
+.datebar{display:flex;align-items:center;gap:6px;flex:none}
+.datebar input{background:transparent;border:1px solid var(--rule);border-radius:var(--r-pill);min-height:40px;padding:0 14px;font-family:var(--f-mono);font-size:.8125rem;letter-spacing:.06em;color:var(--text-1);color-scheme:dark}
+.datebar .icon-btn{width:40px;height:40px;display:grid;place-items:center}
+.datebar .pill.sm{min-height:40px}
+.dock{display:none}
+.sheet{position:fixed;inset:0;z-index:45;background:rgba(7,11,29,.6);backdrop-filter:blur(4px);display:flex;align-items:flex-end}
+.sheet[hidden]{display:none}
+.sheet-in{width:100%;background:var(--surface);border-top:1px solid var(--rule-strong);border-radius:16px 16px 0 0;padding:var(--s2) var(--s2) calc(var(--s3) + env(safe-area-inset-bottom,0px));box-shadow:0 -20px 50px -20px rgba(7,11,29,.95)}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--s2)}
+.sheet-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.sheet-grid .rm{width:auto}
+@media (max-width:1023px){
+  body{padding-left:0}
+  .rail{display:none}
+  .tb-mark{display:flex}
+  .topbar{padding-left:max(16px,env(safe-area-inset-left,0px))}
+  .dock{position:fixed;z-index:26;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:4px max(6px,env(safe-area-inset-right,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));background:rgba(7,11,29,.95);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--rule);box-shadow:0 -8px 30px -12px rgba(7,11,29,.9)}
+  .dock .rm{width:auto;padding:4px 0 3px;min-height:56px}
+  .dock .rm .hx{width:40px;height:34px}
+  .dock .rm .hx svg.gl{width:22px;height:22px}
+  .dock .rm span{font-size:.5625rem;letter-spacing:.1em}
+  .dock .rm[aria-current="page"]::before{left:50%;top:-4px;width:22px;height:2px;margin:0 0 0 -11px}
+  main.wrap{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+  .drawer{bottom:calc(env(safe-area-inset-bottom,0px) + 76px)}
+}
+@media (max-width:700px){
+  .topbar{flex-wrap:wrap;row-gap:0;padding-bottom:8px}
+  .crumb{text-align:right;font-size:.625rem;letter-spacing:.2em}
+  .datebar{width:100%}
+  .datebar input{flex:1;min-width:0}
+  .tb-mark b{display:none}
+}
+
+/* ===== Instrument frames: hairline, inset rule, four corner diamonds, numbered mono heads ===== */
+.room{counter-reset:pn}
+.panel{position:relative;background:linear-gradient(180deg,rgba(14,20,40,.82),rgba(9,14,31,.66));border:1px solid var(--rule);border-radius:4px;padding:var(--s3)}
+.panel::before{content:"";position:absolute;inset:5px;border:1px solid rgba(197,160,23,.07);border-radius:2px;pointer-events:none}
+.panel::after{content:"";position:absolute;inset:-4px;pointer-events:none;background:var(--dmd-img) left top/8px 8px no-repeat,var(--dmd-img) right top/8px 8px no-repeat,var(--dmd-img) left bottom/8px 8px no-repeat,var(--dmd-img) right bottom/8px 8px no-repeat}
+:root{--dmd-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M4 .6L7.4 4 4 7.4.6 4z' fill='%23070B1D' stroke='%23C5A017' stroke-width='.9'/%3E%3C/svg%3E")}
+.panel>h3:first-child{display:flex;align-items:baseline;gap:12px;font-family:var(--f-mono);font-weight:500;font-size:.75rem;letter-spacing:.22em;color:var(--text-1);padding-bottom:12px;margin:0 0 var(--s2);border-bottom:1px solid var(--rule)}
+.panel>h3:first-child::before{counter-increment:pn;content:counter(pn,decimal-leading-zero);color:var(--gold);letter-spacing:.06em}
+.panel>h3 .sub{margin-left:auto;font-size:.625rem;letter-spacing:.18em;color:var(--text-dis)}
+.item{border-radius:3px;background:rgba(7,11,29,.35)}
+.item:hover{border-color:var(--rule-strong);background:rgba(197,160,23,.04)}
+.tbl{border-radius:3px}
+th{font-family:var(--f-mono);letter-spacing:.18em}
+.hero .epithet{display:flex;align-items:center;gap:12px}
+.hero .epithet::before{content:"";width:7px;height:7px;border:1px solid var(--gold);transform:rotate(45deg);flex:none}
+.divider span{width:6px;height:6px}
+.drawer{border-radius:6px;background:linear-gradient(180deg,#0f1530,#0b1026)}
+.drawer::before{content:"";position:absolute;inset:6px;border:1px solid rgba(197,160,23,.1);border-radius:3px;pointer-events:none}
+
+/* ===== Stage: a 3D instrument fills its frame; overlays are HUD text, never boxes ===== */
+.stage{position:relative;overflow:hidden;background:radial-gradient(120% 90% at 50% 60%,#0a1024 0%,var(--void) 60%);isolation:isolate}
+.stage canvas.k3{position:absolute;inset:0;width:100%!important;height:100%!important;display:block;outline:none;touch-action:pan-y}
+.stage canvas.k3:focus-visible{box-shadow:inset 0 0 0 2px var(--focus)}
+.stage .fallback{position:absolute;inset:0;display:grid;place-items:center}
+.stage .fallback svg{width:100%;height:100%}
+.bleed{margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));}
+@media (min-width:1024px){.bleed{margin-inline:calc(-1 * var(--s3))}}
+.hud{position:absolute;z-index:3;pointer-events:none;font-family:var(--f-mono);font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)}
+.hud>*{pointer-events:auto}
+.hud .k{color:var(--text-dis)}
+.hud .v{color:var(--text-1)}
+.hud .g{color:var(--gold)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:var(--r-pill);overflow:hidden;background:rgba(7,11,29,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.seg button{min-height:36px;padding:0 14px;border:0;background:transparent;cursor:pointer;font-family:var(--f-mono);font-size:.6875rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-3)}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{color:var(--gold);background:rgba(197,160,23,.1)}
+.tog{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 12px;border:1px solid var(--rule);border-radius:var(--r-pill);background:rgba(7,11,29,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;font-family:var(--f-mono);font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3)}
+.tog::before{content:"";width:6px;height:6px;border:1px solid currentColor;transform:rotate(45deg)}
+.tog[aria-pressed="true"]{color:var(--gold);border-color:var(--rule-strong)}
+.tog[aria-pressed="true"]::before{background:var(--gold)}
+.readout{display:grid;gap:2px}
+.readout .k{font-size:.5625rem;letter-spacing:.24em}
+.readout .v{font-size:.8125rem;letter-spacing:.08em;text-transform:none}
+.tip{position:absolute;z-index:4;pointer-events:none;transform:translate(-50%,calc(-100% - 14px));padding:6px 10px;border:1px solid var(--rule-strong);border-radius:3px;background:rgba(7,11,29,.9);font-family:var(--f-mono);font-size:.6875rem;letter-spacing:.08em;color:var(--text-1);white-space:nowrap;opacity:0;transition:opacity .2s var(--ease)}
+.tip.on{opacity:1}
+
+/* ===== Sky (home): the orrery fills the first screen ===== */
+.sky-stage{height:calc(100svh - var(--tb));min-height:560px;max-height:980px}
+@media (max-width:1023px){.sky-stage{height:calc(100svh - var(--tb) - 64px);min-height:520px}}
+@media (max-width:700px){.sky-stage{height:calc(100svh - 112px - 64px);min-height:500px}}
+.sky-top{left:var(--s3);right:var(--s3);top:var(--s3);display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:flex-start}
+.sky-top .grp{display:flex;flex-wrap:wrap;gap:6px}
+.sky-left{left:var(--s3);top:calc(var(--s3) + 56px);display:grid;gap:14px;max-width:220px}
+.sky-right{right:var(--s3);top:calc(var(--s3) + 56px);display:grid;gap:14px;text-align:right;justify-items:end}
+@media (max-width:900px){.sky-left,.sky-right{display:none}}
+.sky-bottom{left:0;right:0;bottom:0;padding:var(--s5) var(--s3) var(--s3);background:linear-gradient(180deg,transparent,rgba(7,11,29,.78) 45%,rgba(7,11,29,.95));display:grid;gap:12px;justify-items:center;text-align:center}
+.sky-bottom .epithet{font-size:.6875rem}
+.sky-bottom .decl{font-size:clamp(1.0625rem,2.6vw,2.25rem);max-width:30ch;text-transform:uppercase;letter-spacing:.14em;text-shadow:0 2px 18px rgba(7,11,29,.9)}
+@media (max-height:820px){.sky-bottom{padding-top:var(--s3)}.sky-bottom .decl{font-size:clamp(1rem,2vw,1.5rem)}}
+@media (max-width:700px){.sky-bottom .decl{display:none}}
+.scrub{display:flex;align-items:center;gap:12px;width:min(720px,100%)}
+.scrub .lab{font-family:var(--f-mono);font-size:.6875rem;letter-spacing:.14em;color:var(--text-3);white-space:nowrap;min-width:9ch}
+.scrub input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:28px;background:transparent;cursor:pointer}
+.scrub input[type=range]::-webkit-slider-runnable-track{height:1px;background:linear-gradient(90deg,rgba(16,181,167,.15),var(--emerald) 50%,rgba(16,181,167,.15))}
+.scrub input[type=range]::-moz-range-track{height:1px;background:var(--emerald)}
+.scrub input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-7px;background:var(--gold);border:0;transform:rotate(45deg);box-shadow:0 0 12px rgba(230,184,77,.6)}
+.scrub input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--gold);border:0;border-radius:0;transform:rotate(45deg)}
+.scrub .icon-btn{flex:none;width:40px;height:40px;display:grid;place-items:center}
+.honey{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;padding:var(--s5) 0 0}
+.honey a{position:relative;display:grid;justify-items:center;gap:8px;width:132px;padding:10px 0;color:var(--silver);text-decoration:none;transition:color .3s var(--ease)}
+.honey a .medal{transition:transform .5s var(--ease),filter .5s var(--ease)}
+.honey a:hover{color:var(--gold)}
+.honey a:hover .medal{transform:translateY(-3px);filter:drop-shadow(0 0 10px rgba(197,160,23,.4))}
+.honey a b{font-family:var(--f-mono);font-weight:500;font-size:.6875rem;letter-spacing:.22em;text-transform:uppercase}
+.honey-read{min-height:3em;text-align:center;font-family:var(--f-mono);font-size:.75rem;letter-spacing:.08em;color:var(--text-3);margin:var(--s1) auto 0;max-width:52ch}
+@media (max-width:560px){.honey a{width:30%}.honey a .medal{width:64px;height:64px}}
+
+/* ===== Engines: the mandala plate with a readout of the engine under the pointer ===== */
+.eng-stage{height:min(78vh,820px);min-height:520px}
+.eng-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,1fr);gap:0;border:1px solid var(--rule);border-radius:4px;overflow:hidden;position:relative}
+.eng-layout::after{content:"";position:absolute;inset:-4px;pointer-events:none;background:var(--dmd-img) left top/8px 8px no-repeat,var(--dmd-img) right top/8px 8px no-repeat,var(--dmd-img) left bottom/8px 8px no-repeat,var(--dmd-img) right bottom/8px 8px no-repeat}
+@media (max-width:1100px){.eng-layout{grid-template-columns:minmax(0,1fr)}.eng-stage{height:min(70vh,620px);min-height:440px}}
+.eng-read{position:relative;display:grid;align-content:start;gap:var(--s2);padding:var(--s3);border-left:1px solid var(--rule);background:linear-gradient(180deg,rgba(14,20,40,.9),rgba(9,14,31,.8));min-width:0}
+@media (max-width:1100px){.eng-read{border-left:0;border-top:1px solid var(--rule)}}
+.eng-read .num{font-family:var(--f-mono);font-size:.6875rem;letter-spacing:.24em;color:var(--gold)}
+.eng-read h2{font-family:var(--f-engr);font-weight:500;font-size:2.25rem;letter-spacing:.12em;text-transform:uppercase;margin:0;line-height:1.05}
+.eng-read .mech{font-family:var(--f-folio);font-style:italic;font-size:1.0625rem;color:var(--text-2);margin:0}
+.eng-read .q{font-family:var(--f-folio);font-style:italic;font-size:1.0625rem;color:var(--text-2);border-left:1px solid var(--gold);padding-left:14px;margin:0}
+.eng-still{position:relative;width:100%;max-width:300px;aspect-ratio:2/3;margin:0 auto;overflow:hidden;border-radius:2px;--lx:50%;--ly:40%}
+.eng-still img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
+.eng-still .halo{position:absolute;left:50%;bottom:6%;width:80%;height:16%;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(230,184,77,.42),transparent);mix-blend-mode:screen;animation:halo 7.6s ease-in-out infinite}
+.eng-still .lens{position:absolute;left:var(--lx);top:var(--ly);width:22%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(16,181,167,.55),transparent);mix-blend-mode:screen;animation:lens 4.2s ease-in-out infinite}
+.eng-still .sweep{position:absolute;inset:-20%;background:linear-gradient(105deg,transparent 40%,rgba(230,184,77,.12) 50%,transparent 60%);mix-blend-mode:screen;animation:sweep 9s ease-in-out infinite}
+.eng-still.locked .lens{background:radial-gradient(closest-side,rgba(198,93,59,.5),transparent)}
+.eng-still.idle .lens{display:none}
+@keyframes halo{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes lens{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.9)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes sweep{0%{transform:translateX(-60%)}55%,100%{transform:translateX(60%)}}
+.eng-hud{left:var(--s3);top:var(--s3);right:var(--s3);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.eng-hud-b{left:var(--s3);bottom:var(--s3);right:var(--s3);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.state{display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:2px 10px;border-radius:var(--r-pill);border:1px solid var(--rule);font-family:var(--f-mono);font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3)}
+.state::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.state.c{color:var(--ev-computed);border-color:var(--emerald)}
+.state.u{color:var(--ev-unresolved);border-color:var(--terracotta)}
+.state.w{color:var(--ev-witness);border-color:var(--violet-glow)}
+.state.n{color:var(--text-dis)}
+.eng-index{display:flex;flex-wrap:wrap;gap:6px}
+.eng-index button{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 10px 0 6px;border:1px solid var(--rule);border-radius:var(--r-pill);background:transparent;color:var(--text-3);cursor:pointer;font-family:var(--f-mono);font-size:.625rem;letter-spacing:.14em;text-transform:uppercase}
+.eng-index button svg{width:20px;height:20px}
+.eng-index button[aria-pressed="true"]{color:var(--gold);border-color:var(--rule-strong)}
+.eng-index button.c svg{color:var(--ev-computed)}
+.eng-index button.u svg{color:var(--ev-unresolved)}
+.hexgrid{display:grid;grid-template-columns:repeat(5,72px);grid-auto-rows:62px;justify-content:center;padding:var(--s3)}
+.hexcell{position:relative;width:72px;height:62px;border:0;padding:0;background:none;cursor:pointer;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)}
+.hexcell img{width:100%;height:100%;object-fit:cover;object-position:50% 42%}
+
+/* ===== Loom and armillary stages ===== */
+.loom-stage{height:min(78vh,760px);min-height:520px;border-radius:2px}
+@media (max-width:700px){.loom-stage{height:620px}}
+.arm-stage{height:min(70vh,640px);min-height:460px}
+.arm-hud{left:var(--s3);top:var(--s3);display:grid;gap:10px}
+.arm-hud-r{right:var(--s3);top:var(--s3);display:grid;gap:10px;justify-items:end;text-align:right}
+.arm-hud-b{left:var(--s3);right:var(--s3);bottom:var(--s3);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.shift{display:grid;gap:4px;justify-items:end}
+.shift .d{font-family:var(--f-engr);font-size:1.5rem;letter-spacing:.1em;color:var(--gold)}
+
+main.wrap.full{max-width:none;padding:0 0 var(--s8)}
+main.wrap.full .pad{padding-inline:max(16px,env(safe-area-inset-left,0px))}
+.sky-stage{background:var(--void)}
+@media (max-width:1023px){main.wrap.full{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}}
+@media (max-width:700px){.eng-hud-b>.k,.eng-hud .readout:last-child{display:none}.sky-top .grp{gap:4px}.tog,.seg button{min-height:34px;padding:0 10px;font-size:.625rem}}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
 <div class="hexbg" aria-hidden="true"></div>
-<header class="mast">
-  <div class="capsule">
-    <div class="wordmark"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0L16 8 8 16 0 8Z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 4L12 8 8 12 4 8Z" fill="currentColor"/></svg>NOESIS <small>Witness Alchemist</small></div>
-    <nav class="rooms" id="rooms" aria-label="Rooms"></nav>
-    <div class="datebar" id="datebar">
-      <button class="icon-btn" id="prevDay" aria-label="Previous day">‹</button>
-      <input type="date" id="dateIn" aria-label="Date to witness">
-      <button class="icon-btn" id="nextDay" aria-label="Next day">›</button>
-      <button class="pill sm" id="nowBtn">Today</button>
-    </div>
+<nav class="rail" id="rail" aria-label="Rooms"><a class="rail-mark" href="#sky" id="railMark" aria-label="Noesis, the Sky room"></a><div class="rail-rooms" id="railRooms"></div><div class="rail-foot" aria-hidden="true"><i class="dmd"></i><span>137</span></div></nav>
+<header class="topbar" id="topbar">
+  <a class="tb-mark" href="#sky" id="tbMark" aria-label="Noesis"></a>
+  <div class="crumb" id="crumb" aria-live="polite"></div>
+  <div class="datebar" id="datebar">
+    <button class="icon-btn" id="prevDay" aria-label="Previous day"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 3L5 8l5 5"/></svg></button>
+    <input type="date" id="dateIn" aria-label="Date to witness">
+    <button class="icon-btn" id="nextDay" aria-label="Next day"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3l5 5-5 5"/></svg></button>
+    <button class="pill sm" id="nowBtn">Today</button>
   </div>
 </header>
 <main class="wrap" id="main"></main>
+<nav class="dock" id="dock" aria-label="Rooms"></nav>
+<div class="sheet" id="sheet" hidden><div class="sheet-in"><div class="sheet-head"><span class="eyebrow">All rooms</span><button class="icon-btn" id="sheetClose" aria-label="Close">×</button></div><div class="sheet-grid" id="sheetGrid"></div></div></div>
 <aside class="drawer" id="drawer" hidden aria-live="polite"><button class="icon-btn close" id="drawerClose" aria-label="Close">×</button><div id="drawerBody"></div></aside>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -276,6 +423,216 @@ const SPHERES=[
 {id:"pe",name:"Pearl",src:["P","Jupiter"],seq:"Pearl",x:300,y:165,txt:"Prosperity: universal solutions to practical problems. Same key as your Life's Work."}];
 const SPHERE_LINKS=[["lw","vo","Service"],["cu","lw","Growth"],["lw","ev","Challenge"],["vo","cu","Initiative"],["sq","vo","Realisation"],["ev","sq","Breakthrough"],["sq","ra","Breakthrough"],["eq","sq","Love"],["iq","eq","Intelligence"],["at","iq","Karma"],["pu","at","Dharma"],["ra","pu","Core stability"],["lw","pe","Quantum leap"],["vo","pe","Quantum leap"],["cu","pe","Quantum leap"]];
 const CITIES=[["Bangalore",12.97,77.59],["Mumbai",19.08,72.88],["Goa",15.5,73.83],["Delhi",28.61,77.21],["Kolkata",22.57,88.36],["Chennai",13.08,80.27],["Rishikesh",30.09,78.27],["Kathmandu",27.72,85.32],["Colombo",6.93,79.86],["Malé",4.18,73.51],["Dubai",25.2,55.27],["Muscat",23.59,58.41],["Tehran",35.69,51.39],["Istanbul",41.01,28.98],["Athens",37.98,23.73],["Berlin",52.52,13.4],["Zurich",47.38,8.54],["Amsterdam",52.37,4.9],["London",51.51,-0.13],["Paris",48.86,2.35],["Lisbon",38.72,-9.14],["Tel Aviv",32.09,34.78],["Nairobi",-1.29,36.82],["Cape Town",-33.92,18.42],["Bangkok",13.76,100.5],["Chiang Mai",18.79,98.98],["Singapore",1.35,103.82],["Bali",-8.51,115.26],["Hong Kong",22.32,114.17],["Seoul",37.57,126.98],["Tokyo",35.68,139.69],["Sydney",-33.87,151.21],["Melbourne",-37.81,144.96],["Auckland",-36.85,174.76],["Honolulu",21.31,-157.86],["San Francisco",37.77,-122.42],["Los Angeles",34.05,-118.24],["Austin",30.27,-97.74],["Mexico City",19.43,-99.13],["Toronto",43.65,-79.38],["New York",40.71,-74.01],["Miami",25.76,-80.19],["São Paulo",-23.55,-46.63]];
+</script>
+<script>/* ---------- Line-art glyphs drawn in code: Instrument chrome, 1.1px gold line, never filled ----------
+   Engine sigils follow the anchor mockup T1B-03; room glyphs follow the nav shell T1B-06. */
+const GLYPH={
+  // rooms
+  sky:'<ellipse cx="24" cy="24" rx="19" ry="8" transform="rotate(-18 24 24)"/><circle cx="24" cy="24" r="4.5"/><circle cx="40.5" cy="17" r="2.2"/><circle cx="24" cy="24" r="12.5" stroke-dasharray="1 3"/>',
+  today:'<circle cx="24" cy="24" r="8"/><circle cx="24" cy="24" r="2"/>'+[0,45,90,135,180,225,270,315].map(a=>{const r=a*Math.PI/180;return `<line x1="${(24+12*Math.cos(r)).toFixed(1)}" y1="${(24+12*Math.sin(r)).toFixed(1)}" x2="${(24+17*Math.cos(r)).toFixed(1)}" y2="${(24+17*Math.sin(r)).toFixed(1)}"/>`}).join(''),
+  design:'<path d="M24 4l6 9H18z"/><path d="M18 15h12l-6 8z"/><rect x="19" y="25" width="10" height="6" rx="1"/><path d="M24 32l5 5-5 5-5-5z"/><path d="M13 31l5 4-5 4z"/><path d="M35 31l-5 4 5 4z"/><line x1="24" y1="13" x2="24" y2="15"/><line x1="24" y1="23" x2="24" y2="25"/>',
+  keys:'<path d="M24 5l16 9v20l-16 9-16-9V14z"/><path d="M24 14l8 4.6v9.2L24 32.4l-8-4.6v-9.2z"/><path d="M24 23.2v9.2M24 23.2l8-4.6M24 23.2l-8-4.6"/>',
+  engines:'<path d="M24 6l7 4v8l-7 4-7-4v-8z"/><path d="M14 23l7 4v8l-7 4-7-4v-8z"/><path d="M34 23l7 4v8l-7 4-7-4v-8z"/><circle cx="24" cy="14" r="1.6"/>',
+  jyotish:'<rect x="7" y="7" width="34" height="34"/><path d="M24 7L41 24 24 41 7 24z"/><path d="M7 7l34 34M41 7L7 41" stroke-opacity=".5"/>',
+  timeline:'<line x1="5" y1="24" x2="43" y2="24"/><line x1="11" y1="19" x2="11" y2="29"/><line x1="37" y1="19" x2="37" y2="29"/><path d="M24 18l6 6-6 6-6-6z"/><circle cx="17" cy="24" r="1.3"/><circle cx="31" cy="24" r="1.3"/>',
+  map:'<circle cx="24" cy="24" r="17"/><ellipse cx="24" cy="24" rx="7.5" ry="17"/><line x1="7" y1="24" x2="41" y2="24"/><path d="M10 15.5h28M10 32.5h28" stroke-opacity=".6"/><line x1="24" y1="7" x2="24" y2="41" stroke-opacity=".6"/>',
+  folio:'<path d="M24 12c-5-3-11-4-17-3v26c6-1 12 0 17 3 5-3 11-4 17-3V9c-6-1-12 0-17 3z"/><line x1="24" y1="12" x2="24" y2="38"/><path d="M11 16c3 0 6 .5 9 2M11 21c3 0 6 .5 9 2M28 18c3-1.5 6-2 9-2M28 23c3-1.5 6-2 9-2" stroke-opacity=".6"/>',
+  witness:'<path d="M24 3l18.2 10.5v21L24 45 5.8 34.5v-21z"/><circle cx="24" cy="18.5" r="8.2"/><circle cx="18.6" cy="27.8" r="8.2"/><circle cx="29.4" cy="27.8" r="8.2"/><circle cx="24" cy="24.7" r="2" class="lens"/>',
+  // engines (ENGINES.md order)
+  'panchanga':'<circle cx="19" cy="24" r="7"/>'+[0,45,90,135,180,225,270,315].map(a=>{const r=a*Math.PI/180;return `<line x1="${(19+9.5*Math.cos(r)).toFixed(1)}" y1="${(24+9.5*Math.sin(r)).toFixed(1)}" x2="${(19+13*Math.cos(r)).toFixed(1)}" y2="${(24+13*Math.sin(r)).toFixed(1)}"/>`}).join('')+'<path d="M33 15a9 9 0 1 0 0 18 7.5 7.5 0 1 1 0-18z"/>',
+  'human-design':'<path d="M24 4l5 7.5H19z"/><path d="M19 13.5h10l-5 6.5z"/><rect x="20" y="21.5" width="8" height="5" rx="1"/><path d="M24 28l4.5 4.5L24 37l-4.5-4.5z"/><rect x="20" y="38.5" width="8" height="5.5" rx="1"/><path d="M13 30l4.5 3.5L13 37z"/><path d="M35 30l-4.5 3.5L35 37z"/><path d="M24 11.5v2M24 20v1.5M24 26.5V28M24 37v1.5" stroke-opacity=".6"/>',
+  'gene-keys':'<path d="M24 5l16 9v20l-16 9-16-9V14z"/><path d="M24 5v19M8 14l16 10 16-10M24 24v19" stroke-opacity=".7"/><path d="M16 9.5l16 9.2M32 9.5l-16 9.2" stroke-opacity=".35"/>',
+  'vimshottari':'<circle cx="24" cy="24" r="18"/><circle cx="24" cy="24" r="13"/>'+[...Array(9)].map((_,i)=>{const r=(i*40-90)*Math.PI/180;return `<line x1="${(24+13*Math.cos(r)).toFixed(1)}" y1="${(24+13*Math.sin(r)).toFixed(1)}" x2="${(24+18*Math.cos(r)).toFixed(1)}" y2="${(24+18*Math.sin(r)).toFixed(1)}"/>`}).join('')+'<line x1="24" y1="24" x2="31" y2="14"/><circle cx="24" cy="24" r="2" class="lens"/>',
+  'numerology':'<path d="M14 11h20L22 39" stroke-dasharray=".1 3.6" stroke-linecap="round" stroke-width="2.2"/><circle cx="34" cy="11" r="1.4"/>',
+  'biorhythm':'<line x1="5" y1="24" x2="43" y2="24" stroke-opacity=".5"/><path d="M5 24c4-13 9-13 13 0s9 13 13 0 8-13 12-4"/><path d="M5 24c5-8 11-8 16 0s11 8 16 0" stroke-opacity=".55"/>',
+  'vedic-clock':'<circle cx="24" cy="24" r="18"/><circle cx="24" cy="24" r="14.5" stroke-opacity=".5"/>'+[...Array(24)].map((_,i)=>{const r=i*15*Math.PI/180,l=i%6?16.3:14.5;return `<line x1="${(24+l*Math.cos(r)).toFixed(1)}" y1="${(24+l*Math.sin(r)).toFixed(1)}" x2="${(24+18*Math.cos(r)).toFixed(1)}" y2="${(24+18*Math.sin(r)).toFixed(1)}"/>`}).join('')+'<line x1="24" y1="24" x2="24" y2="12"/><line x1="24" y1="24" x2="31" y2="28"/>',
+  'biofield':'<circle cx="24" cy="12" r="4"/><path d="M17 42V26c0-4 3-7 7-7s7 3 7 7v16"/><path d="M11 40c-3-6-3-18 3-25M37 40c3-6 3-18-3-25" stroke-opacity=".6"/><path d="M7 38c-4-8-4-21 4-30M41 38c4-8 4-21-4-30" stroke-opacity=".3"/>',
+  'face-reading':'<path d="M28 6c-8 0-14 6-14 14 0 3 1 5-1 8l-3 4 3 1v4c0 2 2 3 4 3h4v4"/><path d="M28 6c6 0 10 5 10 11 0 4-2 6-2 10s3 6 3 14" stroke-dasharray="2 2.5"/><circle cx="22" cy="18" r="1.2"/>',
+  'nadabrahman':'<circle cx="24" cy="24" r="17"/><ellipse cx="24" cy="24" rx="8" ry="17"/><ellipse cx="24" cy="24" rx="17" ry="6" stroke-opacity=".6"/><path d="M8.5 17h31M8.5 31h31" stroke-opacity=".45"/><line x1="24" y1="7" x2="24" y2="41" stroke-opacity=".45"/>',
+  'transits':'<ellipse cx="24" cy="26" rx="19" ry="9" transform="rotate(-14 24 26)"/><ellipse cx="24" cy="26" rx="10" ry="4.6" transform="rotate(-14 24 26)" stroke-opacity=".55"/><circle cx="24" cy="26" r="3.2" class="lens"/><circle cx="40" cy="19" r="2.2"/><circle cx="14" cy="30" r="1.4"/>',
+  'tarot':'<rect x="13" y="6" width="22" height="36" rx="2"/><rect x="16" y="9" width="16" height="30" rx="1" stroke-opacity=".5"/><circle cx="24" cy="21" r="4"/>'+[0,60,120,180,240,300].map(a=>{const r=a*Math.PI/180;return `<line x1="${(24+5.5*Math.cos(r)).toFixed(1)}" y1="${(21+5.5*Math.sin(r)).toFixed(1)}" x2="${(24+8*Math.cos(r)).toFixed(1)}" y2="${(21+8*Math.sin(r)).toFixed(1)}"/>`}).join('')+'<line x1="19" y1="33" x2="29" y2="33"/>',
+  'i-ching':[9,15,21,27,33,39].map((y,i)=>[0,2,3].includes(i)?`<line x1="11" y1="${y}" x2="37" y2="${y}"/>`:`<line x1="11" y1="${y}" x2="21.5" y2="${y}"/><line x1="26.5" y1="${y}" x2="37" y2="${y}"/>`).join(''),
+  'enneagram':'<circle cx="24" cy="24" r="18"/>'+(()=>{const p=[...Array(9)].map((_,i)=>{const r=(i*40-90)*Math.PI/180;return [24+18*Math.cos(r),24+18*Math.sin(r)]});const f=a=>a.map(i=>p[i].map(v=>v.toFixed(1)).join(' ')).join(' L');return `<path d="M${f([0,3,6])}Z"/><path d="M${f([1,4,2,8,5,7,1])}"/>`})(),
+  'sacred-geometry':'<circle cx="18.5" cy="24" r="11"/><circle cx="29.5" cy="24" r="11"/><line x1="5" y1="24" x2="43" y2="24" stroke-dasharray="1.5 2"/><circle cx="24" cy="24" r="1.4"/>',
+  'sigil-forge':'<path d="M24 7l17 30H7z"/><path d="M15 29c3-4 6-6 9-6s6 2 9 6c-3 4-6 6-9 6s-6-2-9-6z"/><circle cx="24" cy="29" r="2.4" class="lens"/><path d="M24 2v3M6 41l2-2M42 41l-2-2" stroke-opacity=".5"/>',
+  'raaga':'<path d="M5 30h38M5 35h38M5 40h38" stroke-opacity=".4"/><circle cx="21" cy="36" r="4"/><path d="M25 36V8c4 3 9 4 11 9"/>',
+  'question':'<path d="M24 3l18.2 10.5v21L24 45 5.8 34.5v-21z" stroke-dasharray="2 3"/><circle cx="24" cy="24" r="2"/>',
+};
+function icon(name,size,cls){const p=GLYPH[name]||GLYPH.question;return `<svg class="gl ${cls||''}" width="${size||24}" height="${size||24}" viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`}
+/* Medallion: the Mandala-direction frame, a double ring with four cardinal stars and beaded rule */
+function medallion(name,size){const s=size||88;return `<svg class="medal" width="${s}" height="${s}" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor"><circle cx="50" cy="50" r="44" stroke-width=".8" stroke-opacity=".55"/><circle cx="50" cy="50" r="40" stroke-width=".6" stroke-opacity=".3" stroke-dasharray="1 2.4"/>${[[50,4],[96,50],[50,96],[4,50]].map(([x,y])=>`<path d="M${x} ${y-4}L${x+1.2} ${y-1.2}L${x+4} ${y}L${x+1.2} ${y+1.2}L${x} ${y+4}L${x-1.2} ${y+1.2}L${x-4} ${y}L${x-1.2} ${y-1.2}Z" fill="currentColor" stroke="none"/>`).join('')}<svg x="27" y="27" width="46" height="46" viewBox="0 0 48 48" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${GLYPH[name]||GLYPH.question}</svg></svg>`}
+
+/* ---------- kit3d: one world for every 3D surface in the field ----------
+   Render Bible: void ground, one warm key from the upper left, a thin gold rim from behind right,
+   dark matte bronze with gold as line, one glass per object carrying evidence state, a hex plinth.
+   One curve: cubic-bezier(0.19,1,0.22,1). Everything collapses to static under reduced motion. */
+const K3=(()=>{
+  const HEX={void:0x070B1D,surface:0x0E1428,gold:0xC5A017,goldWarm:0xE6B84D,emerald:0x10B5A7,violet:0x7B68EE,terracotta:0xC65D3B,bronze:0x5A4A2E,iron:0x1A1A24,parchment:0xF0EDE3,silver:0x8A9BA8,indigo:0x0B50FB,dis:0x75838E};
+  const hasTHREE=()=>typeof THREE!=='undefined';
+  const col=h=>new THREE.Color(h).convertSRGBToLinear();
+  function bezier(p1x,p1y,p2x,p2y){const cx=3*p1x,bx=3*(p2x-p1x)-cx,ax=1-cx-bx,cy=3*p1y,by=3*(p2y-p1y)-cy,ay=1-cy-by;
+    const sx=t=>((ax*t+bx)*t+cx)*t,sy=t=>((ay*t+by)*t+cy)*t,dx=t=>(3*ax*t+2*bx)*t+cx;
+    return x=>{if(x<=0)return 0;if(x>=1)return 1;let t=x;for(let i=0;i<8;i++){const e=sx(t)-x;if(Math.abs(e)<1e-6)break;const d=dx(t);if(Math.abs(d)<1e-6)break;t-=e/d}
+      if(t<0||t>1||Math.abs(sx(t)-x)>1e-4){let lo=0,hi=1;t=x;for(let i=0;i<24;i++){if(sx(t)<x)lo=t;else hi=t;t=(lo+hi)/2}}return sy(t)}}
+  const EASE=bezier(.19,1,.22,1);
+  function reduced(){try{return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}catch(e){return false}}
+  function lowPower(){const n=navigator;return !!((n.hardwareConcurrency&&n.hardwareConcurrency<=2)||(n.deviceMemory&&n.deviceMemory<=2)||(n.connection&&n.connection.saveData))}
+  let _gl=null;function webgl(){if(_gl!==null)return _gl;try{const c=document.createElement('canvas');_gl=!!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl')))}catch(e){_gl=false}return _gl}
+  function ok(){return hasTHREE()&&webgl()&&!lowPower()}
+
+  /* ---- procedural textures (cached) ---- */
+  const TEX={};
+  function canvasTex(key,w,h,draw,opt){if(TEX[key])return TEX[key];const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;if(opt&&opt.repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping}t.anisotropy=4;TEX[key]=t;return t}
+  function rand(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+  // dark patinated bronze: mottled base, faint brushed grain, verdigris only in specks
+  const patina=()=>canvasTex('patina',512,512,(g,w,h)=>{const R=rand(7);g.fillStyle='#3a2f1f';g.fillRect(0,0,w,h);
+    for(let i=0;i<2600;i++){const x=R()*w,y=R()*h,r=2+R()*16,a=.04+R()*.08;const v=R();g.fillStyle=v<.5?`rgba(20,15,9,${a})`:`rgba(92,74,44,${a})`;g.beginPath();g.arc(x,y,r,0,7);g.fill()}
+    g.globalAlpha=.06;for(let i=0;i<500;i++){const y=R()*h;g.strokeStyle=R()<.5?'#1c160e':'#6b5534';g.lineWidth=R()*1.2;g.beginPath();g.moveTo(0,y);g.lineTo(w,y+(R()-.5)*8);g.stroke()}
+    g.globalAlpha=1;for(let i=0;i<70;i++){const x=R()*w,y=R()*h,r=1+R()*5;g.fillStyle=`rgba(46,${110+R()*40|0},${96+R()*30|0},${.12+R()*.18})`;g.beginPath();g.arc(x,y,r,0,7);g.fill()}},{repeat:true});
+  const radial=(key,stops)=>canvasTex(key,256,256,(g,w,h)=>{const gr=g.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);stops.forEach(([o,c])=>gr.addColorStop(o,c));g.fillStyle=gr;g.fillRect(0,0,w,h)});
+  const glowTex=()=>radial('glow',[[0,'rgba(255,255,255,1)'],[.18,'rgba(255,255,255,.55)'],[.45,'rgba(255,255,255,.12)'],[1,'rgba(255,255,255,0)']]);
+  const haloTex=()=>radial('halo',[[0,'rgba(230,184,77,.55)'],[.35,'rgba(230,184,77,.18)'],[.7,'rgba(197,160,23,.05)'],[1,'rgba(0,0,0,0)']]);
+
+  /* ---- environment: the studio the bronze reflects (void room, one warm key, one gold rim) ---- */
+  function envFor(renderer){if(renderer.__env)return renderer.__env;const pm=new THREE.PMREMGenerator(renderer);const s=new THREE.Scene();
+    s.add(new THREE.Mesh(new THREE.BoxGeometry(40,40,40),new THREE.MeshBasicMaterial({color:col(0x05070f),side:THREE.BackSide})));
+    const key=new THREE.Mesh(new THREE.PlaneGeometry(14,9),new THREE.MeshBasicMaterial({color:col(0xffd9a0).multiplyScalar(2.2),side:THREE.DoubleSide}));key.position.set(-12,14,8);key.lookAt(0,0,0);s.add(key);
+    const rim=new THREE.Mesh(new THREE.PlaneGeometry(18,2.2),new THREE.MeshBasicMaterial({color:col(0xE6B84D).multiplyScalar(1.4),side:THREE.DoubleSide}));rim.position.set(14,6,-14);rim.lookAt(0,0,0);s.add(rim);
+    const fill=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.MeshBasicMaterial({color:col(0x0E1428),side:THREE.DoubleSide}));fill.position.set(0,-16,0);fill.rotation.x=Math.PI/2;s.add(fill);
+    const rt=pm.fromScene(s,.035);pm.dispose();s.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()});renderer.__env=rt.texture;return rt.texture}
+
+  /* ---- materials ---- */
+  function mats(env){return {
+    bronze:(o)=>new THREE.MeshStandardMaterial(Object.assign({color:col(0x8a7350),map:patina(),metalness:.82,roughness:.52,envMap:env,envMapIntensity:.95},o||{})),
+    bronzeDark:(o)=>new THREE.MeshStandardMaterial(Object.assign({color:col(0x4d3f29),map:patina(),metalness:.78,roughness:.62,envMap:env,envMapIntensity:.6},o||{})),
+    gold:(o)=>new THREE.MeshStandardMaterial(Object.assign({color:col(HEX.gold),metalness:1,roughness:.3,envMap:env,envMapIntensity:1.25,emissive:col(HEX.gold),emissiveIntensity:.08},o||{})),
+    glass:(h,o)=>new THREE.MeshStandardMaterial(Object.assign({color:col(h).multiplyScalar(.32),emissive:col(h).multiplyScalar(.85),emissiveIntensity:.3,metalness:.05,roughness:.03,envMap:env,envMapIntensity:3.2,transparent:true,opacity:.93},o||{})),
+    line:(h,op)=>new THREE.LineBasicMaterial({color:col(h),transparent:true,opacity:op==null?1:op,toneMapped:false,depthWrite:false}),
+    flat:(h,op)=>new THREE.MeshBasicMaterial({color:col(h),transparent:op!=null&&op<1,opacity:op==null?1:op,toneMapped:false}),
+  }}
+
+  /* ---- geometry helpers ---- */
+  // flat-topped hexagon of circumradius r (vertex on +x)
+  function hexPts(r,rot){const a0=rot||0;return [...Array(6)].map((_,i)=>{const a=a0+i*Math.PI/3;return [r*Math.cos(a),r*Math.sin(a)]})}
+  function hexShape(r,rot){const s=new THREE.Shape();hexPts(r,rot).forEach(([x,y],i)=>i?s.lineTo(x,y):s.moveTo(x,y));s.closePath();return s}
+  // an extruded prism lying in XZ, top face at y=h
+  function prism(shape,h,bevel){const g=new THREE.ExtrudeGeometry(shape,{depth:h,bevelEnabled:!!bevel,bevelThickness:bevel||0,bevelSize:bevel||0,bevelSegments:2,curveSegments:24});g.rotateX(-Math.PI/2);g.computeVertexNormals();return g}
+  function loopXZ(pts,y){return new THREE.BufferGeometry().setFromPoints([...pts,pts[0]].map(([x,z])=>new THREE.Vector3(x,y,-z)))}
+  function circleXZ(r,y,n){const p=[];const N=n||128;for(let i=0;i<=N;i++){const a=i/N*Math.PI*2;p.push(new THREE.Vector3(r*Math.cos(a),y,-r*Math.sin(a)))}return new THREE.BufferGeometry().setFromPoints(p)}
+  function arcXZ(r,y,a0,a1,n){const p=[];const N=n||Math.max(8,Math.ceil(Math.abs(a1-a0)/2));for(let i=0;i<=N;i++){const a=(a0+(a1-a0)*i/N)*Math.PI/180;p.push(new THREE.Vector3(r*Math.cos(a),y,-r*Math.sin(a)))}return new THREE.BufferGeometry().setFromPoints(p)}
+  const P=(lonDeg,r,y)=>{const a=lonDeg*Math.PI/180;return new THREE.Vector3(r*Math.cos(a),y||0,-r*Math.sin(a))};
+  // annulus band (ring of bronze) lying in XZ
+  function band(r0,r1,h,seg){const s=new THREE.Shape();s.absarc(0,0,r1,0,Math.PI*2,false);const hole=new THREE.Path();hole.absarc(0,0,r0,0,Math.PI*2,true);s.holes.push(hole);const g=new THREE.ExtrudeGeometry(s,{depth:h,bevelEnabled:true,bevelThickness:.08,bevelSize:.08,bevelSegments:2,curveSegments:seg||160});g.rotateX(-Math.PI/2);return g}
+
+  /* ---- labels: crisp canvas sprites held at a constant pixel size ---- */
+  const FONT={mono:'"JetBrains Mono","SF Mono",ui-monospace,monospace',disp:'Unbounded,Panchang,sans-serif',engr:'Cinzel,"Trajan Pro",serif',sans:'Manrope,Satoshi,system-ui,sans-serif'};
+  function textCanvas(text,o){const px=(o.px||12)*2,pad=Math.ceil(px*.35);const c=document.createElement('canvas'),g=c.getContext('2d');const font=`${o.weight||500} ${px}px ${FONT[o.font||'mono']}`;g.font=font;
+    const ls=(o.track||0)*px;const w=Math.ceil([...text].reduce((a,ch)=>a+g.measureText(ch).width+ls,0)+pad*2),h=Math.ceil(px*1.5+pad);c.width=Math.max(4,w);c.height=h;g.font=font;g.textBaseline='middle';
+    if(o.bg){g.fillStyle=o.bg;const r=h/2;g.beginPath();g.moveTo(r,0);g.lineTo(c.width-r,0);g.arc(c.width-r,r,r,-Math.PI/2,Math.PI/2);g.lineTo(r,h);g.arc(r,r,r,Math.PI/2,Math.PI*1.5);g.fill()}
+    g.fillStyle=o.color||'#F0EDE3';let x=pad;for(const ch of text){g.fillText(ch,x,h/2+1);x+=g.measureText(ch).width+ls}return c}
+  function label(text,o){o=o||{};const c=textCanvas(text,o);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.minFilter=THREE.LinearFilter;t.generateMipmaps=false;
+    const m=new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false,depthTest:o.depthTest!==false,toneMapped:false,sizeAttenuation:false,opacity:o.opacity==null?1:o.opacity});
+    const s=new THREE.Sprite(m);s.userData.label={px:c.height/2,aspect:c.width/c.height};s.center.set(o.cx==null?.5:o.cx,o.cy==null?.5:o.cy);s.renderOrder=o.order||10;return s}
+  // engraved flat text lying on a surface (rotates with the object)
+  function engrave(text,o){o=o||{};const c=textCanvas(text,Object.assign({px:28},o));const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;
+    const hgt=o.height||1,w=hgt*c.width/c.height;const m=new THREE.Mesh(new THREE.PlaneGeometry(w,hgt),new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false,toneMapped:false,opacity:o.opacity==null?1:o.opacity,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.renderOrder=o.order||5;return m}
+  function glow(h,size,op){const m=new THREE.SpriteMaterial({map:glowTex(),color:col(h),transparent:true,opacity:op==null?.6:op,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false});const s=new THREE.Sprite(m);s.scale.set(size,size,1);s.renderOrder=3;return s}
+  function halo(size,op){const m=new THREE.Mesh(new THREE.PlaneGeometry(size,size),new THREE.MeshBasicMaterial({map:haloTex(),transparent:true,opacity:op==null?.9:op,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));m.rotation.x=-Math.PI/2;m.renderOrder=1;return m}
+
+  /* ---- starfield: soft round points that breathe in once, a few twinkle ---- */
+  function starfield(n,r0,r1,seed){const R=rand(seed||11),pos=new Float32Array(n*3),sz=new Float32Array(n),ph=new Float32Array(n),tint=new Float32Array(n*3);
+    const tints=[[.94,.93,.89],[.77,.63,.09],[.54,.61,.66],[.9,.72,.3]];
+    for(let i=0;i<n;i++){const u=R()*2-1,th=R()*Math.PI*2,s=Math.sqrt(1-u*u),r=r0+R()*(r1-r0);pos[i*3]=r*s*Math.cos(th);pos[i*3+1]=r*u*.85+r*.1;pos[i*3+2]=r*s*Math.sin(th);
+      sz[i]=Math.pow(R(),3)*3.2+.6;ph[i]=R()*6.28;const tt=tints[R()<.08?1:R()<.12?3:R()<.45?2:0];tint.set(tt,i*3)}
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('size',new THREE.BufferAttribute(sz,1));g.setAttribute('phase',new THREE.BufferAttribute(ph,1));g.setAttribute('tint',new THREE.BufferAttribute(tint,3));
+    const m=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{uTime:{value:0},uFade:{value:0},uPx:{value:Math.min(window.devicePixelRatio||1,2)}},
+      vertexShader:`attribute float size;attribute float phase;attribute vec3 tint;uniform float uTime;uniform float uPx;varying float vA;varying vec3 vT;
+        void main(){vec4 mv=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*mv;float tw=.75+.25*sin(uTime*.6+phase*3.);vA=tw;vT=tint;gl_PointSize=size*uPx*(260./-mv.z);}`,
+      fragmentShader:`uniform float uFade;varying float vA;varying vec3 vT;void main(){vec2 c=gl_PointCoord-.5;float d=length(c);if(d>.5)discard;float a=smoothstep(.5,0.,d);a=a*a;gl_FragColor=vec4(vT,a*vA*uFade);}`});
+    const p=new THREE.Points(g,m);p.renderOrder=0;p.frustumCulled=false;return p}
+
+  /* ---- the stage: renderer, camera, orbit, picking, tweens, render-on-demand ---- */
+  function stage(host,opt){
+    opt=Object.assign({fov:34,yaw:-Math.PI/2,pitch:.6,dist:90,target:[0,0,0],minDist:30,maxDist:180,minPitch:.08,maxPitch:1.45,orbit:true,pitchDrag:true,tilt:0,ambient:null,exposure:1.15,label:'3D view'},opt||{});
+    const RM=reduced();
+    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=opt.exposure;renderer.setClearColor(col(HEX.void),1);
+    const el=renderer.domElement;el.className='k3';el.tabIndex=0;el.setAttribute('role','img');el.setAttribute('aria-label',opt.label);
+    const env=envFor(renderer),M=mats(env);
+    const scene=new THREE.Scene();scene.fog=new THREE.Fog(col(HEX.void),opt.fogNear||opt.maxDist*1.1,opt.fogFar||opt.maxDist*2.4);
+    const camera=new THREE.PerspectiveCamera(opt.fov,1,.1,2000);
+    const key=new THREE.DirectionalLight(col(0xffe0b0),2.4);key.position.set(-60,80,45);scene.add(key);
+    const rim=new THREE.DirectionalLight(col(HEX.goldWarm),1.35);rim.position.set(70,35,-80);scene.add(rim);
+    scene.add(new THREE.HemisphereLight(col(0x1a2240),col(0x070B1D),.35));
+    const view={yaw:opt.yaw,pitch:opt.pitch,dist:opt.dist,target:new THREE.Vector3(...opt.target)};
+    const base={yaw:view.yaw,pitch:view.pitch};const tiltCur={x:0,y:0},tiltGoal={x:0,y:0};
+    function place(){const p=view.pitch+tiltCur.y,y=view.yaw+tiltCur.x;camera.position.set(view.target.x+view.dist*Math.cos(p)*Math.cos(y),view.target.y+view.dist*Math.sin(p),view.target.z+view.dist*Math.cos(p)*Math.sin(y));camera.lookAt(view.target)}
+    // labels at constant pixel size
+    let W=1,H=1;const labels=new Set();
+    function sizeLabel(s){const u=s.userData.label;if(!u)return;const k=2*Math.tan(camera.fov*Math.PI/360)/H;s.scale.set(u.px*u.aspect*k,u.px*k,1)}
+    function track(s){if(s.userData.label){labels.add(s);sizeLabel(s)}s.traverse&&s.traverse(o=>{if(o!==s&&o.userData&&o.userData.label){labels.add(o);sizeLabel(o)}});return s}
+    function resize(){const w=host.clientWidth||600,h=host.clientHeight||400;if(w===W&&h===H)return;W=w;H=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(opt.onResize)opt.onResize(w,h);labels.forEach(sizeLabel);invalidate()}
+    // tweens
+    const tweens=new Set();
+    function tween(ms,fn,done,ease){if(RM||!ms){fn(1);done&&done();invalidate();return {stop(){}}}const t={t0:performance.now(),ms,fn,done,ease:ease||EASE,dead:false,stop(){t.dead=true;tweens.delete(t)}};tweens.add(t);kick();return t}
+    function setView(v,ms){const from={yaw:view.yaw,pitch:view.pitch,dist:view.dist,tx:view.target.x,ty:view.target.y,tz:view.target.z};const to=Object.assign({},from,v);if(v.target){to.tx=v.target[0];to.ty=v.target[1];to.tz=v.target[2]}
+      let dy=to.yaw-from.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));to.yaw=from.yaw+dy;
+      return tween(ms==null?900:ms,k=>{view.yaw=from.yaw+(to.yaw-from.yaw)*k;view.pitch=from.pitch+(to.pitch-from.pitch)*k;view.dist=from.dist+(to.dist-from.dist)*k;view.target.set(from.tx+(to.tx-from.tx)*k,from.ty+(to.ty-from.ty)*k,from.tz+(to.tz-from.tz)*k);base.yaw=view.yaw;base.pitch=view.pitch;place()})}
+    // loop: render on demand, ambient motion capped near 30fps, paused offscreen or hidden
+    let raf=0,alive=true,visible=true,dirty=true,interacting=false,last=0,lastAmb=0;const frames=new Set();
+    function invalidate(){dirty=true;kick()}
+    function kick(){if(!raf&&alive&&visible&&!document.hidden)raf=requestAnimationFrame(tick)}
+    function tick(now){raf=0;if(!alive)return;const dt=Math.min(.1,(now-(last||now))/1000);last=now;let more=false;
+      for(const t of [...tweens]){const k=Math.min(1,(now-t.t0)/t.ms);t.fn(t.ease(k));if(k>=1){tweens.delete(t);t.done&&t.done()}else more=true;dirty=true}
+      if(opt.tilt){const fx=tiltCur.x+(tiltGoal.x-tiltCur.x)*Math.min(1,dt*6),fy=tiltCur.y+(tiltGoal.y-tiltCur.y)*Math.min(1,dt*6);if(Math.abs(fx-tiltCur.x)+Math.abs(fy-tiltCur.y)>1e-5){tiltCur.x=fx;tiltCur.y=fy;place();dirty=true;more=true}}
+      for(const f of frames){if(f(dt,now)){more=true;dirty=true}}
+      const amb=!RM&&opt.ambient&&!interacting;
+      if(amb&&now-lastAmb>=32){lastAmb=now;if(opt.ambient(dt,now,view)!==false){place();dirty=true}}
+      if(dirty){renderer.render(scene,camera);dirty=false}
+      if(more||interacting||amb)kick()}
+    const io='IntersectionObserver' in window?new IntersectionObserver(es=>{visible=es[0].isIntersecting;if(visible)kick()}):null;
+    const onVis=()=>{if(!document.hidden)kick()};document.addEventListener('visibilitychange',onVis);
+    let ro=null;function observe(h){if(ro)ro.disconnect();if(io){io.disconnect();io.observe(h)}ro=new ResizeObserver(()=>resize());ro.observe(h)}
+    function attach(h){host=h;h.appendChild(el);observe(h);W=H=0;resize();invalidate()}
+    // picking
+    const ray=new THREE.Raycaster();ray.camera=camera;const ndc=new THREE.Vector2();const pickables=[];
+    function pickAt(cx,cy){const r=el.getBoundingClientRect();ndc.set(((cx-r.left)/r.width)*2-1,-((cy-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);const hits=ray.intersectObjects(pickables,true);for(const h of hits){let o=h.object;while(o&&!o.userData.pick)o=o.parent;if(o&&o.visible!==false)return o}return null}
+    // pointer: drag to orbit, pinch or ctrl-wheel to zoom, tap to pick, hover to highlight
+    const pts=new Map();let drag=null,pinch=null,hoverObj=null,hoverQ=null;
+    el.addEventListener('pointerdown',e=>{pts.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pts.size===1){drag={x:e.clientX,y:e.clientY,yaw:view.yaw,pitch:view.pitch,moved:false,type:e.pointerType}}
+      else if(pts.size===2){const a=[...pts.values()];pinch={d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),dist:view.dist};drag&&(drag.moved=true)}
+      interacting=true;opt.onInteract&&opt.onInteract();kick();try{el.setPointerCapture(e.pointerId)}catch(_){}});
+    el.addEventListener('pointermove',e=>{if(pts.has(e.pointerId))pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      if(pinch&&pts.size===2){const a=[...pts.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);view.dist=Math.max(opt.minDist,Math.min(opt.maxDist,pinch.dist*pinch.d/Math.max(20,d)));place();invalidate();return}
+      if(drag&&opt.orbit){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>5)drag.moved=true;if(drag.moved){view.yaw=drag.yaw+dx*.0065;if(opt.yawClamp)view.yaw=Math.max(opt.yawClamp[0],Math.min(opt.yawClamp[1],view.yaw));if(opt.pitchDrag&&drag.type!=='touch')view.pitch=Math.max(opt.minPitch,Math.min(opt.maxPitch,drag.pitch+dy*.005));base.yaw=view.yaw;base.pitch=view.pitch;place();invalidate()}return}
+      if(drag&&!opt.orbit){if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>5)drag.moved=true}
+      if(opt.tilt&&e.pointerType==='mouse'){const r=el.getBoundingClientRect();tiltGoal.x=((e.clientX-r.left)/r.width-.5)*opt.tilt;tiltGoal.y=-((e.clientY-r.top)/r.height-.5)*opt.tilt*.6;kick()}
+      if(e.pointerType==='mouse'&&!drag&&opt.onHover){hoverQ=[e.clientX,e.clientY];if(!hoverQ.raf){hoverQ.raf=requestAnimationFrame(()=>{const q=hoverQ;hoverQ=null;if(!q)return;const o=pickAt(q[0],q[1]);el.style.cursor=o?'pointer':(opt.orbit?'grab':'default');if(o!==hoverObj){hoverObj=o;opt.onHover(o);invalidate()}})}}});
+    const end=e=>{const d=drag,wasPinch=!!pinch;pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(pts.size===0){drag=null;interacting=false;
+      if(d&&!d.moved&&!wasPinch&&e.type==='pointerup'&&opt.onPick){const o=pickAt(e.clientX,e.clientY);opt.onPick(o,e)}}kick()};
+    el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+    el.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){if(opt.tilt){tiltGoal.x=tiltGoal.y=0;kick()}if(hoverObj&&opt.onHover){hoverObj=null;opt.onHover(null);invalidate()}}});
+    el.addEventListener('wheel',e=>{if(!e.ctrlKey&&!e.metaKey)return;e.preventDefault();view.dist=Math.max(opt.minDist,Math.min(opt.maxDist,view.dist*(1+Math.sign(e.deltaY)*.07)));place();invalidate()},{passive:false});
+    el.addEventListener('keydown',e=>{if(opt.onKey&&opt.onKey(e)){e.preventDefault();return}
+      const step=.12;if(e.key==='ArrowLeft'&&opt.orbit){view.yaw-=step}else if(e.key==='ArrowRight'&&opt.orbit){view.yaw+=step}else if(e.key==='ArrowUp'&&opt.orbit){view.pitch=Math.min(opt.maxPitch,view.pitch+step)}else if(e.key==='ArrowDown'&&opt.orbit){view.pitch=Math.max(opt.minPitch,view.pitch-step)}
+      else if(e.key==='+'||e.key==='='){view.dist=Math.max(opt.minDist,view.dist*.92)}else if(e.key==='-'){view.dist=Math.min(opt.maxDist,view.dist*1.08)}else return;e.preventDefault();base.yaw=view.yaw;base.pitch=view.pitch;place();invalidate()});
+    function fitDist(radius,pad){const v=camera.fov*Math.PI/360,hh=Math.atan(Math.tan(v)*camera.aspect);const a=Math.min(v,hh);return radius*(pad||1.08)/Math.sin(a)}
+    function toScreen(v){const p=v.clone().project(camera);return {x:(p.x+1)/2*W,y:(1-p.y)/2*H,behind:p.z>1}}
+    function dispose(){alive=false;if(raf)cancelAnimationFrame(raf);tweens.clear();frames.clear();document.removeEventListener('visibilitychange',onVis);ro&&ro.disconnect();io&&io.disconnect();
+      scene.traverse(o=>{if(o.geometry)o.geometry.dispose();const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];ms.forEach(m=>{for(const k in m){const v=m[k];if(v&&v.isTexture&&!Object.values(TEX).includes(v))v.dispose()}m.dispose()})});
+      renderer.dispose();try{renderer.forceContextLoss()}catch(_){}if(el.parentNode)el.parentNode.removeChild(el)}
+    place();attach(host);
+    return {THREE,scene,camera,renderer,el,M,view,base,place,setView,tween,invalidate,kick,onFrame:f=>{frames.add(f);kick();return ()=>frames.delete(f)},pick:o=>{o.userData.pick=o.userData.pick||true;pickables.push(o);return o},unpick:o=>{const i=pickables.indexOf(o);if(i>=0)pickables.splice(i,1)},track,attach,toScreen,fitDist,size:()=>({w:W,h:H}),dispose,reduced:RM};
+  }
+
+  /* ---- one live stage per room: survives same-room re-renders, disposed on room change ---- */
+  const ST={room:null,inst:null};
+  function mount(room,host,make){if(ST.inst&&ST.room===room&&ST.inst.attach){ST.inst.attach(host);return {inst:ST.inst,fresh:false}}release();ST.room=room;ST.inst=make(host);return {inst:ST.inst,fresh:true}}
+  function release(){if(ST.inst){try{ST.inst.dispose()}catch(e){}ST.inst=null;ST.room=null}}
+  function current(room){return ST.room===room?ST.inst:null}
+
+  return {HEX,col,EASE,bezier,reduced,lowPower,webgl,ok,stage,mount,release,current,hexPts,hexShape,prism,loopXZ,circleXZ,arcXZ,band,P,label,engrave,glow,halo,starfield,patina,rand};
+})();
 </script>
 <script>
 (function(){
@@ -335,6 +692,7 @@ function gxy(g){const c=CPOS[GATES[g][1]],o=GOFF[g];return [c[0]+o[0],c[1]+o[1]]
 function shape(c){const [x,y]=CPOS[c];switch(c){case'Head':return `M${x} ${y-36}L${x+34} ${y+24}L${x-34} ${y+24}Z`;case'Ajna':return `M${x-34} ${y-26}L${x+34} ${y-26}L${x} ${y+34}Z`;case'Throat':return rr(x-40,y-36,80,72,10);case'G':return `M${x} ${y-44}L${x+44} ${y}L${x} ${y+44}L${x-44} ${y}Z`;case'Heart':return `M${x} ${y-26}L${x+26} ${y+20}L${x-26} ${y+20}Z`;case'Spleen':return `M${x-30} ${y-44}L${x+30} ${y}L${x-30} ${y+44}Z`;case'SolarPlexus':return `M${x+30} ${y-44}L${x-30} ${y}L${x+30} ${y+44}Z`;case'Sacral':return rr(x-42,y-40,84,80,10);case'Root':return rr(x-42,y-40,84,80,10)}}
 function rr(x,y,w,h,r){return `M${x+r} ${y}H${x+w-r}Q${x+w} ${y} ${x+w} ${y+r}V${y+h-r}Q${x+w} ${y+h} ${x+w-r} ${y+h}H${x+r}Q${x} ${y+h} ${x} ${y+h-r}V${y+r}Q${x} ${y} ${x+r} ${y}Z`}
 function bodygraph(el,r){
+  if(K3.ok()){el.classList.add('stage','loom-stage');el.innerHTML='';try{const {inst,fresh}=K3.mount(state.room,el,h=>loom3d(h,r));if(!fresh)inst.update(r);return}catch(e){console.warn('loom',e);K3.release();el.classList.remove('stage','loom-stage')}}
   const tg=new Set(), tByGate={};
   if(r) tPos(r).forEach(t=>{if(t.body!=='Moon'){tg.add(t.gate);(tByGate[t.gate]=tByGate[t.gate]||[]).push(t.body)}});
   const chs=r?r.ch:NATAL_CH.map(k=>[k,'natal']);
@@ -367,16 +725,28 @@ function dayReading(r){
   return {decl,trav,sun,earth,bridges,addC}}
 
 /* ---------- rooms ---------- */
-const ROOMS=[['sky','Sky'],['today','Today'],['design','Design'],['keys','Keys'],['engines','Engines'],['jyotish','Jyotish'],['timeline','Timeline'],['map','Map'],['folio','Folio']];
+const ROOMS=[['sky','Sky'],['today','Today'],['design','Design'],['keys','Keys'],['jyotish','Jyotish'],['engines','Engines'],['timeline','Timeline'],['map','Map'],['folio','Folio']];
+const DOCK=['sky','today','engines','jyotish','folio'];
 const ROOM_TXT={sky:'The night sky over your design, Western or Vedic.',today:'Your bodygraph under this day: channels, contacts, lenses.',design:'The permanent architecture: type, profile, centers, cross.',keys:'Eleven spheres of the hologenetic profile.',engines:'Eight Selemene engines, each figure traced to its response.',jyotish:'Sidereal chart, dasha, Panchanga and Sade Sati.',timeline:'Ingresses, stations, contacts, eclipses and dasha to 2030.',map:'Planetary lines over the land at birth.',folio:'The reading, in full, on parchment.'};
-$('#rooms').innerHTML=ROOMS.map(([id,l])=>`<a class="pill" href="#${id}" data-room="${id}">${l}</a>`).join('');
+const HEXO='<svg class="hexo" viewBox="0 0 48 42" aria-hidden="true"><polygon points="12,1 36,1 47,21 36,41 12,41 1,21"/></svg>';
+const roomLink=(id,l,cls)=>`<a class="rm ${cls||''}" href="#${id}" data-room="${id}"><span class="hx">${HEXO}${icon(id==='design'?'design':id,26)}</span><span>${l}</span></a>`;
+$('#railRooms').innerHTML=ROOMS.map(([id,l])=>roomLink(id,l)).join('');
+$('#railMark').innerHTML=icon('witness',44);$('#tbMark').innerHTML=icon('witness',30)+'<b>NOESIS</b>';
+$('#dock').innerHTML=DOCK.map(id=>roomLink(id,ROOMS.find(r=>r[0]===id)[1])).join('')+`<a class="rm" href="#" id="dockMore" data-more="1"><span class="hx">${HEXO}<svg class="gl" width="26" height="26" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="14" cy="24" r="2.2"/><circle cx="24" cy="24" r="2.2"/><circle cx="34" cy="24" r="2.2"/></svg></span><span>More</span></a>`;
+$('#sheetGrid').innerHTML=ROOMS.map(([id,l])=>roomLink(id,l)).join('');
+$('#dockMore').onclick=e=>{e.preventDefault();$('#sheet').hidden=false;$('#sheetClose').focus()};
+$('#sheetClose').onclick=()=>{$('#sheet').hidden=true};$('#sheet').onclick=e=>{if(e.target.id==='sheet')$('#sheet').hidden=true};
+$('#sheetGrid').addEventListener('click',()=>{$('#sheet').hidden=true});
+let lastRoom=null;
 function render(){
-  const room=state.room; document.querySelectorAll('#rooms .pill').forEach(a=>a.setAttribute('aria-current',a.dataset.room===room?'page':'false'));
+  const room=state.room; document.querySelectorAll('[data-room]').forEach(a=>{if(a.dataset.room===room)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+  const more=$('#dockMore');if(more){if(!DOCK.includes(room))more.setAttribute('aria-current','page');else more.removeAttribute('aria-current')}
+  $('#crumb').innerHTML=`Witness Alchemist<i>/</i><b>${ROOMS.find(r=>r[0]===room)[1]}</b>`;
+  if(lastRoom!==room){K3.release();lastRoom=room}
+  $('#main').classList.remove('full');
   $('#dateIn').value=state.date; $('#dateIn').min=DAYS[0].d; $('#dateIn').max=DAYS[DAYS.length-1].d;
   $('#datebar').style.visibility=room==='folio'?'hidden':'visible';
-  if(window.skyDispose)window.skyDispose();
   ({sky:rSky,today:rToday,design:rDesign,keys:rKeys,engines:rEngines,jyotish:rJyotish,timeline:rTimeline,map:rMap,folio:rFolio})[room]();
-  const cur=document.querySelector('#rooms .pill[aria-current="page"]');if(cur&&cur.scrollIntoView)cur.scrollIntoView({block:'nearest',inline:'nearest'});
 }
 function setDate(s){state.date=clampDate(s);render()}
 $('#prevDay').onclick=()=>setDate(addDays(state.date,-1));$('#nextDay').onclick=()=>setDate(addDays(state.date,1));
@@ -384,7 +754,9 @@ $('#nowBtn').onclick=()=>setDate(todayIST());$('#dateIn').onchange=e=>{if(e.targ
 function route(){const h=(location.hash||'#sky').slice(1);state.room=ROOMS.some(r=>r[0]===h)?h:'sky';$('#drawer').hidden=true;render();window.scrollTo(0,0)}
 window.addEventListener('hashchange',route);
 
-/* ---------- Sky: the home room. Three.js night sky with a Western / Vedic toggle; 2D wheel under reduced motion or low power ---------- */
+/* ---------- Sky: the home room. A bronze orrery in the world of the Transits instrument ----------
+   Geocentric: the emerald lens at the hub is you. Today's bodies ride emerald glass beads on bronze arms;
+   the zodiac band turns by the ayanamsa between Western and Vedic; birth studs sit on the inner band. */
 const WHEEL=[41,19,13,49,30,55,37,63,22,36,25,17,21,51,42,3,27,24,2,23,8,20,16,35,45,12,15,52,39,53,62,56,31,33,7,4,29,59,40,64,47,6,46,18,48,57,32,50,28,44,1,43,14,34,9,5,26,11,10,58,38,54,61,60];
 const HEX={Sun:0xE6B84D,Moon:0xF0EDE3,Mercury:0x8A9BA8,Venus:0x7B68EE,Mars:0xC65D3B,Jupiter:0xC5A017,Saturn:0x75838E,Uranus:0x10B5A7,Neptune:0x4A7DFF,Pluto:0xEE977C,NorthNode:0x89A5FF,SouthNode:0x89A5FF,Earth:0x67D4C7};
 const HEXS=Object.fromEntries(Object.entries(HEX).map(([k,v])=>[k,'#'+v.toString(16).padStart(6,'0')]));
@@ -397,13 +769,9 @@ function sidInfo(lon,ayan){const s=norm(lon-ayan),n=Math.floor(s/(360/27)),pada=
 const fmtDeg=d=>`${Math.floor(d)}°${String(Math.round((d%1)*60)).padStart(2,'0')}'`;
 function angDiff(a,b){return Math.abs(((a-b+540)%360)-180)}
 function aspectBetween(a,b){const d=angDiff(a,b);for(const [n,ang,orb,col] of ASPECTS){if(Math.abs(d-ang)<=orb)return {name:n,orb:Math.abs(d-ang),col}}return null}
-const SKYPREF=(()=>{try{return Object.assign({mode:'western',gates:false,natal:true,lines:true},JSON.parse(localStorage.getItem('wa-sky')||'{}'))}catch(e){return {mode:'western',gates:false,natal:true,lines:true}}})();
+const SKYPREF=(()=>{const d={mode:'western',gates:false,natal:true,lines:true,view:'orbit'};try{return Object.assign(d,JSON.parse(localStorage.getItem('wa-sky')||'{}'))}catch(e){return d}})();
 function savePref(){try{localStorage.setItem('wa-sky',JSON.stringify(SKYPREF))}catch(e){}}
-function reducedMotion(){try{return window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}}
-function lowPower(){const n=navigator;return (n.hardwareConcurrency&&n.hardwareConcurrency<=2)||(n.deviceMemory&&n.deviceMemory<=2)||(n.connection&&n.connection.saveData)}
-function webglOK(){try{const c=document.createElement('canvas');return !!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl')))}catch(e){return false}}
 
-/* Bodies of the day and of birth, as one list the scene and the wheel share */
 function skyBodies(r){
   const ayan=ayanOf(r);
   const t=tPos(r).filter(x=>x.body!=='SouthNode').map(x=>({kind:'transit',body:x.body,lon:x.lon,gate:x.gate,line:x.line,retro:x.retro,sid:sidInfo(x.lon,ayan)}));
@@ -413,10 +781,9 @@ function skyBodies(r){
 function skyLines(B){
   const out=[];const T=B.transit.filter(b=>b.body!=='Earth');
   for(let i=0;i<T.length;i++)for(let j=i+1;j<T.length;j++){const a=aspectBetween(T[i].lon,T[j].lon);if(a)out.push({a:T[i],b:T[j],asp:a})}
-  if(SKYPREF.natal){const N=B.natal.filter(b=>b.body!=='Earth'&&b.body!=='NorthNode');for(const t of T)for(const n of N){const a=aspectBetween(t.lon,n.lon);if(a&&a.orb<=2)out.push({a:t,b:n,asp:a})}}
+  if(SKYPREF.natal){const N=B.natal.filter(b=>b.body!=='Earth'&&b.body!=='NorthNode');for(const t of T)for(const n of N){const a=aspectBetween(t.lon,n.lon);if(a&&a.orb<=(SKYPREF.tight?1:2))out.push({a:t,b:n,asp:a})}}
   return out;
 }
-/* Drawer for a tapped body */
 function showBody(b,r){
   const trop=fmtLon(b.lon),s=b.sid,G=GATES[b.gate];
   const title=b.kind==='transit'?`${SYM[b.body]} ${PNAME(b.body)} today`:`${SYM[b.body]} ${b.side==='P'?'Personality':'Design'} ${PNAME(b.body)}`;
@@ -432,107 +799,198 @@ function showBody(b,r){
   <p class="meta" style="margin-top:12px">Positions: Swiss Ephemeris, tropical. Vedic positions use the Lahiri ayanamsa (${(b.kind==='transit'?B.ayan:NATAL_AYAN).toFixed(2)}°).</p>`);
   wire($('#drawerBody'));
 }
+function showLens(r){const R=dayReading(r);
+  openDrawer(`<div class="eyebrow">The lens · ${fmtDate(r.d)} · 06:00 IST</div><h2>${esc(R.decl)}</h2><p class="muted">${esc(R.trav)}</p>
+  <dl class="kv"><dt>Sun</dt><dd><b>${R.sun.gate}.${R.sun.line}</b> ${GATES[R.sun.gate][0]}</dd><dt>Earth</dt><dd><b>${R.earth.gate}.${R.earth.line}</b> ${GATES[R.earth.gate][0]}</dd><dt>Definition</dt><dd>${r.def===1?'Single':r.def===2?'Split':r.def===3?'Triple split':'Quadruple split'}${r.m2t?' · motor to Throat':''}</dd><dt>Centers</dt><dd>${r.cen.length} of 9 defined</dd></dl>
+  <h3>Channels</h3><div class="list">${r.ch.map(([k,t])=>`<button class="item" data-ch="${k}"><span class="tag ${t==='natal'?'natal':t==='bridge'?'c':'w'}">${t==='natal'?'yours':t==='bridge'?'bridged':'transit'}</span><span><b>${k} ${CHANNELS[k][0]}</b><small>${CHANNELS[k][1]} circuit</small></span></button>`).join('')}</div>
+  <p style="margin-top:16px"><a class="pill sm" href="#today">Open the day</a></p>`);wire($('#drawerBody'))}
 
-/* Labels as canvas sprites */
-function makeLabel(text,color,size){const c=document.createElement('canvas');const S=size||48;c.width=512;c.height=128;const g=c.getContext('2d');g.font=`500 ${S}px "JetBrains Mono","SF Mono",monospace`;g.textAlign='center';g.textBaseline='middle';g.fillStyle=color;g.fillText(text,256,64);const tx=new THREE.CanvasTexture(c);tx.minFilter=THREE.LinearFilter;const m=new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false});const sp=new THREE.Sprite(m);sp.scale.set(8,2,1);return sp}
-function ringLine(R,y,color,op,seg){const pts=[];const n=seg||256;for(let i=0;i<=n;i++){const a=i/n*Math.PI*2;pts.push(new THREE.Vector3(R*Math.cos(a),y,-R*Math.sin(a)))}return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color,transparent:true,opacity:op}))}
-const P3=(lon,R,y)=>{const a=lon*Math.PI/180;return new THREE.Vector3(R*Math.cos(a),y||0,-R*Math.sin(a))};
-
-let SCENE=null;
-function sky3d(host,r){
-  const B=skyBodies(r);
-  const W=host.clientWidth||800,H=host.clientHeight||500;
-  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(W,H);renderer.setClearColor(0x070B1D,1);host.appendChild(renderer.domElement);
-  const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x070B1D,120,260);
-  const cam=new THREE.PerspectiveCamera(42,W/H,0.1,600);
-  const view={yaw:Math.PI/2,pitch:0.62,dist:92,auto:true};
-  function place(){cam.position.set(view.dist*Math.cos(view.pitch)*Math.cos(view.yaw),view.dist*Math.sin(view.pitch),view.dist*Math.cos(view.pitch)*Math.sin(view.yaw));cam.lookAt(0,0,0)}
-  scene.add(new THREE.AmbientLight(0xffffff,0.55));const key=new THREE.PointLight(0xE6B84D,0.9,400);key.position.set(60,80,40);scene.add(key);
-  // starfield
-  const N=2600,pos=new Float32Array(N*3),col=new Float32Array(N*3);const c1=new THREE.Color(0xF0EDE3),c2=new THREE.Color(0xC5A017),c3=new THREE.Color(0x8A9BA8);
-  for(let i=0;i<N;i++){const u=Math.random()*2-1,th=Math.random()*Math.PI*2,s=Math.sqrt(1-u*u),R=190+Math.random()*40;pos[i*3]=R*s*Math.cos(th);pos[i*3+1]=R*u;pos[i*3+2]=R*s*Math.sin(th);const c=Math.random()<.08?c2:Math.random()<.5?c1:c3;const k=.35+Math.random()*.65;col[i*3]=c.r*k;col[i*3+1]=c.g*k;col[i*3+2]=c.b*k}
-  const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(pos,3));sg.setAttribute('color',new THREE.BufferAttribute(col,3));
-  const sm=new THREE.PointsMaterial({size:1.6,vertexColors:true,transparent:true,opacity:0,sizeAttenuation:true,depthWrite:false});scene.add(new THREE.Points(sg,sm));
-  // rings
-  const RT=30,RN=22,RZ=36,RG=26;
-  scene.add(ringLine(RT,0,0xC5A017,.35),ringLine(RN,0,0x7B68EE,.3),ringLine(RZ,0,0xC5A017,.5),ringLine(RZ+3.5,0,0xC5A017,.18));
-  const zod=new THREE.Group(),gates=new THREE.Group();scene.add(zod,gates);
-  function buildZodiac(){while(zod.children.length)zod.remove(zod.children[0]);
-    const ayan=SKYPREF.mode==='vedic'?B.ayan:0;const names=SKYPREF.mode==='vedic'?RASHI:SIGNS;const mat=new THREE.LineBasicMaterial({color:0xC5A017,transparent:true,opacity:.45});
-    for(let i=0;i<12;i++){const l=i*30+ayan;zod.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([P3(l,RZ),P3(l,RZ+3.5)]),mat));const sp=makeLabel(names[i].toUpperCase(),'#C5A017',40);sp.position.copy(P3(l+15,RZ+7.5,0.4));sp.scale.set(12,3,1);zod.add(sp)}
-    if(SKYPREF.mode==='vedic'){const nm=new THREE.LineBasicMaterial({color:0x8A9BA8,transparent:true,opacity:.4});for(let i=0;i<27;i++){const l=i*(360/27)+ayan;zod.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([P3(l,RZ-1.6),P3(l,RZ)]),nm));const sp=makeLabel(NAKS[i],'#AEBBC4',30);sp.position.copy(P3(l+360/54,RZ-4.2,-0.2));sp.scale.set(9,2.2,1);zod.add(sp)}}
-  }
-  function buildGates(){while(gates.children.length)gates.remove(gates.children[0]);if(!SKYPREF.gates)return;const m=new THREE.LineBasicMaterial({color:0x8A9BA8,transparent:true,opacity:.35});
-    for(let i=0;i<64;i++){const l=302+i*5.625;gates.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([P3(l,RG-.8),P3(l,RG+.8)]),m));const g=WHEEL[i];const sp=makeLabel(String(g),NATG.has(g)?'#E6B84D':'#75838E',38);sp.position.copy(P3(l+2.8,RG,-0.6));sp.scale.set(5,1.25,1);gates.add(sp)}}
-  // bodies
-  const picks=[];const bodies=new THREE.Group();scene.add(bodies);
-  for(const b of B.transit){const m=new THREE.Mesh(new THREE.SphereGeometry(RADIUS[b.body]||.6,20,16),new THREE.MeshStandardMaterial({color:HEX[b.body],emissive:HEX[b.body],emissiveIntensity:.35,roughness:.6}));m.position.copy(P3(b.lon,RT,0));m.userData=b;bodies.add(m);picks.push(m);
-    const lab=makeLabel(`${SYM[b.body]} ${PNAME(b.body)}${b.retro?' R':''} ${b.gate}.${b.line}`,HEXS[b.body],40);lab.position.copy(P3(b.lon,RT,2.6));lab.scale.set(11,2.75,1);bodies.add(lab);
-    const stem=new THREE.Line(new THREE.BufferGeometry().setFromPoints([P3(b.lon,RT,0),P3(b.lon,RZ,0)]),new THREE.LineBasicMaterial({color:HEX[b.body],transparent:true,opacity:.2}));bodies.add(stem)}
-  const natalG=new THREE.Group();scene.add(natalG);
-  for(const b of B.natal){const col=b.side==='P'?0xC5A017:0x7B68EE;const m=new THREE.Mesh(new THREE.OctahedronGeometry(.55),new THREE.MeshBasicMaterial({color:col}));m.position.copy(P3(b.lon,RN,0));m.userData=b;natalG.add(m);picks.push(m)}
-  const linesG=new THREE.Group();scene.add(linesG);
-  function buildLines(){while(linesG.children.length)linesG.remove(linesG.children[0]);natalG.visible=SKYPREF.natal;if(!SKYPREF.lines)return;
-    for(const L of skyLines(B)){const pa=P3(L.a.lon,L.a.kind==='transit'?RT:RN),pb=P3(L.b.lon,L.b.kind==='transit'?RT:RN);linesG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([pa,pb]),new THREE.LineBasicMaterial({color:L.asp.col,transparent:true,opacity:L.b.kind==='natal'?.45:.7})))}}
-  buildZodiac();buildGates();buildLines();
-  // interaction
-  const ray=new THREE.Raycaster();ray.params.Points={threshold:0};const ptr=new THREE.Vector2();let down=null,moved=false;
-  const el=renderer.domElement;
-  el.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,yaw:view.yaw,pitch:view.pitch};moved=false;view.auto=false;el.setPointerCapture&&el.setPointerCapture(e.pointerId)});
-  el.addEventListener('pointermove',e=>{if(!down)return;const dx=e.clientX-down.x,dy=e.clientY-down.y;if(Math.abs(dx)+Math.abs(dy)>4)moved=true;view.yaw=down.yaw-dx*.006;view.pitch=Math.max(.12,Math.min(1.35,down.pitch+dy*.005));place()});
-  el.addEventListener('pointerup',e=>{if(down&&!moved){const rc=el.getBoundingClientRect();ptr.x=((e.clientX-rc.left)/rc.width)*2-1;ptr.y=-((e.clientY-rc.top)/rc.height)*2+1;ray.setFromCamera(ptr,cam);const hit=ray.intersectObjects(picks,false)[0];if(hit)showBody(hit.object.userData,r)}down=null});
-  el.addEventListener('wheel',e=>{e.preventDefault();view.dist=Math.max(40,Math.min(160,view.dist*(1+Math.sign(e.deltaY)*.08)));place()},{passive:false});
-  // loop, capped near 30fps, paused when hidden
-  let raf=0,last=0,t0=performance.now(),alive=true;
-  function frame(now){if(!alive)return;raf=requestAnimationFrame(frame);if(now-last<33)return;last=now;const k=Math.min(1,(now-t0)/1000);sm.opacity=1-Math.pow(1-k,4);if(view.auto)view.yaw+=.0012;place();renderer.render(scene,cam)}
-  place();raf=requestAnimationFrame(frame);
-  const onVis=()=>{if(document.hidden){cancelAnimationFrame(raf);alive=false}else if(!alive){alive=true;raf=requestAnimationFrame(frame)}};document.addEventListener('visibilitychange',onVis);
-  const ro=new ResizeObserver(()=>{const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix()});ro.observe(host);
-  SCENE={dispose(){alive=false;cancelAnimationFrame(raf);document.removeEventListener('visibilitychange',onVis);ro.disconnect();scene.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose()}});renderer.dispose();if(el.parentNode)el.parentNode.removeChild(el)},refresh(){buildZodiac();buildGates();buildLines()}};
+/* ---------- the orrery ---------- */
+const ORB_R={Moon:9,Mercury:11.6,Venus:14.2,Sun:16.8,Mars:19.2,Jupiter:21.6,Saturn:23.8,Uranus:25.4,Neptune:26.6,Pluto:27.8,NorthNode:29.4};
+const BEAD_R={Sun:1.45,Moon:1.2,Jupiter:1.2,Saturn:1.1,Mars:.9,Venus:.95,Mercury:.8,Uranus:.85,Neptune:.85,Pluto:.7,NorthNode:.7};
+const ORB_ORDER=['Moon','Mercury','Venus','Sun','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','NorthNode'];
+const RZ0=34,RZ1=39.5,RN0=30.6,RN1=33.4,RG0=40.4,RG1=43.6;
+function fitOrbit(S){const c=S.camera,v=c.fov*Math.PI/360,hh=Math.atan(Math.tan(v)*c.aspect),R=SKYPREF.gates?44.5:40.5;return Math.max(R*1.04/Math.sin(hh),(R*Math.sin(.62)+9)/Math.sin(v)*1.06,70)}
+function fitAbove(S){const c=S.camera,v=c.fov*Math.PI/360,hh=Math.atan(Math.tan(v)*c.aspect),R=SKYPREF.gates?44.5:40.5;return Math.max(R*1.03/Math.sin(Math.min(v,hh)),80)}
+function orrery(host,r0){
+  const K=K3,T=THREE;let r=r0;const RM=K.reduced();
+  let fitO=104,fitA=118,S=null,introOn=false;
+  S=K.stage(host,{fov:32,yaw:-Math.PI/2,target:[0,SKYPREF.view==='above'?0:-7,0],pitch:SKYPREF.view==='above'?1.42:.62,dist:104,minDist:56,maxDist:260,
+    onResize:()=>{if(!S)return;fitO=fitOrbit(S);fitA=fitAbove(S);if(!introOn){S.view.dist=SKYPREF.view==='above'?fitA:fitO;S.place()}},minPitch:.12,maxPitch:1.48,label:'Orrery of the sky over your design. Drag to turn, tap a bead.',
+    ambient:(dt)=>{if(SKYPREF.view==='above')return false;S.view.yaw+=dt*.018;return true},
+    onPick:o=>{if(!o)return;const u=o.userData;if(u.lens)showLens(r);else if(u.arm)showBody(u.body,r);else if(u.body)showBody(u.body,r);select(o)},
+    onHover:o=>hover(o)});
+  const {scene,M}=S;
+  // starfield breathes in once, then twinkles
+  const stars=K.starfield(1600,220,420,23);scene.add(stars);
+  const root=new T.Group();scene.add(root);
+  // plinth: hex prism, gold edge, engraved inset, halo beneath
+  const plinth=new T.Mesh(K.prism(K.hexShape(22,Math.PI/6),2.6,.35),M.bronze());plinth.position.y=-11.6;root.add(plinth);
+  const pTop=-11.6+2.6+.35;
+  const e1=new T.LineLoop(K.loopXZ(K.hexPts(22.2,Math.PI/6),0),M.line(K.HEX.gold,.85));e1.position.y=pTop+.02;root.add(e1);
+  const e2=new T.LineLoop(K.loopXZ(K.hexPts(20.2,Math.PI/6),0),M.line(K.HEX.gold,.35));e2.position.y=pTop+.02;root.add(e2);
+  for(let i=0;i<6;i++){const a=(i*60+30)*Math.PI/180;const st=new T.Mesh(new T.CylinderGeometry(.42,.42,.18,16),M.gold());st.position.set(19.6*Math.cos(a),pTop+.08,-19.6*Math.sin(a));root.add(st)}
+  const hal=K.halo(96,.75);hal.position.y=-11.9;root.add(hal);
+  // turned column
+  const prof=[[0,0],[3.6,0],[3.6,.5],[2.6,.9],[2.2,1.6],[1.5,2.4],[1.25,6],[1.6,6.7],[1.25,7.3],[1.25,9.6],[2.4,10.4],[3.6,10.8],[3.6,11.3],[0,11.3]].map(([x,y])=>new T.Vector2(x,y));
+  const colm=new T.Mesh(new T.LatheGeometry(prof,48),M.bronze());colm.position.y=pTop;root.add(colm);
+  const hubY=pTop+11.3;
+  // hub: gold bezel + emerald lens (you)
+  const spH=ORB_ORDER.length*.34+1.6;
+  const spindle=new T.Mesh(new T.CylinderGeometry(.34,.42,spH,20),M.gold({roughness:.35}));spindle.position.y=hubY+spH/2;root.add(spindle);
+  const capY=hubY+spH;
+  const bez=new T.Mesh(new T.TorusGeometry(2.0,.26,16,64),M.gold());bez.rotation.x=Math.PI/2;bez.position.y=capY+.25;root.add(bez);
+  const cupL=new T.Mesh(new T.SphereGeometry(2.05,32,16,0,Math.PI*2,Math.PI/2,Math.PI/2),M.bronze());cupL.position.y=capY+.45;root.add(cupL);
+  const lens=new T.Mesh(new T.SphereGeometry(1.85,48,32),M.glass(K.HEX.emerald,{emissiveIntensity:.32}));lens.position.y=capY+1.25;lens.userData={lens:true};S.pick(lens);root.add(lens);
+  const fin=new T.Mesh(new T.ConeGeometry(.22,1.6,12),M.gold());fin.position.y=capY+3.6;root.add(fin);
+  const lensGlow=K.glow(K.HEX.emerald,8,.38);lensGlow.position.copy(lens.position);root.add(lensGlow);
+  const Y0=hubY+.35;
+  // zodiac band and inner band
+  const zband=new T.Mesh(K.band(RZ0,RZ1,.9),M.bronze());zband.position.y=Y0-.9;root.add(zband);
+  const nband=new T.Mesh(K.band(RN0,RN1,.7),M.bronzeDark());nband.position.y=Y0-.7;root.add(nband);
+  [RZ0-.05,RZ1+.05,RN0-.05,RN1+.05].forEach((rr,i)=>root.add(new T.LineLoop(K.circleXZ(rr,Y0+.12,256),M.line(K.HEX.gold,i<2?.75:.4))));
+  {const pts=[];for(let d=0;d<360;d+=1){const L=d%5?.55:1.1;pts.push(K.P(d,RZ1-L,Y0+.13),K.P(d,RZ1-.05,Y0+.13))}root.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(pts),M.line(K.HEX.gold,.28)))}
+  // the turning zodiac
+  const zod=new T.Group();root.add(zod);
+  let zodRot=SKYPREF.mode==='vedic'?ayanOf(r):0;
+  const clear=g=>{while(g.children.length){const c=g.children.pop();if(c.geometry)c.geometry.dispose();if(c.material){if(c.material.map)c.material.map.dispose();c.material.dispose()}}};
+  function buildZod(){clear(zod);const ved=SKYPREF.mode==='vedic',names=ved?RASHI:SIGNS;const segs=[];
+    for(let i=0;i<12;i++){segs.push(K.P(i*30,RZ0,Y0+.14),K.P(i*30,RZ1,Y0+.14))}
+    zod.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(segs),M.line(K.HEX.gold,.9)));
+    for(let i=0;i<12;i++){const l=S.track(K.label(names[i].toUpperCase(),{font:'engr',px:11,track:.22,color:'#C5A017',weight:600}));l.position.copy(K.P(i*30+15,(RZ0+RZ1)/2,Y0+.9));zod.add(l)}
+    if(ved){const ns=[];for(let i=0;i<27;i++){ns.push(K.P(i*360/27,RN0,Y0+.02),K.P(i*360/27,RN1,Y0+.02))}zod.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(ns),M.line(K.HEX.silver,.55)));
+      for(let i=0;i<27;i++){const l=S.track(K.label(NAKS[i],{font:'mono',px:9,color:'#AEBBC4',opacity:.85}));l.position.copy(K.P(i*360/27+360/54,(RN0+RN1)/2,Y0+.5));zod.add(l)}}
+    else{const dc=[];for(let i=0;i<36;i++){dc.push(K.P(i*10,RN1-.7,Y0+.02),K.P(i*10,RN1,Y0+.02))}zod.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(dc),M.line(K.HEX.silver,.35)))}
+    zod.rotation.y=zodRot*Math.PI/180;S.invalidate()}
+  buildZod();
+  // 64-gate outer ring
+  const gring=new T.Group();root.add(gring);
+  function buildGates(){clear(gring);if(!SKYPREF.gates)return;const b=new T.Mesh(K.band(RG0,RG1,.5),M.bronzeDark());b.position.y=Y0-.6;gring.add(b);
+    const segs=[];for(let i=0;i<64;i++){const l=302+i*5.625;segs.push(K.P(l,RG0,Y0-.04),K.P(l,RG1,Y0-.04))}gring.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(segs),M.line(K.HEX.gold,.45)));
+    for(let i=0;i<64;i++){const g=WHEEL[i];const l=S.track(K.label(String(g),{font:'mono',px:9,color:NATG.has(g)?'#E6B84D':'#75838E'}));l.position.copy(K.P(302+i*5.625+2.8,(RG0+RG1)/2,Y0+.3));gring.add(l)}}
+  buildGates();
+  // birth studs: Personality gold, Design violet glass
+  const studs=new T.Group();root.add(studs);
+  skyBodies(r).natal.filter(n=>n.body!=='Earth').forEach(n=>{const m=new T.Mesh(new T.OctahedronGeometry(.62,0),n.side==='P'?M.gold({emissiveIntensity:.25}):M.glass(K.HEX.violet,{emissiveIntensity:.5}));m.scale.set(1,.7,1);
+    m.position.copy(K.P(n.lon,n.side==='P'?RN1-.75:RN0+.75,Y0+.3));m.userData={body:n};S.pick(m);studs.add(m)});
+  studs.visible=SKYPREF.natal;
+  // arms and beads
+  const arms={};
+  ORB_ORDER.forEach((name,i)=>{const R=ORB_R[name],y=hubY+.8+i*.34;const g=new T.Group();g.position.y=y;root.add(g);
+    const len=name==='NorthNode'?R*2:R-.6;const rod=new T.Mesh(new T.CylinderGeometry(.12,.12,len,10),M.gold({roughness:.48,color:K.col(0x8a6a26),emissiveIntensity:.02}));rod.rotation.z=Math.PI/2;rod.position.x=name==='NorthNode'?0:.6+len/2;g.add(rod);
+    const collar=new T.Mesh(new T.TorusGeometry(.62,.1,8,24),M.gold());collar.rotation.x=Math.PI/2;g.add(collar);
+    const cup=new T.Mesh(new T.TorusGeometry(BEAD_R[name]*.82,.08,8,32),M.gold());cup.rotation.x=Math.PI/2;cup.position.set(R,-BEAD_R[name]*.55,0);g.add(cup);
+    const bead=new T.Mesh(new T.SphereGeometry(BEAD_R[name],32,24),M.glass(K.HEX.emerald));bead.position.set(R,0,0);g.add(bead);
+    const gl=K.glow(K.HEX.emerald,BEAD_R[name]*5,.32);gl.position.set(R,0,0);g.add(gl);
+    if(name==='Sun'){const cor=new T.Mesh(new T.TorusGeometry(BEAD_R.Sun*1.5,.05,6,64),M.gold({emissiveIntensity:.6}));cor.position.set(R,0,0);g.add(cor)}
+    let tail=null;if(name==='NorthNode'){tail=new T.Mesh(new T.SphereGeometry(BEAD_R.NorthNode*.85,24,16),M.glass(K.HEX.emerald,{emissiveIntensity:.25}));tail.position.set(-R,0,0);g.add(tail)}
+    const lab=S.track(K.label(' ',{px:11}));lab.center.set(.5,-.35);lab.position.set(R,BEAD_R[name]+.4,0);g.add(lab);
+    arms[name]={g,bead,lab,glow:gl,R,lon:0,tail,text:'',b:null};bead.userData={arm:name};S.pick(bead);if(tail){tail.userData={arm:name,tail:true};S.pick(tail)}});
+  function armLabel(a,b,sel){const t=`${SYM[b.body]} ${b.gate}.${b.line}${b.retro?' ℞':''}`;const key=t+(sel?'*':'');if(a.text===key)return;a.text=key;const old=a.lab.material.map;
+    const nl=K.label(t,{px:11,color:sel?'#E6B84D':'#F0EDE3',bg:'rgba(7,11,29,.62)'});a.lab.material.map=nl.material.map;a.lab.userData.label=nl.userData.label;S.track(a.lab);if(old)old.dispose();nl.material.dispose()}
+  // alignment arcs
+  const lines=new T.Group();root.add(lines);
+  function posOf(b){if(b.kind==='natal')return K.P(b.lon,b.side==='P'?RN1-.75:RN0+.75,Y0+.3);const a=arms[b.body];if(!a)return null;const p=K.P(b.lon,a.R,0);p.y=a.g.position.y;return p}
+  let cur=skyBodies(r),sel=null,armTween=null;
+  function buildLines(){clear(lines);if(!SKYPREF.lines)return;
+    SKYPREF.tight=true;const LL=skyLines(cur);SKYPREF.tight=false;for(const L of LL){const a=posOf(L.a),b=posOf(L.b);if(!a||!b)continue;const mid=a.clone().add(b).multiplyScalar(.5);mid.y+=2.5+a.distanceTo(b)*.06;
+      const crv=new T.QuadraticBezierCurve3(a,mid,b);const ln=new T.Line(new T.BufferGeometry().setFromPoints(crv.getPoints(40)),M.line(L.asp.col,L.b.kind==='natal'?.4:.7));ln.renderOrder=4;lines.add(ln)}S.invalidate()}
+  function applyDay(rr,ms){r=rr;cur=skyBodies(rr);const from={},to={};
+    ORB_ORDER.forEach(n=>{const b=cur.transit.find(x=>x.body===n);const a=arms[n];from[n]=a.lon;let d=b.lon-a.lon;d=((d+540)%360)-180;to[n]=a.lon+d;a.b=b;a.bead.userData.body=b;armLabel(a,b,sel===a.bead);
+      if(a.tail){a.tail.userData.body=Object.assign({},b,{body:'SouthNode',lon:norm(b.lon+180),gate:rr.p[12][0],line:rr.p[12][1],sid:sidInfo(norm(b.lon+180),cur.ayan)})}});
+    studs.children.forEach(m=>{const u=m.userData.body;m.userData.body=cur.natal.find(x=>x.side===u.side&&x.body===u.body)||u});
+    lines.visible=false;if(armTween)armTween.stop();
+    armTween=S.tween(ms,k=>{ORB_ORDER.forEach(n=>{const a=arms[n];a.lon=from[n]+(to[n]-from[n])*k;a.g.rotation.y=a.lon*Math.PI/180})},()=>{ORB_ORDER.forEach(n=>{arms[n].lon=norm(to[n]);arms[n].g.rotation.y=arms[n].lon*Math.PI/180});buildLines();lines.visible=true;S.invalidate()});
+    const want=SKYPREF.mode==='vedic'?ayanOf(rr):0;if(Math.abs(want-zodRot)>.01){const z0=zodRot;S.tween(ms||0,k=>{zodRot=z0+(want-z0)*k;zod.rotation.y=zodRot*Math.PI/180})}
+    S.invalidate()}
+  function select(o){const name=o&&o.userData.arm;
+    if(sel){const a=arms[sel.userData.arm];a.glow.material.opacity=.32;a.glow.material.color=K.col(K.HEX.emerald);sel=null;armLabel(a,a.b,false)}
+    if(name){const a=arms[name];sel=a.bead;a.glow.material.color=K.col(K.HEX.goldWarm);a.glow.material.opacity=.75;armLabel(a,a.b,true)}S.invalidate()}
+  const tip=document.createElement('div');tip.className='tip';
+  function hover(o){if(!tip.isConnected)host.appendChild(tip);const u=o&&o.userData;const b=u&&(u.body||(u.arm&&arms[u.arm].b));
+    if(!u||(!b&&!u.lens)){tip.classList.remove('on');return}
+    const p=new T.Vector3();o.getWorldPosition(p);const s=S.toScreen(p);tip.style.left=s.x+'px';tip.style.top=s.y+'px';
+    tip.textContent=u.lens?'The lens · your design under this sky':`${b.kind==='natal'?(b.side==='P'?'Personality ':'Design ')+PNAME(b.body):PNAME(b.body)} · ${b.gate}.${b.line} ${GATES[b.gate][0]} · ${SKYPREF.mode==='vedic'?b.sid.sign+' '+fmtDeg(b.sid.deg):fmtLon(b.lon)}`;tip.classList.add('on')}
+  // intro: the field condenses out of the hub, spokes draw outward, the starfield breathes in once
+  applyDay(r,0);
+  const pitch0=SKYPREF.view==='above'?1.42:.62;fitO=fitOrbit(S);fitA=fitAbove(S);const d0=SKYPREF.view==='above'?fitA:fitO;
+  if(!RM){introOn=true;root.scale.setScalar(.55);S.view.dist=d0*1.65;S.view.pitch=.18;S.place();
+    S.tween(1700,k=>{root.scale.setScalar(.55+.45*k);S.view.dist=d0*(1.65-.65*k);if(k>=1)introOn=false;S.view.pitch=.18+(pitch0-.18)*k;S.place();stars.material.uniforms.uFade.value=Math.min(1,k*1.4)});
+    ORB_ORDER.forEach((n,i)=>{const a=arms[n],tl=a.lon;a.g.scale.setScalar(.01);S.tween(1300+i*80,k=>{a.g.scale.setScalar(Math.max(.01,k));a.g.rotation.y=(tl-90*(1-k))*Math.PI/180})})}
+  else{stars.material.uniforms.uFade.value=1;S.view.dist=d0;S.place()}
+  S.onFrame((dt,now)=>{stars.material.uniforms.uTime.value=now/1000;return false});
+  return Object.assign(S,{
+    update(rr){applyDay(rr,RM?0:900)},
+    goto(rr,ms){applyDay(rr,ms)},
+    setMode(){buildZod();const want=SKYPREF.mode==='vedic'?ayanOf(r):0;const z0=zodRot;S.tween(RM?0:1200,k=>{zodRot=z0+(want-z0)*k;zod.rotation.y=zodRot*Math.PI/180})},
+    setLayers(){studs.visible=SKYPREF.natal;buildGates();buildLines();fitO=fitOrbit(S);fitA=fitAbove(S);S.setView({dist:SKYPREF.view==='above'?fitA:fitO},700)},
+    applyView(){S.setView({pitch:SKYPREF.view==='above'?1.42:.62,dist:SKYPREF.view==='above'?fitA:fitO,target:[0,SKYPREF.view==='above'?0:-7,0]},1100)},
+  });
 }
-window.skyDispose=()=>{if(SCENE){SCENE.dispose();SCENE=null}};
 
-/* 2D wheel: the same rings and bodies as SVG */
+/* ---------- 2D wheel: the same rings as SVG when WebGL is unavailable ---------- */
 function sky2d(host,r){
   const B=skyBodies(r),C=400,RZ=372,RT=300,RN=220,RG=262;const ayan=SKYPREF.mode==='vedic'?B.ayan:0;const names=SKYPREF.mode==='vedic'?RASHI:SIGNS;
-  const X=(l,R)=>C+R*Math.cos(l*Math.PI/180),Y=(l,R)=>C-R*Math.sin(l*Math.PI/180);
-  let s=`<svg class="wheel" viewBox="0 0 800 800" role="img" aria-label="Sky wheel for ${fmtDate(r.d)}">`;
-  for(let i=0;i<180;i++){const a=Math.random()*360,R=385+Math.random()*15;s+=`<circle cx="${X(a,R).toFixed(1)}" cy="${Y(a,R).toFixed(1)}" r="${(Math.random()*1.2+.3).toFixed(1)}" fill="var(--silver)" opacity="${(Math.random()*.6+.2).toFixed(2)}"/>`}
+  const X=(l,R)=>C-R*Math.cos(l*Math.PI/180),Y=(l,R)=>C+R*Math.sin(l*Math.PI/180);
+  let s=`<svg class="wheel" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sky wheel for ${fmtDate(r.d)}">`;
+  const R=K3.rand(5);for(let i=0;i<180;i++){const a=R()*360,rr=385+R()*15;s+=`<circle cx="${X(a,rr).toFixed(1)}" cy="${Y(a,rr).toFixed(1)}" r="${(R()*1.2+.3).toFixed(1)}" fill="var(--silver)" opacity="${(R()*.6+.2).toFixed(2)}"/>`}
   s+=`<circle cx="${C}" cy="${C}" r="${RZ}" fill="none" stroke="var(--gold)" stroke-opacity=".5"/><circle cx="${C}" cy="${C}" r="${RZ-32}" fill="none" stroke="var(--gold)" stroke-opacity=".2"/><circle cx="${C}" cy="${C}" r="${RT}" fill="none" stroke="var(--gold)" stroke-opacity=".35"/><circle cx="${C}" cy="${C}" r="${RN}" fill="none" stroke="var(--violet-glow)" stroke-opacity=".35"/>`;
   for(let i=0;i<12;i++){const l=i*30+ayan;s+=`<line x1="${X(l,RZ-32)}" y1="${Y(l,RZ-32)}" x2="${X(l,RZ)}" y2="${Y(l,RZ)}" stroke="var(--gold)" stroke-opacity=".5"/><text x="${X(l+15,RZ-16)}" y="${Y(l+15,RZ-16)}" font-size="9" text-anchor="middle" dominant-baseline="middle" fill="var(--gold)">${names[i].slice(0,3).toUpperCase()}</text>`}
   if(SKYPREF.mode==='vedic')for(let i=0;i<27;i++){const l=i*(360/27)+ayan;s+=`<line x1="${X(l,RZ-32)}" y1="${Y(l,RZ-32)}" x2="${X(l,RZ-40)}" y2="${Y(l,RZ-40)}" stroke="var(--silver)" stroke-opacity=".5"/><text x="${X(l+360/54,RZ-52)}" y="${Y(l+360/54,RZ-52)}" font-size="7" text-anchor="middle" dominant-baseline="middle">${NAKS[i].slice(0,5)}</text>`}
   if(SKYPREF.gates)for(let i=0;i<64;i++){const l=302+i*5.625,g=WHEEL[i];s+=`<line x1="${X(l,RG-5)}" y1="${Y(l,RG-5)}" x2="${X(l,RG+5)}" y2="${Y(l,RG+5)}" stroke="var(--silver)" stroke-opacity=".4"/><text x="${X(l+2.8,RG+14)}" y="${Y(l+2.8,RG+14)}" font-size="7" text-anchor="middle" dominant-baseline="middle" fill="${NATG.has(g)?'var(--gold-warm)':'var(--text-dis)'}">${g}</text>`}
   if(SKYPREF.lines)for(const L of skyLines(B)){const ra=L.a.kind==='transit'?RT:RN,rb=L.b.kind==='transit'?RT:RN;s+=`<line x1="${X(L.a.lon,ra)}" y1="${Y(L.a.lon,ra)}" x2="${X(L.b.lon,rb)}" y2="${Y(L.b.lon,rb)}" stroke="#${L.asp.col.toString(16).padStart(6,'0')}" stroke-opacity="${L.b.kind==='natal'?.45:.75}" stroke-width="1.2"/>`}
   if(SKYPREF.natal)B.natal.forEach((b,i)=>{s+=`<rect class="pl" data-n="${i}" x="${X(b.lon,RN)-4}" y="${Y(b.lon,RN)-4}" width="8" height="8" transform="rotate(45 ${X(b.lon,RN)} ${Y(b.lon,RN)})" fill="${b.side==='P'?'var(--gold)':'var(--violet-glow)'}"><title>${b.side==='P'?'Personality':'Design'} ${PNAME(b.body)} ${b.gate}.${b.line}</title></rect>`});
-  B.transit.forEach((b,i)=>{const rr=(RADIUS[b.body]||.6)*6;s+=`<line x1="${X(b.lon,RT)}" y1="${Y(b.lon,RT)}" x2="${X(b.lon,RZ-32)}" y2="${Y(b.lon,RZ-32)}" stroke="${HEXS[b.body]}" stroke-opacity=".25"/><circle class="pl" data-t="${i}" cx="${X(b.lon,RT)}" cy="${Y(b.lon,RT)}" r="${rr}" fill="${HEXS[b.body]}"><title>${PNAME(b.body)} ${b.gate}.${b.line}</title></circle><text x="${X(b.lon,RT+22)}" y="${Y(b.lon,RT+22)}" font-size="9" text-anchor="middle" dominant-baseline="middle" fill="${HEXS[b.body]}">${SYM[b.body]} ${b.gate}.${b.line}</text>`});
+  B.transit.forEach((b,i)=>{const rr=(RADIUS[b.body]||.6)*6;s+=`<line x1="${X(b.lon,RT)}" y1="${Y(b.lon,RT)}" x2="${X(b.lon,RZ-32)}" y2="${Y(b.lon,RZ-32)}" stroke="var(--emerald)" stroke-opacity=".25"/><circle class="pl" data-t="${i}" cx="${X(b.lon,RT)}" cy="${Y(b.lon,RT)}" r="${rr}" fill="var(--emerald)"><title>${PNAME(b.body)} ${b.gate}.${b.line}</title></circle><text x="${X(b.lon,RT+22)}" y="${Y(b.lon,RT+22)}" font-size="9" text-anchor="middle" dominant-baseline="middle" fill="var(--text-1)">${SYM[b.body]} ${b.gate}.${b.line}</text>`});
   s+=`<text x="${C}" y="${C-6}" font-size="11" text-anchor="middle" fill="var(--gold)" letter-spacing="3">${SKYPREF.mode==='vedic'?'LAHIRI':'TROPICAL'}</text><text x="${C}" y="${C+10}" font-size="9" text-anchor="middle">${fmtDate(r.d)}</text></svg>`;
-  host.innerHTML=s;
-  host.querySelectorAll('.pl').forEach(el=>el.addEventListener('click',()=>showBody(el.dataset.t!==undefined?B.transit[+el.dataset.t]:B.natal[+el.dataset.n],r)));
+  let fb=host.querySelector('.fallback');if(!fb){fb=document.createElement('div');fb.className='fallback';host.prepend(fb)}fb.innerHTML=s;
+  fb.querySelectorAll('.pl').forEach(el=>el.addEventListener('click',()=>showBody(el.dataset.t!==undefined?B.transit[+el.dataset.t]:B.natal[+el.dataset.n],r)));
 }
 
+/* ---------- the room ---------- */
+const SCRUB={anchor:null,playing:null};
+function skyHud(r){
+  const R=dayReading(r),B=skyBodies(r),moon=B.transit.find(b=>b.body==='Moon'),sun=B.transit.find(b=>b.body==='Sun'),earth=tPos(r)[1];
+  SKYPREF.tight=true;const nL=skyLines(B).length;SKYPREF.tight=false;const ad=SKY.ad.find(a=>a[2]<=r.d&&r.d<a[3]);let pd=null;if(ad)for(const p of ad[4])if(p[1]<=r.d)pd=p[0];
+  const retro=B.transit.filter(b=>b.retro).map(b=>SYM[b.body]).join(' ');
+  const rd=(k,v)=>`<div class="readout"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  return {left:rd('Sun · gate',`<span class="g">${sun.gate}.${sun.line}</span> ${GATES[sun.gate][0]}`)+rd('Earth · gate',`${earth.gate}.${earth.line} ${GATES[earth.gate][0]}`)+rd('Moon · nakshatra',`${moon.sid.nak} · pada ${moon.sid.pada}`)+rd('Definition',`${r.def===1?'Single':'Split'}${r.m2t?' · motor to Throat':''}`),
+    right:rd('Dasha',ad?`${ad[0]} / ${ad[1]}${pd?' / '+pd:''}`:'—')+rd('Ayanamsa · Lahiri',`${B.ayan.toFixed(2)}°`)+rd('Aspects',`${nL} within orb`)+rd('Retrograde',retro||'none'),
+    decl:R.decl};
+}
 function rSky(){
-  const r=rec(state.date),R=dayReading(r),isToday=state.date===todayIST(),B=skyBodies(r);
-  const use3d=!reducedMotion()&&!lowPower()&&webglOK()&&typeof THREE!=='undefined';
-  const moon=B.transit.find(b=>b.body==='Moon'),sun=B.transit.find(b=>b.body==='Sun');
-  const nL=skyLines(B).length;
+  const r=rec(state.date),isToday=state.date===todayIST();
+  if(!SCRUB.anchor)SCRUB.anchor=clampDate(todayIST());
+  const off=Math.round((Date.parse(state.date)-Date.parse(SCRUB.anchor))/864e5);
+  const H=skyHud(r);
+  $('#main').classList.add('full');
   $('#main').innerHTML=`<section class="room">
-  <div class="sky-wrap"><div class="sky-layer" id="skyHost"></div>
-   <div class="sky-hud"><div class="seg" role="group" aria-label="Zodiac"><button id="skyWest" aria-pressed="${SKYPREF.mode!=='vedic'}">Western</button><button id="skyVedic" aria-pressed="${SKYPREF.mode==='vedic'}">Vedic</button></div>
-    <button class="chip" id="skyGates" aria-pressed="${SKYPREF.gates}">64 gates</button><button class="chip" id="skyNatal" aria-pressed="${SKYPREF.natal}">Birth ring</button><button class="chip" id="skyLines" aria-pressed="${SKYPREF.lines}">Alignments</button></div>
-   <div class="sky-foot"><span>${isToday?'THE SKY NOW':'WITNESSING'} · ${fmtDate(r.d).toUpperCase()} · 06:00 IST${use3d?' · DRAG TO TURN · TAP A BODY':' · TAP A BODY'}</span><div class="legend"><span><i style="background:var(--gold)"></i>Conjunction</span><span><i style="background:var(--terracotta)"></i>Opposition</span><span><i style="background:var(--violet-glow)"></i>Square</span><span><i style="background:var(--emerald)"></i>Trine</span></div></div>
+  <div class="stage sky-stage" id="skyHost">
+   <div class="hud sky-top"><div class="grp"><div class="seg" role="group" aria-label="Zodiac"><button id="skyWest" aria-pressed="${SKYPREF.mode!=='vedic'}">Western</button><button id="skyVedic" aria-pressed="${SKYPREF.mode==='vedic'}">Vedic</button></div></div>
+    <div class="grp"><button class="tog" id="skyGates" aria-pressed="${SKYPREF.gates}">64 gates</button><button class="tog" id="skyNatal" aria-pressed="${SKYPREF.natal}">Birth</button><button class="tog" id="skyLines" aria-pressed="${SKYPREF.lines}">Aspects</button><div class="seg" role="group" aria-label="View"><button id="skyOrbit" aria-pressed="${SKYPREF.view!=='above'}">Orbit</button><button id="skyAbove" aria-pressed="${SKYPREF.view==='above'}">Above</button></div></div></div>
+   <div class="hud sky-left" id="skyL">${H.left}</div>
+   <div class="hud sky-right" id="skyR">${H.right}</div>
+   <div class="hud sky-bottom"><div class="epithet" id="skyEp">${isToday?'The sky now':'Witnessing'} · ${fmtDate(r.d)} · 06:00 IST</div><p class="decl" id="skyDecl">${esc(H.decl)}</p>
+    <div class="scrub"><button class="icon-btn" id="skyPlay" aria-label="Play the next thirty days"><svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg></button><span class="lab" id="skyOff">${off===0?'TODAY':(off>0?'+':'')+off+' DAYS'}</span><input type="range" id="skyScrub" min="-30" max="90" step="1" value="${off}" aria-label="Scrub the sky by day"><span class="lab" style="text-align:right">+90 D</span></div></div>
   </div>
-  <div class="sky-decl"><div class="epithet">One field. Eight rooms.</div><p class="decl">${esc(R.decl)}</p>
-   <p class="lede">Sun ${sun.gate}.${sun.line}, ${SKYPREF.mode==='vedic'?sun.sid.sign+' '+fmtDeg(sun.sid.deg):fmtLon(sun.lon)}. Moon in ${moon.sid.nak} pada ${moon.sid.pada}. ${nL?nL+' alignment'+(nL>1?'s':'')+' within orb.':'No alignment within orb.'} ${r.def===1?'Single definition today.':'Split definition today.'}</p>
-   <div class="chips"><a class="pill sm" href="#today">Open the day</a><a class="pill sm" href="#engines">Engines</a><a class="pill sm" href="#folio">Folio</a></div></div>
-  <div><div class="divider"><span></span></div><div class="rooms-grid">${ROOMS.filter(x=>x[0]!=='sky').map(([id,l])=>`<a class="room-card" href="#${id}"><b>${l}</b><small>${ROOM_TXT[id]}</small></a>`).join('')}</div></div>
-  <p class="foot">See the pattern. Keep the authority.</p></section>`;
+  <div class="pad"><nav class="honey" aria-label="Rooms">${ROOMS.filter(x=>x[0]!=='sky').map(([id,l])=>`<a href="#${id}" data-say="${esc(ROOM_TXT[id])}">${medallion(id,88)}<b>${l}</b></a>`).join('')}</nav><p class="honey-read" id="honeyRead">Eight rooms around one sky. Hover a medallion to read it.</p></div>
+  <p class="foot pad">See the pattern. Keep the authority.</p></section>`;
   const host=$('#skyHost');
-  const draw=()=>{if(use3d){try{sky3d(host,r)}catch(e){window.skyDispose();host.innerHTML='';sky2d(host,r)}}else sky2d(host,r)};
-  draw();
-  const set=(k,v)=>{SKYPREF[k]=v;savePref();window.skyDispose();rSky()};
-  $('#skyWest').onclick=()=>set('mode','western');$('#skyVedic').onclick=()=>set('mode','vedic');
-  $('#skyGates').onclick=()=>set('gates',!SKYPREF.gates);$('#skyNatal').onclick=()=>set('natal',!SKYPREF.natal);$('#skyLines').onclick=()=>set('lines',!SKYPREF.lines);
+  if(K3.ok()){try{const {inst,fresh}=K3.mount('sky',host,h=>orrery(h,r));if(!fresh)inst.update(r)}catch(e){console.warn('orrery',e);K3.release();sky2d(host,r)}}
+  else sky2d(host,r);
+  const O=()=>K3.current('sky');
+  const set=(k,v,how)=>{SKYPREF[k]=v;savePref();$('#skyWest').setAttribute('aria-pressed',SKYPREF.mode!=='vedic');$('#skyVedic').setAttribute('aria-pressed',SKYPREF.mode==='vedic');
+    [['Gates','gates'],['Natal','natal'],['Lines','lines']].forEach(([n,k2])=>$('#sky'+n).setAttribute('aria-pressed',SKYPREF[k2]));$('#skyOrbit').setAttribute('aria-pressed',SKYPREF.view!=='above');$('#skyAbove').setAttribute('aria-pressed',SKYPREF.view==='above');
+    const o=O();if(o)o[how]();else sky2d(host,rec(state.date))};
+  $('#skyWest').onclick=()=>set('mode','western','setMode');$('#skyVedic').onclick=()=>set('mode','vedic','setMode');
+  $('#skyGates').onclick=()=>set('gates',!SKYPREF.gates,'setLayers');$('#skyNatal').onclick=()=>set('natal',!SKYPREF.natal,'setLayers');$('#skyLines').onclick=()=>set('lines',!SKYPREF.lines,'setLayers');
+  $('#skyOrbit').onclick=()=>set('view','orbit','applyView');$('#skyAbove').onclick=()=>set('view','above','applyView');
+  const goto=(d,ms)=>{state.date=clampDate(d);const rr=rec(state.date);$('#dateIn').value=state.date;const o=O();if(o)o.goto(rr,ms);else sky2d(host,rr);
+    const h=skyHud(rr);$('#skyL').innerHTML=h.left;$('#skyR').innerHTML=h.right;$('#skyDecl').textContent=h.decl;$('#skyEp').textContent=`${state.date===todayIST()?'The sky now':'Witnessing'} · ${fmtDate(rr.d)} · 06:00 IST`;
+    const of=Math.round((Date.parse(state.date)-Date.parse(SCRUB.anchor))/864e5);$('#skyOff').textContent=of===0?'TODAY':(of>0?'+':'')+of+' DAYS';$('#skyScrub').value=of};
+  function stopPlay(){if(SCRUB.playing){clearInterval(SCRUB.playing);SCRUB.playing=null;const b=$('#skyPlay');if(b)b.setAttribute('aria-label','Play the next thirty days')}}
+  $('#skyScrub').oninput=e=>{stopPlay();goto(addDays(SCRUB.anchor,+e.target.value),K3.reduced()?0:260)};
+  $('#skyPlay').onclick=()=>{if(SCRUB.playing)return stopPlay();let n=0;$('#skyPlay').setAttribute('aria-label','Pause');SCRUB.playing=setInterval(()=>{if(state.room!=='sky'||n++>=30)return stopPlay();goto(addDays(state.date,1),K3.reduced()?0:230)},260)};
+  $('#main').querySelectorAll('.honey a').forEach(a=>{const say=()=>{$('#honeyRead').textContent=a.dataset.say};a.addEventListener('mouseenter',say);a.addEventListener('focus',say)});
 }
 
 /* ---------- Engines: the eight Selemene engines this key can run, each figure traced to its response ---------- */
@@ -556,7 +1014,7 @@ function engEyebrow(id){const e=ENG[id];return `<div class="ey"><span class="eye
 function engFoot(id){const e=ENG[id];return `<span class="meta">${e.backend||'engine'} · v${e.version||''} · ${istStamp(e.at)}</span>`}
 
 /* Summaries on the cards */
-function engCard(id){
+function engBody(id){
   const r=E(id);if(!r)return '';let body='';
   switch(id){
     case 'human-design':{const agree=NAT.filter(n=>{const a=r[(n.side==='P'?'personality':'design')+'_activations'][n.body.toLowerCase()];return a&&a.gate===n.gate&&a.line===n.line}).length;
@@ -573,6 +1031,9 @@ function engCard(id){
     case 'biorhythm':{const C=['physical','emotional','intellectual','intuitive','aesthetic','spiritual'];
       body=`<div class="big">${Math.round(r.overall_energy)}% energy</div><div class="bars">${C.map(c=>`<div><span>${cap(c)}</span><i><b style="width:${Math.max(2,Math.round(r[c].percentage))}%;background:${r[c].is_critical?'var(--terracotta)':r[c].value>=0?'var(--emerald)':'var(--violet-glow)'}"></b></i><span>${Math.round(r[c].percentage)}%</span></div>`).join('')}</div><span class="meta">Day ${r.days_alive} · ${r.target_date} · critical: ${r.critical_days.length?r.critical_days.join(', '):'none'}</span>`;break}
   }
+  return body;
+}
+function engCard(id){const body=engBody(id);if(!body)return '';
   return `<button class="eng" data-eng="${id}">${engEyebrow(id)}<h3>${ENGINE_META[id][1]}</h3>${body}${ENG[id].prompt?`<p class="q" style="margin:0">${esc(ENG[id].prompt)}</p>`:''}${engFoot(id)}</button>`;
 }
 
@@ -602,16 +1063,307 @@ function showEngine(id){
   wire($('#drawerBody'));
 }
 
+
+/* ---------- Engines: the Engine Mandala ----------
+   A bronze bench plate milled with a 19-cell honeycomb (1 + 6 + 12). Witness sits in the centre tray;
+   seventeen engine trays spiral outward in ENGINES.md order, each carrying its Instruments Codex Dark still;
+   the nineteenth pocket is empty and reads "the question". One tray lifts at a time. */
+const ENGINES17=[
+  ['panchanga','Panchanga','Five nested bronze rings on one spindle, a sun and a moon pointer: tithi, nakshatra, yoga, karana, vara.',51.2,33.6],
+  ['human-design','Human Design','A nine-socket patch loom: hexagonal sockets joined by gold wire channels, gate pins along each wire.',50,44],
+  ['gene-keys','Gene Keys','A cipher drum with sixty-four teeth and three depths of engraving: shadow, gift, siddhi.',50,42],
+  ['vimshottari','Vimshottari','A nine-ring armillary, each ring a planet, one time index through all nine.',50.9,39.9],
+  ['numerology','Numerology','A reduction abacus: gold beads fall through gates until one bead remains.',50,45],
+  ['biorhythm','Biorhythm','A three-pen harmonograph writing three sine traces on a bronze drum.',51,30],
+  ['vedic-clock','Vedic Clock','A single-hand twenty-four-hour face with a hora ring and an organ-meridian ring.',48.7,34.4],
+  ['biofield','Biofield','A resonance capacitor: a bronze hand plate under an emerald glass dome, coil below.',50,38],
+  ['face-reading','Face Reading','A craniometric armature: calipers on a ring around a featureless bronze mask.',49,40],
+  ['nadabrahman','Nadabrahman','A monochord over a bronze resonator with a sand plate beneath.',50.8,37.2],
+  ['transits','Transits','An orrery: planets on bronze arms around a central lens.',53.9,36.6],
+  ['tarot','Tarot','A cabinet of seventy-eight shallow drawers, one drawer out.',50,45],
+  ['i-ching','I Ching','A six-bar flip board, each bar whole or broken, with a yarrow counter.',50,45],
+  ['enneagram','Enneagram','A nine-point escapement, the inner lines as gold wire, a pointer.',50.7,36.9],
+  ['sacred-geometry','Sacred Geometry','A pantograph drawing a flower of life onto a bronze plate.',76.8,53.1],
+  ['sigil-forge','Sigil Forge','A screw press that strikes a sigil into a bronze blank.',53.1,52.2],
+  ['raaga','Raaga','A raga clock: seventy-two spokes, a sun pointer, seven bells on the rim.',52.7,37.9]];
+const ENG_LINK={'human-design':['#design','Open Design'],'gene-keys':['#keys','Open Keys'],'vimshottari':['#jyotish','Open Jyotish'],'panchanga':['#jyotish','Open Jyotish'],'transits':['#sky','Open the Sky']};
+function engState(id){if(ENG[id]&&ENG[id].result)return 'c';if(ENG[id])return 'u';return 'n'}
+const STATE_WORD={c:'Computed',u:'Locked on this key',n:'Not called'};
+const MANDALA={sel:0,lifted:null};
+// the 19 cells: centre, then rings walked clockwise from the top, as a spiral
+function mandalaCells(s){const out=[{q:0,r:0}];const dirs=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+  for(let k=1;k<=2;k++){let q=-k,r=k;const ring=[];for(let d=0;d<6;d++)for(let i=0;i<k;i++){ring.push({q,r});q+=dirs[d][0];r+=dirs[d][1]}
+    ring.forEach(c=>{c.x=s*1.5*c.q;c.z=s*Math.sqrt(3)*(c.r+c.q/2);c.ang=Math.atan2(-c.x,c.z)});ring.sort((a,b)=>((a.ang+Math.PI*2+1e-9)%(Math.PI*2))-((b.ang+Math.PI*2+1e-9)%(Math.PI*2)));out.push(...ring)}
+  out[0].x=0;out[0].z=0;return out}
+function cellInfo(i){if(i===0)return {id:'witness',name:'Witness',n:0,st:'w',mech:'The dyad behind /witness/interpret. Pichet holds structure, Aletheios names. Not an engine: the centre every engine reports to.'};
+  if(i===18)return {id:'question',name:'The question',n:18,st:'q',mech:'The empty pocket at the end of the spiral. Enter when the question is active.'};
+  const e=ENGINES17[i-1];return {id:e[0],name:e[1],n:i,st:engState(e[0]),mech:e[2],lx:e[3],ly:e[4]}}
+const stillSrc=i=>`img/engines/${String(i).padStart(2,'0')}-${ENGINES17[i-1][0]}.jpg`;
+
+function mandala3d(host){
+  const K=K3,T=THREE;const RM=K.reduced();const s=5.2,cells=mandalaCells(s);
+  let S=null;S=K.stage(host,{fov:30,yaw:-Math.PI/2,pitch:.98,dist:120,target:[0,-1.5,2],minDist:70,maxDist:200,minPitch:.55,maxPitch:1.4,label:'Engine mandala. Arrow keys walk the spiral; Enter opens an engine.',
+    onResize:()=>{if(S&&!intro){S.view.dist=fit();S.place()}},
+    ambient:(dt,now)=>{S.view.yaw=S.base.yaw+Math.sin(now/5200)*.05;return true},
+    onPick:o=>{if(o&&o.userData.cell!=null){setSel(o.userData.cell,true)}},
+    onHover:o=>{hoverCell=o?o.userData.cell:null;quiet=performance.now()},
+    onInteract:()=>{quiet=performance.now()},
+    onKey:e=>{const n=19;let i=MANDALA.sel;if(e.key==='ArrowRight'||e.key==='ArrowDown')i=(i+1)%n;else if(e.key==='ArrowLeft'||e.key==='ArrowUp')i=(i+n-1)%n;else if(e.key==='Home')i=0;else if(e.key==='End')i=18;
+      else if(e.key==='Enter'||e.key===' '){openCell(MANDALA.sel);return true}else return false;setSel(i,true);return true}});
+  const {scene,M}=S;let intro=false,hoverCell=null,quiet=performance.now(),tour=null,tourAt=0;
+  function fit(){const c=S.camera,v=c.fov*Math.PI/360,hh=Math.atan(Math.tan(v)*c.aspect);const R=27;return Math.max(R*1.05/Math.sin(hh),(R*Math.sin(.98)+5)/Math.sin(v)*1.04,64)}
+  const root=new T.Group();scene.add(root);
+  const stars=K.starfield(700,240,420,31);stars.material.uniforms.uFade.value=.6;scene.add(stars);
+  // plate: pointy-topped hexagon holding the flat-topped honeycomb
+  const PR=27.5,PH=2.2,top=0;
+  const plate=new T.Mesh(K.prism(K.hexShape(PR,Math.PI/2),PH,.45),M.bronze());plate.position.y=top-PH-.45;root.add(plate);
+  const edge=new T.LineLoop(K.loopXZ(K.hexPts(PR+.42,Math.PI/2),0),M.line(K.HEX.gold,.9));edge.position.y=top+.02;root.add(edge);
+  const groove=new T.LineLoop(K.loopXZ(K.hexPts(PR-1.4,Math.PI/2),0),M.line(K.HEX.gold,.35));groove.position.y=top+.02;root.add(groove);
+  K.hexPts(PR-.7,Math.PI/2).forEach(([x,y])=>{const sc=new T.Mesh(new T.CylinderGeometry(.42,.42,.16,14),M.gold());sc.position.set(x,top+.08,-y);root.add(sc);
+    const f=new T.Mesh(new T.CylinderGeometry(1.1,1.5,2.6,6),M.bronzeDark());f.position.set(x*.86,top-PH-.45-1.3,-y*.86);root.add(f)});
+  const hal=K.halo(110,.55);hal.position.y=top-PH-3;root.add(hal);
+  // rule strip and label plate on the near edge
+  const lp=new T.Mesh(K.prism((()=>{const sh=new T.Shape();sh.moveTo(-4.6,-1);sh.lineTo(4.6,-1);sh.lineTo(3.4,1);sh.lineTo(-3.4,1);sh.closePath();return sh})(),.22,.06),M.bronzeDark());lp.position.set(0,top,-24.6);root.add(lp);
+  const lpe=new T.LineLoop(K.loopXZ([[-4.7,-1.08],[4.7,-1.08],[3.45,1.08],[-3.45,1.08]].map(([x,y])=>[x,y]),0),M.line(K.HEX.gold,.8));lpe.position.set(0,top+.3,-24.6);root.add(lpe);
+  const lpt=K.engrave('SELEMENE · 17',{font:'mono',px:30,color:'#C5A017',height:.62,track:.24});lpt.position.set(0,top+.31,-24.6);lpt.rotation.z=Math.PI;root.add(lpt);
+  // engraved spiral through the cells in order
+  const spiralPts=cells.map(c=>new T.Vector3(c.x,top+.03,-c.z));const spiral=new T.CatmullRomCurve3(spiralPts,false,'centripetal',.5);
+  const spG=new T.BufferGeometry().setFromPoints(spiral.getPoints(400));const sp=new T.Line(spG,M.line(K.HEX.gold,.45));root.add(sp);
+  // pockets and trays
+  const loader=new T.TextureLoader();const trays=[];
+  const hexTop=(r)=>{const g=new T.ShapeGeometry(K.hexShape(r,0),1);g.rotateX(-Math.PI/2);return g};
+  cells.forEach((c,i)=>{const info=cellInfo(i);const g=new T.Group();g.position.set(c.x,0,-c.z);root.add(g);
+    const pocket=new T.Mesh(hexTop(s*.94),M.flat(0x04060f,1));pocket.position.y=top+.015;g.add(pocket);
+    const pr=new T.LineLoop(K.loopXZ(K.hexPts(s*.95,0),0),M.line(K.HEX.gold,.5));pr.position.y=top+.03;g.add(pr);
+    const tray=new T.Group();g.add(tray);
+    if(info.id==='question'){const dl=new T.LineLoop(K.loopXZ(K.hexPts(s*.62,0),0),new T.LineDashedMaterial({color:K.col(K.HEX.gold),dashSize:.5,gapSize:.45,transparent:true,opacity:.7,toneMapped:false}));dl.computeLineDistances();dl.position.y=top+.05;tray.add(dl);
+      const q=S.track(K.label('THE QUESTION',{font:'mono',px:9,track:.2,color:'#C5A017',opacity:.85}));q.position.y=top+.6;tray.add(q)}
+    else{const h=info.id==='witness'?2.4:1.1;
+      const body=new T.Mesh(K.prism(K.hexShape(s*.86,0),h,.12),M.bronze());body.position.y=top-h*.55;tray.add(body);
+      const rim=new T.Mesh(K.prism((()=>{const sh=K.hexShape(s*.9,0);const hole=new T.Path();K.hexPts(s*.8,0).forEach(([x,y],k)=>k?hole.lineTo(x,y):hole.moveTo(x,y));hole.closePath();sh.holes.push(hole);return sh})(),.16,0),M.gold());rim.position.y=top-h*.55+h+.1;tray.add(rim);
+      const faceY=top-h*.55+h+.13;
+      if(info.id==='witness'){[[0,.95],[-.82,-.48],[.82,-.48]].forEach(([x,y])=>{const t=new T.Mesh(new T.TorusGeometry(1.55,.13,12,64),M.gold());t.rotation.x=Math.PI/2;t.position.set(x*1.05,faceY+.3,-y*1.05);tray.add(t)});
+        const fc=new T.Mesh(hexTop(s*.8),M.bronzeDark());fc.position.y=faceY;tray.add(fc);
+        const ln=new T.Mesh(new T.SphereGeometry(.62,32,24),M.glass(K.HEX.emerald,{emissiveIntensity:.5}));ln.position.y=faceY+.45;tray.add(ln);const gw=K.glow(K.HEX.emerald,4.5,.5);gw.position.y=faceY+.5;tray.add(gw)}
+      else{const g2=hexTop(s*.8);const uv=g2.attributes.uv,pos=g2.attributes.position;const W=s*.8*2,Hh=s*.8*Math.sqrt(3);
+        for(let k=0;k<uv.count;k++){const x=pos.getX(k),z=pos.getZ(k);const u=.5+x/W;const v=.58+(-z/Hh)*(Hh/W)/1.5;uv.setXY(k,u,v)}uv.needsUpdate=true;
+        const mat=new T.MeshBasicMaterial({color:new T.Color(1,1,1).multiplyScalar(info.st==='c'?.78:info.st==='u'?.4:.24),toneMapped:false});
+        loader.load(stillSrc(i),tx=>{tx.encoding=T.sRGBEncoding;tx.anisotropy=8;mat.map=tx;mat.needsUpdate=true;S.invalidate()});
+        const face=new T.Mesh(g2,mat);face.position.y=faceY;tray.add(face);c.face=mat;
+        if(info.st!=='n'){const cab=new T.Mesh(new T.SphereGeometry(.42,24,16),M.glass(info.st==='c'?K.HEX.emerald:K.HEX.terracotta,{emissiveIntensity:.55}));cab.scale.y=.6;cab.position.set(0,faceY+.12,s*.72);tray.add(cab)}}
+      const nm=S.track(K.label(info.name.toUpperCase(),{font:'mono',px:9,track:.16,color:info.st==='c'?'#C2CBD1':info.st==='w'?'#E6B84D':'#75838E'}));nm.center.set(.5,1.2);nm.position.set(0,top+.5,s*.92);g.add(nm);c.name=nm}
+    const hit=new T.Mesh(new T.CylinderGeometry(s*.9,s*.9,3,6),new T.MeshBasicMaterial({visible:false}));hit.rotation.y=Math.PI/6;hit.position.y=top+1;hit.userData={cell:i,pick:true};S.pick(hit);g.add(hit);
+    const gl=K.glow(K.HEX.goldWarm,s*3.2,0);gl.position.y=top+.6;g.add(gl);
+    trays.push({g,tray,lift:0,goal:0,glow:gl,info,c})});
+  // eased follow: one tray lifts at a time
+  S.onFrame((dt)=>{let moving=false;const lift=hoverCell!=null?hoverCell:(tour!=null?tour:MANDALA.sel);
+    trays.forEach((t,i)=>{t.goal=i===lift?3.2:(i===MANDALA.sel?1.2:0);const k=RM?1:1-Math.exp(-dt/.22);const nl=t.lift+(t.goal-t.lift)*k;if(Math.abs(nl-t.lift)>.002){moving=true}t.lift=nl;t.tray.position.y=nl;
+      t.glow.material.opacity=Math.min(.55,nl/3.2*.55);t.glow.position.y=.6+nl*.5;if(t.c.face){const b=t.info.st==='c'?.78:t.info.st==='u'?.4:.24;t.c.face.color.setScalar(b+(1-b)*Math.min(1,nl/3.2)*.9)}});
+    const now=performance.now();
+    if(!RM&&hoverCell==null&&now-quiet>3600&&now-tourAt>1500){tourAt=now;tour=tour==null?(MANDALA.sel+1)%19:(tour+1)%19;moving=true}
+    if(hoverCell!=null||now-quiet<3600){if(tour!=null){tour=null;moving=true}}
+    return moving});
+  function setSel(i,fromScene){MANDALA.sel=i;quiet=performance.now();tour=null;engReadout(i);document.querySelectorAll('.eng-index button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.cell===i));S.invalidate();S.kick()}
+  // intro: trays condense out of the hub, the spiral draws outward
+  if(!RM){intro=true;const d=fit();S.view.dist=d*1.5;S.view.pitch=1.32;S.place();
+    trays.forEach((t,i)=>{const p=t.g.position.clone();t.g.position.set(0,0,0);t.g.scale.setScalar(.55);S.tween(900+i*55,k=>{t.g.position.copy(p).multiplyScalar(k);t.g.scale.setScalar(.55+.45*k)})});
+    spG.setDrawRange(0,0);S.tween(1800,k=>{spG.setDrawRange(0,Math.floor(400*k))});
+    S.tween(1900,k=>{S.view.dist=d*(1.5-.5*k);S.view.pitch=1.32+(.98-1.32)*k;S.base.pitch=S.view.pitch;S.place();if(k>=1)intro=false})}
+  else{S.view.dist=fit();S.place()}
+  return Object.assign(S,{select:i=>setSel(i),update(){}});
+}
+
+/* Readout: the engine under the pointer, as a still with InstrumentMotion and its figures */
+function engReadout(i){const el=document.getElementById('engRead');if(!el)return;const info=cellInfo(i);const st=info.st;
+  const stateBadge=st==='w'?'<span class="state w">Witness</span>':st==='q'?'<span class="state n">Open</span>':`<span class="state ${st}">${STATE_WORD[st]}</span>`;
+  const still=i===0?`<div class="eng-still idle" style="aspect-ratio:1;max-width:260px"><img src="img/trinity-hex.jpg" alt="The trinity-hex medallion"><span class="halo"></span><span class="lens" style="--lx:50.2%;--ly:45.2%;display:block"></span><span class="sweep"></span></div>`
+    :i===18?`<div class="eng-still idle" style="aspect-ratio:1;max-width:220px;display:grid;place-items:center;color:var(--gold)">${medallion('question',180)}</div>`
+    :`<div class="eng-still ${st==='u'?'locked':st==='n'?'idle':''}" style="--lx:${info.lx}%;--ly:${info.ly}%"><img src="${stillSrc(i)}" alt="${esc(info.name)} instrument"><span class="halo"></span><span class="lens"></span><span class="sweep"></span></div>`;
+  let figs='';
+  if(i===0){const c=ENGINES17.filter(e=>engState(e[0])==='c').length,u=ENGINES17.filter(e=>engState(e[0])==='u').length;figs=`<dl class="kv"><dt>Computed</dt><dd><span class="ev-c">${c} engines</span> returned for your birth data</dd><dt>Locked</dt><dd><span class="ev-u">${u} engines</span> refused on this key</dd><dt>Not called</dt><dd>${17-c-u} engines</dd><dt>Source</dt><dd>selemene.tryambakam.space · v${(ENG['human-design']||{}).version||''}</dd></dl>`}
+  else if(i===18){figs='<p class="muted" style="margin:0">Enter when the question is active. The system succeeds when you no longer need it.</p>'}
+  else if(st==='c'){figs=`<div class="eng">${engBody(info.id)}</div>`}
+  else if(st==='u'){figs=`<p class="muted" style="margin:0">The engine exists and this key may not run it: ${esc((ENG[info.id].error||'ENGINE_SCOPE_FORBIDDEN').replace(/_/g,' ').toLowerCase())}. It opens when the key tier allows.</p>`}
+  else figs='<p class="muted" style="margin:0">Not called for this chart. The registry lists it; no response is held here.</p>';
+  const prompt=st==='c'&&ENG[info.id].prompt?`<p class="q">${esc(ENG[info.id].prompt)}</p>`:'';
+  const link=ENG_LINK[info.id];
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="num">${i===0?'CENTRE':i===18?'19 / 19':String(i).padStart(2,'0')+' / 17'} · ${esc(info.name.toUpperCase())}</span>${stateBadge}</div>
+   ${still}<h2>${esc(info.name)}</h2><p class="mech">${esc(info.mech)}</p>${figs}${prompt}
+   <div class="chips">${st==='c'?`<button class="pill sm primary" id="engOpen">Open the full return</button>`:''}${link?`<a class="pill sm" href="${link[0]}">${link[1]}</a>`:''}</div>
+   ${st==='c'?`<p class="meta" style="margin:0">${engFoot(info.id)}</p>`:''}`;
+  const b=document.getElementById('engOpen');if(b)b.onclick=()=>showEngine(info.id);
+  const sl=el.querySelector('.eng-still');if(sl&&!K3.reduced()){sl.onpointermove=e=>{const r=sl.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;sl.querySelector('img').style.transform=`perspective(700px) rotateY(${x*6}deg) rotateX(${-y*6}deg) scale(1.03)`};sl.onpointerleave=()=>{sl.querySelector('img').style.transform=''}}
+}
+function openCell(i){const info=cellInfo(i);if(info.st==='c')showEngine(info.id);else engReadout(i)}
+
+/* 2D honeycomb: Still cells in the same spiral when WebGL is unavailable */
+function mandala2d(host){const cells=mandalaCells(1);const k=38,W=k*6+84,H=k*7+76;
+  host.innerHTML=`<div class="fallback"><div style="position:relative;width:${W}px;height:${H}px">${cells.map((c,i)=>{const info=cellInfo(i);const x=W/2-c.x*k-36,y=H/2-c.z*k-31;
+    const inner=i===0?`<span style="display:grid;place-items:center;width:100%;height:100%;color:var(--gold);background:var(--surface)">${icon('witness',34)}</span>`:i===18?`<span style="display:grid;place-items:center;width:100%;height:100%;color:var(--gold)">${icon('question',30)}</span>`:`<img src="${stillSrc(i)}" alt="" style="filter:brightness(${info.st==='c'?.85:info.st==='u'?.45:.3})">`;
+    return `<button class="hexcell" data-cell="${i}" style="position:absolute;left:${x}px;top:${y}px" aria-label="${esc(info.name)}, ${info.st==='c'?'computed':info.st==='u'?'locked':info.st==='w'?'witness':info.st==='q'?'the question':'not called'}">${inner}</button>`}).join('')}</div></div>`;
+  host.querySelectorAll('[data-cell]').forEach(b=>b.onclick=()=>{MANDALA.sel=+b.dataset.cell;engReadout(MANDALA.sel)})}
+
 function rEngines(){
-  const ok=ENGINE_ORDER.filter(E),locked=LOCKED_ORDER.filter(id=>ENG[id]&&!ENG[id].result);
+  const c=ENGINES17.filter(e=>engState(e[0])==='c').length,u=ENGINES17.filter(e=>engState(e[0])==='u').length;
   $('#main').innerHTML=`<section class="room">
-  <div class="hero"><div class="epithet">Engine pool · natal · ${istDate(ENG['human-design']&&ENG['human-design'].at)}</div><p class="decl">${ok.length} engines. One chart.</p>
-   <p class="lede">Each figure below is read straight from a Selemene response for your birth data. Nothing is interpolated. Tap an engine for its full return; the Vedic Clock and Biorhythm answer for the moment they were called.</p>
-   <div class="chips"><span class="chip"><span class="dot c"></span><span class="ev-c">Computed by engine</span></span><span class="chip"><span class="dot u"></span><span class="ev-u">${locked.length} locked on this key</span></span><span class="chip">selemene.tryambakam.space</span></div></div>
-  <div class="eng-grid">${ok.map(engCard).join('')}</div>
-  ${locked.length?`<div><div class="divider"><span></span></div><h2>Locked on this key</h2><div class="eng-grid">${locked.map(id=>`<div class="eng locked"><div class="ey"><span class="eyebrow">${ENGINE_META[id][0]}</span><span class="tag" style="color:var(--ev-unresolved);border-color:rgba(198,93,59,.5)">${ENG[id].status||403}</span></div><p class="muted" style="margin:0">${esc(ENG[id].error||'ENGINE_SCOPE_FORBIDDEN').replace(/_/g,' ').toLowerCase()}. Opens when the key tier allows.</p></div>`).join('')}</div></div>`:''}
+  <div class="hero"><div class="epithet">Engine pool · natal · ${istDate(ENG['human-design']&&ENG['human-design'].at)}</div><h1 class="title">Seventeen instruments. One chart.</h1>
+   <p class="lede">${c} engines returned a reading for your birth data, ${u} are locked on this key, and ${17-c-u} have not been called. Tap a tray to lift it. Every figure on the right is read straight from its engine's response.</p></div>
+  <div class="eng-layout"><div class="stage eng-stage" id="engHost">
+    <div class="hud eng-hud"><div class="readout"><span class="k">Instrument</span><span class="v">Engine mandala · 19 cells</span></div><div class="readout" style="text-align:right"><span class="k">Spiral</span><span class="v">ENGINES.md order</span></div></div>
+    <div class="hud eng-hud-b"><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="state c">Computed ${c}</span><span class="state u">Locked ${u}</span><span class="state n">Not called ${17-c-u}</span></div><span class="k">Arrow keys walk · Enter opens</span></div>
+   </div><div class="eng-read" id="engRead"></div></div>
+  <div><h3 style="margin-bottom:12px">Index</h3><div class="eng-index">${[0,...ENGINES17.map((_,i)=>i+1),18].map(i=>{const info=cellInfo(i);return `<button data-cell="${i}" class="${info.st}" aria-pressed="${i===MANDALA.sel}">${icon(i===0?'witness':i===18?'question':info.id,20)}${esc(info.name)}</button>`}).join('')}</div></div>
   </section>`;
-  $('#main').querySelectorAll('[data-eng]').forEach(b=>b.onclick=()=>showEngine(b.dataset.eng));
+  const host=$('#engHost');
+  if(K3.ok()){try{K3.mount('engines',host,h=>mandala3d(h))}catch(e){console.warn('mandala',e);K3.release();mandala2d(host)}}else mandala2d(host);
+  engReadout(MANDALA.sel);
+  $('#main').querySelectorAll('.eng-index button').forEach(b=>b.onclick=()=>{const i=+b.dataset.cell;const o=K3.current('engines');if(o)o.select(i);else{MANDALA.sel=i;engReadout(i)}$('#main').querySelectorAll('.eng-index button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+}
+
+/* ---------- The loom: Human Design as the Render Bible's nine-socket patch loom ----------
+   Bronze sockets in the nine center shapes on a standing plate; gold wire for your channels, emerald glass
+   where the sky completes a channel with your gate, violet for transit-only; gate pins seat along the wires.
+   When the day changes, newly lit channels draw along the wire. */
+const LOOM_SHAPES={Head:[[0,-36],[34,24],[-34,24]],Ajna:[[-34,-26],[34,-26],[0,34]],G:[[0,-44],[44,0],[0,44],[-44,0]],Heart:[[0,-26],[26,20],[-26,20]],Spleen:[[-30,-44],[30,0],[-30,44]],SolarPlexus:[[30,-44],[-30,0],[30,44]]};
+const LOOM_RECT={Throat:[80,72],Sacral:[84,80],Root:[84,80]};
+function loomState(r){const tg=new Set(),tb={};if(r)tPos(r).forEach(t=>{if(t.body!=='Moon'){tg.add(t.gate);(tb[t.gate]=tb[t.gate]||[]).push(t.body)}});
+  const ch=Object.fromEntries(r?r.ch:NATAL_CH.map(k=>[k,'natal']));const cen=new Set(r?r.cen:[...NATAL_CEN]);return {tg,tb,ch,cen}}
+function loom3d(host,r0){
+  const K=K3,T=THREE;const RM=K.reduced();const k=.1;
+  const X=x=>(x-200)*k,Y=y=>(312-y)*k;
+  let S=null;S=K.stage(host,{fov:28,yaw:Math.PI/2,pitch:.1,dist:150,target:[0,-.5,0],minDist:70,maxDist:220,minPitch:-.15,maxPitch:.6,yawClamp:[Math.PI/2-.55,Math.PI/2+.55],tilt:.12,label:'Bodygraph loom. Tap a center or a gate.',
+    onResize:()=>{if(S){S.view.dist=fit();S.place()}},
+    onPick:o=>{if(!o)return;const u=o.userData;if(u.center){const st=loomState(cur);showCenter(u.center,st.cen.has(u.center),st.cen.has(u.center)&&!NATAL_CEN.has(u.center))}else if(u.gate)showGate(u.gate)},
+    onHover:o=>{hov=o;S.invalidate()}});
+  const {scene,M}=S;let cur=r0,hov=null;
+  function fit(){const c=S.camera,v=c.fov*Math.PI/360,hh=Math.atan(Math.tan(v)*c.aspect);return Math.max(36/Math.sin(v),26/Math.sin(hh),60)}
+  const root=new T.Group();scene.add(root);
+  // the standing plate: bronze, chamfered corners, gold edge and inset rule, on a hex plinth with a halo
+  const pw=24,ph=34,ch=4;const ps=new T.Shape();ps.moveTo(-pw+ch,-ph);ps.lineTo(pw-ch,-ph);ps.lineTo(pw,-ph+ch);ps.lineTo(pw,ph-ch);ps.lineTo(pw-ch,ph);ps.lineTo(-pw+ch,ph);ps.lineTo(-pw,ph-ch);ps.lineTo(-pw,-ph+ch);ps.closePath();
+  const plate=new T.Mesh(new T.ExtrudeGeometry(ps,{depth:1.6,bevelEnabled:true,bevelThickness:.3,bevelSize:.3,bevelSegments:2}),M.bronzeDark());plate.position.z=-1.9;root.add(plate);
+  const pe=ps.getPoints().map(p=>new T.Vector3(p.x,p.y,0));pe.push(pe[0].clone());
+  root.add(new T.Line(new T.BufferGeometry().setFromPoints(pe.map(p=>p.clone().multiplyScalar(1.006).setZ(.03))),M.line(K.HEX.gold,.85)));
+  root.add(new T.Line(new T.BufferGeometry().setFromPoints(pe.map(p=>new T.Vector3(p.x*.95,p.y*.965,.03))),M.line(K.HEX.gold,.25)));
+  [[-pw+2,ph-2],[pw-2,ph-2],[-pw+2,-ph+2],[pw-2,-ph+2]].forEach(([x,y])=>{const d=new T.Mesh(new T.OctahedronGeometry(.6,0),M.gold());d.position.set(x,y,.2);d.scale.z=.4;root.add(d)});
+  const base=new T.Mesh(K.prism(K.hexShape(16,0),2.4,.3),M.bronze());base.position.set(0,-ph-4.6,-1);root.add(base);
+  const neck=new T.Mesh(new T.CylinderGeometry(3.2,4.2,2.2,6),M.bronze());neck.position.set(0,-ph-1.4,-1);root.add(neck);
+  const be=new T.LineLoop(K.loopXZ(K.hexPts(16.2,0),0),M.line(K.HEX.gold,.8));be.position.set(0,-ph-1.88,-1);root.add(be);
+  const hal=K.halo(70,.7);hal.position.set(0,-ph-4.8,-1);root.add(hal);
+  const stars=K.starfield(500,240,420,41);stars.material.uniforms.uFade.value=.5;scene.add(stars);
+  // grooves for all 36 channels, engraved in the plate
+  const groove=[];for(const key of Object.keys(CHANNELS)){const [a,b]=key.split('-').map(Number),[x1,y1]=gxy(a),[x2,y2]=gxy(b);groove.push(new T.Vector3(X(x1),Y(y1),.05),new T.Vector3(X(x2),Y(y2),.05))}
+  root.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(groove),M.line(K.HEX.gold,.16)));
+  // wire tubes, one per channel, shown when lit
+  const wm={natal:M.gold({emissiveIntensity:.35,roughness:.25}),bridge:M.glass(K.HEX.emerald,{emissiveIntensity:.7}),transit:M.glass(K.HEX.violet,{emissiveIntensity:.6,opacity:.85})};
+  const wires={};for(const key of Object.keys(CHANNELS)){const [a,b]=key.split('-').map(Number),[x1,y1]=gxy(a),[x2,y2]=gxy(b);
+    const p1=new T.Vector3(X(x1),Y(y1),.45),p2=new T.Vector3(X(x2),Y(y2),.45),mid=p1.clone().add(p2).multiplyScalar(.5).setZ(.75);
+    const g=new T.TubeGeometry(new T.QuadraticBezierCurve3(p1,mid,p2),48,.26,10,false);const m=new T.Mesh(g,wm.natal);m.visible=false;root.add(m);wires[key]={m,g,type:null,full:g.index.count}}
+  // sockets
+  const sockets={};const depth=1.4;
+  function centerShape(c){const [cx,cy]=CPOS[c];const s=new T.Shape();if(LOOM_RECT[c]){const [w,h]=LOOM_RECT[c],r=10;const x0=X(cx-w/2),x1=X(cx+w/2),y0=Y(cy+h/2),y1=Y(cy-h/2),rr=r*k;s.moveTo(x0+rr,y0);s.lineTo(x1-rr,y0);s.quadraticCurveTo(x1,y0,x1,y0+rr);s.lineTo(x1,y1-rr);s.quadraticCurveTo(x1,y1,x1-rr,y1);s.lineTo(x0+rr,y1);s.quadraticCurveTo(x0,y1,x0,y1-rr);s.lineTo(x0,y0+rr);s.quadraticCurveTo(x0,y0,x0+rr,y0)}
+    else LOOM_SHAPES[c].forEach(([dx,dy],i)=>{const x=X(cx+dx),y=Y(cy+dy);i?s.lineTo(x,y):s.moveTo(x,y)});s.closePath();return s}
+  const sm={open:M.bronzeDark({color:K.col(0x2a2418),roughness:.75}),natal:M.bronze({emissive:K.col(0x3a2a08),emissiveIntensity:.6}),transit:M.glass(K.HEX.emerald,{emissiveIntensity:.45,opacity:.9})};
+  for(const c of Object.keys(CPOS)){const sh=centerShape(c);
+    const body=new T.Mesh(new T.ExtrudeGeometry(sh,{depth,bevelEnabled:true,bevelThickness:.25,bevelSize:.22,bevelSegments:3,curveSegments:8}),sm.open);body.position.z=.1;body.userData={center:c};S.pick(body);root.add(body);
+    const pts=sh.getPoints(8).map(p=>new T.Vector3(p.x,p.y,depth+.42));pts.push(pts[0].clone());
+    const rim=new T.Line(new T.BufferGeometry().setFromPoints(pts),M.line(K.HEX.silver,.5));root.add(rim);
+    const lab=S.track(K.label(c==='SolarPlexus'?'SOLAR PLEXUS':c.toUpperCase(),{font:'mono',px:8,track:.18,color:'#8A9BA8',opacity:.8}));const [cx,cy]=CPOS[c];lab.position.set(X(cx)+(c==='Spleen'?-5.6:c==='SolarPlexus'?5.6:c==='Heart'?4.2:0),Y(cy)+(['Spleen','SolarPlexus','Heart'].includes(c)?-5.4:c==='Head'?-4.6:c==='Root'||c==='Sacral'?0:0),depth+.6);
+    if(['Throat','Sacral','Root','G','Ajna'].includes(c)){lab.position.x=X(cx)+(c==='G'?7.4:c==='Ajna'?6:7.4)*(c==='Throat'||c==='Sacral'||c==='Root'?-1:1)}
+    root.add(lab);sockets[c]={body,rim,lab}}
+  // gate pins
+  const pinG=new T.CylinderGeometry(.62,.62,.5,20);pinG.rotateX(Math.PI/2);
+  const pm={off:M.bronzeDark({color:K.col(0x1d1a14)}),natal:M.gold({emissiveIntensity:.3}),transit:M.glass(K.HEX.emerald,{emissiveIntensity:.6}),both:M.gold({emissive:K.col(K.HEX.emerald),emissiveIntensity:.5})};
+  const pins={};for(const g of Object.keys(GOFF).map(Number)){const [x,y]=gxy(g);const p=new T.Mesh(pinG,pm.off);p.position.set(X(x),Y(y),depth+.55);p.userData={gate:g};S.pick(p);root.add(p);
+    const l=S.track(K.label(String(g),{font:'mono',px:8,color:'#AEBBC4'}));l.position.set(X(x),Y(y),depth+1.05);l.renderOrder=12;root.add(l);pins[g]={p,l,state:null}}
+  function apply(r,animate){cur=r;const st=loomState(r);
+    for(const key in wires){const w=wires[key],t=st.ch[key]||null;if(t!==w.type){const was=w.type;w.type=t;if(!t){w.m.visible=false;continue}w.m.material=wm[t];w.m.visible=true;
+        if(animate&&!RM&&!was){w.g.setDrawRange(0,0);S.tween(900,kk=>{w.g.setDrawRange(0,Math.floor(w.full*kk/6)*6)})}else w.g.setDrawRange(0,Infinity)}}
+    for(const c in sockets){const nat=NATAL_CEN.has(c),d=st.cen.has(c);const s=sockets[c];s.body.material=nat?sm.natal:d?sm.transit:sm.open;s.rim.material.color=K.col(nat?K.HEX.gold:d?K.HEX.emerald:K.HEX.silver);s.rim.material.opacity=nat||d?.95:.45;
+      s.body.scale.z=d?1:.55}
+    for(const g in pins){const n=NATG.has(+g),t=st.tg.has(+g);const p=pins[g];const key=n&&t?'both':n?'natal':t?'transit':'off';if(p.state!==key){p.state=key;p.p.material=pm[key];p.p.scale.z=key==='off'?.6:1.5;
+        const old=p.l.material.map;const nl=K.label(String(g),{font:'mono',px:8,color:key==='off'?'#75838E':key==='natal'?'#070B1D':'#F0EDE3'});p.l.material.map=nl.material.map;nl.material.dispose();old&&old.dispose()}}
+    S.invalidate()}
+  apply(r0,false);
+  // intro: the plate rises, sockets seat, then the wires light
+  if(!RM){S.view.dist=fit()*1.4;S.view.pitch=.35;S.place();root.position.y=-6;
+    S.tween(1500,kk=>{S.view.dist=fit()*(1.4-.4*kk);S.view.pitch=.35+(.1-.35)*kk;S.place();root.position.y=-6*(1-kk)});
+    Object.values(wires).forEach((w,i)=>{if(w.type){w.g.setDrawRange(0,0);S.tween(900+i*30,kk=>{w.g.setDrawRange(0,Math.floor(w.full*kk/6)*6)})}})}
+  else{S.view.dist=fit();S.place()}
+  return Object.assign(S,{update(r){apply(r,true)}});
+}
+
+/* ---------- The dasha armillary: Vimshottari as three nested bronze rings on one index ----------
+   Outer ring: the ten Mahadashas of the engine's 120-year timeline. Middle: the Antardashas of the chosen
+   Mahadasha. Inner: the Pratyantardashas of the chosen Antardasha. Each ring turns so the period running on
+   the witnessed date sits under the gold index; moving the date makes the rings precess at nested rates. */
+const DASHA_SYM={Sun:'☉',Moon:'☽',Mars:'♂',Mercury:'☿',Jupiter:'♃',Venus:'♀',Saturn:'♄',Rahu:'☊',Ketu:'☋'};
+function dashaRings(){const V=ENG.vimshottari.result,T=V.timeline.mahadashas;const md=T.find(m=>m.planet+m.start_date.slice(0,10)===jyState.md)||T[0];
+  const ms=md.start_date.slice(0,10),me=md.end_date.slice(0,10);
+  const ads=SKY.ad.filter(a=>a[0]===md.planet&&a[2]>=addDays(ms,-2)&&a[2]<addDays(me,-2)).map(a=>({p:a[1],s:a[2],e:a[3],raw:a}));
+  const ad=ads.find(a=>a.p+a.s===jyState.ad)||ads[0];const pds=ad?ad.raw[4].map((p,i)=>({p:p[0],s:p[1],e:i+1<ad.raw[4].length?ad.raw[4][i+1][1]:ad.e})):[];
+  const mds=T.map(m=>({p:m.planet,s:m.start_date.slice(0,10),e:m.end_date.slice(0,10),key:m.planet+m.start_date.slice(0,10)}));
+  return {mds,md:{p:md.planet,s:ms,e:me,key:md.planet+ms},ads,ad,pds}}
+const dms=s=>Date.parse(s+'T00:00:00Z');
+function arm3d(host){
+  const K=K3,T=THREE;const RM=K.reduced();
+  let S=null;S=K.stage(host,{fov:30,yaw:-Math.PI/2,pitch:.72,dist:110,target:[0,-3.5,0],minDist:60,maxDist:200,minPitch:.2,maxPitch:1.4,label:'Dasha armillary. Tap a ring segment to drill in.',
+    onResize:()=>{if(S){S.view.dist=fit();S.place()}},
+    ambient:(dt,now)=>{S.view.yaw=S.base.yaw+Math.sin(now/6000)*.06;return true},
+    onPick:o=>{if(!o||!o.userData.seg)return;const u=o.userData.seg;if(u.level==='md'){jyState.md=u.key;jyState.ad=null}else if(u.level==='ad'){jyState.ad=u.p+u.s}else return;rebuild(true);if(window.onArmPick)window.onArmPick()},
+    onHover:o=>{hov=o&&o.userData.seg?o:null;tipShow()}});
+  const {scene,M}=S;let hov=null;
+  function fit(){const c=S.camera,v=c.fov*Math.PI/360,hh=Math.atan(Math.tan(v)*c.aspect);const R=31;return Math.max(R*1.06/Math.sin(hh),(R*Math.sin(.72)+17)/Math.sin(v)*1.02,62)}
+  const root=new T.Group();scene.add(root);
+  scene.add(Object.assign(K.starfield(600,240,420,53),{}));
+  // pedestal: hex plinth, turned column, halo
+  const plinth=new T.Mesh(K.prism(K.hexShape(15,Math.PI/6),2.2,.3),M.bronze());plinth.position.y=-16;root.add(plinth);
+  const pe=new T.LineLoop(K.loopXZ(K.hexPts(15.2,Math.PI/6),0),M.line(K.HEX.gold,.8));pe.position.y=-16+2.5+.02;root.add(pe);
+  const hal=K.halo(80,.7);hal.position.y=-16.2;root.add(hal);
+  const prof=[[0,0],[3.2,0],[3.2,.5],[2,1],[1.3,2.2],[1.0,8],[1.5,8.8],[1.0,9.6],[1.0,12.4],[2.2,13.2],[0,13.2]].map(([x,y])=>new T.Vector2(x,y));
+  const col=new T.Mesh(new T.LatheGeometry(prof,40),M.bronze());col.position.y=-13.5;root.add(col);
+  // decorative armillary cage: two tilted gold meridians around the rings
+  [[.0,.55],[Math.PI/2,.55]].forEach(([ry,rx])=>{const m=new T.Mesh(new T.TorusGeometry(30.5,.16,8,160),M.gold({emissiveIntensity:.05,roughness:.4}));m.rotation.set(Math.PI/2+rx,ry,0);m.position.y=1.5;root.add(m)});
+  const eq=new T.Mesh(new T.TorusGeometry(31.2,.22,8,180),M.gold({roughness:.4}));eq.rotation.x=Math.PI/2;eq.position.y=1.5;root.add(eq);
+  // the gold index blade at the front, through all three rings
+  const blade=new T.Mesh(new T.BoxGeometry(.35,7.4,.12),M.gold({emissiveIntensity:.5}));blade.position.copy(K.P(90,31.4,2.6));root.add(blade);
+  const bl=new T.Mesh(new T.ConeGeometry(.8,2,4),M.gold({emissiveIntensity:.6}));bl.rotation.x=-Math.PI/2;bl.position.copy(K.P(90,32.6,6.4));root.add(bl);
+  const idx=new T.Line(new T.BufferGeometry().setFromPoints([K.P(90,8,5.6),K.P(90,31.6,5.6)]),M.line(K.HEX.goldWarm,.95));root.add(idx);
+  // hub lens with the running period
+  const lens=new T.Mesh(new T.SphereGeometry(2.6,48,32),M.glass(K.HEX.emerald,{emissiveIntensity:.4}));lens.position.y=3;root.add(lens);
+  const lg=K.glow(K.HEX.emerald,10,.45);lg.position.y=3;root.add(lg);
+  const hubLab=S.track(K.label(' ',{font:'engr',px:13,track:.24,color:'#E6B84D',weight:600}));hubLab.position.y=7.6;root.add(hubLab);
+  const RINGS={md:{r0:24,r1:29,y:0,h:1.1},ad:{r0:17.2,r1:22.4,y:2.1,h:1},pd:{r0:10.6,r1:15.6,y:4,h:.9}};
+  const groups={md:new T.Group(),ad:new T.Group(),pd:new T.Group()};Object.values(groups).forEach(g=>root.add(g));
+  const rot={md:0,ad:0,pd:0};
+  function sector(r0,r1,a0,a1,h){const s=new T.Shape();s.absarc(0,0,r1,a0*Math.PI/180,a1*Math.PI/180,false);s.absarc(0,0,r0,a1*Math.PI/180,a0*Math.PI/180,true);s.closePath();return K.prism(s,h,.06)}
+  const clear=g=>{while(g.children.length){const c=g.children.pop();S.unpick(c);c.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose()}})}};
+  function buildRing(level,list,span,selKey){const g=groups[level],R=RINGS[level];clear(g);if(!list.length)return [];const t0=dms(span[0]),t1=dms(span[1]),tot=t1-t0;const now=state.date;const out=[];
+    list.forEach(seg=>{const a0=(dms(seg.s)-t0)/tot*360,a1=(dms(seg.e)-t0)/tot*360;if(a1-a0<.05)return;const gap=Math.min(.5,(a1-a0)*.08);const isNow=seg.s<=now&&now<seg.e;const isSel=selKey&&(seg.key||seg.p+seg.s)===selKey;
+      const m=new T.Mesh(sector(R.r0,R.r1,a0+gap,a1-gap,R.h),isNow?M.glass(K.HEX.emerald,{emissiveIntensity:.5,opacity:.95}):M.bronze({color:K.col(isSel?0xa8874a:0x8a7350)}));m.position.y=R.y;m.userData.seg={level,p:seg.p,s:seg.s,e:seg.e,key:seg.key};S.pick(m);g.add(m);
+      const edge=new T.Line(new T.BufferGeometry().setFromPoints([K.P(a0+gap,R.r0,R.y+R.h+.38),K.P(a0+gap,R.r1,R.y+R.h+.38)]),M.line(K.HEX.gold,.8));g.add(edge);
+      if(isSel){const arc=new T.Line(K.arcXZ(R.r1+.15,R.y+R.h+.4,a0+gap,a1-gap),M.line(K.HEX.goldWarm,1));g.add(arc)}
+      if(a1-a0>7){const txt=(DASHA_SYM[seg.p]||'')+(a1-a0>22||level==='md'&&a1-a0>14?' '+seg.p.toUpperCase():'');const l=S.track(K.label(txt,{font:'mono',px:level==='md'?11:10,track:.14,color:isNow?'#F0EDE3':'#C5A017',bg:isNow?'rgba(16,181,167,.25)':null}));l.position.copy(K.P((a0+a1)/2,(R.r0+R.r1)/2,R.y+R.h+1.2));g.add(l)}
+      out.push({seg,a0,a1})});
+    [R.r0-.05,R.r1+.05].forEach(rr=>g.add(new T.LineLoop(K.circleXZ(rr,R.y+R.h+.37,200),M.line(K.HEX.gold,.4))));
+    return out}
+  function nowAngle(span){const t0=dms(span[0]),t1=dms(span[1]);const t=Math.min(t1,Math.max(t0,dms(state.date)));return (t-t0)/(t1-t0)*360}
+  function rebuild(animate){const D=dashaRings();const V=ENG.vimshottari.result;const T0=V.timeline.mahadashas;
+    buildRing('md',D.mds,[D.mds[0].s,D.mds[D.mds.length-1].e],D.md.key);
+    buildRing('ad',D.ads,[D.md.s,D.md.e],D.ad?D.ad.p+D.ad.s:null);
+    if(D.ad)buildRing('pd',D.pds,[D.ad.s,D.ad.e],null);else clear(groups.pd);
+    const want={md:90-nowAngle([D.mds[0].s,D.mds[D.mds.length-1].e]),ad:90-nowAngle([D.md.s,D.md.e]),pd:D.ad?90-nowAngle([D.ad.s,D.ad.e]):0};
+    const from={...rot};Object.keys(want).forEach(k=>{let d=want[k]-from[k];d=((d+540)%360)-180;want[k]=from[k]+d});
+    S.tween(animate&&!RM?1100:0,k=>{Object.keys(want).forEach(n=>{rot[n]=from[n]+(want[n]-from[n])*k;groups[n].rotation.y=rot[n]*Math.PI/180})});
+    const cur=D.mds.find(m=>m.s<=state.date&&state.date<m.e)||D.md;const old=hubLab.material.map;const nl=K.label(`${(DASHA_SYM[cur.p]||'')} ${cur.p.toUpperCase()} · TILL ${cur.e.slice(0,4)}`,{font:'engr',px:13,track:.24,color:'#E6B84D',weight:600,bg:'rgba(7,11,29,.55)'});hubLab.material.map=nl.material.map;hubLab.userData.label=nl.userData.label;S.track(hubLab);nl.material.dispose();old&&old.dispose();
+    S.invalidate()}
+  const tip=document.createElement('div');tip.className='tip';
+  function tipShow(){if(!tip.isConnected)host.appendChild(tip);if(!hov){tip.classList.remove('on');return}const u=hov.userData.seg;const p=new T.Vector3();hov.getWorldPosition(p);const box=new T.Box3().setFromObject(hov);box.getCenter(p);const s=S.toScreen(p);
+    tip.style.left=s.x+'px';tip.style.top=s.y+'px';tip.textContent=`${u.level==='md'?'Mahadasha':u.level==='ad'?'Antardasha':'Pratyantardasha'} · ${u.p} · ${fmtDate(u.s)} to ${fmtDate(u.e)}`;tip.classList.add('on')}
+  rebuild(false);
+  if(!RM){const d=fit();S.view.dist=d*1.5;S.view.pitch=1.25;S.place();Object.values(groups).forEach((g,i)=>{g.scale.setScalar(.55);S.tween(1200+i*200,k=>g.scale.setScalar(.55+.45*k))});
+    S.tween(1700,k=>{S.view.dist=d*(1.5-.5*k);S.view.pitch=1.25+(.72-1.25)*k;S.base.pitch=S.view.pitch;S.place()})}
+  else{S.view.dist=fit();S.place()}
+  return Object.assign(S,{update(){rebuild(true)},sync(){rebuild(true)}});
 }
 
 /* ---------- Jyotish: sidereal chart, dasha drill-down, the day's Panchanga, Sade Sati, transit aspects ---------- */
@@ -691,8 +1443,9 @@ function rJyotish(){
   <div class="hero"><div class="epithet">Jyotish · Lahiri · ${isToday?'the sky now':'witnessing'} · ${fmtDate(r.d)}</div><p class="decl">${V.current_period.mahadasha.planet} dasha. Moon in ${P.nak}.</p>
    <p class="lede">Lagna ${RASHI[LAGNA_SIGN]}, Moon ${moonN.sign} in ${moonN.nak}. Today Jupiter sits in your house ${jup.house} and Saturn in your house ${sat.house}. ${ss.active?ss.phase+'.':'Sade Sati is not active.'}</p>
    <div class="chips"><span class="chip"><span class="dot c"></span><span class="ev-c">Engine: birth positions, dasha, aspects</span></span><span class="chip"><span class="dot w"></span><span class="ev-w">Field: today's positions and Panchanga</span></span></div></div>
+  ${armStage()}
   <div class="grid2">
-   <div class="panel"><div class="ey" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px"><h3 style="margin:0">Rashi chart</h3><div class="toggles"><button class="pill sm" id="jyNorth" aria-pressed="${JYPREF.layout==='north'}">North</button><button class="pill sm" id="jySouth" aria-pressed="${JYPREF.layout==='south'}">South</button><span style="width:8px"></span><button class="pill sm" id="jyNatal" aria-pressed="${JYPREF.show==='natal'}">Birth</button><button class="pill sm" id="jyBoth" aria-pressed="${JYPREF.show==='both'}">Both</button><button class="pill sm" id="jyToday" aria-pressed="${JYPREF.show==='today'}">Today</button></div></div>
+   <div class="panel"><div class="ey" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px"><h3 style="margin:0">Rashi chart</h3><div style="display:flex;gap:6px;flex-wrap:wrap"><div class="seg" role="group" aria-label="Layout"><button id="jyNorth" aria-pressed="${JYPREF.layout==='north'}">North</button><button id="jySouth" aria-pressed="${JYPREF.layout==='south'}">South</button></div><div class="seg" role="group" aria-label="Show"><button id="jyNatal" aria-pressed="${JYPREF.show==='natal'}">Birth</button><button id="jyBoth" aria-pressed="${JYPREF.show==='both'}">Both</button><button id="jyToday" aria-pressed="${JYPREF.show==='today'}">Today</button></div></div></div>
     <div class="bg-wrap" id="jyChart">${JYPREF.layout==='north'?northChart(list):southChart(list)}</div>
     <div class="legend"><span><i style="background:var(--gold-warm)"></i>Birth (engine)</span><span><i style="background:var(--emerald)"></i>${fmtDate(r.d)} (field)</span><span>ʳ retrograde</span></div><p class="meta" style="margin:8px 0 0">Lagna ${RASHI[LAGNA_SIGN]} ${fmtDeg(LAGNA_SID%30)} from the Swiss Ephemeris at birth. Tap a graha.</p></div>
    <div style="display:grid;gap:var(--s3);align-content:start;min-width:0">
@@ -709,9 +1462,21 @@ function rJyotish(){
   $('#jyNorth').onclick=()=>set('layout','north');$('#jySouth').onclick=()=>set('layout','south');
   $('#jyNatal').onclick=()=>set('show','natal');$('#jyBoth').onclick=()=>set('show','both');$('#jyToday').onclick=()=>set('show','today');
   $('#main').querySelectorAll('[data-b]').forEach(el=>el.addEventListener('click',()=>showGraha(el.dataset.k,el.dataset.b,r)));
-  const wireDasha=()=>{$('#jyDasha').querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{jyState.md=b.dataset.md;jyState.ad=null;$('#jyDasha').innerHTML=dashaPanel();wireDasha()});$('#jyDasha').querySelectorAll('[data-ad]').forEach(b=>b.onclick=()=>{jyState.ad=b.dataset.ad;$('#jyDasha').innerHTML=dashaPanel();wireDasha()})};
+  const wireDasha=()=>{$('#jyDasha').querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{jyState.md=b.dataset.md;jyState.ad=null;$('#jyDasha').innerHTML=dashaPanel();wireDasha();armSync()});$('#jyDasha').querySelectorAll('[data-ad]').forEach(b=>b.onclick=()=>{jyState.ad=b.dataset.ad;$('#jyDasha').innerHTML=dashaPanel();wireDasha();armSync()})};
   wireDasha();
+  window.onArmPick=()=>{$('#jyDasha').innerHTML=dashaPanel();wireDasha()};
+  const ah=$('#armHost');if(ah){if(K3.ok()){try{const {inst,fresh}=K3.mount('jyotish',ah,h=>arm3d(h));if(!fresh)inst.update()}catch(e){console.warn('armillary',e);K3.release();ah.remove()}}else ah.remove()}
 }
+
+function armSync(){const o=K3.current('jyotish');if(o)o.sync()}
+function armStage(){const V=ENG.vimshottari.result,c=V.current_period;
+  const nx=(V.upcoming_transitions||[]).find(u=>u.date.slice(0,10)>state.date);
+  const rd=(k,v)=>`<div class="readout"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  const ad=SKY.ad.find(a=>a[2]<=state.date&&state.date<a[3]);let pd=null,pdS=null,pdE=null;if(ad){ad[4].forEach((p,i)=>{if(p[1]<=state.date){pd=p[0];pdS=p[1];pdE=i+1<ad[4].length?ad[4][i+1][1]:ad[3]}})}
+  return `<div class="stage arm-stage" id="armHost" style="border:1px solid var(--rule);border-radius:4px">
+   <div class="hud arm-hud">${rd('Mahadasha · engine',`<span class="g">${DASHA_SYM[c.mahadasha.planet]} ${c.mahadasha.planet}</span> · ${istDate(c.mahadasha.start)} to ${istDate(c.mahadasha.end)}`)}${ad?rd('Antardasha',`${DASHA_SYM[ad[1]]} ${ad[1]} · to ${fmtDate(ad[3])}`):''}${pd?rd('Pratyantardasha',`${DASHA_SYM[pd]} ${pd} · ${fmtDate(pdS)} to ${fmtDate(pdE)}`):''}</div>
+   ${nx?`<div class="hud arm-hud-r"><div class="shift"><span class="k">Next shift · engine</span><span class="d">${istDate(nx.date)}</span><span class="v">${DASHA_SYM[nx.from_planet]||''} ${nx.from_planet} → ${DASHA_SYM[nx.to_planet]||''} ${nx.to_planet} · ${cap(nx.type)}</span></div></div>`:''}
+   <div class="hud arm-hud-b"><span class="readout"><span class="k">Rings</span><span class="v">Outer mahadasha · middle antardasha · inner pratyantardasha</span></span><span class="k">Tap a ring to drill in</span></div></div>`}
 
 
 /* Today */

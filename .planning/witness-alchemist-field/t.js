@@ -20,12 +20,13 @@ setTimeout(()=>{
   w.document.querySelector('svg.wheel circle.pl').dispatchEvent(new w.Event('click'));console.log('body',w.document.getElementById('drawerBody').textContent.slice(0,120));
   w.document.getElementById('skyVedic').click();await new Promise(r=>setTimeout(r,30));console.log('vedic',w.document.getElementById('skyVedic').getAttribute('aria-pressed'),w.document.querySelector('svg.wheel text').textContent);
   w.document.getElementById('skyGates').click();await new Promise(r=>setTimeout(r,30));console.log('gates',w.document.querySelectorAll('svg.wheel text').length);
-  w.location.hash='#engines';await new Promise(r=>setTimeout(r,50));console.log('engines',w.document.querySelectorAll('[data-eng]').length,'locked',w.document.querySelectorAll('.eng.locked').length);
+  w.location.hash='#engines';await new Promise(r=>setTimeout(r,50));console.log('engines cells',w.document.querySelectorAll('.hexcell').length,'index',w.document.querySelectorAll('.eng-index button').length);
+  for(const b of [...w.document.querySelectorAll('.eng-index button')]){b.click();const rd=w.document.getElementById('engRead');const op=w.document.getElementById('engOpen');if(op)op.click();console.log(' ',b.textContent.trim().padEnd(16),'readout',rd.textContent.length,op?'drawer '+w.document.getElementById('drawerBody').textContent.length:'')}
   w.location.hash='#jyotish';await new Promise(r=>setTimeout(r,50));console.log('jy chart',!!w.document.querySelector('#jyChart svg'),'grahas',w.document.querySelectorAll('#jyChart .pl').length,'md',w.document.querySelectorAll('[data-md]').length,'ad',w.document.querySelectorAll('[data-ad]').length);
   w.document.querySelector('#jyChart .pl').dispatchEvent(new w.Event('click'));console.log('graha',w.document.getElementById('drawerBody').textContent.slice(0,100));
   w.document.getElementById('jyNorth').click();await new Promise(r=>setTimeout(r,30));console.log('north',w.document.querySelector('#jyChart svg').getAttribute('aria-label'));
   w.document.querySelector('[data-md]').click();console.log('md0 ad rows',w.document.querySelectorAll('[data-ad]').length);
   w.document.querySelectorAll('[data-md]')[4].click();w.document.querySelectorAll('[data-ad]')[1].click();console.log('jup/sat pd rows',w.document.querySelectorAll('#jyDasha .grid3 > div:nth-child(3) .item').length);
-  for(const b of w.document.querySelectorAll('[data-eng]')){b.click();console.log(' ',b.dataset.eng,w.document.getElementById('drawerBody').textContent.length)}
+
  })();
 },300);
