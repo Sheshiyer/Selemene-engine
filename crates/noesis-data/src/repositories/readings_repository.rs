@@ -215,6 +215,25 @@ impl ReadingsRepository {
         }
     }
 
+    /// The daily-field rows a user holds for one IST calendar date, oldest first.
+    /// Rows are written by the daily-field job with `workflow_id = 'daily-field'` and
+    /// the date in `input_data.daily_date`; one row per engine plus the witness dyad.
+    pub async fn list_daily_field(&self, user_id: Uuid, date: &str) -> Result<Vec<Reading>, Error> {
+        sqlx::query_as::<_, Reading>(
+            r#"
+            SELECT * FROM readings
+            WHERE user_id = $1
+              AND workflow_id = 'daily-field'
+              AND input_data->>'daily_date' = $2
+            ORDER BY created_at ASC
+            "#,
+        )
+        .bind(user_id)
+        .bind(date)
+        .fetch_all(&self.pool)
+        .await
+    }
+
     /// Count readings per engine for a user. Returns (engine_id, count) pairs.
     pub async fn count_by_engine(&self, user_id: Uuid) -> Result<Vec<(String, i64)>, Error> {
         sqlx::query_as::<_, (String, i64)>(
