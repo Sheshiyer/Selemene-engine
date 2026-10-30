@@ -45,7 +45,7 @@ function showBody(b,r){
 }
 function showLens(r){const R=dayReading(r);
   openDrawer(`<div class="eyebrow">The lens · ${fmtDate(r.d)} · 06:00 IST</div><h2>${esc(R.decl)}</h2><p class="muted">${esc(R.trav)}</p>
-  <dl class="kv"><dt>Sun</dt><dd><b>${R.sun.gate}.${R.sun.line}</b> ${GATES[R.sun.gate][0]}</dd><dt>Earth</dt><dd><b>${R.earth.gate}.${R.earth.line}</b> ${GATES[R.earth.gate][0]}</dd><dt>Definition</dt><dd>${r.def===1?'Single':r.def===2?'Split':r.def===3?'Triple split':'Quadruple split'}${r.m2t?' · motor to Throat':''}</dd><dt>Centers</dt><dd>${r.cen.length} of 9 defined</dd></dl>
+  <dl class="kv"><dt>Sun</dt><dd><b>${R.sun.gate}.${R.sun.line}</b> ${GATES[R.sun.gate][0]}</dd><dt>Earth</dt><dd><b>${R.earth.gate}.${R.earth.line}</b> ${GATES[R.earth.gate][0]}</dd><dt>Definition</dt><dd>${defLabel(r.def)}${r.m2t?' · motor to Throat':''}</dd><dt>Centers</dt><dd>${r.cen.length} of 9 defined</dd></dl>
   <h3>Channels</h3><div class="list">${r.ch.map(([k,t])=>`<button class="item" data-ch="${k}"><span class="tag ${t==='natal'?'natal':t==='bridge'?'c':'w'}">${t==='natal'?'yours':t==='bridge'?'bridged':'transit'}</span><span><b>${k} ${CHANNELS[k][0]}</b><small>${CHANNELS[k][1]} circuit</small></span></button>`).join('')}</div>
   <p style="margin-top:16px"><a class="pill sm" href="#today">Open the day</a></p>`);wire($('#drawerBody'))}
 
@@ -197,7 +197,7 @@ function skyHud(r){
   SKYPREF.tight=true;const nL=skyLines(B).length;SKYPREF.tight=false;const ad=SKY.ad.find(a=>a[2]<=r.d&&r.d<a[3]);let pd=null;if(ad)for(const p of ad[4])if(p[1]<=r.d)pd=p[0];
   const retro=B.transit.filter(b=>b.retro).map(b=>SYM[b.body]).join(' ');
   const rd=(k,v)=>`<div class="readout"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-  return {left:rd('Sun · gate',`<span class="g">${sun.gate}.${sun.line}</span> ${GATES[sun.gate][0]}`)+rd('Earth · gate',`${earth.gate}.${earth.line} ${GATES[earth.gate][0]}`)+rd('Moon · nakshatra',`${moon.sid.nak} · pada ${moon.sid.pada}`)+rd('Definition',`${r.def===1?'Single':'Split'}${r.m2t?' · motor to Throat':''}`),
+  return {left:rd('Sun · gate',`<span class="g">${sun.gate}.${sun.line}</span> ${GATES[sun.gate][0]}`)+rd('Earth · gate',`${earth.gate}.${earth.line} ${GATES[earth.gate][0]}`)+rd('Moon · nakshatra',`${moon.sid.nak} · pada ${moon.sid.pada}`)+rd('Definition',`${defLabel(r.def)}${r.m2t?' · motor to Throat':''}`),
     right:rd('Dasha',ad?`${ad[0]} / ${ad[1]}${pd?' / '+pd:''}`:'—')+rd('Ayanamsa · Lahiri',`${B.ayan.toFixed(2)}°`)+rd('Aspects',`${nL} within orb`)+rd('Retrograde',retro||'none'),
     decl:R.decl};
 }

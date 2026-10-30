@@ -260,6 +260,9 @@ function bodygraph(el,r){
 const BG_LEGEND=`<div class="legend"><span><i style="background:var(--gold)"></i>Your channels</span><span><i style="background:var(--emerald)"></i>Completed by transit (computed)</span><span><i style="background:var(--violet-glow)"></i>Transit only</span><span>Tap a center or gate</span></div>`;
 
 /* ---------- reading of the day ---------- */
+/* one label for the day's definition, by connected-component count, used by every summary */
+const DEF_LABEL=['No definition','Single','Split','Triple split','Quadruple split'];
+function defLabel(d){return DEF_LABEL[d]||`${d}-part split`}
 /* the actual route between two centers through the day's defined channels (breadth-first) */
 function centerRoute(r,from,to){const adj={};r.ch.forEach(([k])=>{const [g1,g2]=k.split('-').map(Number),c1=GATES[g1][1],c2=GATES[g2][1];(adj[c1]=adj[c1]||[]).push([c2,k]);(adj[c2]=adj[c2]||[]).push([c1,k])});
   const prev={[from]:null},q=[from];while(q.length){const c=q.shift();if(c===to)break;for(const [n,k] of adj[c]||[])if(!(n in prev)){prev[n]=[c,k];q.push(n)}}

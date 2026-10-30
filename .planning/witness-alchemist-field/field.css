@@ -236,6 +236,7 @@ svg.ribbon .rt{font-size:10px;fill:var(--text-2)}
 svg.ribbon .rbl{font-size:9px;letter-spacing:.08em;fill:var(--text-2)}
 svg.ribbon .def1{fill:rgba(197,160,23,.55)}
 svg.ribbon .def2{fill:none;stroke:rgba(197,160,23,.45);stroke-width:1}
+svg.ribbon .def3,svg.ribbon .def4{fill:none;stroke:rgba(197,160,23,.6);stroke-width:1;stroke-dasharray:2 2}
 svg.ribbon .m2t{fill:var(--void);stroke:var(--gold-warm);stroke-width:1.2}
 svg.ribbon .mo0{fill:#141b33;stroke:rgba(240,237,227,.25);stroke-width:.8}
 svg.ribbon .mo1{fill:#E8E2CF}
@@ -248,5 +249,6 @@ svg.ribbon .ev.dasha{fill:var(--gold)}
 .ribbon-legend{margin-top:12px}
 .ribbon-legend .lg-def1{background:rgba(197,160,23,.55)}
 .ribbon-legend .lg-def2{background:transparent;outline:1px solid rgba(197,160,23,.45)}
+.ribbon-legend .lg-def3{background:transparent;outline:1px dashed rgba(197,160,23,.6)}
 .ribbon-legend .lg-m2t{width:8px!important;height:8px!important;border-radius:50%;border:1.2px solid var(--gold-warm)}
 @media (max-width:700px){.panel>h3 .sub{display:none}}
