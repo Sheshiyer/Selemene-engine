@@ -118,3 +118,64 @@ async fn a_run_writes_through_its_own_connection_and_commits_on_finish() {
     engines.sort();
     assert_eq!(engines, vec!["biorhythm", "transits"]);
 }
+
+#[tokio::test]
+async fn the_scheduler_resumes_users_whose_lock_expired() {
+    let Ok(url) = std::env::var("TEST_DATABASE_URL").or_else(|_| std::env::var("DATABASE_URL")) else {
+        eprintln!("Skipping daily-field schedule test: TEST_DATABASE_URL/DATABASE_URL not set");
+        return;
+    };
+    let pool = PgPoolOptions::new().max_connections(2).connect(&url).await.expect("connect");
+    let has_state: bool = sqlx::query_scalar("SELECT to_regclass('public.user_account_state') IS NOT NULL")
+        .fetch_one(&pool)
+        .await
+        .expect("probe schema");
+    if !has_state {
+        eprintln!("Skipping daily-field schedule test: account state not migrated");
+        return;
+    }
+
+    // An opted-in user with birth data, locked as described.
+    async fn opted_in(pool: &sqlx::PgPool, lock: &str) -> Uuid {
+        let id: Uuid = sqlx::query_scalar("INSERT INTO users (email, password_hash) VALUES ($1, 'x') RETURNING id")
+            .bind(format!("sched-{}@test.local", Uuid::new_v4()))
+            .fetch_one(pool)
+            .await
+            .expect("user");
+        sqlx::query(
+            "INSERT INTO user_profiles (user_id, birth_date, birth_location_lat, birth_location_lng, preferences)
+             VALUES ($1, '1991-08-13', 12.97, 77.59, '{\"daily_field\": true}')",
+        )
+        .bind(id)
+        .execute(pool)
+        .await
+        .expect("profile");
+        let sql = match lock {
+            "expired" => Some("INSERT INTO user_account_state (user_id, state, locked_until) VALUES ($1, 'locked', NOW() - INTERVAL '1 minute')"),
+            "current" => Some("INSERT INTO user_account_state (user_id, state, locked_until) VALUES ($1, 'locked', NOW() + INTERVAL '1 hour')"),
+            "legacy" => Some("UPDATE users SET locked_until = NOW() + INTERVAL '1 hour' WHERE id = $1"),
+            _ => None,
+        };
+        if let Some(sql) = sql {
+            sqlx::query(sql).bind(id).execute(pool).await.expect("lock");
+        }
+        id
+    }
+
+    let never = opted_in(&pool, "none").await;
+    let expired = opted_in(&pool, "expired").await;
+    let current = opted_in(&pool, "current").await;
+    let legacy = opted_in(&pool, "legacy").await;
+
+    let listed: Vec<Uuid> = noesis_data::repositories::user_repository::UserRepository::new(pool.clone())
+        .list_daily_field_users()
+        .await
+        .expect("list")
+        .into_iter()
+        .map(|(id, _, _)| id)
+        .collect();
+    assert!(listed.contains(&never), "an unlocked user is scheduled");
+    assert!(listed.contains(&expired), "an expired lock no longer holds the user back");
+    assert!(!listed.contains(&current), "a current lock is honoured");
+    assert!(!listed.contains(&legacy), "a current legacy lock is honoured");
+}
