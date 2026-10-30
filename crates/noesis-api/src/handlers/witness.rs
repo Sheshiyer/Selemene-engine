@@ -86,6 +86,15 @@ pub async fn interpret(
     Ok(Json(interpret_core(&state, &user, is_api_key, req).await))
 }
 
+/// The local day a reading belongs to, for engines whose answer follows the calendar
+/// rather than the instant: biorhythm counts `date`, and daily Panchanga reads the
+/// instant on `timezone`'s wall clock instead of the natal timezone. An early sunrise
+/// is still the previous UTC day, and a natal timezone abroad is another day again.
+pub(crate) struct CalendarDay {
+    pub date: chrono::NaiveDate,
+    pub timezone: String,
+}
+
 /// The witness dyad for `POST /witness/interpret`.
 pub(crate) async fn interpret_core(
     state: &AppState,
@@ -99,14 +108,13 @@ pub(crate) async fn interpret_core(
 /// The witness dyad, plus the engines whose results it was actually given
 /// (`engines_available`: allowed by scope and returned without error). The daily-field
 /// job uses that list to keep a witness that lacked its day context out of storage.
-/// `calendar_date`, when given, is the local date date-based engines (biorhythm) count
-/// for; the daily job passes its IST date, since an early sunrise is still the previous
-/// UTC day. Astronomical engines keep the instant in `current_time`.
+/// `calendar`, when given, is the local day the reading belongs to (the daily job passes
+/// its IST day). Astronomical engines keep the instant in `current_time`.
 pub(crate) async fn interpret_grounded(
     state: &AppState,
     user: &AuthUser,
     is_api_key: bool,
-    calendar_date: Option<chrono::NaiveDate>,
+    calendar: Option<&CalendarDay>,
     req: WitnessInterpretRequest,
 ) -> (WitnessInterpretResponse, Vec<String>) {
     // Engine permission scopes (API-key principals): an engine the key is not
@@ -158,14 +166,17 @@ pub(crate) async fn interpret_grounded(
         let mut inp = make_input(bd.clone());
         inp.options
             .insert("mode".to_string(), serde_json::json!("daily"));
+        if let (Some(day), Some(birth)) = (calendar, inp.birth_data.as_mut()) {
+            birth.timezone = day.timezone.clone();
+        }
         inp
     };
     let biorhythm_input = {
         let mut inp = make_input(bd.clone());
-        if let Some(day) = calendar_date {
+        if let Some(day) = calendar {
             inp.options.insert(
                 "target_date".to_string(),
-                serde_json::json!(day.format("%Y-%m-%d").to_string()),
+                serde_json::json!(day.date.format("%Y-%m-%d").to_string()),
             );
         }
         inp

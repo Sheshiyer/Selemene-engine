@@ -2993,7 +2993,7 @@ fn free_tier_quota_applies(mode: BillingMode, tier: &str) -> bool {
 /// Returns Err(402) when the user has consumed their free-tier quota for the
 /// current calendar month. Fails OPEN on db errors / missing repo to avoid
 /// blocking paying flows on infrastructure hiccups.
-async fn enforce_free_tier_quota(
+pub(crate) async fn enforce_free_tier_quota(
     state: &AppState,
     user: &AuthUser,
 ) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
@@ -3041,7 +3041,7 @@ async fn enforce_free_tier_quota(
 
 /// Fire-and-forget increment of the free-tier monthly counter. Called from
 /// the success branch of engine + workflow handlers.
-fn increment_free_tier_counter(state: &AppState, user: &AuthUser) {
+pub(crate) fn increment_free_tier_counter(state: &AppState, user: &AuthUser) {
     if user.tier != "free" {
         return;
     }

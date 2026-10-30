@@ -17,7 +17,7 @@
 //! - A background task runs the refresh at 05:30 IST for users whose profile
 //!   preferences carry `daily_field: true` (set through `PATCH /api/v1/users/me`).
 
-use crate::handlers::witness::{interpret_grounded, WitnessInterpretRequest};
+use crate::handlers::witness::{interpret_grounded, CalendarDay, WitnessInterpretRequest};
 use crate::AppState;
 use axum::{
     extract::{Extension, Json, Query, State},
@@ -49,6 +49,8 @@ pub const WITNESS_ID: &str = "witness-dyad";
 const METHOD: &str = "daily-field/v1";
 /// India Standard Time, the field's calendar.
 const IST_OFFSET_SECS: i32 = 5 * 3600 + 30 * 60;
+/// The same calendar as a timezone engines read (Panchanga's daily wall clock).
+const FIELD_TIMEZONE: &str = "Asia/Kolkata";
 /// How far back and forward a refresh may reach.
 const MAX_DAYS_BACK: i64 = 31;
 const MAX_DAYS_AHEAD: i64 = 1;
@@ -229,7 +231,8 @@ fn engine_input(
     options.insert("user_id".to_string(), json!(user.user_id));
     options.insert("consciousness_level".to_string(), json!(user.consciousness_level));
     match engine_id {
-        // Panchanga for the day, not for birth.
+        // Panchanga for the day, not for birth, read on the field's IST wall clock:
+        // the natal timezone may be abroad, which would put the vara on another day.
         "panchanga" => {
             options.insert("mode".to_string(), json!("daily"));
         }
@@ -246,8 +249,12 @@ fn engine_input(
         }
         _ => {}
     }
+    let mut birth = birth.clone();
+    if engine_id == "panchanga" {
+        birth.timezone = FIELD_TIMEZONE.to_string();
+    }
     EngineInput {
-        birth_data: Some(birth.clone()),
+        birth_data: Some(birth),
         current_time: moment,
         location: None,
         precision: Precision::Standard,
@@ -319,6 +326,23 @@ pub(crate) async fn run_daily(
     let (birth, lat, lng) = profile_inputs(state, uid).await?;
     let date_s = date.format("%Y-%m-%d").to_string();
 
+    // A day already complete is a read: nothing to compute, nothing to charge.
+    let stored_now = repo
+        .list_daily_field(uid, &date_s)
+        .await
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, "READINGS_READ_FAILED", e.to_string()))?;
+    let complete = DAY_ENGINES
+        .iter()
+        .chain(std::iter::once(&WITNESS_ID))
+        .all(|part| stored_now.iter().any(|r| r.engine_id == *part));
+    if complete {
+        return Ok(vec![]);
+    }
+    // Computing a day is metered like a workflow: the free-tier monthly cap applies
+    // before any engine runs, checked before the day lock so it needs no second
+    // connection while the lock is held.
+    crate::enforce_free_tier_quota(state, user).await?;
+
     // Admission first, so daily runs never hold more than a bounded share of the pool.
     // Then the day itself, across processes: the moment below is chosen once and every
     // later run reuses the stored one. All of the run's reads and writes use `held`.
@@ -388,11 +412,12 @@ pub(crate) async fn run_daily(
             });
         } else {
             let started = std::time::Instant::now();
+            let calendar = CalendarDay { date, timezone: FIELD_TIMEZONE.to_string() };
             let (dyad, available) = interpret_grounded(
                 state,
                 user,
                 is_api_key,
-                Some(date),
+                Some(&calendar),
                 WitnessInterpretRequest {
                     birth_data: Some(birth.clone()),
                     live_scores: None,
@@ -425,9 +450,11 @@ pub(crate) async fn run_daily(
         .await
         .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, "READINGS_WRITE_FAILED", e.to_string()))?;
 
-    // One usage event per run that computed anything: the day counts as one call.
+    // One usage event and one monthly count per run that stored anything: the day
+    // counts as one workflow call. Both run after the lock is released.
     if computed > 0 {
         crate::billing::emit_usage_event(&user.user_id, "workflow:daily-field", &user.tier);
+        crate::increment_free_tier_counter(state, user);
     }
     Ok(skipped)
 }
@@ -712,6 +739,36 @@ mod tests {
         assert_eq!(bio.current_time, moment, "the instant itself is kept");
         let transits = engine_input("transits", &birth, moment, d, 27.0, 95.0, &user);
         assert!(!transits.options.contains_key("target_date"));
+        assert_eq!(transits.birth_data.unwrap().timezone, "Asia/Kolkata");
+    }
+
+    #[test]
+    fn daily_panchanga_reads_the_field_calendar_not_the_natal_timezone() {
+        let d = NaiveDate::from_ymd_opt(2026, 10, 30).unwrap();
+        let moment = Utc.with_ymd_and_hms(2026, 10, 30, 0, 52, 0).unwrap();
+        let birth = BirthData {
+            name: None,
+            date: "1991-08-13".into(),
+            time: Some("13:31".into()),
+            latitude: 40.7,
+            longitude: -74.0,
+            timezone: "America/New_York".into(),
+        };
+        let user = AuthUser {
+            user_id: Uuid::nil().to_string(),
+            tier: "free".into(),
+            permissions: vec![],
+            rate_limit: 0,
+            consciousness_level: 0,
+            jti: None,
+            token_exp: None,
+        };
+        let panchanga = engine_input("panchanga", &birth, moment, d, 12.97, 77.59, &user);
+        assert_eq!(panchanga.birth_data.as_ref().unwrap().timezone, FIELD_TIMEZONE);
+        assert_eq!(panchanga.options["mode"], "daily");
+        // Natal engines keep the natal timezone.
+        let dasha = engine_input("vimshottari", &birth, moment, d, 12.97, 77.59, &user);
+        assert_eq!(dasha.birth_data.unwrap().timezone, "America/New_York");
     }
 
     #[test]
