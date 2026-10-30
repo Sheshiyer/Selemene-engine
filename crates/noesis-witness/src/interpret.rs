@@ -367,7 +367,11 @@ fn format_value(v: &Value, depth: usize) -> String {
 }
 
 fn engines_present(ctx: &WitnessContext) -> Vec<String> {
-    let mut out = vec!["biofield".to_string()];
+    // Biofield is credited only when a capture accompanied the reading.
+    let mut out: Vec<String> = vec![];
+    if ctx.live_scores.is_some() {
+        out.push("biofield".into());
+    }
     if ctx.panchanga.is_some() {
         out.push("panchanga".into());
     }
@@ -691,6 +695,17 @@ pub fn engine_grounded_witness_dyad(
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn engines_present_credits_biofield_only_with_a_capture() {
+        let mut ctx = WitnessContext {
+            panchanga: Some(json!({})),
+            ..Default::default()
+        };
+        assert_eq!(engines_present(&ctx), vec!["panchanga".to_string()]);
+        ctx.live_scores = Some(LiveBiofieldScores::default());
+        assert_eq!(engines_present(&ctx), vec!["biofield".to_string(), "panchanga".to_string()]);
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // format_value() tests
