@@ -8,7 +8,8 @@
 //! user's own profile, then the Witness Dyad for that moment with no biofield
 //! capture. Each result is stored as a reading with `workflow_id = "daily-field"` and the
 //! date in `input_data.daily_date`, so a rerun for the same date computes only what is
-//! missing and never duplicates.
+//! missing. Runs for one user's day take turns in each process, and a unique index
+//! (migration 044) keeps one row per part across processes.
 //!
 //! - `GET  /api/v1/daily?date=YYYY-MM-DD` returns the stored bundle (no computation).
 //! - `POST /api/v1/daily/refresh` computes what is missing for a date (default today, IST).
@@ -29,6 +30,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
+use std::sync::{Arc, OnceLock, Weak};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
@@ -112,8 +114,20 @@ fn noon_ist(date: NaiveDate) -> DateTime<Utc> {
 
 /// Sunrise for `date` where the day is witnessed, read from the vedic-clock engine's own
 /// solar calculation (NOAA, -0.833 deg), then `AFTER_SUNRISE_MINUTES` later. Falls back to
-/// 06:00 IST when the engine is not available or its answer cannot be read.
-async fn sunrise_moment(state: &AppState, user: &AuthUser, birth: &BirthData, date: NaiveDate, lat: f64, lng: f64) -> (DateTime<Utc>, &'static str) {
+/// 06:00 IST when the engine is not available or its answer cannot be read, and without
+/// running it at all when the caller's key may not use vedic-clock.
+async fn sunrise_moment(
+    state: &AppState,
+    user: &AuthUser,
+    is_api_key: bool,
+    birth: &BirthData,
+    date: NaiveDate,
+    lat: f64,
+    lng: f64,
+) -> (DateTime<Utc>, &'static str) {
+    if !crate::engine_scope_allows(user, is_api_key, "vedic-clock", "daily-field") {
+        return (day_moment(date), "fixed-06:00-ist");
+    }
     let probe = engine_input("vedic-clock", birth, noon_ist(date), lat, lng, user);
     match state.orchestrator.execute_engine("vedic-clock", probe, user.consciousness_level).await {
         Ok(out) => match sunrise_from_clock(&out.result, date) {
@@ -260,6 +274,23 @@ fn new_reading(
     }
 }
 
+/// The lock for one user's day. Runs for the same user and date take turns in this
+/// process, so a refresh that overlaps the scheduler waits, then finds the parts stored
+/// and computes nothing. Across processes, the unique index on daily-field readings
+/// (migration 044) keeps one row per part.
+fn day_lock(uid: Uuid, date: NaiveDate) -> Arc<tokio::sync::Mutex<()>> {
+    type Locks = std::sync::Mutex<HashMap<(Uuid, NaiveDate), Weak<tokio::sync::Mutex<()>>>>;
+    static LOCKS: OnceLock<Locks> = OnceLock::new();
+    let mut locks = LOCKS.get_or_init(Default::default).lock().unwrap_or_else(|e| e.into_inner());
+    locks.retain(|_, held| held.strong_count() > 0);
+    if let Some(lock) = locks.get(&(uid, date)).and_then(Weak::upgrade) {
+        return lock;
+    }
+    let lock = Arc::new(tokio::sync::Mutex::new(()));
+    locks.insert((uid, date), Arc::downgrade(&lock));
+    lock
+}
+
 /// Compute and store whatever of `date` is not stored yet. Returns the parts skipped
 /// this run with their reasons (scope, phase, engine error, storage error).
 pub(crate) async fn run_daily(
@@ -277,6 +308,9 @@ pub(crate) async fn run_daily(
     let (birth, lat, lng) = profile_inputs(state, uid).await?;
     let date_s = date.format("%Y-%m-%d").to_string();
 
+    let lock = day_lock(uid, date);
+    let _turn = lock.lock().await;
+
     let stored_rows = repo
         .list_daily_field(uid, &date_s)
         .await
@@ -284,7 +318,7 @@ pub(crate) async fn run_daily(
     // A partly stored day keeps the moment it was started with, so every part agrees.
     let (moment, anchor) = match stored_rows.iter().find_map(|r| stored_moment(&r.input_data)) {
         Some(m) => m,
-        None => sunrise_moment(state, user, &birth, date, lat, lng).await,
+        None => sunrise_moment(state, user, is_api_key, &birth, date, lat, lng).await,
     };
     let stored: Vec<String> = stored_rows.into_iter().map(|r| r.engine_id).collect();
 
@@ -311,8 +345,10 @@ pub(crate) async fn run_daily(
                 let envelope = crate::ApiEngineOutputResponse::from_engine_output(output, state.is_native_engine(engine_id));
                 let ms = Some(started.elapsed().as_secs_f64() * 1000.0);
                 let reading = new_reading(uid, engine_id, date, moment, anchor, lat, lng, serde_json::to_value(&envelope).unwrap_or_default(), prompt, level as i16, ms);
-                match repo.save_reading(&reading).await {
-                    Ok(_) => computed += 1,
+                match repo.save_daily_reading(&reading).await {
+                    Ok(Some(_)) => computed += 1,
+                    // Another process stored this part first; its row stands.
+                    Ok(None) => {}
                     Err(e) => skipped.push(MissingPart { part: engine_id.into(), reason: format!("storage: {e}") }),
                 }
             }
@@ -337,8 +373,9 @@ pub(crate) async fn run_daily(
         let ms = Some(started.elapsed().as_secs_f64() * 1000.0);
         let question = Some(dyad.witness_question.clone());
         let reading = new_reading(uid, WITNESS_ID, date, moment, anchor, lat, lng, serde_json::to_value(&dyad).unwrap_or_default(), question, level as i16, ms);
-        match repo.save_reading(&reading).await {
-            Ok(_) => computed += 1,
+        match repo.save_daily_reading(&reading).await {
+            Ok(Some(_)) => computed += 1,
+            Ok(None) => {}
             Err(e) => skipped.push(MissingPart { part: WITNESS_ID.into(), reason: format!("storage: {e}") }),
         }
     }
@@ -596,6 +633,20 @@ mod tests {
         let parts: Vec<&str> = b.missing.iter().map(|m| m.part.as_str()).collect();
         assert_eq!(parts, vec!["vimshottari", "biorhythm", "vedic-clock", WITNESS_ID]);
         assert!(b.missing.iter().any(|m| m.part == "vedic-clock" && m.reason.contains("scope")));
+    }
+
+    #[tokio::test]
+    async fn runs_for_the_same_day_share_one_lock() {
+        let u = Uuid::new_v4();
+        let d = NaiveDate::from_ymd_opt(2026, 10, 30).unwrap();
+        let first = day_lock(u, d);
+        assert!(Arc::ptr_eq(&first, &day_lock(u, d)));
+        assert!(!Arc::ptr_eq(&first, &day_lock(u, d.succ_opt().unwrap())));
+        assert!(!Arc::ptr_eq(&first, &day_lock(Uuid::new_v4(), d)));
+        let held = first.lock().await;
+        assert!(day_lock(u, d).try_lock().is_err(), "a second run must wait for the first");
+        drop(held);
+        assert!(day_lock(u, d).try_lock().is_ok());
     }
 
     #[test]

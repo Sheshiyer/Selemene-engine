@@ -166,6 +166,37 @@ impl ReadingsRepository {
         Ok(row)
     }
 
+    /// Store one daily-field part unless that user already has it for that date.
+    /// Returns `None` when another run stored it first. The conflict target is the
+    /// unique index `idx_readings_daily_field_unique` (migration 044).
+    pub async fn save_daily_reading(&self, reading: &NewReading) -> Result<Option<Uuid>, Error> {
+        sqlx::query_scalar::<_, Uuid>(
+            r#"
+            INSERT INTO readings (
+                user_id, engine_id, workflow_id, input_hash,
+                input_data, result_data, witness_prompt,
+                consciousness_level, calculation_time_ms
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ON CONFLICT (user_id, engine_id, (input_data->>'daily_date'))
+                WHERE workflow_id = 'daily-field'
+            DO NOTHING
+            RETURNING id
+            "#,
+        )
+        .bind(reading.user_id)
+        .bind(&reading.engine_id)
+        .bind(&reading.workflow_id)
+        .bind(&reading.input_hash)
+        .bind(&reading.input_data)
+        .bind(&reading.result_data)
+        .bind(&reading.witness_prompt)
+        .bind(reading.consciousness_level)
+        .bind(reading.calculation_time_ms)
+        .fetch_optional(&self.pool)
+        .await
+    }
+
     /// Fetch a single reading by ID, scoped to a user.
     pub async fn get_reading(&self, id: Uuid, user_id: Uuid) -> Result<Option<Reading>, Error> {
         sqlx::query_as::<_, Reading>("SELECT * FROM readings WHERE id = $1 AND user_id = $2")
