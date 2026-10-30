@@ -1,0 +1,461 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Witness Alchemist Field</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600&family=Unbounded:wght@400;500&display=swap">
+<style>
+/* Layout: one field, six rooms. Instrument voice on void for operating rooms; Folio voice on parchment for the reading room only. */
+:root{
+  --void:#070B1D;--surface:#0E1428;--parchment:#F0EDE3;--silver:#8A9BA8;--gold:#C5A017;--gold-warm:#E6B84D;
+  --violet:#2D0050;--indigo:#0B50FB;--emerald:#10B5A7;--terracotta:#C65D3B;--violet-glow:#7B68EE;--ink-bronze:#5A4A2E;--ink-iron:#1A1A24;
+  --text-1:#F0EDE3;--text-2:#C2CBD1;--text-3:#AEBBC4;--text-dis:#75838E;
+  --rule:rgba(197,160,23,.2);--rule-strong:rgba(197,160,23,.4);--focus:#A9B9FF;--selected:#89A5FF;
+  --ev-computed:#67D4C7;--ev-witness:#AFA6FF;--ev-unresolved:#EE977C;
+  --folio-text:#171B24;--folio-2:#4C5661;--folio-rule:#76652A;--folio-computed:#0B6E66;
+  --f-engr:Cinzel,"Trajan Pro","Times New Roman",serif;--f-disp:Panchang,Unbounded,sans-serif;--f-sans:Satoshi,Manrope,system-ui,sans-serif;
+  --f-folio:"Crimson Pro","Iowan Old Style",Georgia,serif;--f-mono:"JetBrains Mono","SF Mono",ui-monospace,monospace;
+  --s1:8px;--s2:16px;--s3:24px;--s5:40px;--s8:64px;--s13:104px;
+  --r-tile:.75rem;--r-card:1rem;--r-pill:9999px;
+  --ease:cubic-bezier(.19,1,.22,1);
+  --sh-capsule:0 4px 18px -8px rgba(7,11,29,.9);--sh-dialog:0 30px 60px -20px rgba(7,11,29,.95);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--void);color:var(--text-1)}
+body{font-family:var(--f-sans);font-size:1.0625rem;line-height:1.7;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--void)}
+.hexbg{position:fixed;inset:0;pointer-events:none;opacity:.04;z-index:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 0l28 16v32L28 64 0 48V16zM28 64v33' fill='none' stroke='%23C5A017' stroke-width='1'/%3E%3C/svg%3E")}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:var(--s3) var(--s8)}
+.pill{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:var(--r-pill);border:1px solid var(--rule);background:transparent;cursor:pointer;font-family:var(--f-disp);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-2);text-decoration:none;transition:border-color .3s var(--ease),color .3s var(--ease)}
+.pill:hover{border-color:var(--rule-strong);color:var(--text-1)}
+.pill[aria-current="page"],.pill[aria-pressed="true"]{color:var(--gold);border-color:var(--rule-strong)}
+.pill[aria-current="page"]::before{content:"";width:6px;height:6px;background:var(--gold);transform:rotate(45deg)}
+.pill.sm{min-height:36px;padding:0 12px;font-size:.6875rem}
+.datebar{display:flex;align-items:center;gap:6px}
+.datebar input{background:var(--void);border:1px solid var(--rule);border-radius:var(--r-pill);min-height:44px;padding:0 14px;font-family:var(--f-mono);font-size:.8125rem;color:var(--text-1)}
+.icon-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--rule);background:transparent;cursor:pointer;color:var(--gold);font-size:1rem}
+.icon-btn:hover{border-color:var(--rule-strong)}
+.primary{background:var(--indigo);border-color:var(--indigo);color:var(--parchment)}
+.primary:hover{color:var(--parchment);border-color:var(--selected)}
+/* Type */
+.eyebrow{font-family:var(--f-disp);font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--silver)}
+.epithet{font-family:var(--f-disp);font-size:.75rem;letter-spacing:.34em;text-transform:uppercase;color:var(--gold)}
+h1.title{font-family:var(--f-engr);font-weight:500;font-size:2.25rem;line-height:1.1;letter-spacing:.12em;text-transform:uppercase;margin:6px 0 10px;text-wrap:balance}
+h2{font-family:var(--f-disp);font-weight:500;font-size:1.5rem;line-height:1.25;letter-spacing:-.01em;margin:0 0 var(--s2);text-wrap:balance}
+h3{font-family:var(--f-disp);font-weight:500;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 var(--s1)}
+.lede{font-size:1.1875rem;line-height:1.5;color:var(--text-2);max-width:70ch;margin:0}
+p{margin:0 0 var(--s2);max-width:70ch}
+.meta,.data{font-family:var(--f-mono);font-size:.75rem;line-height:1.5;color:var(--text-3)}
+.muted{color:var(--text-2)}
+/* Panels */
+.room{display:grid;gap:var(--s5);animation:breath .22s var(--ease)}
+@keyframes breath{from{opacity:.6}to{opacity:1}}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-card);padding:var(--s3);min-width:0}
+.grid2{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:var(--s3)}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s3)}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s2)}
+@media (max-width:900px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.hero{display:grid;gap:var(--s2);padding-block:var(--s3) 0}
+.decl{font-family:var(--f-engr);font-size:clamp(1.5rem,4vw,2.25rem);letter-spacing:.08em;line-height:1.15;color:var(--text-1);margin:0;text-wrap:balance}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:var(--r-pill);padding:6px 12px;font-size:.8125rem;color:var(--text-2);background:transparent;cursor:default}
+button.chip{cursor:pointer;min-height:36px}
+button.chip:hover{border-color:var(--rule-strong);color:var(--text-1)}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.ev-c{color:var(--ev-computed)}.ev-w{color:var(--ev-witness)}.ev-u{color:var(--ev-unresolved)}
+.dot.c{background:var(--emerald)}.dot.w{background:var(--violet-glow)}.dot.u{background:var(--terracotta)}.dot.g{background:var(--gold)}
+.list{display:grid;gap:10px}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;padding:12px 14px;border:1px solid var(--rule);border-radius:var(--r-tile);background:transparent;text-align:left;cursor:pointer;width:100%;color:var(--text-1);transition:border-color .3s var(--ease)}
+.item:hover{border-color:var(--rule-strong)}
+.item .k{font-family:var(--f-mono);font-size:.8125rem;color:var(--gold);white-space:nowrap}
+.item b{font-weight:600}
+.item small{display:block;color:var(--text-2);font-size:.875rem;line-height:1.5;margin-top:2px}
+.divider{display:flex;align-items:center;gap:12px;color:var(--gold);margin:var(--s2) 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--rule)}
+.divider span{width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
+/* Tables */
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:var(--r-tile)}
+table{border-collapse:collapse;width:100%;font-size:.875rem;font-variant-numeric:tabular-nums}
+th{font-family:var(--f-disp);font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;color:var(--silver);text-align:left;font-weight:500;padding:10px 12px;border-bottom:1px solid var(--rule)}
+td{padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr.click{cursor:pointer}tr.click:hover td{background:rgba(197,160,23,.05)}
+td.num{font-family:var(--f-mono);color:var(--text-1);white-space:nowrap}
+.sym{font-size:1.05rem;color:var(--gold);width:1.4em;display:inline-block}
+.tag{font-family:var(--f-mono);font-size:.6875rem;border:1px solid var(--rule);border-radius:var(--r-pill);padding:1px 8px;color:var(--text-3);white-space:nowrap}
+.tag.natal{color:var(--gold-warm);border-color:var(--rule-strong)}
+.tag.c{color:var(--ev-computed);border-color:rgba(16,181,167,.4)}
+.tag.w{color:var(--ev-witness);border-color:rgba(123,104,238,.5)}
+/* SVG */
+svg text{font-family:var(--f-mono)}
+.bg-wrap{display:flex;justify-content:center}
+.bg-wrap svg{width:100%;max-width:440px;height:auto}
+.center-shape{cursor:pointer;transition:stroke .3s var(--ease)}
+.gate-dot{cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.8125rem;color:var(--text-2);margin-top:10px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+/* Drawer */
+.drawer{position:fixed;z-index:40;top:calc(env(safe-area-inset-top,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:min(440px,calc(100vw - 24px));background:var(--surface);border:1px solid var(--rule-strong);border-radius:var(--r-card);box-shadow:var(--sh-dialog);padding:var(--s3);overflow-y:auto;transform:translateX(0);transition:transform .3s var(--ease)}
+.drawer[hidden]{display:none!important}
+.drawer .close{position:absolute;top:12px;right:12px}
+.drawer h2{padding-right:48px}
+.spectrum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:var(--s2) 0}
+.spectrum div{border:1px solid var(--rule);border-radius:var(--r-tile);padding:10px;text-align:center}
+.spectrum span{display:block;font-family:var(--f-disp);font-size:.625rem;letter-spacing:.2em;text-transform:uppercase;color:var(--silver)}
+.spectrum b{font-weight:500;font-size:.9375rem}
+.spectrum .s b{color:var(--ev-unresolved)}.spectrum .g b{color:var(--ev-computed)}.spectrum .x b{color:var(--gold-warm)}
+/* Map */
+.map-wrap{overflow:hidden;border:1px solid var(--rule);border-radius:var(--r-card);background:var(--void);touch-action:manipulation}
+.map-wrap svg{display:block;width:100%;height:auto;cursor:crosshair}
+.toggles{display:flex;flex-wrap:wrap;gap:6px}
+.swatch{width:14px;height:3px;border-radius:2px;display:inline-block}
+/* Timeline */
+.month{font-family:var(--f-disp);font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--silver);margin:var(--s3) 0 var(--s1)}
+.ev-row{display:grid;grid-template-columns:92px 24px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--rule);border-radius:var(--r-tile);background:transparent;width:100%;text-align:left;cursor:pointer;color:var(--text-1);margin-bottom:6px}
+.ev-row:hover{border-color:var(--rule-strong)}
+.ev-row.past{opacity:.55}
+.ev-row.sel{border-color:var(--gold)}
+.ev-row .dt{font-family:var(--f-mono);font-size:.75rem;color:var(--text-3)}
+@media (max-width:560px){.ev-row{grid-template-columns:72px 20px minmax(0,1fr)}.ev-row .tag{display:none}}
+.dasha-bar{display:flex;height:44px;border-radius:var(--r-pill);overflow:hidden;border:1px solid var(--rule);position:relative}
+.dasha-bar div{display:flex;align-items:center;justify-content:center;font-family:var(--f-disp);font-size:.625rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-2);border-right:1px solid var(--rule);min-width:0;overflow:hidden;white-space:nowrap;cursor:pointer}
+.dasha-bar div.cur{color:var(--gold);background:rgba(197,160,23,.08)}
+.dasha-bar .now{position:absolute;top:0;bottom:0;width:2px;background:var(--gold-warm);pointer-events:none}
+/* Folio */
+.folio-room{background:var(--parchment);color:var(--folio-text);border-radius:var(--r-card);padding-block:var(--s5) var(--s8);padding-left:max(16px,4vw);padding-right:max(16px,4vw)}
+.folio-grid{display:grid;grid-template-columns:220px minmax(0,680px);gap:var(--s5);justify-content:center}
+@media (max-width:900px){.folio-grid{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+.toc{position:sticky;top:120px;align-self:start;display:grid;gap:2px;max-height:75vh;overflow-y:auto}
+.toc a{font-family:var(--f-engr);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--folio-2);text-decoration:none;padding:6px 0;border-bottom:1px solid rgba(118,101,42,.25)}
+.toc a:hover{color:var(--folio-rule)}
+.folio{font-family:var(--f-folio);font-size:1.1875rem;line-height:1.5}
+.folio .chap{font-family:var(--f-engr);font-size:.875rem;letter-spacing:.24em;color:var(--folio-rule);text-transform:uppercase;margin:var(--s8) 0 6px}
+.folio .chap:first-child{margin-top:0}
+.folio h2{font-family:var(--f-engr);font-weight:500;font-size:2.25rem;line-height:1.15;color:var(--ink-iron);margin:0 0 var(--s3);letter-spacing:.02em}
+.folio h3{font-family:var(--f-engr);font-size:1.1875rem;letter-spacing:.06em;text-transform:none;color:var(--ink-bronze);margin:var(--s3) 0 var(--s1)}
+.folio p{max-width:none;margin:0}
+.folio p+p{text-indent:1em}
+.folio .note{border-left:2px solid var(--folio-rule);padding:4px 0 4px 16px;margin:var(--s2) 0;font-size:1.0625rem;color:var(--folio-2)}
+.folio .fdiv{display:flex;align-items:center;gap:12px;margin:var(--s5) 0 0}
+.folio .fdiv::before,.folio .fdiv::after{content:"";flex:1;height:1px;background:var(--folio-rule)}
+.folio .fdiv span{width:6px;height:6px;background:var(--folio-rule);transform:rotate(45deg)}
+.folio .tbl{border-color:rgba(118,101,42,.4);margin:var(--s2) 0;background:transparent}
+.folio table{font-family:var(--f-sans);font-size:.8125rem}
+.folio th{color:var(--folio-rule);border-color:rgba(118,101,42,.4)}
+.folio td{border-color:rgba(118,101,42,.25);color:var(--folio-text)}
+.folio .maplink{display:inline-flex;margin-top:var(--s2);min-height:44px;align-items:center;padding:0 18px;border-radius:var(--r-pill);background:var(--indigo);color:var(--parchment);font-family:var(--f-disp);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.foot{margin-top:var(--s5);text-align:center;font-family:var(--f-mono);font-size:.75rem;letter-spacing:.16em;color:var(--text-3);text-transform:uppercase}
+
+.bars{display:grid;gap:5px}
+.bars div{display:grid;grid-template-columns:76px minmax(0,1fr) 36px;gap:8px;align-items:center;font-family:var(--f-mono);font-size:.6875rem;color:var(--text-3)}
+.bars i{display:block;height:4px;border-radius:2px;background:var(--rule)}
+.bars i b{display:block;height:100%;border-radius:2px;background:var(--emerald)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;font-size:.875rem}
+.kv dt{font-family:var(--f-mono);font-size:.75rem;color:var(--text-3);padding-top:2px}
+.kv dd{margin:0;color:var(--text-1)}
+%%CSS%%
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="hexbg" aria-hidden="true"></div>
+<nav class="rail" id="rail" aria-label="Rooms"><a class="rail-mark" href="#sky" id="railMark" aria-label="Noesis, the Sky room"></a><div class="rail-rooms" id="railRooms"></div><div class="rail-foot" aria-hidden="true"><i class="dmd"></i><span>137</span></div></nav>
+<header class="topbar" id="topbar">
+  <a class="tb-mark" href="#sky" id="tbMark" aria-label="Noesis"></a>
+  <div class="crumb" id="crumb" aria-live="polite"></div>
+  <div class="datebar" id="datebar">
+    <button class="icon-btn" id="prevDay" aria-label="Previous day"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 3L5 8l5 5"/></svg></button>
+    <input type="date" id="dateIn" aria-label="Date to witness">
+    <button class="icon-btn" id="nextDay" aria-label="Next day"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3l5 5-5 5"/></svg></button>
+    <button class="pill sm" id="nowBtn">Today</button>
+  </div>
+</header>
+<main class="wrap" id="main"></main>
+<nav class="dock" id="dock" aria-label="Rooms"></nav>
+<div class="sheet" id="sheet" hidden><div class="sheet-in"><div class="sheet-head"><span class="eyebrow">All rooms</span><button class="icon-btn" id="sheetClose" aria-label="Close">×</button></div><div class="sheet-grid" id="sheetGrid"></div></div></div>
+<aside class="drawer" id="drawer" hidden aria-live="polite"><button class="icon-btn close" id="drawerClose" aria-label="Close">×</button><div id="drawerBody"></div></aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script type="application/json" id="sky">%%SKY%%</script>
+<script type="application/json" id="engines">%%ENGINES%%</script>
+<script type="application/json" id="daily">%%DAILY%%</script>
+<script type="application/json" id="content">%%CONTENT%%</script>
+<script>%%DICT%%</script>
+<script>%%LIB%%</script>
+<script>
+(function(){
+const SKY=JSON.parse(document.getElementById('sky').textContent);
+const BOOK=JSON.parse(document.getElementById('content').textContent);
+const ENG=JSON.parse(document.getElementById('engines').textContent);
+const DAILY=JSON.parse(document.getElementById('daily').textContent);
+/* the engine-held day for a date (synced from Selemene readings), or null */
+const dayOf=d=>DAILY[d]||null;
+const dayEng=(d,id)=>{const x=DAILY[d];return x&&x.engines&&x.engines[id]?x.engines[id].result:null};
+const ORDER=SKY.order, DAYS=SKY.days, EVENTS=SKY.events;
+const NAT=SKY.natal.map(n=>({side:n[0],body:n[1],lon:n[2],gate:n[3],line:n[4]}));
+const NATG=new Set(NAT.map(n=>n.gate));
+const NATAL_CH=["23-43","42-53"];
+const NATAL_CEN=new Set(["Ajna","Throat","Sacral","Root"]);
+const PCOL={Sun:'var(--gold-warm)',Moon:'var(--parchment)',Mercury:'var(--silver)',Venus:'var(--violet-glow)',Mars:'var(--terracotta)',Jupiter:'var(--gold)',Saturn:'var(--text-dis)',Uranus:'var(--emerald)',Neptune:'var(--indigo)',Pluto:'var(--ev-unresolved)',NorthNode:'var(--selected)'};
+const PNAME=b=>b==='NorthNode'?'North Node':b==='SouthNode'?'South Node':b;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SIGNS=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const fmtLon=l=>{const m=Math.round((((l%360)+360)%360)*60)%21600,s=Math.floor(m/1800),r=m%1800;return `${SIGNS[s]} ${Math.floor(r/60)}°${String(r%60).padStart(2,'0')}'`};
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtDate=s=>{const [y,m,d]=s.split('-').map(Number);return `${d} ${MON[m-1]} ${y}`};
+const dayMs=864e5, START=Date.parse(DAYS[0].d+'T00:00:00Z');
+function todayIST(){const t=new Date(Date.now()+5.5*36e5);return t.toISOString().slice(0,10)}
+function clampDate(s){if(s<DAYS[0].d)return DAYS[0].d;if(s>DAYS[DAYS.length-1].d)return DAYS[DAYS.length-1].d;return s}
+function rec(s){const i=Math.round((Date.parse(s+'T00:00:00Z')-START)/dayMs);return DAYS[Math.max(0,Math.min(DAYS.length-1,i))]}
+function addDays(s,n){return new Date(Date.parse(s+'T00:00:00Z')+n*dayMs).toISOString().slice(0,10)}
+const state={date:clampDate(todayIST()),room:'sky',map:{planets:new Set(Object.keys(PCOL)),angles:new Set(['MC','IC','ASC','DSC']),transit:true,view:'world',pick:null},tl:{type:'all',range:'year'}};
+try{const v=localStorage.getItem('wa-map');if(v){const o=JSON.parse(v);if(o.view)state.map.view=o.view}}catch(e){}
+
+/* ---------- shared helpers ---------- */
+function tPos(r){return ORDER.map((b,i)=>({body:b,gate:r.p[i][0],line:r.p[i][1],retro:!!r.p[i][2],lon:r.p[i][3]}))}
+function natalIn(g){return NAT.filter(n=>n.gate===g)}
+function natLabel(n){return `${n.side==='P'?'Personality':'Design'} ${PNAME(n.body)} ${n.gate}.${n.line}`}
+function chKey(a,b){return a<b?`${a}-${b}`:`${b}-${a}`}
+function partnerGates(g){return Object.keys(CHANNELS).map(k=>k.split('-').map(Number)).filter(p=>p.includes(g)).map(p=>p[0]===g?p[1]:p[0])}
+function openDrawer(html){$('#drawerBody').innerHTML=html;$('#drawer').hidden=false;$('#drawerClose').focus()}
+$('#drawerClose').onclick=()=>{$('#drawer').hidden=true};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#drawer').hidden=true});
+function spectrum(g){const G=GATES[g];return `<div class="spectrum"><div class="s"><span>Shadow</span><b>${G[2]}</b></div><div class="g"><span>Gift</span><b>${G[3]}</b></div><div class="x"><span>Siddhi</span><b>${G[4]}</b></div></div>`}
+function showGate(g){
+  const G=GATES[g],r=rec(state.date),tp=tPos(r).filter(t=>t.gate===g&&t.body!=='Moon');
+  const nat=natalIn(g);
+  const chans=partnerGates(g).map(p=>{const k=chKey(g,p);const have=NATG.has(p);return `<li><b>${k} ${CHANNELS[k][0]}</b> <span class="meta">${CHANNELS[k][1]} circuit</span>${have?` <span class="tag natal">you carry ${p}</span>`:''}${CH_NOTE[k]&&have?`<br><span class="muted">${CH_NOTE[k]}</span>`:''}</li>`}).join('');
+  openDrawer(`<div class="eyebrow">Gate ${g} · ${G[1].replace('SolarPlexus','Solar Plexus')}</div><h2>${G[0]}</h2>${spectrum(g)}
+  <h3>In your chart</h3><p class="muted">${nat.length?nat.map(natLabel).join(' · '):'Not activated in your chart. You meet this gate through other people and transits.'}</p>
+  <h3>On ${fmtDate(state.date)}</h3><p class="muted">${tp.length?tp.map(t=>`Transit ${PNAME(t.body)} in ${t.gate}.${t.line}${t.retro?' R':''}`).join(' · '):'No transit in this gate today.'}</p>
+  <h3>Channels of this gate</h3><ul style="padding-left:18px;display:grid;gap:8px;margin:0">${chans}</ul>`)}
+function showCenter(c,defined,byTransit){
+  const C=CENTERS[c],nm=c.replace('SolarPlexus','Solar Plexus');
+  const gates=Object.entries(GATES).filter(([g,v])=>v[1]===c).map(([g])=>+g);
+  openDrawer(`<div class="eyebrow">Center</div><h2>${nm}</h2><p class="chips"><span class="chip"><span class="dot ${defined?(byTransit?'c':'g'):'w'}"></span>${defined?(byTransit?'Defined by transit on '+fmtDate(state.date):'Defined in your design'):'Open in your design'}</span></p>
+  <p class="muted">${byTransit?C.d:(NATAL_CEN.has(c)?C.d:C.o)}</p><h3>Gates</h3><div class="chips">${gates.map(g=>`<button class="chip" data-gate="${g}">${g} ${GATES[g][0]}${NATG.has(g)?' ◆':''}</button>`).join('')}</div><p class="meta" style="margin-top:12px">◆ activated in your chart</p>`);
+  $('#drawerBody').querySelectorAll('[data-gate]').forEach(b=>b.onclick=()=>showGate(+b.dataset.gate))}
+
+/* ---------- bodygraph ---------- */
+const CPOS={Head:[200,58],Ajna:[200,138],Throat:[200,238],G:[200,338],Heart:[272,378],Spleen:[78,450],SolarPlexus:[322,450],Sacral:[200,458],Root:[200,562]};
+const GOFF={64:[-20,14],61:[0,14],63:[20,14],47:[-20,-14],24:[0,-14],4:[20,-14],17:[-12,2],11:[12,2],43:[0,18],62:[-16,-26],23:[0,-26],56:[16,-26],16:[-32,-10],20:[-32,8],35:[32,-14],12:[32,0],45:[32,14],31:[-16,28],8:[0,28],33:[16,28],1:[0,-32],7:[-16,-16],13:[16,-16],10:[-32,0],25:[32,0],15:[-16,16],46:[16,16],2:[0,32],21:[0,-16],51:[-16,-4],26:[-14,12],40:[14,12],48:[-22,-32],57:[-16,-18],44:[-8,-4],50:[16,0],32:[-8,10],28:[-16,22],18:[-22,34],36:[22,-32],22:[16,-18],37:[8,-4],6:[-16,0],49:[-8,10],55:[16,22],30:[22,34],5:[-18,-30],14:[0,-30],29:[18,-30],34:[-34,-10],27:[-34,14],59:[34,10],42:[-16,30],3:[0,30],9:[16,30],53:[-16,-30],60:[0,-30],52:[16,-30],54:[-34,-14],38:[-34,2],58:[-34,18],19:[34,-14],39:[34,2],41:[34,18]};
+function gxy(g){const c=CPOS[GATES[g][1]],o=GOFF[g];return [c[0]+o[0],c[1]+o[1]]}
+function shape(c){const [x,y]=CPOS[c];switch(c){case'Head':return `M${x} ${y-36}L${x+34} ${y+24}L${x-34} ${y+24}Z`;case'Ajna':return `M${x-34} ${y-26}L${x+34} ${y-26}L${x} ${y+34}Z`;case'Throat':return rr(x-40,y-36,80,72,10);case'G':return `M${x} ${y-44}L${x+44} ${y}L${x} ${y+44}L${x-44} ${y}Z`;case'Heart':return `M${x} ${y-26}L${x+26} ${y+20}L${x-26} ${y+20}Z`;case'Spleen':return `M${x-30} ${y-44}L${x+30} ${y}L${x-30} ${y+44}Z`;case'SolarPlexus':return `M${x+30} ${y-44}L${x-30} ${y}L${x+30} ${y+44}Z`;case'Sacral':return rr(x-42,y-40,84,80,10);case'Root':return rr(x-42,y-40,84,80,10)}}
+function rr(x,y,w,h,r){return `M${x+r} ${y}H${x+w-r}Q${x+w} ${y} ${x+w} ${y+r}V${y+h-r}Q${x+w} ${y+h} ${x+w-r} ${y+h}H${x+r}Q${x} ${y+h} ${x} ${y+h-r}V${y+r}Q${x} ${y} ${x+r} ${y}Z`}
+function bodygraph(el,r){
+  if(K3.ok()){el.classList.add('stage','loom-stage');el.innerHTML='';try{const {inst,fresh}=K3.mount(state.room,el,h=>loom3d(h,r));if(!fresh)inst.update(r);return}catch(e){console.warn('loom',e);K3.release();el.classList.remove('stage','loom-stage')}}
+  const tg=new Set(), tByGate={};
+  if(r) tPos(r).forEach(t=>{if(t.body!=='Moon'){tg.add(t.gate);(tByGate[t.gate]=tByGate[t.gate]||[]).push(t.body)}});
+  const chs=r?r.ch:NATAL_CH.map(k=>[k,'natal']);
+  const chMap=Object.fromEntries(chs);
+  const defC=new Set(r?r.cen:[...NATAL_CEN]);
+  let s=`<svg viewBox="20 8 360 610" role="img" aria-label="Bodygraph${r?' with transits for '+fmtDate(r.d):''}">`;
+  for(const k of Object.keys(CHANNELS)){const [a,b]=k.split('-').map(Number),[x1,y1]=gxy(a),[x2,y2]=gxy(b),t=chMap[k];
+    const st=t==='natal'?'stroke="var(--gold)" stroke-width="4"':t==='bridge'?'stroke="var(--emerald)" stroke-width="4"':t==='transit'?'stroke="var(--violet-glow)" stroke-width="3" stroke-dasharray="5 4"':'stroke="var(--rule)" stroke-width="2"';
+    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${st} stroke-linecap="round"/>`}
+  for(const c of Object.keys(CPOS)){const nat=NATAL_CEN.has(c),d=defC.has(c),bt=d&&!nat;
+    s+=`<path class="center-shape" data-center="${c}" d="${shape(c)}" fill="${d?'var(--surface)':'var(--void)'}" stroke="${nat?'var(--gold)':bt?'var(--emerald)':'var(--silver)'}" stroke-width="${d?2.2:1.1}" ${d?'':'stroke-dasharray="3 3"'}><title>${c.replace('SolarPlexus','Solar Plexus')}</title></path>`}
+  for(const g of Object.keys(GOFF).map(Number)){const [x,y]=gxy(g),n=NATG.has(g),t=tg.has(g);
+    s+=`<g class="gate-dot" data-gate="${g}" tabindex="0" role="button" aria-label="Gate ${g}"><circle cx="${x}" cy="${y}" r="${n||t?8:6.5}" fill="${n?'var(--gold)':t?'var(--emerald)':'var(--void)'}" stroke="${t&&n?'var(--emerald)':n?'var(--gold)':t?'var(--emerald)':'var(--rule-strong)'}" stroke-width="${t&&n?2.5:1}"/><text x="${x}" y="${y+3}" text-anchor="middle" font-size="7.5" fill="${n||t?'var(--void)':'var(--text-3)'}">${g}</text></g>`}
+  s+='</svg>';el.innerHTML=s;
+  el.querySelectorAll('[data-center]').forEach(p=>p.onclick=()=>showCenter(p.dataset.center,defC.has(p.dataset.center),defC.has(p.dataset.center)&&!NATAL_CEN.has(p.dataset.center)));
+  el.querySelectorAll('[data-gate]').forEach(p=>{p.onclick=()=>showGate(+p.dataset.gate);p.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showGate(+p.dataset.gate)}}})}
+const BG_LEGEND=`<div class="legend"><span><i style="background:var(--gold)"></i>Your channels</span><span><i style="background:var(--emerald)"></i>Completed by transit (computed)</span><span><i style="background:var(--violet-glow)"></i>Transit only</span><span>Tap a center or gate</span></div>`;
+
+/* ---------- reading of the day ---------- */
+/* one label for the day's definition, by connected-component count, used by every summary */
+const DEF_LABEL=['No definition','Single','Split','Triple split','Quadruple split'];
+function defLabel(d){return DEF_LABEL[d]||`${d}-part split`}
+/* the actual route between two centers through the day's defined channels (breadth-first) */
+function centerRoute(r,from,to){const adj={};r.ch.forEach(([k])=>{const [g1,g2]=k.split('-').map(Number),c1=GATES[g1][1],c2=GATES[g2][1];(adj[c1]=adj[c1]||[]).push([c2,k]);(adj[c2]=adj[c2]||[]).push([c1,k])});
+  const prev={[from]:null},q=[from];while(q.length){const c=q.shift();if(c===to)break;for(const [n,k] of adj[c]||[])if(!(n in prev)){prev[n]=[c,k];q.push(n)}}
+  if(!(to in prev))return null;const path=[];let c=to;while(prev[c]){path.unshift({center:c,via:prev[c][1]});c=prev[c][0]}return path}
+function routeText(path){if(!path||!path.length)return 'through the day\'s channels';const nm=c=>c==='G'?'the G Center':c==='SolarPlexus'?'the Solar Plexus':'the '+c;
+  if(path.length===1)return `directly through Channel ${path[0].via}`;return 'through '+path.slice(0,-1).map(p=>nm(p.center)).join(' and ')+` (channels ${path.map(p=>p.via).join(', ')})`}
+function dayReading(r){
+  const tp=tPos(r), sun=tp[0], earth=tp[1];
+  const bridges=r.ch.filter(c=>c[1]==='bridge').map(c=>c[0]);
+  const addC=r.cen.filter(c=>!NATAL_CEN.has(c));
+  let decl,trav;
+  if(r.def===1&&r.m2t){const route=centerRoute(r,'Sacral','Throat');decl='Wide split bridged. Motor reaches the Throat.';trav=`Transits supply the gates your split is missing. Your Sacral reaches your voice ${routeText(route)}, so knowing and doing move as one motion. Execute what your Sacral already said yes to; this definition is borrowed and will pass.`}
+  else if(r.def===1){decl='One circuit today.';trav='Your two islands are joined by transit. Thinking-work and doing-work share a gear for now. Use it to finish, not to begin from the mind.'}
+  else if(addC.includes('SolarPlexus')){decl='An emotional wave runs through you.';trav='A transit defines your Solar Plexus. Your authority stays Sacral, but mood colours the gut response. Ask the same yes-or-no question on two different days before long commitments.'}
+  else if(bridges.length){decl='Your design is lit from outside.';trav=`Transits complete ${bridges.length} channel${bridges.length>1?'s':''} with your gates. Notice where energy arrives that is not normally yours, and respond rather than reach.`}
+  else{decl='Two islands. Your own rhythm.';trav='No transit bridges your split today. Mind and engine run on separate gears, the way they are built. Respond to what arrives, write insights down, and keep cycles moving.'}
+  return {decl,trav,sun,earth,bridges,addC}}
+
+/* ---------- rooms ---------- */
+const ROOMS=[['sky','Sky'],['today','Today'],['design','Design'],['keys','Keys'],['jyotish','Jyotish'],['engines','Engines'],['timeline','Timeline'],['map','Map'],['folio','Folio']];
+const DOCK=['sky','today','engines','jyotish','folio'];
+const ROOM_TXT={sky:'The night sky over your design, Western or Vedic.',today:'Your bodygraph under this day: channels, contacts, lenses.',design:'The permanent architecture: type, profile, centers, cross.',keys:'Eleven spheres of the hologenetic profile.',engines:'Eight Selemene engines, each figure traced to its response.',jyotish:'Sidereal chart, dasha, Panchanga and Sade Sati.',timeline:'Ingresses, stations, contacts, eclipses and dasha to 2030.',map:'Planetary lines over the land at birth.',folio:'The reading, in full, on parchment.'};
+const HEXO='<svg class="hexo" viewBox="0 0 48 42" aria-hidden="true"><polygon points="12,1 36,1 47,21 36,41 12,41 1,21"/></svg>';
+const roomLink=(id,l,cls)=>`<a class="rm ${cls||''}" href="#${id}" data-room="${id}"><span class="hx">${HEXO}${icon(id==='design'?'design':id,26)}</span><span>${l}</span></a>`;
+$('#railRooms').innerHTML=ROOMS.map(([id,l])=>roomLink(id,l)).join('');
+$('#railMark').innerHTML=icon('witness',44);$('#tbMark').innerHTML=icon('witness',30)+'<b>NOESIS</b>';
+$('#dock').innerHTML=DOCK.map(id=>roomLink(id,ROOMS.find(r=>r[0]===id)[1])).join('')+`<a class="rm" href="#" id="dockMore" data-more="1"><span class="hx">${HEXO}<svg class="gl" width="26" height="26" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="14" cy="24" r="2.2"/><circle cx="24" cy="24" r="2.2"/><circle cx="34" cy="24" r="2.2"/></svg></span><span>More</span></a>`;
+$('#sheetGrid').innerHTML=ROOMS.map(([id,l])=>roomLink(id,l)).join('');
+$('#dockMore').onclick=e=>{e.preventDefault();$('#sheet').hidden=false;$('#sheetClose').focus()};
+$('#sheetClose').onclick=()=>{$('#sheet').hidden=true};$('#sheet').onclick=e=>{if(e.target.id==='sheet')$('#sheet').hidden=true};
+$('#sheetGrid').addEventListener('click',()=>{$('#sheet').hidden=true});
+let lastRoom=null;
+function render(){
+  const room=state.room; document.querySelectorAll('[data-room]').forEach(a=>{if(a.dataset.room===room)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+  const more=$('#dockMore');if(more){if(!DOCK.includes(room))more.setAttribute('aria-current','page');else more.removeAttribute('aria-current')}
+  $('#crumb').innerHTML=`Witness Alchemist<i>/</i><b>${ROOMS.find(r=>r[0]===room)[1]}</b>`;
+  if(lastRoom!==room){K3.release();lastRoom=room}
+  $('#main').classList.remove('full');
+  $('#dateIn').value=state.date; $('#dateIn').min=DAYS[0].d; $('#dateIn').max=DAYS[DAYS.length-1].d;
+  $('#datebar').style.visibility=room==='folio'?'hidden':'visible';
+  ({sky:rSky,today:rToday,design:rDesign,keys:rKeys,engines:rEngines,jyotish:rJyotish,timeline:rTimeline,map:rMap,folio:rFolio})[room]();
+}
+function setDate(s){state.date=clampDate(s);render()}
+$('#prevDay').onclick=()=>setDate(addDays(state.date,-1));$('#nextDay').onclick=()=>setDate(addDays(state.date,1));
+$('#nowBtn').onclick=()=>setDate(todayIST());$('#dateIn').onchange=e=>{if(e.target.value)setDate(e.target.value)};
+function route(){const h=(location.hash||'#sky').slice(1);state.room=ROOMS.some(r=>r[0]===h)?h:'sky';$('#drawer').hidden=true;render();window.scrollTo(0,0)}
+window.addEventListener('hashchange',route);
+
+%%ROOMS%%
+
+function wire(root){root.querySelectorAll('[data-gate]').forEach(b=>{if(!b.closest('svg'))b.onclick=()=>showGate(+b.dataset.gate)});
+  root.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{const k=b.dataset.ch,[a,c]=k.split('-').map(Number);openDrawer(`<div class="eyebrow">${CHANNELS[k][1]} circuit</div><h2>Channel ${k} ${CHANNELS[k][0]}</h2><p>${CH_NOTE[k]||'A transit channel carried by the sky. You feel it as weather in your aura rather than as your own definition.'}</p><div class="chips"><button class="chip" data-g2="${a}">Gate ${a} ${GATES[a][0]}</button><button class="chip" data-g2="${c}">Gate ${c} ${GATES[c][0]}</button></div>${channelWindow(k)}`);$('#drawerBody').querySelectorAll('[data-g2]').forEach(x=>x.onclick=()=>showGate(+x.dataset.g2))});
+  root.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{setDate(b.dataset.ev);if(state.room!=='today')location.hash='#today'})}
+function channelWindow(k){const i=DAYS.findIndex(d=>d.d===state.date);let a=i,b=i;const has=j=>DAYS[j]&&DAYS[j].ch.some(c=>c[0]===k);if(!has(i))return '';while(has(a-1))a--;while(has(b+1))b++;return `<h3 style="margin-top:16px">Window</h3><p class="muted">Active from ${fmtDate(DAYS[a].d)}${a===0?' (or earlier)':''} to ${fmtDate(DAYS[b].d)}${b===DAYS.length-1?' (or later)':''}.</p>`}
+const EVT={ingress:['Ingress','w'],station:['Station','u'],contact:['Contact','c'],eclipse:['Eclipse','u'],dasha:['Dasha','natal']};
+function evRow(e){return `<button class="ev-row${e[0]<state.date?' past':''}${e[0]===state.date?' sel':''}" data-ev="${e[0]}"><span class="dt">${fmtDate(e[0])}</span><span class="sym">${SYM[e[3]]||'◆'}</span><span>${esc(e[2])}</span><span class="tag ${EVT[e[1]][1]}">${EVT[e[1]][0]}</span></button>`}
+
+/* Design */
+const SUMMARY=[['Generator','Type','2'],['To Respond','Strategy','2'],['Sacral','Authority','2'],['2/4 Hermit / Opportunist','Profile','3'],['Wide split','Definition','4'],['RAX Explanation 4/49 | 23/43','Cross','5'],['PRL DRL','Variables','8']];
+function chapterBlocks(num){const out=[];let on=false;for(const b of BOOK){if(b.h1){on=b.h1.startsWith(num+'.');if(on)continue}if(on)out.push(b)}return out}
+function blocksHTML(bl,folio){return bl.map(b=>b.h2?`<h3>${esc(b.h2)}</h3>`:b.p?`<p>${esc(b.p)}</p>`:b.note?`<p class="${folio?'note':'muted'}">${esc(b.note)}</p>`:b.table?`<div class="tbl"><table><thead><tr>${b.table.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${b.table.rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'').join('')}
+function rDesign(){
+  const r=rec(state.date),tp=tPos(r);
+  const rows=ORDER.map(b=>{const p=NAT.find(n=>n.side==='P'&&n.body===b),d=NAT.find(n=>n.side==='D'&&n.body===b);return `<tr><td class="num click" data-gate="${d.gate}" style="cursor:pointer;color:var(--ev-witness)">${d.gate}.${d.line}</td><td><span class="sym">${SYM[b]}</span>${PNAME(b)}</td><td class="num click" data-gate="${p.gate}" style="cursor:pointer;color:var(--gold-warm)">${p.gate}.${p.line}</td><td>${tp.some(t=>t.body!=='Moon'&&(t.gate===p.gate||t.gate===d.gate))?'<span class="tag c">transit today</span>':''}</td></tr>`}).join('');
+  // wide split bridge status
+  const tg=new Set(tPos(r).filter(t=>t.body!=='Moon').map(t=>t.gate));
+  const routes=[[7,29,'Gate 7 joins your 31 · Gate 29 joins your 46'],[8,29,'Gate 8 joins your 1 · Gate 29 joins your 46'],[20,34,'Channel 20-34 Charisma joins Throat and Sacral directly']];
+  $('#main').innerHTML=`<section class="room">
+  <div class="hero"><div class="epithet">The permanent architecture</div><h1 class="title">Generator · 2/4</h1><p class="lede">Born 13 August 1991, 13:31 IST, Bangalore. Design moment 13 May 1991, 13:59 IST. Tap any element to open its reading.</p>
+  <div class="chips">${SUMMARY.map(s=>`<button class="chip" data-chap="${s[2]}"><span class="eyebrow" style="font-size:.625rem">${s[1]}</span>${s[0]}</button>`).join('')}</div></div>
+  <div class="grid2"><div class="panel"><h3>Bodygraph</h3><div class="bg-wrap" id="bgNat"></div><div class="legend"><span><i style="background:var(--gold)"></i>Your channels 23-43, 42-53</span><span>Dashed outline: open center</span></div></div>
+   <div style="display:grid;gap:var(--s3);align-content:start;min-width:0">
+   <div class="panel"><h3>Activations</h3><div class="tbl"><table><thead><tr><th style="color:var(--ev-witness)">Design</th><th>Body</th><th style="color:var(--gold-warm)">Personality</th><th></th></tr></thead><tbody>${rows}</tbody></table></div><p class="meta" style="margin-top:8px">Design in violet, Personality in gold. Tap a gate.</p></div>
+   </div></div>
+  <div class="grid3">
+   <div class="panel"><h3>Incarnation Cross</h3><div id="cross"></div><p class="meta">Right Angle Cross of Explanation. Tap a gate.</p></div>
+   <div class="panel"><h3>Variables</h3><div id="vars"></div></div>
+   <div class="panel"><h3>The wide split</h3><p class="muted" style="font-size:.9375rem">No single gate joins your islands. These routes need two gates at once. Status on ${fmtDate(state.date)}:</p><div class="list">${routes.map(([a,b,t])=>{const ok=tg.has(a)&&tg.has(b),half=tg.has(a)||tg.has(b);return `<div class="item" style="cursor:default"><span class="tag ${ok?'c':half?'w':''}">${ok?'bridged':half?'half':'open'}</span><span><b>${a} + ${b}</b><small>${t}</small></span></div>`}).join('')}</div><p class="meta" style="margin-top:10px">People who carry these gates feel like a missing piece.</p></div>
+  </div></section>`;
+  bodygraph($('#bgNat'),null);
+  crossSVG($('#cross'),tg); varsSVG($('#vars'));
+  $('#main').querySelectorAll('[data-chap]').forEach(b=>b.onclick=()=>{const bl=chapterBlocks(b.dataset.chap);const h=BOOK.find(x=>x.h1&&x.h1.startsWith(b.dataset.chap+'.')).h1;openDrawer(`<div class="eyebrow">From the Folio</div><h2>${esc(h.replace(/^\d+\.\s*/,''))}</h2>${blocksHTML(bl)}`)});
+  wire($('#main'));}
+function crossSVG(el,tg){const g=[[4,'Personality Sun',200,40],[49,'Personality Earth',200,280],[23,'Design Sun',40,160],[43,'Design Earth',360,160]];
+  let s=`<svg viewBox="0 0 400 320" style="width:100%;height:auto"><circle cx="200" cy="160" r="118" fill="none" stroke="var(--rule-strong)"/><path d="M200 40V280M40 160H360" stroke="var(--rule)"/><path d="M200 150L210 160 200 170 190 160Z" fill="var(--gold)"/>`;
+  g.forEach(([n,l,x,y])=>{const t=tg.has(n);s+=`<g class="gate-dot" data-gate="${n}" tabindex="0" role="button"><circle cx="${x}" cy="${y}" r="30" fill="var(--surface)" stroke="${t?'var(--emerald)':'var(--gold)'}" stroke-width="${t?2.5:1.4}"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="16" fill="var(--text-1)">${n}</text><text x="${x}" y="${y+(y>200?48:y<60?-38:46)}" text-anchor="middle" font-size="9" fill="var(--text-3)">${l}${t?' · transit':''}</text></g>`});
+  el.innerHTML=s+'</svg>';el.querySelectorAll('[data-gate]').forEach(p=>p.onclick=()=>showGate(+p.dataset.gate))}
+function varsSVG(el){const V=[['Determination','Design Sun 23.4','Thirst · Cold','R','Colour 3, tone 4. Cool liquids and cool conditions support digestion. Right: receptive, peripheral, no rigid rules.'],['Environment','Design Node 54.6','Shores','L','Colour 6, tone 2. Edges and transitions: coastlines, borders between communities. Left: active engagement with place.'],['Motivation','Personality Sun 4.2','Hope','R','Colour 2, tone 5. Moved by the possibility of a better outcome. Right: receptive.'],['View','Personality Node 54.4','Probability','L','Colour 5, tone 1. A strategic, focused mind that calculates likelihoods. Left: the Strategic Mind.']];
+  el.innerHTML=`<div class="list">${V.map((v,i)=>`<button class="item" data-v="${i}"><span class="k" style="font-size:1.2rem;color:${i<2?'var(--ev-witness)':'var(--gold-warm)'}">${v[3]==='L'?'←':'→'}</span><span><b>${v[0]}: ${v[2]}</b><small>${v[1]} · ${v[3]==='L'?'Left':'Right'}</small></span></button>`).join('')}</div><p class="meta" style="margin-top:8px">PRL DRL. Matches your HumDes arrows.</p>`;
+  el.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const v=V[+b.dataset.v];openDrawer(`<div class="eyebrow">Variable</div><h2>${v[0]}: ${v[2]}</h2><p>${v[4]}</p><p class="muted">Source: ${v[1]}. Colours and tones shift with a few minutes of birth time; hold them more loosely than gates and lines.</p>`)})}
+
+/* Gene Keys */
+function rKeys(){
+  const r=rec(state.date),tp=tPos(r).filter(t=>t.body!=='Moon');
+  const S=Object.fromEntries(SPHERES.map(s=>[s.id,{...s,n:NAT.find(x=>x.side===s.src[0]&&x.body===s.src[1])}]));
+  let svg=`<svg viewBox="0 0 600 600" style="width:100%;max-width:620px;height:auto" role="img" aria-label="Hologenetic profile"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5 0 10Z" fill="var(--silver)"/></marker></defs><circle cx="300" cy="300" r="240" fill="none" stroke="var(--rule)"/>`;
+  SPHERE_LINKS.forEach(([a,b,l])=>{const A=S[a],B=S[b];const dx=B.x-A.x,dy=B.y-A.y,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;const x1=A.x+ux*36,y1=A.y+uy*36,x2=B.x-ux*38,y2=B.y-uy*38;const ql=l==='Quantum leap';
+    svg+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${ql?'var(--gold)':'var(--silver)'}" stroke-opacity="${ql?.7:.55}" stroke-width="1.2" marker-end="url(#ar)" ${ql?'marker-start="url(#ar)" stroke-dasharray="4 3"':''}/>`;
+    if(!ql){const mx=(x1+x2)/2,my=(y1+y2)/2;let ang=Math.atan2(dy,dx)*180/Math.PI;if(ang>90)ang-=180;if(ang<-90)ang+=180;svg+=`<g transform="translate(${mx} ${my}) rotate(${ang})"><rect x="-38" y="-8" width="76" height="14" rx="7" fill="var(--void)"/><text text-anchor="middle" y="3" font-size="7.5" letter-spacing="1" fill="var(--text-3)">${l.toUpperCase()}</text></g>`}});
+  Object.values(S).forEach(s=>{const t=tp.filter(x=>x.gate===s.n.gate);const des=s.src[0]==='D';
+    svg+=`<g class="gate-dot" data-sp="${s.id}" tabindex="0" role="button" aria-label="${s.name} ${s.n.gate}.${s.n.line}">${t.length?`<circle cx="${s.x}" cy="${s.y}" r="43" fill="none" stroke="var(--emerald)" stroke-width="2"><animate attributeName="r" values="40;45;40" dur="3s" repeatCount="indefinite"/></circle>`:''}<circle cx="${s.x}" cy="${s.y}" r="35" fill="var(--surface)" stroke="${des?'var(--violet-glow)':'var(--gold)'}" stroke-width="1.6"/><text x="${s.x}" y="${s.y-6}" text-anchor="middle" font-size="9" fill="var(--text-2)">${s.name}</text><text x="${s.x}" y="${s.y+12}" text-anchor="middle" font-size="15" fill="${des?'var(--ev-witness)':'var(--gold-warm)'}">${s.n.gate}.${s.n.line}</text>${t.length?`<text x="${s.x}" y="${s.y+56}" text-anchor="middle" font-size="9" fill="var(--ev-computed)">${t.map(x=>SYM[x.body]).join(' ')} transit</text>`:''}</g>`});
+  svg+='</svg>';
+  const seqs=['Activation','Venus','Pearl'];
+  $('#main').innerHTML=`<section class="room"><div class="hero"><div class="epithet">Hologenetic profile</div><h1 class="title">Gene Keys</h1><p class="lede">Eleven spheres from the same planets. Gold rings are Personality, violet rings are Design. A pulsing emerald ring marks a sphere whose key is transited on ${fmtDate(state.date)}.</p>
+  <div class="chips">${seqs.map(q=>`<button class="pill sm" data-seq="${q}">${q} sequence</button>`).join('')}</div></div>
+  <div class="grid2"><div class="panel bg-wrap" style="display:block"><div style="display:flex;justify-content:center">${svg}</div></div>
+  <div style="display:grid;gap:var(--s3);align-content:start;min-width:0" id="seqList"></div></div></section>`;
+  const list=q=>{$('#seqList').innerHTML=`<div class="panel"><h3>${q} sequence</h3><div class="list">${SPHERES.filter(s=>s.seq===q).map(s=>{const n=S[s.id].n,G=GATES[n.gate],t=tp.filter(x=>x.gate===n.gate);return `<button class="item" data-sp="${s.id}"><span class="k">${n.gate}.${n.line}</span><span><b>${s.name}</b>${t.length?' <span class="tag c">transit</span>':''}<small>${G[2]} · ${G[3]} · ${G[4]}</small></span></button>`}).join('')}</div></div>`;wireSp();
+    document.querySelectorAll('[data-seq]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.seq===q))};
+  const wireSp=()=>document.querySelectorAll('[data-sp]').forEach(b=>{b.onclick=()=>{const s=S[b.dataset.sp],n=s.n,t=tp.filter(x=>x.gate===n.gate);openDrawer(`<div class="eyebrow">${s.seq} sequence · ${natLabel(n)}</div><h2>${s.name} ${n.gate}.${n.line}</h2>${spectrum(n.gate)}<p>${s.txt}</p>${t.length?`<p class="ev-c">On ${fmtDate(state.date)}: transit ${t.map(x=>PNAME(x.body)+' '+x.gate+'.'+x.line).join(', ')} activates this sphere.</p>`:''}<button class="chip" data-gg="${n.gate}">Open Gate ${n.gate}</button>`);const gg=$('#drawerBody [data-gg]');gg.onclick=()=>showGate(n.gate)};b.onkeydown=e=>{if(e.key==='Enter')b.onclick()}});
+  document.querySelectorAll('[data-seq]').forEach(b=>b.onclick=()=>list(b.dataset.seq));list('Activation');}
+
+/* Timeline */
+function rTimeline(){
+  const T=state.tl, end=T.range==='90'?addDays(state.date,90):T.range==='year'?addDays(state.date,365):'9999';
+  const evs=EVENTS.filter(e=>(T.type==='all'||e[1]===T.type)&&e[0]>=addDays(state.date,-14)&&e[0]<=end);
+  let html='',m='';evs.forEach(e=>{const mm=e[0].slice(0,7);if(mm!==m){m=mm;const [y,mo]=mm.split('-');html+=`<div class="month">${MON[+mo-1]} ${y}</div>`}html+=evRow(e)});
+  const md=SKY.dasha.filter(d=>d[0]==='Rahu'||d[0]==='Jupiter'||d[0]==='Saturn');
+  const jup=SKY.ad.filter(a=>a[0]==='Jupiter');
+  const t0=Date.parse(jup[0][2]),t1=Date.parse(jup[jup.length-1][3]),pos=Math.max(0,Math.min(100,(Date.parse(state.date)-t0)/(t1-t0)*100));
+  $('#main').innerHTML=`<section class="room"><div class="hero"><div class="epithet">Ingresses · stations · contacts · eclipses · dasha</div><h1 class="title">Timeline</h1><p class="lede">Every event from ${fmtDate(addDays(state.date,-14))} forward, computed for your chart. Tap an event to witness that day.</p></div>
+  <div class="panel"><h3>Jupiter Mahadasha 2026 to 2042</h3><div class="dasha-bar">${jup.map(a=>{const w=(Date.parse(a[3])-Date.parse(a[2]))/(t1-t0)*100;const cur=a[2]<=state.date&&state.date<a[3];return `<div class="${cur?'cur':''}" style="width:${w}%" data-ad="${a[1]}" title="Jupiter / ${a[1]}: ${fmtDate(a[2])} to ${fmtDate(a[3])}">${a[1]}</div>`}).join('')}<span class="now" style="left:${pos}%"></span></div><p class="meta" style="margin-top:8px">Tap an antardasha for its sub-periods.</p><div id="adDetail"></div></div>
+  <div class="chips">${['all','contact','ingress','station','eclipse','dasha'].map(t=>`<button class="pill sm" data-type="${t}" aria-pressed="${T.type===t}">${t==='all'?'All':EVT[t][0]+'s'}</button>`).join('')}<span style="width:12px"></span>${[['90','90 days'],['year','1 year'],['all','To 2030']].map(([k,l])=>`<button class="pill sm" data-range="${k}" aria-pressed="${T.range===k}">${l}</button>`).join('')}</div>
+  <div class="panel">${html||'<p class="muted">No events match these filters.</p>'}</div></section>`;
+  document.querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>{T.type=b.dataset.type;rTimeline()});
+  document.querySelectorAll('[data-range]').forEach(b=>b.onclick=()=>{T.range=b.dataset.range;rTimeline()});
+  document.querySelectorAll('[data-ad]').forEach(b=>b.onclick=()=>{const a=jup.find(x=>x[1]===b.dataset.ad);$('#adDetail').innerHTML=`<h3 style="margin-top:16px">Jupiter / ${a[1]} · ${fmtDate(a[2])} to ${fmtDate(a[3])}</h3><div class="chips">${a[4].map(p=>`<button class="chip" data-ev="${p[1]}">${p[0]} from ${fmtDate(p[1])}</button>`).join('')}</div>`;wire($('#adDetail'))});
+  wire($('#main'));}
+
+/* Astrocartography */
+const VIEWS={world:[0,40,1000,390],asia:[600,110,330,210],europe:[440,60,220,160],americas:[60,60,380,330],oceania:[780,240,220,150]};
+const X=l=>(l+180)/360*1000,Y=p=>(90-p)/180*500;
+const BODIES=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','NorthNode'];
+function interpLon(pl,lat){for(let i=0;i<pl.length-1;i++){const a=pl[i],b=pl[i+1];if(a[0]<=lat&&lat<=b[0]){let d=b[1]-a[1];if(Math.abs(d)>180)return null;return a[1]+d*(lat-a[0])/(b[0]-a[0])}}return null}
+function nearLines(lat,lon){const out=[];const kc=Math.cos(lat*Math.PI/180)*111;
+  BODIES.forEach(b=>{const L=SKY.lines[b];const tests=[['MC',L.mc],['IC',L.ic],['ASC',interpLon(L.asc,lat)],['DSC',interpLon(L.dsc,lat)]];
+   tests.forEach(([a,x])=>{if(x==null)return;const d=Math.abs(((lon-x+540)%360)-180)*kc;if(d<800)out.push({b,a,d})})});return out.sort((p,q)=>p.d-q.d)}
+function strength(d){return d<150?['Strong','c']:d<400?['Clear','w']:['Faint','']}
+function placeReport(name,lat,lon){const n=nearLines(lat,lon);
+  return `<div class="eyebrow">${Math.abs(lat).toFixed(2)}°${lat>=0?'N':'S'} · ${Math.abs(lon).toFixed(2)}°${lon>=0?'E':'W'}</div><h2>${esc(name)}</h2>${n.length?`<div class="list">${n.map(x=>{const s=strength(x.d);return `<div class="item" style="cursor:default"><span class="k" style="color:${PCOL[x.b]}">${SYM[x.b]} ${x.a}</span><span><b>${PNAME(x.b)} ${x.a}</b> <span class="tag ${s[1]}">${s[0]} · ${Math.round(x.d)} km</span><small>${PLANET_KEY[x.b][0].toUpperCase()+PLANET_KEY[x.b].slice(1)}, expressed ${ANGLE_KEY[x.a]}.</small></span></div>`}).join('')}</div>`:'<p class="muted">No natal planetary line runs within 800 km. A neutral place: life there runs on your design alone, without planetary emphasis.</p>'}<p class="meta" style="margin-top:12px">Distances are east-west from each line. Within about 150 km a line is strong; influence fades by 800 km. Test any place with a short stay and your Sacral response.</p>`}
+function rMap(){
+  const M=state.map,r=rec(state.date),vb=VIEWS[M.view];
+  let s=`<svg viewBox="${vb.join(' ')}" id="mapSvg" role="img" aria-label="Astrocartography map"><rect x="0" y="0" width="1000" height="500" fill="var(--void)"/>`;
+  for(let lo=-150;lo<=180;lo+=30)s+=`<line x1="${X(lo)}" y1="0" x2="${X(lo)}" y2="500" stroke="var(--rule)" stroke-width=".4"/>`;
+  for(let la=-60;la<=60;la+=30)s+=`<line x1="0" y1="${Y(la)}" x2="1000" y2="${Y(la)}" stroke="var(--rule)" stroke-width="${la===0?.8:.4}"/>`;
+  s+=`<path d="${SKY.land}" fill="var(--surface)" stroke="var(--rule-strong)" stroke-width=".5"/>`;
+  const sw=M.view==='world'?1.4:.9;
+  BODIES.filter(b=>M.planets.has(b)).forEach(b=>{const L=SKY.lines[b],c=PCOL[b];
+    if(M.angles.has('MC'))s+=`<line x1="${X(L.mc)}" y1="0" x2="${X(L.mc)}" y2="500" stroke="${c}" stroke-width="${sw}"><title>${PNAME(b)} MC ${L.mc.toFixed(1)}°</title></line><text x="${X(L.mc)+2}" y="${vb[1]+10*(vb[3]/390)}" font-size="${8*vb[3]/390}" fill="${c}">${SYM[b]}MC</text>`;
+    if(M.angles.has('IC'))s+=`<line x1="${X(L.ic)}" y1="0" x2="${X(L.ic)}" y2="500" stroke="${c}" stroke-width="${sw}" stroke-dasharray="${4*vb[3]/390} ${3*vb[3]/390}"><title>${PNAME(b)} IC ${L.ic.toFixed(1)}°</title></line><text x="${X(L.ic)+2}" y="${vb[1]+vb[3]-4*(vb[3]/390)}" font-size="${8*vb[3]/390}" fill="${c}">${SYM[b]}IC</text>`;
+    ['ASC','DSC'].forEach(a=>{if(!M.angles.has(a))return;const pl=L[a.toLowerCase()];let d='',prev=null;pl.forEach(([la,lo])=>{const jump=prev!==null&&Math.abs(lo-prev)>180;d+=(d===''||jump?'M':'L')+X(lo).toFixed(1)+' '+Y(la).toFixed(1);prev=lo});
+      s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${sw}" ${a==='DSC'?`stroke-dasharray="${1*vb[3]/390} ${3*vb[3]/390}" stroke-linecap="round"`:''} opacity=".9"><title>${PNAME(b)} ${a}</title></path>`;
+      const mid=pl.find(p=>p[0]===(a==='ASC'?40:-40));if(mid)s+=`<text x="${X(mid[1])+2}" y="${Y(mid[0])}" font-size="${7*vb[3]/390}" fill="${c}">${SYM[b]}${a}</text>`})});
+  if(M.transit){r.mc.forEach((lo,i)=>{const b=BODIES[i];if(!M.planets.has(b))return;s+=`<line x1="${X(lo)}" y1="${vb[1]+vb[3]*.08}" x2="${X(lo)}" y2="${vb[1]+vb[3]*.92}" stroke="${PCOL[b]}" stroke-width="${sw*.8}" stroke-dasharray="${.5*vb[3]/390} ${6*vb[3]/390}" stroke-linecap="round" opacity=".8"/><text x="${X(lo)}" y="${vb[1]+vb[3]*.08-2}" text-anchor="middle" font-size="${7*vb[3]/390}" fill="${PCOL[b]}">${SYM[b]}</text>`})}
+  const rad=2.6*vb[3]/390;
+  CITIES.forEach(([n,la,lo])=>{s+=`<g class="city" data-city="${n}" tabindex="0" role="button" style="cursor:pointer"><circle cx="${X(lo)}" cy="${Y(la)}" r="${n==='Bangalore'?rad*1.6:rad}" fill="${n==='Bangalore'?'var(--gold-warm)':'var(--parchment)'}" stroke="var(--void)" stroke-width="${rad*.3}"/>${M.view!=='world'||n==='Bangalore'?`<text x="${X(lo)+rad*1.8}" y="${Y(la)+rad}" font-size="${8*vb[3]/390}" fill="var(--text-2)">${n}</text>`:''}</g>`});
+  if(M.pick)s+=`<path d="M${X(M.pick[1])} ${Y(M.pick[0])-rad*2}l${rad*2} ${rad*2}l-${rad*2} ${rad*2}l-${rad*2} -${rad*2}z" fill="var(--gold)"/>`;
+  s+='</svg>';
+  const blr=nearLines(12.97,77.59).slice(0,4);
+  $('#main').innerHTML=`<section class="room"><div class="hero"><div class="epithet">Planetary lines at birth · 13 Aug 1991 13:31 IST</div><h1 class="title">Astrocartography</h1><p class="lede">Where each planet was rising (ASC), setting (DSC), culminating (MC) and anchoring (IC) at your birth. Tap a city or anywhere on the map to read the lines that run through it. Dotted marks at the top are where today's transiting planets culminate.</p></div>
+  <div class="panel" style="display:grid;gap:12px">
+   <div class="toggles">${Object.keys(VIEWS).map(v=>`<button class="pill sm" data-view="${v}" aria-pressed="${M.view===v}">${v[0].toUpperCase()+v.slice(1)}</button>`).join('')}</div>
+   <div class="toggles">${BODIES.map(b=>`<button class="pill sm" data-pl="${b}" aria-pressed="${M.planets.has(b)}"><span class="swatch" style="background:${PCOL[b]}"></span>${SYM[b]} ${PNAME(b)}</button>`).join('')}</div>
+   <div class="toggles">${['MC','IC','ASC','DSC'].map(a=>`<button class="pill sm" data-ang="${a}" aria-pressed="${M.angles.has(a)}">${a} ${a==='MC'?'solid':a==='IC'?'dashed':a==='ASC'?'curve':'dotted curve'}</button>`).join('')}<button class="pill sm" id="trTog" aria-pressed="${M.transit}">Today's transit MC</button><button class="pill sm" id="allOn">Show all</button><button class="pill sm" id="allOff">Hide all</button></div>
+   <div class="map-wrap">${s}</div>
+  </div>
+  <div class="grid2"><div class="panel"><h3>Bangalore, your base</h3><div class="list">${blr.map(x=>{const st=strength(x.d);return `<div class="item" style="cursor:default"><span class="k" style="color:${PCOL[x.b]}">${SYM[x.b]} ${x.a}</span><span><b>${PNAME(x.b)} ${x.a}</b> <span class="tag ${st[1]}">${st[0]} · ${Math.round(x.d)} km</span><small>${PLANET_KEY[x.b]}, ${ANGLE_KEY[x.a]}.</small></span></div>`}).join('')}</div></div>
+  <div class="panel"><h3>Reading the map</h3>${blocksHTML(chapterBlocks('12').filter(b=>!b.table&&!b.note).slice(0,6))}</div></div>
+  <div class="panel"><h3>Every angle, every planet</h3><div class="tbl"><table><thead><tr><th>Planet</th><th>MC</th><th>IC</th><th>Declination</th><th>Theme</th></tr></thead><tbody>${BODIES.map(b=>{const L=SKY.lines[b];const f=x=>`${Math.abs(x).toFixed(1)}°${x>=0?'E':'W'}`;return `<tr><td><span class="sym" style="color:${PCOL[b]}">${SYM[b]}</span>${PNAME(b)}</td><td class="num">${f(L.mc)}</td><td class="num">${f(L.ic)}</td><td class="num">${L.dec.toFixed(1)}°</td><td>${PLANET_KEY[b]}</td></tr>`}).join('')}</tbody></table></div></div></section>`;
+  const save=()=>{try{localStorage.setItem('wa-map',JSON.stringify({view:M.view}))}catch(e){}};
+  document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{M.view=b.dataset.view;save();rMap()});
+  document.querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>{const p=b.dataset.pl;M.planets.has(p)?M.planets.delete(p):M.planets.add(p);rMap()});
+  document.querySelectorAll('[data-ang]').forEach(b=>b.onclick=()=>{const a=b.dataset.ang;M.angles.has(a)?M.angles.delete(a):M.angles.add(a);rMap()});
+  $('#trTog').onclick=()=>{M.transit=!M.transit;rMap()};$('#allOn').onclick=()=>{M.planets=new Set(BODIES);rMap()};$('#allOff').onclick=()=>{M.planets=new Set();rMap()};
+  const svgEl=$('#mapSvg');
+  svgEl.querySelectorAll('.city').forEach(g=>{const f=e=>{e.stopPropagation();const c=CITIES.find(x=>x[0]===g.dataset.city);M.pick=null;openDrawer(placeReport(c[0],c[1],c[2]))};g.onclick=f;g.onkeydown=e=>{if(e.key==='Enter')f(e)}});
+  svgEl.onclick=e=>{const pt=svgEl.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const p=pt.matrixTransform(svgEl.getScreenCTM().inverse());const lon=p.x/1000*360-180,lat=90-p.y/500*180;M.pick=[lat,lon];rMap();openDrawer(placeReport('Chosen point',lat,lon))};}
+
+/* Folio */
+function rFolio(){
+  const chaps=BOOK.filter(b=>b.h1);
+  let body='',first=true,skip=false;
+  BOOK.forEach(b=>{if(b.h1){skip=b.h1.startsWith('12.');const [n,...t]=b.h1.split('. ');const id='ch'+n;body+=`${first?'':'<div class="fdiv"><span></span></div>'}<div class="chap" id="${id}">Chapter ${n}</div><h2>${esc(t.join('. '))}</h2>`;first=false;if(skip)body+=`<p>Your planetary lines now have a room of their own, with the full map, every angle and a reading for any place you tap.</p><a class="maplink" href="#map">Enter Astrocartography</a>`;return}
+    if(skip)return;body+=blocksHTML([b],true)});
+  $('#main').innerHTML=`<section class="folio-room"><div class="folio-grid"><nav class="toc" aria-label="Chapters">${chaps.map(c=>{const n=c.h1.split('.')[0];return `<a href="#folio" data-to="ch${n}">${esc(c.h1)}</a>`}).join('')}</nav>
+  <article class="folio"><div class="chap" style="margin-top:0">Human Design Reading</div><h2 style="font-size:3.25rem;letter-spacing:.08em;text-transform:uppercase">The Witness Alchemist</h2><p style="color:var(--folio-2);margin-bottom:var(--s5)">Generator · 2/4 Hermit / Opportunist · Sacral Authority · Right Angle Cross of Explanation (4/49 | 23/43). Born 13 August 1991, 13:31 IST, Bangalore. Cast for Friday 30 October 2026, 04:12 IST.</p>${body}</article></div></section><p class="foot">See the pattern. Keep the authority.</p>`;
+  document.querySelectorAll('[data-to]').forEach(a=>a.onclick=e=>{e.preventDefault();document.getElementById(a.dataset.to).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})});}
+
+route();
+})();
+</script>
