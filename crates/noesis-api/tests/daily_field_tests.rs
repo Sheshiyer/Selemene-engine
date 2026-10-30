@@ -121,6 +121,13 @@ async fn daily_routes_validate_the_date_before_storage() {
     let (too_far, resp) = call(&router, "POST", "/api/v1/daily/refresh", Some(&key), Some(r#"{"date": "2020-01-01"}"#)).await;
     assert_eq!(too_far, StatusCode::BAD_REQUEST, "{resp}");
     assert_eq!(resp["error_code"], "DATE_OUT_OF_RANGE");
+
+    // A malformed body is refused, never read as "today".
+    for body in [r#"{"date": 20261029}"#, "not json"] {
+        let (status, resp) = call(&router, "POST", "/api/v1/daily/refresh", Some(&key), Some(body)).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{body}: {resp}");
+        assert_eq!(resp["error_code"], "INVALID_BODY", "{body}: {resp}");
+    }
 }
 
 #[tokio::test]

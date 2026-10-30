@@ -562,14 +562,26 @@ pub async fn refresh_daily(
     State(state): State<AppState>,
     Extension(user): Extension<AuthUser>,
     api_key_principal: Option<Extension<crate::ApiKeyPrincipal>>,
-    body: Option<Json<DailyRefreshRequest>>,
+    body: axum::body::Bytes,
 ) -> Result<Json<DailyBundle>, ApiError> {
     let uid = Uuid::parse_str(&user.user_id)
         .map_err(|_| err(StatusCode::UNAUTHORIZED, "INVALID_USER", "user id is not a UUID"))?;
-    let req = body.map(|Json(b)| b).unwrap_or_default();
+    let req = refresh_request(&body)?;
     let date = parse_date(req.date.as_deref(), Utc::now())?;
     let skipped = run_daily(&state, &user, api_key_principal.is_some(), date).await?;
     Ok(Json(load_bundle(&state, uid, date, skipped).await?))
+}
+
+/// The refresh body: no body at all means today; anything else must be a JSON object
+/// whose fields parse, so a mistyped date is refused rather than computed (and charged)
+/// as today.
+fn refresh_request(body: &[u8]) -> Result<DailyRefreshRequest, ApiError> {
+    if body.iter().all(u8::is_ascii_whitespace) {
+        return Ok(DailyRefreshRequest::default());
+    }
+    serde_json::from_slice(body).map_err(|e| {
+        err(StatusCode::BAD_REQUEST, "INVALID_BODY", format!("body must be JSON like {{\"date\": \"YYYY-MM-DD\"}}: {e}"))
+    })
 }
 
 /// The scheduled run: every day at 00:00 UTC (05:30 IST) for opted-in users.
@@ -769,6 +781,27 @@ mod tests {
         // Natal engines keep the natal timezone.
         let dasha = engine_input("vimshottari", &birth, moment, d, 12.97, 77.59, &user);
         assert_eq!(dasha.birth_data.unwrap().timezone, "America/New_York");
+    }
+
+    #[test]
+    fn refresh_body_is_empty_or_valid_json() {
+        let date = |b: &[u8]| match refresh_request(b) {
+            Ok(r) => r.date,
+            Err((status, _)) => panic!("{:?} refused with {status}", String::from_utf8_lossy(b)),
+        };
+        assert_eq!(date(b""), None);
+        assert_eq!(date(b"  \n"), None);
+        assert_eq!(date(b"{}"), None);
+        assert_eq!(date(br#"{"date": "2026-10-29"}"#).as_deref(), Some("2026-10-29"));
+        for bad in [&br#"{"date": 20261029}"#[..], b"{date: 2026-10-29}", b"not json", b"[]"] {
+            match refresh_request(bad) {
+                Ok(_) => panic!("{:?} was accepted", String::from_utf8_lossy(bad)),
+                Err((status, body)) => {
+                    assert_eq!(status, StatusCode::BAD_REQUEST);
+                    assert_eq!(body.0.error_code, "INVALID_BODY");
+                }
+            }
+        }
     }
 
     #[test]
