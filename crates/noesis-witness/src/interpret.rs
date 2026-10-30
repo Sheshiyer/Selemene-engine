@@ -37,7 +37,9 @@ pub enum RelationshipMode {
 /// Rich multi-engine context for the Witness Dyad interpretation.
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct WitnessContext {
-    pub live_scores: LiveBiofieldScores,
+    /// Live biofield scores from a PIP camera capture. `None` when no capture
+    /// accompanies the reading (for example a scheduled daily context).
+    pub live_scores: Option<LiveBiofieldScores>,
     pub consciousness_level: u8,
     /// User's name (for personalisation).
     pub user_name: Option<String>,
@@ -138,23 +140,31 @@ fn build_context_message(ctx: &WitnessContext) -> String {
             relationship_label(&ctx.relationship_mode)
         ));
     }
-    lines.push(format!(
-        "\n## Live Biofield Scores (PIP camera analysis)\n\
-         - Energy flow: {:.0}%\n\
-         - Coherence: {:.0}%\n\
-         - Symmetry: {:.0}%\n\
-         - Complexity: {:.0}%\n\
-         - Regulation: {:.0}%\n\
-         - Color balance: {:.0}%\n\
-         - Consciousness level: {}/5",
-        ctx.live_scores.energy * 100.0,
-        ctx.live_scores.coherence * 100.0,
-        ctx.live_scores.symmetry * 100.0,
-        ctx.live_scores.complexity * 100.0,
-        ctx.live_scores.regulation * 100.0,
-        ctx.live_scores.color_balance * 100.0,
-        ctx.consciousness_level,
-    ));
+    match ctx.live_scores.as_ref() {
+        Some(sc) => lines.push(format!(
+            "\n## Live Biofield Scores (PIP camera analysis)\n\
+             - Energy flow: {:.0}%\n\
+             - Coherence: {:.0}%\n\
+             - Symmetry: {:.0}%\n\
+             - Complexity: {:.0}%\n\
+             - Regulation: {:.0}%\n\
+             - Color balance: {:.0}%\n\
+             - Consciousness level: {}/5",
+            sc.energy * 100.0,
+            sc.coherence * 100.0,
+            sc.symmetry * 100.0,
+            sc.complexity * 100.0,
+            sc.regulation * 100.0,
+            sc.color_balance * 100.0,
+            ctx.consciousness_level,
+        )),
+        None => lines.push(format!(
+            "\n## Live Biofield\n\
+             - No camera capture accompanies this reading. Do not mention biofield values.\n\
+             - Consciousness level: {}/5",
+            ctx.consciousness_level,
+        )),
+    }
 
     // Group engine data by routing tag.
     let mut aletheios_engines: Vec<(&str, &Value)> = vec![];
@@ -248,12 +258,15 @@ fn build_partner_snapshot(ctx: &WitnessContext) -> String {
     let mut lines = vec![];
     let name = ctx.user_name.as_deref().unwrap_or("the partner");
     lines.push(format!("## Consciousness Snapshot for {name}"));
-    lines.push(format!(
-        "- Energy flow: {:.0}%\n- Coherence: {:.0}%\n- Consciousness level: {}/5",
-        ctx.live_scores.energy * 100.0,
-        ctx.live_scores.coherence * 100.0,
-        ctx.consciousness_level,
-    ));
+    match ctx.live_scores.as_ref() {
+        Some(sc) => lines.push(format!(
+            "- Energy flow: {:.0}%\n- Coherence: {:.0}%\n- Consciousness level: {}/5",
+            sc.energy * 100.0,
+            sc.coherence * 100.0,
+            ctx.consciousness_level,
+        )),
+        None => lines.push(format!("- Consciousness level: {}/5", ctx.consciousness_level)),
+    }
     for (engine_id, value) in [
         ("panchanga", ctx.panchanga.as_ref()),
         ("human-design", ctx.human_design.as_ref()),
@@ -468,7 +481,9 @@ fn parse_synthesis_json(raw: &str) -> (String, String) {
 pub fn rule_based_witness_dyad(
     ctx: &WitnessContext,
 ) -> (String, String, String, String, Vec<String>) {
-    let scores = &ctx.live_scores;
+    let Some(scores) = ctx.live_scores.as_ref() else {
+        return engine_grounded_witness_dyad(ctx);
+    };
     let level = ctx.consciousness_level;
     let mut engines_used = vec!["biofield".to_string()];
 
@@ -569,6 +584,104 @@ pub fn rule_based_witness_dyad(
     engines_used.sort();
     engines_used.dedup();
 
+    (aletheios, pichet, synthesis, witness_question, engines_used)
+}
+
+/// Rule-based dyad for readings with no biofield capture (a scheduled daily
+/// context, a client without a camera). Every line is grounded in an engine
+/// result that is present; nothing refers to biofield values.
+///
+/// - Aletheios names the running period (vimshottari) or the day's lunar day (panchanga).
+/// - Pichet invites one embodied noticing keyed to the physical biorhythm cycle.
+/// - The synthesis places the day in its panchanga and dasha frame.
+pub fn engine_grounded_witness_dyad(
+    ctx: &WitnessContext,
+) -> (String, String, String, String, Vec<String>) {
+    let level = ctx.consciousness_level;
+    let mut engines_used: Vec<String> = vec![];
+    let s = |v: Option<&Value>, path: &[&str]| -> Option<String> {
+        let mut cur = v?;
+        for key in path {
+            cur = cur.get(*key)?;
+        }
+        match cur {
+            Value::String(t) => Some(t.clone()),
+            Value::Number(n) => Some(n.to_string()),
+            _ => None,
+        }
+    };
+    let pct = |v: Option<&Value>, cycle: &str| -> Option<f64> {
+        v?.get(cycle)?.get("percentage")?.as_f64()
+    };
+
+    let maha = s(ctx.vimshottari.as_ref(), &["current_period", "mahadasha", "planet"]);
+    let antar = s(ctx.vimshottari.as_ref(), &["current_period", "antardasha", "planet"]);
+    let pratyantar = s(ctx.vimshottari.as_ref(), &["current_period", "pratyantardasha", "planet"]);
+    let tithi = s(ctx.panchanga.as_ref(), &["tithi_name"]);
+    let nakshatra = s(ctx.panchanga.as_ref(), &["nakshatra_name"]);
+    let physical = pct(ctx.biorhythm.as_ref(), "physical");
+    let emotional = pct(ctx.biorhythm.as_ref(), "emotional");
+
+    let aletheios = match (&maha, &antar, &pratyantar) {
+        (Some(m), Some(a), Some(p)) => {
+            engines_used.push("vimshottari".to_string());
+            format!(
+                "The period running is {m} within {m}, {a} within that, {p} at the finest grain. \
+                 A period is a lens the day is seen through, not a verdict on it. \
+                 Notice what in you meets this lens, and what does not."
+            )
+        }
+        _ => match &tithi {
+            Some(t) => {
+                engines_used.push("panchanga".to_string());
+                format!(
+                    "Today is {t}. The lunar day names a quality of time, not a task. \
+                     What is present for you as you read its name?"
+                )
+            }
+            None => "The day arrives without a measured frame. What is present is enough to begin with.".to_string(),
+        },
+    };
+
+    let pichet = match (physical, emotional) {
+        (Some(p), Some(e)) => {
+            engines_used.push("biorhythm".to_string());
+            format!(
+                "Your physical cycle stands at {p:.0}% and your emotional cycle at {e:.0}%. \
+                 Notice where in the body that number agrees with you, and where it does not. \
+                 Your sensing is the authority; the cycle is only a mirror."
+            )
+        }
+        (Some(p), None) => {
+            engines_used.push("biorhythm".to_string());
+            format!(
+                "Your physical cycle stands at {p:.0}%. Feel one movement that wants to happen \
+                 before you decide whether it should."
+            )
+        }
+        _ => "Feel one breath land fully before the next thought arrives.".to_string(),
+    };
+
+    let synthesis = match (&tithi, &nakshatra, &maha) {
+        (Some(t), Some(n), Some(m)) => {
+            engines_used.push("panchanga".to_string());
+            format!("{t}, the Moon in {n}, inside a {m} period: the day's weather and its season, held together without choosing between them.")
+        }
+        (Some(t), Some(n), None) => {
+            engines_used.push("panchanga".to_string());
+            format!("{t} with the Moon in {n}: the day's weather, witnessed rather than forecast.")
+        }
+        _ => "Truth and aliveness are both present; neither needs to win today.".to_string(),
+    };
+
+    let witness_question = match level {
+        0 | 1 => "What are you noticing in your body right now, without adding a story?".to_string(),
+        2 => "Who is the one watching this day arrive?".to_string(),
+        _ => "What is already moving through you today, before anything needs to be decided?".to_string(),
+    };
+
+    engines_used.sort();
+    engines_used.dedup();
     (aletheios, pichet, synthesis, witness_question, engines_used)
 }
 
@@ -858,11 +971,11 @@ mod tests {
     fn build_context_message_groups_engines_by_routing() {
         let ctx = WitnessContext {
             user_name: Some("Aria".to_string()),
-            live_scores: LiveBiofieldScores {
+            live_scores: Some(LiveBiofieldScores {
                 energy: 0.72,
                 coherence: 0.68,
                 ..Default::default()
-            },
+            }),
             consciousness_level: 3,
             panchanga: Some(json!({"tithi": "Navami"})),
             vimshottari: Some(json!({"major": "Jupiter"})),
@@ -884,11 +997,11 @@ mod tests {
     fn build_context_message_includes_partner_snapshot() {
         let partner = WitnessContext {
             user_name: Some("Sam".to_string()),
-            live_scores: LiveBiofieldScores {
+            live_scores: Some(LiveBiofieldScores {
                 energy: 0.55,
                 coherence: 0.80,
                 ..Default::default()
-            },
+            }),
             consciousness_level: 2,
             relationship_mode: RelationshipMode::None,
             ..Default::default()
@@ -897,11 +1010,11 @@ mod tests {
             user_name: Some("Aria".to_string()),
             relationship_mode: RelationshipMode::PartnerSynastry,
             partner_context: Some(Box::new(partner)),
-            live_scores: LiveBiofieldScores {
+            live_scores: Some(LiveBiofieldScores {
                 energy: 0.72,
                 coherence: 0.68,
                 ..Default::default()
-            },
+            }),
             consciousness_level: 3,
             ..Default::default()
         };
@@ -920,12 +1033,12 @@ mod tests {
     fn rule_based_dyad_includes_sovereignty_language_at_higher_levels() {
         // Set coherence < 0.70 so Aletheios takes the vimshottari branch at level 3
         let ctx = WitnessContext {
-            live_scores: LiveBiofieldScores {
+            live_scores: Some(LiveBiofieldScores {
                 energy: 0.75,
                 coherence: 0.62,
                 symmetry: 0.81,
                 ..Default::default()
-            },
+            }),
             consciousness_level: 3,
             vimshottari: Some(json!({"major": "Saturn"})),
             gene_keys: Some(json!({"activation": "1"})),
@@ -953,13 +1066,13 @@ mod tests {
     #[test]
     fn rule_based_dyad_is_non_prescriptive() {
         let ctx = WitnessContext {
-            live_scores: LiveBiofieldScores {
+            live_scores: Some(LiveBiofieldScores {
                 energy: 0.65,
                 coherence: 0.55,
                 symmetry: 0.60,
                 regulation: 0.58,
                 ..Default::default()
-            },
+            }),
             consciousness_level: 2,
             ..Default::default()
         };
@@ -988,13 +1101,13 @@ mod tests {
     fn rule_based_dyad_references_concrete_data_points() {
         // Use symmetry < 0.50 branch so we get concrete % without needing vimshottari
         let ctx = WitnessContext {
-            live_scores: LiveBiofieldScores {
+            live_scores: Some(LiveBiofieldScores {
                 energy: 0.82,
                 coherence: 0.71,
                 symmetry: 0.44,
                 regulation: 0.69,
                 ..Default::default()
-            },
+            }),
             consciousness_level: 2,
             // No vimshottari — this should hit the symmetry branch with concrete numbers
             ..Default::default()
@@ -1015,12 +1128,12 @@ mod tests {
     #[test]
     fn rule_based_dyad_respects_pillar_separation() {
         let ctx = WitnessContext {
-            live_scores: LiveBiofieldScores {
+            live_scores: Some(LiveBiofieldScores {
                 energy: 0.60,
                 coherence: 0.65,
                 symmetry: 0.70,
                 ..Default::default()
-            },
+            }),
             consciousness_level: 1,
             panchanga: Some(json!({"tithi": "Ekadashi"})),
             vimshottari: Some(json!({"major": "Venus"})),
@@ -1055,13 +1168,13 @@ mod tests {
     #[test]
     fn rule_based_dyad_tone_markers() {
         let ctx = WitnessContext {
-            live_scores: LiveBiofieldScores {
+            live_scores: Some(LiveBiofieldScores {
                 energy: 0.55,
                 coherence: 0.82,
                 symmetry: 0.78,
                 regulation: 0.61,
                 ..Default::default()
-            },
+            }),
             consciousness_level: 3,
             ..Default::default()
         };
@@ -1090,13 +1203,13 @@ mod tests {
     #[test]
     fn rule_based_dyad_at_consciousness_level_0_is_minimal() {
         let ctx = WitnessContext {
-            live_scores: LiveBiofieldScores {
+            live_scores: Some(LiveBiofieldScores {
                 energy: 0.40,
                 coherence: 0.35,
                 symmetry: 0.50,
                 regulation: 0.45,
                 ..Default::default()
-            },
+            }),
             consciousness_level: 0,
             ..Default::default()
         };
@@ -1110,13 +1223,13 @@ mod tests {
     #[test]
     fn rule_based_dyad_at_consciousness_level_3_includes_integration_language() {
         let ctx = WitnessContext {
-            live_scores: LiveBiofieldScores {
+            live_scores: Some(LiveBiofieldScores {
                 energy: 0.88,
                 coherence: 0.85,
                 symmetry: 0.90,
                 regulation: 0.82,
                 ..Default::default()
-            },
+            }),
             consciousness_level: 3,
             gene_keys: Some(json!({"activation_sequence": [{"gene_key": 1}]})),
             vimshottari: Some(json!({"major": "Moon"})),
@@ -1135,4 +1248,49 @@ mod tests {
         );
         assert!(!question.is_empty());
     }
+    // ─────────────────────────────────────────────────────────────────────────
+    // No biofield capture: the dyad is grounded in engine results only
+    // ─────────────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn rule_based_without_capture_uses_engines_not_biofield() {
+        let ctx = WitnessContext {
+            live_scores: None,
+            consciousness_level: 3,
+            vimshottari: Some(json!({"current_period": {
+                "mahadasha": {"planet": "Jupiter"},
+                "antardasha": {"planet": "Jupiter"},
+                "pratyantardasha": {"planet": "Saturn"}}})),
+            panchanga: Some(json!({"tithi_name": "Panchami (Krishna)", "nakshatra_name": "Mrigashira"})),
+            biorhythm: Some(json!({"physical": {"percentage": 98.9}, "emotional": {"percentage": 89.1}})),
+            ..Default::default()
+        };
+        let (aletheios, pichet, synthesis, question, used) = rule_based_witness_dyad(&ctx);
+        assert!(aletheios.contains("Jupiter") && aletheios.contains("Saturn"));
+        assert!(pichet.contains("99%") && pichet.contains("89%"));
+        assert!(synthesis.contains("Mrigashira") && synthesis.contains("Jupiter"));
+        assert!(!question.is_empty());
+        assert_eq!(used, vec!["biorhythm", "panchanga", "vimshottari"]);
+        for text in [&aletheios, &pichet, &synthesis] {
+            assert!(!text.to_lowercase().contains("biofield"), "no biofield claims: {text}");
+            assert!(!text.contains("Coherence") && !text.contains("Regulation"));
+        }
+    }
+
+    #[test]
+    fn rule_based_without_capture_or_engines_still_answers() {
+        let ctx = WitnessContext { live_scores: None, ..Default::default() };
+        let (a, p, s, q, used) = rule_based_witness_dyad(&ctx);
+        assert!(!a.is_empty() && !p.is_empty() && !s.is_empty() && !q.is_empty());
+        assert!(used.is_empty());
+    }
+
+    #[test]
+    fn context_without_capture_tells_the_model_not_to_cite_biofield() {
+        let ctx = WitnessContext { live_scores: None, consciousness_level: 2, ..Default::default() };
+        let text = build_context_message(&ctx);
+        assert!(text.contains("No camera capture"));
+        assert!(!text.contains("Energy flow"));
+    }
+
 }
