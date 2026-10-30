@@ -1,17 +1,80 @@
 use crate::models::reading::{NewReading, Reading, ReadingSyncRecord};
-use sqlx::{Error, PgPool};
+use sqlx::{Acquire, Error, PgPool};
 use uuid::Uuid;
 
-/// Holds one user's daily-field day while it lives: a transaction-scoped Postgres
-/// advisory lock, released by `release` or when dropped (the transaction ends).
+const LIST_DAILY_FIELD_SQL: &str = r#"
+    SELECT * FROM readings
+    WHERE user_id = $1
+      AND workflow_id = 'daily-field'
+      AND input_data->>'daily_date' = $2
+    ORDER BY created_at ASC
+"#;
+
+/// The conflict target is the unique index `idx_readings_daily_field_unique`
+/// (migration 044): a part already stored for that user and date is left as it is.
+const INSERT_DAILY_FIELD_SQL: &str = r#"
+    INSERT INTO readings (
+        user_id, engine_id, workflow_id, input_hash,
+        input_data, result_data, witness_prompt,
+        consciousness_level, calculation_time_ms
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    ON CONFLICT (user_id, engine_id, (input_data->>'daily_date'))
+        WHERE workflow_id = 'daily-field'
+    DO NOTHING
+    RETURNING id
+"#;
+
+/// One user's daily-field day, held for one run: a transaction carrying a Postgres
+/// advisory lock for that user and date. Every read and write of the run goes through
+/// this one connection, so a run never needs a second one from the pool while it holds
+/// the day. `finish` commits what was stored and frees the day; dropping it instead
+/// rolls the run back and frees the day.
 pub struct DailyDayLock {
     tx: sqlx::Transaction<'static, sqlx::Postgres>,
 }
 
 impl DailyDayLock {
-    /// End the hold now rather than at drop.
-    pub async fn release(self) -> Result<(), Error> {
-        self.tx.rollback().await
+    /// The rows already stored for the day, oldest first.
+    pub async fn stored(&mut self, user_id: Uuid, date: &str) -> Result<Vec<Reading>, Error> {
+        sqlx::query_as::<_, Reading>(LIST_DAILY_FIELD_SQL)
+            .bind(user_id)
+            .bind(date)
+            .fetch_all(&mut *self.tx)
+            .await
+    }
+
+    /// Store one part unless the day already has it; `None` means it was there.
+    /// Each part is its own savepoint, so a failed part leaves the others standing.
+    pub async fn save(&mut self, reading: &NewReading) -> Result<Option<Uuid>, Error> {
+        let mut part = (&mut *self.tx).begin().await?;
+        let saved = sqlx::query_scalar::<_, Uuid>(INSERT_DAILY_FIELD_SQL)
+            .bind(reading.user_id)
+            .bind(&reading.engine_id)
+            .bind(&reading.workflow_id)
+            .bind(&reading.input_hash)
+            .bind(&reading.input_data)
+            .bind(&reading.result_data)
+            .bind(&reading.witness_prompt)
+            .bind(reading.consciousness_level)
+            .bind(reading.calculation_time_ms)
+            .fetch_optional(&mut *part)
+            .await;
+        match saved {
+            Ok(id) => {
+                part.commit().await?;
+                Ok(id)
+            }
+            Err(e) => {
+                let _ = part.rollback().await;
+                Err(e)
+            }
+        }
+    }
+
+    /// Commit the run's parts and free the day.
+    pub async fn finish(self) -> Result<(), Error> {
+        self.tx.commit().await
     }
 }
 
@@ -179,8 +242,9 @@ impl ReadingsRepository {
         Ok(row)
     }
 
-    /// Wait for, then hold, the daily-field run for one user and date across every API
+    /// Wait for, then hold, the daily-field day for one user and date across every API
     /// process sharing this database, so concurrent runs agree on the stored moment.
+    /// Holds one pooled connection until the lock is finished or dropped.
     pub async fn lock_daily_day(&self, user_id: Uuid, date: &str) -> Result<DailyDayLock, Error> {
         let mut tx = self.pool.begin().await?;
         sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))")
@@ -188,37 +252,6 @@ impl ReadingsRepository {
             .execute(&mut *tx)
             .await?;
         Ok(DailyDayLock { tx })
-    }
-
-    /// Store one daily-field part unless that user already has it for that date.
-    /// Returns `None` when another run stored it first. The conflict target is the
-    /// unique index `idx_readings_daily_field_unique` (migration 044).
-    pub async fn save_daily_reading(&self, reading: &NewReading) -> Result<Option<Uuid>, Error> {
-        sqlx::query_scalar::<_, Uuid>(
-            r#"
-            INSERT INTO readings (
-                user_id, engine_id, workflow_id, input_hash,
-                input_data, result_data, witness_prompt,
-                consciousness_level, calculation_time_ms
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            ON CONFLICT (user_id, engine_id, (input_data->>'daily_date'))
-                WHERE workflow_id = 'daily-field'
-            DO NOTHING
-            RETURNING id
-            "#,
-        )
-        .bind(reading.user_id)
-        .bind(&reading.engine_id)
-        .bind(&reading.workflow_id)
-        .bind(&reading.input_hash)
-        .bind(&reading.input_data)
-        .bind(&reading.result_data)
-        .bind(&reading.witness_prompt)
-        .bind(reading.consciousness_level)
-        .bind(reading.calculation_time_ms)
-        .fetch_optional(&self.pool)
-        .await
     }
 
     /// Fetch a single reading by ID, scoped to a user.
@@ -274,19 +307,11 @@ impl ReadingsRepository {
     /// Rows are written by the daily-field job with `workflow_id = 'daily-field'` and
     /// the date in `input_data.daily_date`; one row per engine plus the witness dyad.
     pub async fn list_daily_field(&self, user_id: Uuid, date: &str) -> Result<Vec<Reading>, Error> {
-        sqlx::query_as::<_, Reading>(
-            r#"
-            SELECT * FROM readings
-            WHERE user_id = $1
-              AND workflow_id = 'daily-field'
-              AND input_data->>'daily_date' = $2
-            ORDER BY created_at ASC
-            "#,
-        )
-        .bind(user_id)
-        .bind(date)
-        .fetch_all(&self.pool)
-        .await
+        sqlx::query_as::<_, Reading>(LIST_DAILY_FIELD_SQL)
+            .bind(user_id)
+            .bind(date)
+            .fetch_all(&self.pool)
+            .await
     }
 
     /// Count readings per engine for a user. Returns (engine_id, count) pairs.

@@ -8,9 +8,9 @@
 //! user's own profile, then the Witness Dyad for that moment with no biofield
 //! capture. Each result is stored as a reading with `workflow_id = "daily-field"` and the
 //! date in `input_data.daily_date`, so a rerun for the same date computes only what is
-//! missing. Runs for one user's day take turns, in each process and across processes
-//! (a Postgres advisory lock), so the day's moment is chosen once; a unique index
-//! (migration 044) keeps one row per part.
+//! missing. A run holds its user's day across processes (a Postgres advisory lock on
+//! one connection that carries all of the run's reads and writes), so the day's moment
+//! is chosen once; a unique index (migration 044) keeps one row per part.
 //!
 //! - `GET  /api/v1/daily?date=YYYY-MM-DD` returns the stored bundle (no computation).
 //! - `POST /api/v1/daily/refresh` computes what is missing for a date (default today, IST).
@@ -31,7 +31,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
-use std::sync::{Arc, OnceLock, Weak};
+use std::sync::OnceLock;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
@@ -292,21 +292,14 @@ fn new_reading(
     }
 }
 
-/// The lock for one user's day. Runs for the same user and date take turns in this
-/// process, so a refresh that overlaps the scheduler waits, then finds the parts stored
-/// and computes nothing. Across processes, the unique index on daily-field readings
-/// (migration 044) keeps one row per part.
-fn day_lock(uid: Uuid, date: NaiveDate) -> Arc<tokio::sync::Mutex<()>> {
-    type Locks = std::sync::Mutex<HashMap<(Uuid, NaiveDate), Weak<tokio::sync::Mutex<()>>>>;
-    static LOCKS: OnceLock<Locks> = OnceLock::new();
-    let mut locks = LOCKS.get_or_init(Default::default).lock().unwrap_or_else(|e| e.into_inner());
-    locks.retain(|_, held| held.strong_count() > 0);
-    if let Some(lock) = locks.get(&(uid, date)).and_then(Weak::upgrade) {
-        return lock;
-    }
-    let lock = Arc::new(tokio::sync::Mutex::new(()));
-    locks.insert((uid, date), Arc::downgrade(&lock));
-    lock
+/// How many daily runs one process holds at a time. A run keeps one pooled database
+/// connection for its whole length (the day lock), so admission is bounded well below
+/// the pool size and other requests always find a connection.
+const DAILY_RUNS_PER_PROCESS: usize = 1;
+
+fn daily_admission() -> &'static tokio::sync::Semaphore {
+    static ADMISSION: OnceLock<tokio::sync::Semaphore> = OnceLock::new();
+    ADMISSION.get_or_init(|| tokio::sync::Semaphore::new(DAILY_RUNS_PER_PROCESS))
 }
 
 /// Compute and store whatever of `date` is not stored yet. Returns the parts skipped
@@ -326,17 +319,20 @@ pub(crate) async fn run_daily(
     let (birth, lat, lng) = profile_inputs(state, uid).await?;
     let date_s = date.format("%Y-%m-%d").to_string();
 
-    // Runs for this day take turns: first within the process, then across processes,
-    // so the moment below is chosen once and every later run reuses the stored one.
-    let lock = day_lock(uid, date);
-    let _turn = lock.lock().await;
-    let held = repo
+    // Admission first, so daily runs never hold more than a bounded share of the pool.
+    // Then the day itself, across processes: the moment below is chosen once and every
+    // later run reuses the stored one. All of the run's reads and writes use `held`.
+    let _admitted = daily_admission()
+        .acquire()
+        .await
+        .map_err(|_| err(StatusCode::SERVICE_UNAVAILABLE, "DAILY_UNAVAILABLE", "daily runs are shutting down"))?;
+    let mut held = repo
         .lock_daily_day(uid, &date_s)
         .await
         .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, "DAILY_LOCK_FAILED", e.to_string()))?;
 
-    let stored_rows = repo
-        .list_daily_field(uid, &date_s)
+    let stored_rows = held
+        .stored(uid, &date_s)
         .await
         .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, "READINGS_READ_FAILED", e.to_string()))?;
     // A partly stored day keeps the moment it was started with, so every part agrees.
@@ -369,7 +365,7 @@ pub(crate) async fn run_daily(
                 let envelope = crate::ApiEngineOutputResponse::from_engine_output(output, state.is_native_engine(engine_id));
                 let ms = Some(started.elapsed().as_secs_f64() * 1000.0);
                 let reading = new_reading(uid, engine_id, date, moment, anchor, lat, lng, serde_json::to_value(&envelope).unwrap_or_default(), prompt, level as i16, ms);
-                match repo.save_daily_reading(&reading).await {
+                match held.save(&reading).await {
                     Ok(Some(_)) => computed += 1,
                     // Another process stored this part first; its row stands.
                     Ok(None) => {}
@@ -415,7 +411,7 @@ pub(crate) async fn run_daily(
                 let ms = Some(started.elapsed().as_secs_f64() * 1000.0);
                 let question = Some(dyad.witness_question.clone());
                 let reading = new_reading(uid, WITNESS_ID, date, moment, anchor, lat, lng, serde_json::to_value(&dyad).unwrap_or_default(), question, level as i16, ms);
-                match repo.save_daily_reading(&reading).await {
+                match held.save(&reading).await {
                     Ok(Some(_)) => computed += 1,
                     Ok(None) => {}
                     Err(e) => skipped.push(MissingPart { part: WITNESS_ID.into(), reason: format!("storage: {e}") }),
@@ -424,9 +420,10 @@ pub(crate) async fn run_daily(
         }
     }
 
-    if let Err(e) = held.release().await {
-        tracing::debug!(error = %e, "daily field: lock release deferred to connection reset");
-    }
+    held
+        .finish()
+        .await
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, "READINGS_WRITE_FAILED", e.to_string()))?;
 
     // One usage event per run that computed anything: the day counts as one call.
     if computed > 0 {
@@ -731,17 +728,11 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn runs_for_the_same_day_share_one_lock() {
-        let u = Uuid::new_v4();
-        let d = NaiveDate::from_ymd_opt(2026, 10, 30).unwrap();
-        let first = day_lock(u, d);
-        assert!(Arc::ptr_eq(&first, &day_lock(u, d)));
-        assert!(!Arc::ptr_eq(&first, &day_lock(u, d.succ_opt().unwrap())));
-        assert!(!Arc::ptr_eq(&first, &day_lock(Uuid::new_v4(), d)));
-        let held = first.lock().await;
-        assert!(day_lock(u, d).try_lock().is_err(), "a second run must wait for the first");
-        drop(held);
-        assert!(day_lock(u, d).try_lock().is_ok());
+    async fn daily_runs_are_admitted_one_at_a_time() {
+        let first = daily_admission().acquire().await.unwrap();
+        assert!(daily_admission().try_acquire().is_err(), "a second run must wait");
+        drop(first);
+        assert!(daily_admission().try_acquire().is_ok());
     }
 
     #[test]
