@@ -12,7 +12,7 @@ function transitAspects(r){const out=[];const asp=[['Conjunction',0,1.5],['Sexti
   for(const t of T)for(const n of N){const d=angDiff(t.lon,n.lon);for(const [nm,a,o] of asp){if(Math.abs(d-a)<=o)out.push({t:t.body,n:n.body,name:nm,orb:Math.abs(d-a)})}}
   return out.sort((a,b)=>a.orb-b.orb)}
 function todayLens(r,h){
-  const R=dayReading(r),P=panchangaOf(r),B=DL.bio(r.d),N=DL.personal(r.d),C=DL.clock(r.d),A=DL.at(C,h);
+  const R=dayReading(r),P=panchangaOf(r),B=DL.bio(r.d),N=DL.personal(r.d),VD=DL.vedic(r.d,h),C=VD.C,A=DL.at(C,VD.H);
   const moonNak=Math.floor(r.sid[0]/(360/27)),moonSign=Math.floor(r.sid[0]/30);const tara=DL.tara(moonNak,BIRTH_NAK),cb=DL.chandra(moonSign,BIRTH_MOON_SIGN);
   const ad=SKY.ad.find(a=>a[2]<=r.d&&r.d<a[3]);let pd=null,pdS=null,pdE=null;if(ad)ad[4].forEach((p,i)=>{if(p[1]<=r.d){pd=p[0];pdS=p[1];pdE=i+1<ad[4].length?ad[4][i+1][1]:ad[3]}});
   const lordAt=pl=>{const n=NATAL_SID.find(x=>x.body===pl);return n?`${n.sign}, house ${n.house}`:''};
@@ -70,9 +70,9 @@ function verifyDrawer(){const rows=DL.verify(ENG);openDrawer(`<div class="eyebro
   <p class="meta" style="margin-top:12px">${rows.filter(r=>r[3]).length} of ${rows.length} match. Panchanga, numerology day numbers and Tarabala are field figures by classical method; the engines return natal figures only.</p>`)}
 
 function rToday(){
-  const r=rec(state.date),R=dayReading(r),isToday=state.date===todayIST();const C=DL.clock(state.date);
-  const h=isToday?istHourNow():(DIAL.date===state.date&&DIAL.h!=null?DIAL.h:C.rise+.25);DIAL.date=state.date;DIAL.h=h;
-  const P=panchangaOf(r),A=DL.at(C,h),tara=DL.tara(Math.floor(r.sid[0]/(360/27)),BIRTH_NAK);
+  const r=rec(state.date),R=dayReading(r),isToday=state.date===todayIST();const C0=DL.clock(state.date);
+  const h=isToday?istHourNow():(DIAL.date===state.date&&DIAL.h!=null?DIAL.h:C0.rise+.25);const VD=DL.vedic(state.date,h),C=VD.C;DIAL.date=state.date;DIAL.h=h;
+  const P=panchangaOf(r),A=DL.at(C,VD.H),tara=DL.tara(Math.floor(r.sid[0]/(360/27)),BIRTH_NAK);
   const ad=SKY.ad.find(a=>a[2]<=state.date&&state.date<a[3]);let pd=null;if(ad)ad[4].forEach(p=>{if(p[1]<=state.date)pd=p[0]});
   const next=EVENTS.filter(e=>e[0]>=state.date&&e[0]<=addDays(state.date,30)).slice(0,10);
   const rd=(k,v)=>`<div class="readout"><span class="k">${k}</span><span class="v">${v}</span></div>`;
@@ -89,7 +89,7 @@ function rToday(){
     <div class="inst-bar"><div class="dial-read" id="dialRead"></div><button class="pill sm" id="dialCheck">Method check</button></div>
     <div class="stage dial-stage" id="dialHost"></div>
     <div class="scrub dial-scrub"><span class="lab" id="dialT">${DL.fmtH(h)}</span><input type="range" id="dialH" min="0" max="24" step="0.0833" value="${((h%24)+24)%24}" aria-label="Hour of the day"><span class="lab" style="text-align:right">IST</span></div>
-    <p class="meta" style="margin:0">Sunrise ${DL.fmtH(C.rise)} · sunset ${DL.fmtH(C.set)} · Rahu Kaal ${DL.fmtH(C.rahu.s)}–${DL.fmtH(C.rahu.e)} · Abhijit ${DL.fmtH(C.abhijit.s)}–${DL.fmtH(C.abhijit.e)} · day lord ${C.lord}</p></div>
+    <p class="meta" style="margin:0" id="dialInfo"></p></div>
   </div>
   <div class="panel"><h3>Lens matrix · eight engines, one day<span class="sub">Birth · this day · where they meet</span></h3><div id="lensM">${lensMatrix(r,h)}</div></div>
   <div class="panel"><h3>Ribbon · thirty-one days<span class="sub">Every engine on its own track</span></h3>${ribbon(state.date)}</div>
@@ -114,6 +114,6 @@ function rToday(){
   $('#ovPlanets').onclick=e=>ov('planets',e.currentTarget);$('#ovKeys').onclick=e=>ov('keys',e.currentTarget);
   $('#main').querySelectorAll('.rhit').forEach(el=>el.addEventListener('click',()=>setDate(el.dataset.day)));
   wire($('#main'));}
-function dialReadout(h){const C=DL.clock(state.date),A=DL.at(C,h);const rd=(k,v)=>`<div class="readout"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+function dialReadout(h){const V=DL.vedic(state.date,h),C=V.C,A=DL.at(C,V.H);const inf=$('#dialInfo');if(inf)inf.textContent=`${V.prev?'Before sunrise: Vedic day of '+fmtDate(C.date)+' · ':''}Sunrise ${DL.fmtH(C.rise)} · sunset ${DL.fmtH(C.set)} · Rahu Kaal ${DL.fmtH(C.rahu.s)}–${DL.fmtH(C.rahu.e)} · Abhijit ${DL.fmtH(C.abhijit.s)}–${DL.fmtH(C.abhijit.e)} · day lord ${C.lord}`;const rd=(k,v)=>`<div class="readout"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   const el=$('#dialRead');if(el)el.innerHTML=rd('Hora',`<span class="g">${SYM[A.hora.lord]} ${A.hora.lord}</span> ${DL.fmtH(A.hora.s)}–${DL.fmtH(A.hora.e)}`)+rd('Choghadiya',`${A.chog.name} · ${A.chog.meaning}`)+rd('Organ · dosha',`${A.organ.organ} · ${A.dosha.dosha}`)}
 function todaySidFull(r){const ay=ayanOf(r);return tPos(r).map(t=>({...t,sid:sidInfo(t.lon,ay)}))}

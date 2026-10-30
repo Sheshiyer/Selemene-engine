@@ -732,6 +732,7 @@ const DL=(()=>{
     const mid=(rise+set)/2,muh=(set-rise)/15;
     return {date,weekday:wd,lord:lord0,rise,set,next,horas,chog,rahu:part(RAHU[wd]),yama:part(YAMA[wd]),gulika:part(GULI[wd]),abhijit:{s:mid-muh/2,e:mid+muh/2},
       organs:ORGANS.map(([o,el,h])=>({organ:o,element:el,s:h,e:h+2})),doshas:DOSHAS.map(([d,h])=>({dosha:d,s:h,e:h+4}))}}
+  function vedic(date,h){const C=clock(date);if(h<C.rise){const P=clock(addD(date,-1));return {C:P,H:h+24,prev:true}}return {C,H:h,prev:false}}
   function at(C,h){const H=h<C.rise?h+24:h;const f=a=>a.find(x=>x.s<=H&&H<x.e);const oh=((h%24)+24)%24;
     return {hora:f(C.horas),chog:f(C.chog),organ:C.organs.find(o=>{const s=o.s%24,e=o.e%24;return s<e?(s<=oh&&oh<e):(oh>=s||oh<e)}),dosha:C.doshas.find(o=>{const s=o.s%24,e=o.e%24;return s<e?(s<=oh&&oh<e):(oh>=s||oh<e)})}}
   /* Biorhythm: the engine's six sine cycles counted from birth, and its three composites */
@@ -755,9 +756,11 @@ const DL=(()=>{
   /* Verification against the stored responses: returns rows of [check, field, engine, ok] */
   function verify(ENGR){const rows=[];
     const vc=ENGR['vedic-clock']&&ENGR['vedic-clock'].result;
-    if(vc){const d=vc.vedic_day.date;const C=clock(d);const hm=s=>{const t=s.slice(11,19).split(':').map(Number);return t[0]+t[1]/60+t[2]/3600};
+    if(vc){const hm=s=>{const t=s.slice(11,19).split(':').map(Number);return t[0]+t[1]/60+t[2]/3600};
+      const civ=new Date(Date.parse(vc.calculated_for)+5.5*36e5).toISOString(),cd=civ.slice(0,10),ch=hm(civ);const V=vedic(cd,ch),C=V.C,d=vc.vedic_day.date;
+      rows.push([`Vedic day at ${cd} ${fmtH(ch)}`,C.date,d,C.date===d]);
       const er=hm(vc.vedic_day.sunrise),es=hm(vc.vedic_day.sunset);rows.push(['Sunrise '+d,fmtHs(C.rise),fmtHs(er),Math.abs(C.rise-er)<2/60]);rows.push(['Sunset '+d,fmtHs(C.set),fmtHs(es),Math.abs(C.set-es)<2/60]);
-      const h=hm(vc.calculated_for.slice(0,19).replace(/T/,'T'))+5.5;const A=at(C,(h+24)%24);rows.push(['Hora at call',`${A.hora.lord} (${A.hora.n})`,`${vc.hora.ruler} (${vc.hora.number})`,A.hora.lord===vc.hora.ruler&&A.hora.n===vc.hora.number]);
+      const A=at(C,V.H);rows.push(['Hora at call',`${A.hora.lord} (${A.hora.n})`,`${vc.hora.ruler} (${vc.hora.number})`,A.hora.lord===vc.hora.ruler&&A.hora.n===vc.hora.number]);
       rows.push(['Hora window',`${fmtH(A.hora.s)}–${fmtH(A.hora.e)}`,`${vc.hora.start.slice(11,16)}–${vc.hora.end.slice(11,16)}`,fmtH(A.hora.s)===vc.hora.start.slice(11,16)]);
       rows.push(['Choghadiya at call',A.chog.name,vc.choghadiya.name,A.chog.name===vc.choghadiya.name]);rows.push(['Choghadiya window',`${fmtH(A.chog.s)}–${fmtH(A.chog.e)}`,`${vc.choghadiya.start.slice(11,16)}–${vc.choghadiya.end.slice(11,16)}`,fmtH(A.chog.s)===vc.choghadiya.start.slice(11,16)]);
       rows.push(['Organ at call',A.organ.organ,vc.current_organ.organ,A.organ.organ.replace(/ /g,'').toLowerCase()===vc.current_organ.organ.toLowerCase()]);rows.push(['Dosha at call',A.dosha.dosha,vc.current_dosha.dosha,A.dosha.dosha===vc.current_dosha.dosha])}
@@ -766,7 +769,7 @@ const DL=(()=>{
       CYC.forEach(([k])=>rows.push([`Biorhythm ${k}`,B[k].pct.toFixed(2)+'%',br[k].percentage.toFixed(2)+'%',Math.abs(B[k].pct-br[k].percentage)<.01]));
       rows.push(['Biorhythm energy',B.energy.toFixed(2),br.overall_energy.toFixed(2),Math.abs(B.energy-br.overall_energy)<.01])}
     return rows}
-  return {sunTimes,clock,at,bio,personal,tara,chandra,verify,fmtH,fmtHs,NUM_KEY,CHOG,HORA_KEY,CYC,TARA,addD};
+  return {sunTimes,clock,vedic,at,bio,personal,tara,chandra,verify,fmtH,fmtHs,NUM_KEY,CHOG,HORA_KEY,CYC,TARA,addD};
 })();
 if(typeof module!=='undefined')module.exports=DL;
 </script>
@@ -1642,7 +1645,7 @@ function dialPick(u,C){const f=DL.fmtH;let html='';
   else if(u.kind==='dosha'){const x=u.x;html=`<div class="eyebrow">Dosha clock</div><h2>${x.dosha}</h2><dl class="kv"><dt>Window</dt><dd>${f(x.s)} to ${f(x.e%24)}</dd></dl><p class="muted">The Ayurvedic four-hour cycle: Kapha, Pitta, Vata, twice a day.</p>`}
   openDrawer(html+`<p class="meta" style="margin-top:12px">Field figure by the Vedic Clock engine's method, sunrise ${f(C.rise)} and sunset ${f(C.set)} at Bangalore. The method reproduces the engine's response for ${ENG['vedic-clock']?istDate(ENG['vedic-clock'].result.calculated_for):'its call'}.</p>`)}
 function dial3d(host,date,h0){
-  const K=K3,T=THREE;const RM=K.reduced();let C=DL.clock(date),H=h0;
+  const K=K3,T=THREE;const RM=K.reduced();let civil=date;const V0=DL.vedic(date,h0);let C=V0.C,H=V0.H;
   let S=null;S=K.stage(host,{fov:30,yaw:-Math.PI/2,pitch:1.02,dist:120,target:[0,-2.5,0],minDist:60,maxDist:200,minPitch:.4,maxPitch:1.45,label:'Day dial. Tap a ring for its window.',
     onResize:()=>{if(S){S.view.dist=fit();S.place()}},
     ambient:(dt,now)=>{S.view.yaw=S.base.yaw+Math.sin(now/6400)*.05;return true},
@@ -1691,7 +1694,7 @@ function dial3d(host,date,h0){
   const tail=new T.Mesh(new T.CylinderGeometry(.9,.9,.3,20),M.gold());tail.position.x=-3.2;hand.add(tail);
   let handAng=hourAng(H),handTw=null,curRims=[];const rimMat=M.line(K.HEX.goldWarm,1);
   function paint(){const A=DL.at(C,H);curRims.forEach(o=>{rings.remove(o);o.geometry.dispose()});curRims=[];segs.forEach(s=>{const cur=(s.kind==='hora'&&s.x===A.hora)||(s.kind==='chog'&&s.x===A.chog)||(s.kind==='organ'&&s.x===A.organ)||(s.kind==='dosha'&&s.x===A.dosha);s.m.material=cur?mat.cur:s.base;s.m.position.y=cur?.35:0;if(cur){const r=R[s.kind];let a0=hourAng(s.x.e),a1=hourAng(s.x.s);while(a1<a0)a1+=360;const ln=new T.Line(K.arcXZ(r[1]-.1,1.05,a0+.3,a1-.3,48),rimMat);rings.add(ln);curRims.push(ln)}});S.invalidate()}
-  function setHour(h,ms){H=h;let to=hourAng(h),d=to-handAng;d=((d+540)%360)-180;const from=handAng;if(handTw)handTw.stop();handTw=S.tween(ms==null?600:ms,k=>{handAng=from+d*k;hand.rotation.y=handAng*Math.PI/180},()=>{handAng=from+d});paint()}
+  function setHour(h,ms){const V=DL.vedic(civil,h);if(V.C.date!==C.date){C=V.C;build()}H=V.H;let to=hourAng(h),d=to-handAng;d=((d+540)%360)-180;const from=handAng;if(handTw)handTw.stop();handTw=S.tween(ms==null?600:ms,k=>{handAng=from+d*k;hand.rotation.y=handAng*Math.PI/180},()=>{handAng=from+d});paint()}
   const tipEl=document.createElement('div');tipEl.className='tip';
   function tipFor(o){if(!tipEl.isConnected)host.appendChild(tipEl);const u=o&&o.userData.dial;if(!u){tipEl.classList.remove('on');return}const box=new T.Box3().setFromObject(o),p=new T.Vector3();box.getCenter(p);const s=S.toScreen(p);tipEl.style.left=s.x+'px';tipEl.style.top=s.y+'px';
     const x=u.x,f=DL.fmtH;tipEl.textContent=u.kind==='hora'?`${x.lord} hora · ${f(x.s)}–${f(x.e)}`:u.kind==='chog'?`${x.name} · ${x.meaning} · ${f(x.s)}–${f(x.e)}`:u.kind==='organ'?`${x.organ} · ${x.element} · ${f(x.s)}–${f(x.e)}`:`${x.dosha} · ${f(x.s)}–${f(x.e%24)}`;tipEl.classList.add('on')}
@@ -1699,10 +1702,10 @@ function dial3d(host,date,h0){
   if(!RM){const d=fit();S.view.dist=d*1.45;S.view.pitch=1.4;S.place();rings.scale.setScalar(.6);S.tween(1500,k=>{rings.scale.setScalar(.6+.4*k);S.view.dist=d*(1.45-.45*k);S.view.pitch=1.4+(1.02-1.4)*k;S.base.pitch=S.view.pitch;S.place()});
     const a1=handAng;hand.rotation.y=(a1+180)*Math.PI/180;S.tween(1600,k=>{hand.rotation.y=(a1+180*(1-k))*Math.PI/180})}
   else{S.view.dist=fit();S.place()}
-  return Object.assign(S,{update(d,h){if(d!==C.date){C=DL.clock(d);build()}setHour(h,RM?0:700)},setHour(h){setHour(h,RM?0:250)}});
+  return Object.assign(S,{update(d,h){civil=d;setHour(h,RM?0:700)},setHour(h){setHour(h,RM?0:250)}});
 }
 /* 2D dial for devices without WebGL: the same rings as SVG */
-function dial2d(host,date,h){const C=DL.clock(date),A=DL.at(C,h);const c=200,P=(hh,r)=>{const a=hourAng(hh)*Math.PI/180;return [c-r*Math.cos(a),c+r*Math.sin(a)]};
+function dial2d(host,date,h){const V=DL.vedic(date,h),C=V.C,A=DL.at(C,V.H);const c=200,P=(hh,r)=>{const a=hourAng(hh)*Math.PI/180;return [c-r*Math.cos(a),c+r*Math.sin(a)]};
   const arc=(s,e,r0,r1)=>{let a=P(s,r1),b=P(e,r1),d=P(e,r0),f=P(s,r0);const big=(e-s)>12?1:0;return `M${a[0]} ${a[1]}A${r1} ${r1} 0 ${big} 1 ${b[0]} ${b[1]}L${d[0]} ${d[1]}A${r0} ${r0} 0 ${big} 0 ${f[0]} ${f[1]}Z`};
   const ring=(list,r0,r1,fill)=>list.map(x=>`<path d="${arc(x.s,x.e,r0,r1)}" fill="${fill(x)}" stroke="var(--void)" stroke-width="1.2"/>`).join('');
   const cur=x=>x===A.hora||x===A.chog||x===A.organ||x===A.dosha;
@@ -1725,7 +1728,7 @@ function transitAspects(r){const out=[];const asp=[['Conjunction',0,1.5],['Sexti
   for(const t of T)for(const n of N){const d=angDiff(t.lon,n.lon);for(const [nm,a,o] of asp){if(Math.abs(d-a)<=o)out.push({t:t.body,n:n.body,name:nm,orb:Math.abs(d-a)})}}
   return out.sort((a,b)=>a.orb-b.orb)}
 function todayLens(r,h){
-  const R=dayReading(r),P=panchangaOf(r),B=DL.bio(r.d),N=DL.personal(r.d),C=DL.clock(r.d),A=DL.at(C,h);
+  const R=dayReading(r),P=panchangaOf(r),B=DL.bio(r.d),N=DL.personal(r.d),VD=DL.vedic(r.d,h),C=VD.C,A=DL.at(C,VD.H);
   const moonNak=Math.floor(r.sid[0]/(360/27)),moonSign=Math.floor(r.sid[0]/30);const tara=DL.tara(moonNak,BIRTH_NAK),cb=DL.chandra(moonSign,BIRTH_MOON_SIGN);
   const ad=SKY.ad.find(a=>a[2]<=r.d&&r.d<a[3]);let pd=null,pdS=null,pdE=null;if(ad)ad[4].forEach((p,i)=>{if(p[1]<=r.d){pd=p[0];pdS=p[1];pdE=i+1<ad[4].length?ad[4][i+1][1]:ad[3]}});
   const lordAt=pl=>{const n=NATAL_SID.find(x=>x.body===pl);return n?`${n.sign}, house ${n.house}`:''};
@@ -1783,9 +1786,9 @@ function verifyDrawer(){const rows=DL.verify(ENG);openDrawer(`<div class="eyebro
   <p class="meta" style="margin-top:12px">${rows.filter(r=>r[3]).length} of ${rows.length} match. Panchanga, numerology day numbers and Tarabala are field figures by classical method; the engines return natal figures only.</p>`)}
 
 function rToday(){
-  const r=rec(state.date),R=dayReading(r),isToday=state.date===todayIST();const C=DL.clock(state.date);
-  const h=isToday?istHourNow():(DIAL.date===state.date&&DIAL.h!=null?DIAL.h:C.rise+.25);DIAL.date=state.date;DIAL.h=h;
-  const P=panchangaOf(r),A=DL.at(C,h),tara=DL.tara(Math.floor(r.sid[0]/(360/27)),BIRTH_NAK);
+  const r=rec(state.date),R=dayReading(r),isToday=state.date===todayIST();const C0=DL.clock(state.date);
+  const h=isToday?istHourNow():(DIAL.date===state.date&&DIAL.h!=null?DIAL.h:C0.rise+.25);const VD=DL.vedic(state.date,h),C=VD.C;DIAL.date=state.date;DIAL.h=h;
+  const P=panchangaOf(r),A=DL.at(C,VD.H),tara=DL.tara(Math.floor(r.sid[0]/(360/27)),BIRTH_NAK);
   const ad=SKY.ad.find(a=>a[2]<=state.date&&state.date<a[3]);let pd=null;if(ad)ad[4].forEach(p=>{if(p[1]<=state.date)pd=p[0]});
   const next=EVENTS.filter(e=>e[0]>=state.date&&e[0]<=addDays(state.date,30)).slice(0,10);
   const rd=(k,v)=>`<div class="readout"><span class="k">${k}</span><span class="v">${v}</span></div>`;
@@ -1802,7 +1805,7 @@ function rToday(){
     <div class="inst-bar"><div class="dial-read" id="dialRead"></div><button class="pill sm" id="dialCheck">Method check</button></div>
     <div class="stage dial-stage" id="dialHost"></div>
     <div class="scrub dial-scrub"><span class="lab" id="dialT">${DL.fmtH(h)}</span><input type="range" id="dialH" min="0" max="24" step="0.0833" value="${((h%24)+24)%24}" aria-label="Hour of the day"><span class="lab" style="text-align:right">IST</span></div>
-    <p class="meta" style="margin:0">Sunrise ${DL.fmtH(C.rise)} · sunset ${DL.fmtH(C.set)} · Rahu Kaal ${DL.fmtH(C.rahu.s)}–${DL.fmtH(C.rahu.e)} · Abhijit ${DL.fmtH(C.abhijit.s)}–${DL.fmtH(C.abhijit.e)} · day lord ${C.lord}</p></div>
+    <p class="meta" style="margin:0" id="dialInfo"></p></div>
   </div>
   <div class="panel"><h3>Lens matrix · eight engines, one day<span class="sub">Birth · this day · where they meet</span></h3><div id="lensM">${lensMatrix(r,h)}</div></div>
   <div class="panel"><h3>Ribbon · thirty-one days<span class="sub">Every engine on its own track</span></h3>${ribbon(state.date)}</div>
@@ -1827,7 +1830,7 @@ function rToday(){
   $('#ovPlanets').onclick=e=>ov('planets',e.currentTarget);$('#ovKeys').onclick=e=>ov('keys',e.currentTarget);
   $('#main').querySelectorAll('.rhit').forEach(el=>el.addEventListener('click',()=>setDate(el.dataset.day)));
   wire($('#main'));}
-function dialReadout(h){const C=DL.clock(state.date),A=DL.at(C,h);const rd=(k,v)=>`<div class="readout"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+function dialReadout(h){const V=DL.vedic(state.date,h),C=V.C,A=DL.at(C,V.H);const inf=$('#dialInfo');if(inf)inf.textContent=`${V.prev?'Before sunrise: Vedic day of '+fmtDate(C.date)+' · ':''}Sunrise ${DL.fmtH(C.rise)} · sunset ${DL.fmtH(C.set)} · Rahu Kaal ${DL.fmtH(C.rahu.s)}–${DL.fmtH(C.rahu.e)} · Abhijit ${DL.fmtH(C.abhijit.s)}–${DL.fmtH(C.abhijit.e)} · day lord ${C.lord}`;const rd=(k,v)=>`<div class="readout"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   const el=$('#dialRead');if(el)el.innerHTML=rd('Hora',`<span class="g">${SYM[A.hora.lord]} ${A.hora.lord}</span> ${DL.fmtH(A.hora.s)}–${DL.fmtH(A.hora.e)}`)+rd('Choghadiya',`${A.chog.name} · ${A.chog.meaning}`)+rd('Organ · dosha',`${A.organ.organ} · ${A.dosha.dosha}`)}
 function todaySidFull(r){const ay=ayanOf(r);return tPos(r).map(t=>({...t,sid:sidInfo(t.lon,ay)}))}
 

@@ -12,7 +12,7 @@ function dialPick(u,C){const f=DL.fmtH;let html='';
   else if(u.kind==='dosha'){const x=u.x;html=`<div class="eyebrow">Dosha clock</div><h2>${x.dosha}</h2><dl class="kv"><dt>Window</dt><dd>${f(x.s)} to ${f(x.e%24)}</dd></dl><p class="muted">The Ayurvedic four-hour cycle: Kapha, Pitta, Vata, twice a day.</p>`}
   openDrawer(html+`<p class="meta" style="margin-top:12px">Field figure by the Vedic Clock engine's method, sunrise ${f(C.rise)} and sunset ${f(C.set)} at Bangalore. The method reproduces the engine's response for ${ENG['vedic-clock']?istDate(ENG['vedic-clock'].result.calculated_for):'its call'}.</p>`)}
 function dial3d(host,date,h0){
-  const K=K3,T=THREE;const RM=K.reduced();let C=DL.clock(date),H=h0;
+  const K=K3,T=THREE;const RM=K.reduced();let civil=date;const V0=DL.vedic(date,h0);let C=V0.C,H=V0.H;
   let S=null;S=K.stage(host,{fov:30,yaw:-Math.PI/2,pitch:1.02,dist:120,target:[0,-2.5,0],minDist:60,maxDist:200,minPitch:.4,maxPitch:1.45,label:'Day dial. Tap a ring for its window.',
     onResize:()=>{if(S){S.view.dist=fit();S.place()}},
     ambient:(dt,now)=>{S.view.yaw=S.base.yaw+Math.sin(now/6400)*.05;return true},
@@ -61,7 +61,7 @@ function dial3d(host,date,h0){
   const tail=new T.Mesh(new T.CylinderGeometry(.9,.9,.3,20),M.gold());tail.position.x=-3.2;hand.add(tail);
   let handAng=hourAng(H),handTw=null,curRims=[];const rimMat=M.line(K.HEX.goldWarm,1);
   function paint(){const A=DL.at(C,H);curRims.forEach(o=>{rings.remove(o);o.geometry.dispose()});curRims=[];segs.forEach(s=>{const cur=(s.kind==='hora'&&s.x===A.hora)||(s.kind==='chog'&&s.x===A.chog)||(s.kind==='organ'&&s.x===A.organ)||(s.kind==='dosha'&&s.x===A.dosha);s.m.material=cur?mat.cur:s.base;s.m.position.y=cur?.35:0;if(cur){const r=R[s.kind];let a0=hourAng(s.x.e),a1=hourAng(s.x.s);while(a1<a0)a1+=360;const ln=new T.Line(K.arcXZ(r[1]-.1,1.05,a0+.3,a1-.3,48),rimMat);rings.add(ln);curRims.push(ln)}});S.invalidate()}
-  function setHour(h,ms){H=h;let to=hourAng(h),d=to-handAng;d=((d+540)%360)-180;const from=handAng;if(handTw)handTw.stop();handTw=S.tween(ms==null?600:ms,k=>{handAng=from+d*k;hand.rotation.y=handAng*Math.PI/180},()=>{handAng=from+d});paint()}
+  function setHour(h,ms){const V=DL.vedic(civil,h);if(V.C.date!==C.date){C=V.C;build()}H=V.H;let to=hourAng(h),d=to-handAng;d=((d+540)%360)-180;const from=handAng;if(handTw)handTw.stop();handTw=S.tween(ms==null?600:ms,k=>{handAng=from+d*k;hand.rotation.y=handAng*Math.PI/180},()=>{handAng=from+d});paint()}
   const tipEl=document.createElement('div');tipEl.className='tip';
   function tipFor(o){if(!tipEl.isConnected)host.appendChild(tipEl);const u=o&&o.userData.dial;if(!u){tipEl.classList.remove('on');return}const box=new T.Box3().setFromObject(o),p=new T.Vector3();box.getCenter(p);const s=S.toScreen(p);tipEl.style.left=s.x+'px';tipEl.style.top=s.y+'px';
     const x=u.x,f=DL.fmtH;tipEl.textContent=u.kind==='hora'?`${x.lord} hora · ${f(x.s)}–${f(x.e)}`:u.kind==='chog'?`${x.name} · ${x.meaning} · ${f(x.s)}–${f(x.e)}`:u.kind==='organ'?`${x.organ} · ${x.element} · ${f(x.s)}–${f(x.e)}`:`${x.dosha} · ${f(x.s)}–${f(x.e%24)}`;tipEl.classList.add('on')}
@@ -69,10 +69,10 @@ function dial3d(host,date,h0){
   if(!RM){const d=fit();S.view.dist=d*1.45;S.view.pitch=1.4;S.place();rings.scale.setScalar(.6);S.tween(1500,k=>{rings.scale.setScalar(.6+.4*k);S.view.dist=d*(1.45-.45*k);S.view.pitch=1.4+(1.02-1.4)*k;S.base.pitch=S.view.pitch;S.place()});
     const a1=handAng;hand.rotation.y=(a1+180)*Math.PI/180;S.tween(1600,k=>{hand.rotation.y=(a1+180*(1-k))*Math.PI/180})}
   else{S.view.dist=fit();S.place()}
-  return Object.assign(S,{update(d,h){if(d!==C.date){C=DL.clock(d);build()}setHour(h,RM?0:700)},setHour(h){setHour(h,RM?0:250)}});
+  return Object.assign(S,{update(d,h){civil=d;setHour(h,RM?0:700)},setHour(h){setHour(h,RM?0:250)}});
 }
 /* 2D dial for devices without WebGL: the same rings as SVG */
-function dial2d(host,date,h){const C=DL.clock(date),A=DL.at(C,h);const c=200,P=(hh,r)=>{const a=hourAng(hh)*Math.PI/180;return [c-r*Math.cos(a),c+r*Math.sin(a)]};
+function dial2d(host,date,h){const V=DL.vedic(date,h),C=V.C,A=DL.at(C,V.H);const c=200,P=(hh,r)=>{const a=hourAng(hh)*Math.PI/180;return [c-r*Math.cos(a),c+r*Math.sin(a)]};
   const arc=(s,e,r0,r1)=>{let a=P(s,r1),b=P(e,r1),d=P(e,r0),f=P(s,r0);const big=(e-s)>12?1:0;return `M${a[0]} ${a[1]}A${r1} ${r1} 0 ${big} 1 ${b[0]} ${b[1]}L${d[0]} ${d[1]}A${r0} ${r0} 0 ${big} 0 ${f[0]} ${f[1]}Z`};
   const ring=(list,r0,r1,fill)=>list.map(x=>`<path d="${arc(x.s,x.e,r0,r1)}" fill="${fill(x)}" stroke="var(--void)" stroke-width="1.2"/>`).join('');
   const cur=x=>x===A.hora||x===A.chog||x===A.organ||x===A.dosha;

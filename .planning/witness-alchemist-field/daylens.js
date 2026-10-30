@@ -36,6 +36,7 @@ const DL=(()=>{
     const mid=(rise+set)/2,muh=(set-rise)/15;
     return {date,weekday:wd,lord:lord0,rise,set,next,horas,chog,rahu:part(RAHU[wd]),yama:part(YAMA[wd]),gulika:part(GULI[wd]),abhijit:{s:mid-muh/2,e:mid+muh/2},
       organs:ORGANS.map(([o,el,h])=>({organ:o,element:el,s:h,e:h+2})),doshas:DOSHAS.map(([d,h])=>({dosha:d,s:h,e:h+4}))}}
+  function vedic(date,h){const C=clock(date);if(h<C.rise){const P=clock(addD(date,-1));return {C:P,H:h+24,prev:true}}return {C,H:h,prev:false}}
   function at(C,h){const H=h<C.rise?h+24:h;const f=a=>a.find(x=>x.s<=H&&H<x.e);const oh=((h%24)+24)%24;
     return {hora:f(C.horas),chog:f(C.chog),organ:C.organs.find(o=>{const s=o.s%24,e=o.e%24;return s<e?(s<=oh&&oh<e):(oh>=s||oh<e)}),dosha:C.doshas.find(o=>{const s=o.s%24,e=o.e%24;return s<e?(s<=oh&&oh<e):(oh>=s||oh<e)})}}
   /* Biorhythm: the engine's six sine cycles counted from birth, and its three composites */
@@ -59,9 +60,11 @@ const DL=(()=>{
   /* Verification against the stored responses: returns rows of [check, field, engine, ok] */
   function verify(ENGR){const rows=[];
     const vc=ENGR['vedic-clock']&&ENGR['vedic-clock'].result;
-    if(vc){const d=vc.vedic_day.date;const C=clock(d);const hm=s=>{const t=s.slice(11,19).split(':').map(Number);return t[0]+t[1]/60+t[2]/3600};
+    if(vc){const hm=s=>{const t=s.slice(11,19).split(':').map(Number);return t[0]+t[1]/60+t[2]/3600};
+      const civ=new Date(Date.parse(vc.calculated_for)+5.5*36e5).toISOString(),cd=civ.slice(0,10),ch=hm(civ);const V=vedic(cd,ch),C=V.C,d=vc.vedic_day.date;
+      rows.push([`Vedic day at ${cd} ${fmtH(ch)}`,C.date,d,C.date===d]);
       const er=hm(vc.vedic_day.sunrise),es=hm(vc.vedic_day.sunset);rows.push(['Sunrise '+d,fmtHs(C.rise),fmtHs(er),Math.abs(C.rise-er)<2/60]);rows.push(['Sunset '+d,fmtHs(C.set),fmtHs(es),Math.abs(C.set-es)<2/60]);
-      const h=hm(vc.calculated_for.slice(0,19).replace(/T/,'T'))+5.5;const A=at(C,(h+24)%24);rows.push(['Hora at call',`${A.hora.lord} (${A.hora.n})`,`${vc.hora.ruler} (${vc.hora.number})`,A.hora.lord===vc.hora.ruler&&A.hora.n===vc.hora.number]);
+      const A=at(C,V.H);rows.push(['Hora at call',`${A.hora.lord} (${A.hora.n})`,`${vc.hora.ruler} (${vc.hora.number})`,A.hora.lord===vc.hora.ruler&&A.hora.n===vc.hora.number]);
       rows.push(['Hora window',`${fmtH(A.hora.s)}–${fmtH(A.hora.e)}`,`${vc.hora.start.slice(11,16)}–${vc.hora.end.slice(11,16)}`,fmtH(A.hora.s)===vc.hora.start.slice(11,16)]);
       rows.push(['Choghadiya at call',A.chog.name,vc.choghadiya.name,A.chog.name===vc.choghadiya.name]);rows.push(['Choghadiya window',`${fmtH(A.chog.s)}–${fmtH(A.chog.e)}`,`${vc.choghadiya.start.slice(11,16)}–${vc.choghadiya.end.slice(11,16)}`,fmtH(A.chog.s)===vc.choghadiya.start.slice(11,16)]);
       rows.push(['Organ at call',A.organ.organ,vc.current_organ.organ,A.organ.organ.replace(/ /g,'').toLowerCase()===vc.current_organ.organ.toLowerCase()]);rows.push(['Dosha at call',A.dosha.dosha,vc.current_dosha.dosha,A.dosha.dosha===vc.current_dosha.dosha])}
@@ -70,6 +73,6 @@ const DL=(()=>{
       CYC.forEach(([k])=>rows.push([`Biorhythm ${k}`,B[k].pct.toFixed(2)+'%',br[k].percentage.toFixed(2)+'%',Math.abs(B[k].pct-br[k].percentage)<.01]));
       rows.push(['Biorhythm energy',B.energy.toFixed(2),br.overall_energy.toFixed(2),Math.abs(B.energy-br.overall_energy)<.01])}
     return rows}
-  return {sunTimes,clock,at,bio,personal,tara,chandra,verify,fmtH,fmtHs,NUM_KEY,CHOG,HORA_KEY,CYC,TARA,addD};
+  return {sunTimes,clock,vedic,at,bio,personal,tara,chandra,verify,fmtH,fmtHs,NUM_KEY,CHOG,HORA_KEY,CYC,TARA,addD};
 })();
 if(typeof module!=='undefined')module.exports=DL;
