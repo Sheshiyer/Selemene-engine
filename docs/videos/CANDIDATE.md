@@ -1,5 +1,13 @@
 # Selemene video candidate — 2026-10-31
 
+## Input-minimization continuation
+
+Public fix committed as `9c5930f6` with timeout/date-bound follow-up `454e4e04`. Public Numerology uses name/birth_date; Biorhythm birth_date/current_time; Vedic Clock current_time/timezone_offset. Rust engines accept minimal options without fabricated BirthData. Existing birth_data inputs retain precedence. Minimal/legacy result and cache-key parity tests pass: 54 targeted Rust tests, 92 Worker tests and typecheck.
+
+Safe backend release checkout: `/Users/sheshnarayaniyer/.codex/worktrees/selemene-minimal-input-release`, branch `codex/selemene-minimal-input-release`, based on exact live `42093aa7`. Contains backend commit `835d4af7` and narrow embedded Markdown build exceptions `988bc7d2` / `f3066115`. First two staging deploys failed because Docker and Railway both excluded the compile-time reading-mode source. Latest staging deployment `d80e7cdc-4d0b-4842-9920-8dd43f6246b7` was last observed BUILDING. No production promotion or new Worker deployment occurred. User was asked for existing staging credential location or authorization to create a staging-only credential for authenticated live compatibility tests. Do not print credentials.
+
+Video SPEC.md is prepared; bundled reading instructions updated for minimal inputs. Manifest review expectations still need alignment with the new argument shapes before reupload. No recording or rendering has started.
+
 Package: `selemene-reflection`; display name: Selemene Engine; version: 0.2.5.
 
 Public plugin: `plugin_asdk_app_6ae613cf4448819184ec6896374c8550`.

@@ -15,6 +15,8 @@ If the same endpoint is exposed through both a registered app and a bundled MCP 
 
 ## Prepare the selected reading
 
+For Numerology, send only top-level `name` and `birth_date` to its fixed preparation/calculation tools. For Biorhythm, send only `birth_date` and `current_time`. For Vedic Clock, send only `current_time` and explicit `timezone_offset` in minutes. These operations do not need birth coordinates, birth time, or a birth-data envelope. Do not collect or forward unused personal fields even when the user supplied a complete synthetic profile. Their preparation tools accept incomplete inputs and report the missing fields; their info tools return the current minimal schemas.
+
 - Use `selemene_engine_catalog` and, when readiness matters, `selemene_engine_capabilities` to discover the reviewed catalog and current capability metadata. Then use the selected engine's exact `selemene_<engine>_info` tool. Catalog presence does not establish live operation. Never promise a fixed engine count or send an `engine_id` selector.
 - Use the selected engine's exact `selemene_<engine>_prepare` tool to check supplied inputs. Ask only for actual requirements. Do not invent names, birth times, coordinates, timezones, Enneagram types, dates, or consent. Preserve unknown birth time when supported; do not substitute noon. A city label alone is not verified coordinates or timezone.
 - For a combined calculation, use `selemene_list_workflows` and `selemene_workflow_info`; record the returned workflow's expected engine IDs. Do not invent workflow IDs or send editorial report modes as API workflow IDs.
