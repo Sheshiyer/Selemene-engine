@@ -26,6 +26,15 @@ type PublishedTool = ToolRegistration & { publishedInputSchema?: Record<string, 
 type McpSurface = "private" | "public";
 const legacyByName = new Map(FREE_TOOLS.map((tool) => [tool.name, tool]));
 const noInput = z.object({}).strict();
+const minimalDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
+  const date = new Date(value + "T00:00:00Z");
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value && Number(value.slice(0, 4)) >= 1000;
+});
+const MINIMAL_PUBLIC_SCHEMAS: Partial<Record<AllowedEngineId, z.AnyZodObject>> = {
+  numerology: z.object({ name: z.string().trim().min(1).max(500), birth_date: minimalDate }).strict(),
+  biorhythm: z.object({ birth_date: minimalDate, current_time: z.string().datetime({ offset: true }) }).strict(),
+  "vedic-clock": z.object({ current_time: z.string().datetime({ offset: true }), timezone_offset: z.number().int().min(-780).max(780) }).strict(),
+};
 const engineInvocation = z.object({
   birth_data: z.record(z.unknown()).optional(),
   current_time: z.string().max(64).optional(),
@@ -70,6 +79,32 @@ function fixedEngineTool(
   const suffix = engineId.replace(/-/g, "_");
   const title = ENGINE_SCHEMAS[engineId].title;
   const name = `selemene_${suffix}_${operation}`;
+  const minimal = MINIMAL_PUBLIC_SCHEMAS[engineId];
+  if (minimal) {
+    const schema = operation === "info" ? noInput : operation === "prepare" ? minimal.partial() : minimal;
+    return {
+      ...legacy, name,
+      description: operation === "info" ? `Return the minimal input requirements for ${title}.`
+        : operation === "prepare" ? `Check supplied ${title} inputs locally and report missing fields without calculating.`
+        : `Calculate ${title} using only ${engineId === "numerology" ? "name and birth date" : engineId === "biorhythm" ? "birth date and reference time" : "reference time and explicit UTC offset in minutes"}. No birth location is collected.`,
+      inputSchema: schema,
+      annotations: { ...legacy.annotations, title: `${operation === "info" ? "Inspect" : operation === "prepare" ? "Prepare" : "Calculate"} ${title}` },
+      handler: async (ctx, args) => {
+        if (operation === "info") return success({ engine_id: engineId, input_schema: zodToJsonSchema(minimal), operations: { prepare: `selemene_${suffix}_prepare`, calculate: `selemene_${suffix}_calculate` } });
+        const checked = minimal.safeParse(args);
+        if (operation === "prepare") return success({ engine_id: engineId, valid: checked.success, can_calculate: checked.success,
+          missing: checked.success ? [] : checked.error.issues.filter((issue) => issue.code === "invalid_type" && issue.received === "undefined").map((issue) => issue.path.join(".")),
+          errors: checked.success ? [] : checked.error.issues.filter((issue) => !(issue.code === "invalid_type" && issue.received === "undefined")).map((issue) => issue.path.join(".") + ": invalid input") });
+        if (!checked.success) return failed("Invalid tool input.");
+        const { current_time, ...options } = checked.data;
+        const outcome = await callSelemene(ctx.env, { method: "POST", path: { kind: "engine_calculate", engineId }, apiKey: ctx.props.apiKey,
+          body: { contract_version: "v1", consciousness_level: ctx.props.consciousnessLevel, parameters: {}, options,
+            current_time: current_time ?? new Date().toISOString() } });
+        if (outcome.kind !== "ok") return failed("The sponsored calculation failed. Do not retry automatically.");
+        return success({ engine_id: engineId, persistence_status: "not_confirmed", result: outcome.data });
+      },
+    };
+  }
   const description = operation === "info"
     ? `Return requirements and reviewed metadata for the fixed ${title} engine. No engine selector is accepted.`
     : operation === "prepare"

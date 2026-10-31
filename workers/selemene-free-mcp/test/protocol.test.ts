@@ -46,6 +46,20 @@ async function publicRpc(body: unknown) {
   return { response, raw, data: raw ? JSON.parse(raw) : null };
 }
 describe("official stateless MCP protocol", () => {
+  it("minimizes public date-based inputs and rejects unrelated personal data before upstream", async () => {
+    for (const name of ["selemene_numerology_calculate", "selemene_biorhythm_calculate", "selemene_vedic_clock_calculate"]) {
+      upstream.mockClear();
+      const rejected = await publicRpc(call(name, { birth_data: { latitude: 1, longitude: 2 } }));
+      expect(rejected.data.result.isError).toBe(true);
+      expect(upstream).not.toHaveBeenCalled();
+    }
+    const valid = await publicRpc(call("selemene_numerology_prepare", { name: "Test Reader", birth_date: "1990-01-01" }));
+    expect(valid.data.result.structuredContent.can_calculate).toBe(true);
+    const invalid = await publicRpc(call("selemene_numerology_prepare", { name: "Test Reader", birth_date: "1990-02-30" }));
+    expect(invalid.data.result.isError).toBe(true);
+    const partial = await publicRpc(call("selemene_numerology_prepare", { birth_date: "1990-01-01" }));
+    expect(partial.data.result.structuredContent.missing).toEqual(["name"]);
+  });
   it("connects the actual SDK client and preserves noauth discovery metadata", async () => {
     const client = new Client({ name: "sdk-proof", version: "1.0" }, { capabilities: {} });
     const mockedFetch = (async (input: RequestInfo | URL, options?: RequestInit) => {
