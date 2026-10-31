@@ -4,14 +4,15 @@ import { CallToolRequestSchema, ListToolsRequestSchema, ImplementationSchema } f
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { z } from "zod";
 import { ALL_TOOLS, type ToolContext, type ToolRegistration, type ToolResult } from "../../selemene-mcp/src/tools/index.js";
-import { isEngineAllowed, isWorkflowAllowed } from "../../selemene-mcp/src/allowlist.js";
-import { validateEngineInput } from "../../selemene-mcp/src/engine-schemas.js";
+import { ALLOWED_ENGINE_IDS, isEngineAllowed, isWorkflowAllowed, type AllowedEngineId } from "../../selemene-mcp/src/allowlist.js";
+import { ENGINE_SCHEMAS, validateEngineInput } from "../../selemene-mcp/src/engine-schemas.js";
 import { callSelemene, MAX_RESPONSE_BYTES } from "../../selemene-mcp/src/upstream.js";
 import type { FreeContext } from "./env.js";
 import type { RateDecision } from "./rate-limiter.js";
 import { sanitizeValue, SHARED_STORAGE_DISCLOSURE } from "./sanitize.js";
 import { VEDIC_CHART_TOOL } from "./vedic-chart.js";
 
+/** The private compatibility surface. Never add public-only operations here. */
 export const FREE_TOOLS: readonly ToolRegistration[] = [...ALL_TOOLS, VEDIC_CHART_TOOL];
 const MAX_BYTES = 32 * 1024;
 const INTERPRETATION = "Interpretation is composed in the user's current host ChatGPT conversation. This connector makes no hosted inference calls.";
@@ -21,6 +22,139 @@ const OPERATION_DESCRIPTIONS: Readonly<Record<string, string>> = {
   selemene_prepare_reading: "Validate inputs locally for the selected reviewed engine_id and report missing or invalid fields. This tool makes no upstream call and executes or saves nothing. It uses the same input validation rules as selemene_calculate.",
   selemene_calculate: "Execute exactly one calculation for the selected reviewed engine_id using its validated input.",
 };
+type PublishedTool = ToolRegistration & { publishedInputSchema?: Record<string, unknown> };
+type McpSurface = "private" | "public";
+const legacyByName = new Map(FREE_TOOLS.map((tool) => [tool.name, tool]));
+const noInput = z.object({}).strict();
+const engineInvocation = z.object({
+  birth_data: z.record(z.unknown()).optional(),
+  current_time: z.string().max(64).optional(),
+  location: z.record(z.unknown()).optional(),
+  parameters: z.record(z.unknown()).optional(),
+  options: z.record(z.unknown()).optional(),
+  question: z.string().max(2000).optional(),
+}).strict();
+
+function success(data: Record<string, unknown>): ToolResult {
+  return { content: [{ type: "text", text: JSON.stringify(data) }], structuredContent: data };
+}
+
+function publicEngineSchema(engineId: AllowedEngineId): Record<string, unknown> {
+  const schema = zodToJsonSchema(ENGINE_SCHEMAS[engineId].zodSchema, { $refStrategy: "none" }) as Record<string, unknown>;
+  const properties = schema.properties;
+  if (properties && typeof properties === "object" && !Array.isArray(properties)) {
+    const withoutEngine = { ...(properties as Record<string, unknown>) };
+    delete withoutEngine.engine_id;
+    schema.properties = withoutEngine;
+  }
+  if (Array.isArray(schema.required)) schema.required = schema.required.filter((key) => key !== "engine_id");
+  return schema;
+}
+
+function requiredLegacy(name: string): ToolRegistration {
+  const tool = legacyByName.get(name);
+  if (!tool) throw new Error(`Missing legacy registration: ${name}`);
+  return tool;
+}
+
+function fixedEngineTool(
+  engineId: AllowedEngineId,
+  operation: "info" | "prepare" | "calculate",
+): PublishedTool {
+  const legacyName = operation === "info"
+    ? "selemene_engine_info"
+    : operation === "prepare"
+      ? "selemene_prepare_reading"
+      : "selemene_calculate";
+  const legacy = requiredLegacy(legacyName);
+  const suffix = engineId.replace(/-/g, "_");
+  const title = ENGINE_SCHEMAS[engineId].title;
+  const name = `selemene_${suffix}_${operation}`;
+  const description = operation === "info"
+    ? `Return requirements and reviewed metadata for the fixed ${title} engine. No engine selector is accepted.`
+    : operation === "prepare"
+      ? `Validate only ${title} inputs locally and report missing or invalid fields. This tool does not calculate or save.`
+      : `Run exactly one ${title} calculation with validated ${title}-specific input.`;
+  return {
+    ...legacy,
+    name,
+    description,
+    inputSchema: operation === "info" ? noInput : engineInvocation,
+    publishedInputSchema: operation === "info"
+      ? zodToJsonSchema(noInput, { $refStrategy: "none" }) as Record<string, unknown>
+      : publicEngineSchema(engineId),
+    annotations: { ...legacy.annotations, title: `${operation === "info" ? "Inspect" : operation === "prepare" ? "Prepare" : "Calculate"} ${title}` },
+    handler: async (ctx, args) => legacy.handler(ctx, { engine_id: engineId, ...args }),
+  };
+}
+
+function catalogEngineIds(data: unknown): Set<string> {
+  if (!data || typeof data !== "object") return new Set();
+  const engines = (data as { engines?: unknown }).engines;
+  if (!Array.isArray(engines)) return new Set();
+  return new Set(engines.map((entry) => typeof entry === "string" ? entry : entry && typeof entry === "object" ? (entry as { id?: unknown }).id : null).filter((id): id is string => typeof id === "string"));
+}
+
+function capabilityValue(data: unknown, engineId: string): Record<string, unknown> | null {
+  const root = data && typeof data === "object" ? data as Record<string, unknown> : null;
+  if (!root) return null;
+  const candidates = Array.isArray(root.capabilities) ? root.capabilities : Array.isArray(root.engines) ? root.engines : null;
+  if (candidates) {
+    const row = candidates.find((entry) => entry && typeof entry === "object" && ((entry as Record<string, unknown>).engine_id === engineId || (entry as Record<string, unknown>).id === engineId));
+    return row && typeof row === "object" ? row as Record<string, unknown> : null;
+  }
+  const direct = root[engineId];
+  return direct && typeof direct === "object" && !Array.isArray(direct) ? direct as Record<string, unknown> : null;
+}
+
+const engineCatalogTool: PublishedTool = {
+  name: "selemene_engine_catalog",
+  description: "Return the reviewed Selemene engine catalog only. Catalog membership does not prove operational readiness.",
+  inputSchema: noInput,
+  annotations: { title: "Engine catalog", readOnlyHint: true, idempotentHint: true, destructiveHint: false, openWorldHint: false },
+  requiredScope: "read",
+  securitySchemes: { type: "noauth" },
+  handler: async (ctx) => {
+    const outcome = await callSelemene(ctx.env, { method: "GET", path: "/api/v1/engines", apiKey: ctx.props.apiKey });
+    if (outcome.kind !== "ok") return failed("The sponsored Selemene catalog is unavailable. Try again later.");
+    const present = catalogEngineIds(outcome.data);
+    return success({ engines: ALLOWED_ENGINE_IDS.map((engineId) => ({
+      engine_id: engineId,
+      title: ENGINE_SCHEMAS[engineId].title,
+      summary: ENGINE_SCHEMAS[engineId].summary,
+      catalog_present: present.has(engineId),
+    })), note: "Catalog membership does not imply operational readiness. Use selemene_engine_capabilities for current capability metadata." });
+  },
+};
+
+const engineCapabilitiesTool: PublishedTool = {
+  name: "selemene_engine_capabilities",
+  description: "Return current capability/readiness metadata for reviewed Selemene engines only. Readiness is distinct from catalog membership.",
+  inputSchema: noInput,
+  annotations: { title: "Engine capabilities", readOnlyHint: true, idempotentHint: true, destructiveHint: false, openWorldHint: false },
+  requiredScope: "read",
+  securitySchemes: { type: "noauth" },
+  handler: async (ctx) => {
+    const outcome = await callSelemene(ctx.env, { method: "GET", path: "/api/v1/engines/capabilities", apiKey: ctx.props.apiKey });
+    if (outcome.kind === "not_found") return success({ capabilities_source: "unknown", engines: ALLOWED_ENGINE_IDS.map((engine_id) => ({ engine_id, capability: null })) });
+    if (outcome.kind !== "ok") return failed("The sponsored Selemene capability service is unavailable. Try again later.");
+    return success({ capabilities_source: "ok", engines: ALLOWED_ENGINE_IDS.map((engine_id) => ({ engine_id, capability: capabilityValue(outcome.data, engine_id) })) });
+  },
+};
+
+export const PUBLIC_TOOLS: readonly PublishedTool[] = [
+  engineCatalogTool,
+  engineCapabilitiesTool,
+  ...ALLOWED_ENGINE_IDS.flatMap((engineId) => [
+    fixedEngineTool(engineId, "info"),
+    fixedEngineTool(engineId, "prepare"),
+    fixedEngineTool(engineId, "calculate"),
+  ]),
+  requiredLegacy("selemene_list_workflows"),
+  requiredLegacy("selemene_workflow_info"),
+  requiredLegacy("selemene_run_workflow"),
+  requiredLegacy("selemene_vedic_chart"),
+];
 const error = (status: number, message: string, id: string | number | null = null, code = -32600) =>
   Response.json({ jsonrpc: "2.0", id, error: { code, message } }, { status, headers: { "cache-control": "no-store" } });
 function failed(message: string): ToolResult {
@@ -83,7 +217,7 @@ async function serviceProps(service: FreeContext): Promise<ToolContext["props"] 
     apiKey: service.apiKey, linkedAt: 0 };
 }
 function storageDisclosure(tool: ToolRegistration): string | undefined {
-  if (tool.name === "selemene_prepare_reading") return "For a later calculation only: " + SHARED_STORAGE_DISCLOSURE;
+  if (tool.name === "selemene_prepare_reading" || tool.name.endsWith("_prepare")) return "For a later calculation only: " + SHARED_STORAGE_DISCLOSURE;
   return tool.annotations.readOnlyHint === false ? SHARED_STORAGE_DISCLOSURE : undefined;
 }
 function publicDescription(tool: ToolRegistration): string {
@@ -109,7 +243,7 @@ function publicResult(result: ToolResult, tool: ToolRegistration, secret: string
   return clean;
 }
 
-export async function handleMcp(request: Request, ctx: McpContext): Promise<Response> {
+export async function handleMcp(request: Request, ctx: McpContext, surface: McpSurface = "private"): Promise<Response> {
   if (request.method !== "POST") return new Response(null, { status: 405, headers: { Allow: "POST" } });
   if (request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") return error(415, "Expected JSON.");
   const origin = request.headers.get("origin");
@@ -137,19 +271,20 @@ export async function handleMcp(request: Request, ctx: McpContext): Promise<Resp
     if (!callParams.safeParse(params).success) return error(400, "Invalid tool request.", body.id);
   } else return error(400, "Unsupported operation.", body.id, -32601);
 
-  const server = new Server({ name: "selemene-free-mcp", version: "0.2.0" }, { capabilities: { tools: {} } });
+  const tools: readonly PublishedTool[] = surface === "public" ? PUBLIC_TOOLS : FREE_TOOLS;
+  const server = new Server({ name: "selemene-free-mcp", version: surface === "public" ? "0.2.5" : "0.2.0" }, { capabilities: { tools: {} } });
   const schemes = [{ type: "noauth" }];
   let rateDenied: RateDecision | undefined;
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: FREE_TOOLS.map((tool) => ({
+    tools: tools.map((tool) => ({
       name: tool.name,
       description: publicDescription(tool),
-      inputSchema: zodToJsonSchema(tool.inputSchema, { $refStrategy: "none" }) as { type: "object"; [key: string]: unknown },
+      inputSchema: (tool.publishedInputSchema ?? zodToJsonSchema(tool.inputSchema, { $refStrategy: "none" })) as { type: "object"; [key: string]: unknown },
       annotations: tool.annotations, securitySchemes: schemes, _meta: { securitySchemes: schemes },
     })),
   }));
   server.setRequestHandler(CallToolRequestSchema, async ({ params: toolParams }) => {
-    const tool = FREE_TOOLS.find((item) => item.name === toolParams.name);
+    const tool = tools.find((item) => item.name === toolParams.name);
     if (!tool) return failed("Unknown tool.");
     const input = tool.inputSchema.safeParse(toolParams.arguments ?? {});
     if (!input.success) return publicResult(failed("Invalid tool input."), tool, ctx.service.apiKey);
@@ -198,7 +333,7 @@ export async function handleMcp(request: Request, ctx: McpContext): Promise<Resp
     if (body.method === "tools/list" && safe && typeof safe === "object") {
       const listed = (safe as { result?: { tools?: Array<Record<string, unknown>> } }).result?.tools;
       for (const tool of listed ?? []) {
-        if (FREE_TOOLS.some((known) => known.name === tool.name)) {
+        if (tools.some((known) => known.name === tool.name)) {
           tool.securitySchemes = schemes;
           tool._meta = { securitySchemes: schemes };
         }

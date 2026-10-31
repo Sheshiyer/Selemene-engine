@@ -40,8 +40,8 @@ export function makeEnv(overrides: Partial<Env> = {}) {
   env.FREE_RATE_LIMITER = namespace;
   return { env, records, alarms, object, namespace, fetchObject };
 }
-export function request(body: unknown, ip = "203.0.113.8", extra: Record<string, string> = {}) {
-  return new Request(`${PUBLIC_ORIGIN}/mcp`, { method: "POST", headers: {
+export function request(body: unknown, ip = "203.0.113.8", extra: Record<string, string> = {}, path = "/mcp") {
+  return new Request(`${PUBLIC_ORIGIN}${path}`, { method: "POST", headers: {
     "content-type": "application/json", accept: "application/json, text/event-stream",
     "mcp-protocol-version": "2025-03-26", "cf-connecting-ip": ip, ...extra,
   }, body: typeof body === "string" ? body : JSON.stringify(body) });

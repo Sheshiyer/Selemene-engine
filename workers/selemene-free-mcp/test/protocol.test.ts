@@ -3,7 +3,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import worker from "../src/index.js";
 import { PUBLIC_ORIGIN } from "../src/env.js";
-import { FREE_TOOLS } from "../src/mcp.js";
+import { FREE_TOOLS, PUBLIC_TOOLS } from "../src/mcp.js";
 import { SHARED_STORAGE_DISCLOSURE } from "../src/sanitize.js";
 import { API_ORIGIN, SYNTHETIC_KEY, call, init, makeEnv, request } from "./helpers.js";
 
@@ -31,6 +31,14 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 async function rpc(body: unknown) {
   const response = await worker.fetch(request(body), fixture.env);
+  const raw = await response.text();
+  expect(raw).not.toContain(SYNTHETIC_KEY);
+  expect(raw).not.toContain("private-shared-account-id");
+  expect(raw).not.toContain("private-account@example.test");
+  return { response, raw, data: raw ? JSON.parse(raw) : null };
+}
+async function publicRpc(body: unknown) {
+  const response = await worker.fetch(request(body, "203.0.113.8", {}, "/mcp/public"), fixture.env);
   const raw = await response.text();
   expect(raw).not.toContain(SYNTHETIC_KEY);
   expect(raw).not.toContain("private-shared-account-id");
@@ -84,6 +92,44 @@ describe("official stateless MCP protocol", () => {
     expect(description("selemene_calculate")).toContain(SHARED_STORAGE_DISCLOSURE);
     expect(description("selemene_run_workflow")).toContain(SHARED_STORAGE_DISCLOSURE);
     expect(upstream).not.toHaveBeenCalled();
+  });
+  it("keeps the private registry intact and exposes a separate fixed-operation public registry", async () => {
+    const listed = await publicRpc({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} });
+    expect(listed.response.status).toBe(200);
+    const tools = listed.data.result.tools as Array<{ name: string; inputSchema: { properties?: Record<string, unknown> }; annotations: unknown }>;
+    expect(tools).toHaveLength(39);
+    expect(tools.map((tool) => tool.name)).toEqual(PUBLIC_TOOLS.map((tool) => tool.name));
+    expect(tools.map((tool) => tool.name)).toContain("selemene_engine_catalog");
+    expect(tools.map((tool) => tool.name)).toContain("selemene_engine_capabilities");
+    expect(tools.map((tool) => tool.name)).toContain("selemene_numerology_info");
+    expect(tools.map((tool) => tool.name)).toContain("selemene_numerology_prepare");
+    expect(tools.map((tool) => tool.name)).toContain("selemene_numerology_calculate");
+    for (const generic of ["selemene_list_engines", "selemene_engine_info", "selemene_prepare_reading", "selemene_calculate"]) {
+      expect(tools.map((tool) => tool.name)).not.toContain(generic);
+    }
+    const numerology = tools.find((tool) => tool.name === "selemene_numerology_calculate");
+    expect(numerology?.inputSchema.properties?.engine_id).toBeUndefined();
+    expect(numerology?.annotations).toEqual({
+      title: "Calculate Numerology", readOnlyHint: false, idempotentHint: false,
+      destructiveHint: false, openWorldHint: false,
+    });
+
+    upstream.mockClear();
+    const prepared = await publicRpc(call("selemene_numerology_prepare"));
+    expect(prepared.response.status).toBe(200);
+    expect(prepared.data.result.structuredContent.can_calculate).toBe(false);
+    expect(upstream).not.toHaveBeenCalled();
+    const genericArgument = await publicRpc(call("selemene_numerology_prepare", { engine_id: "tarot" }));
+    expect(genericArgument.data.result.isError).toBe(true);
+    expect(upstream).not.toHaveBeenCalled();
+    const genericDispatch = await publicRpc(call("selemene_calculate", { engine_id: "tarot", options: { spread: "single_card" } }));
+    expect(genericDispatch.data.result.isError).toBe(true);
+    expect(upstream).not.toHaveBeenCalled();
+
+    const calculated = await publicRpc(call("selemene_tarot_calculate", { options: { spread: "single_card" } }));
+    expect(calculated.response.status).toBe(200);
+    expect(calculated.data.result.isError).not.toBe(true);
+    expect(upstream.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(1);
   });
   it("initializes and advertises both server-owned noauth scheme locations", async () => {
     expect((await rpc(init)).response.status).toBe(200);

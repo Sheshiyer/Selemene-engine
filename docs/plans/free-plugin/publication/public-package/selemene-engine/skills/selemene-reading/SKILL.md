@@ -15,8 +15,8 @@ If the same endpoint is exposed through both a registered app and a bundled MCP 
 
 ## Prepare the selected reading
 
-- Use `selemene_list_engines` and `selemene_engine_info` to discover the actual service catalog and the selected engine's reviewed schema. Catalog presence does not establish live operation. Never promise a fixed engine count.
-- Use `selemene_prepare_reading` to check supplied inputs. Ask only for actual requirements. Do not invent names, birth times, coordinates, timezones, Enneagram types, dates, or consent. Preserve unknown birth time when supported; do not substitute noon. A city label alone is not verified coordinates or timezone.
+- Use `selemene_engine_catalog` and, when readiness matters, `selemene_engine_capabilities` to discover the reviewed catalog and current capability metadata. Then use the selected engine's exact `selemene_<engine>_info` tool. Catalog presence does not establish live operation. Never promise a fixed engine count or send an `engine_id` selector.
+- Use the selected engine's exact `selemene_<engine>_prepare` tool to check supplied inputs. Ask only for actual requirements. Do not invent names, birth times, coordinates, timezones, Enneagram types, dates, or consent. Preserve unknown birth time when supported; do not substitute noon. A city label alone is not verified coordinates or timezone.
 - For a combined calculation, use `selemene_list_workflows` and `selemene_workflow_info`; record the returned workflow's expected engine IDs. Do not invent workflow IDs or send editorial report modes as API workflow IDs.
 - For an integrated Kundali reading, use the separately exposed `selemene_vedic_chart` tool when available. Follow that tool's own schema and required inputs; engine preflight is not a chart validator. Preserve returned natal D1, whole-sign houses, lagna, and D9/Navamsa facts as a separate chart source. There is no `vedic-kundali` API engine ID. Do not invent yogas, dignity/strength, Atmakaraka, combustion findings, or advanced local-supplement fields that the response does not supply.
 - Retain the user's focus, requested language, depth, subject roles, relationship context, and input uncertainty in the conversation. Send only fields the tool schema supports. Keep multiple subjects' inputs and results separate.
@@ -27,7 +27,7 @@ Before the first calculation, explain: **Free readings send submitted inputs to 
 
 Execute after the user explicitly requests the selected reading with this disclosure understood. If their request already includes that understanding, continue without asking again. A preparation-only request never authorizes execution. Do not promise ephemeral processing, a retention period, deletion, or read-only execution.
 
-Use `selemene_calculate` for the selected engine or `selemene_run_workflow` for the selected combined workflow, following the actual schema and any confirmation flag. Do not supply or raise a service phase or bypass permission gates. For multiple subjects, make only the separately requested supported calls and attach every result to its subject.
+Use the selected engine's exact `selemene_<engine>_calculate` tool, or `selemene_run_workflow` for the selected combined workflow, following the advertised schema and any confirmation flag. Do not supply an `engine_id`, raise a service phase, or bypass permission gates. For multiple subjects, make only the separately requested supported calls and attach every result to its subject.
 
 An access phase automatically updated by service activity describes the shared account's configured access state. It is not a measured consciousness level for this reader and does not authorize manual phase escalation.
 
