@@ -23,6 +23,7 @@ target/
 # Documentation (except README)
 *.md
 !README.md
+!crates/noesis-api/modes/integrated-kundali-l0.md
 docs/
 selemene_architecture.md
 CODEBASE_SUMMARY.md
