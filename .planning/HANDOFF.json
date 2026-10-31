@@ -1,0 +1,33 @@
+{
+  "schema": "temperance.handoff.v2",
+  "project": "selemene-engine",
+  "wave": "Public Selemene plugin operation-contract remediation",
+  "tier": "E4",
+  "isa": "/Volumes/madara/2026/Projects/tryambakam-noesis/Selemene-engine/ISA.md",
+  "isc_open": ["ISC-278", "ISC-279", "ISC-281", "ISC-281.1", "ISC-281.2", "ISC-281.3", "ISC-282"],
+  "isc_done_count": 291,
+  "completed": [
+    "Authenticated Platform portal readback confirmed the Selemene Engine v0.2.4 draft, configured MCP, passed skill checks, and incomplete review content.",
+    "Fresh MCP rescan confirmed four current generic-operation findings on list_engines, engine_info, prepare_reading, and calculate.",
+    "Current ChatGPT in-app-browser Personal directory has no Selemene installation, so no candidate walkthrough has been captured.",
+    "Committed this continuation checkpoint as 3abb7932; the corresponding ISA decision is committed on the primary worktree as c9474604."
+  ],
+  "remaining": [
+    "Implement the isolated v0.2.5 public MCP registry at /mcp/public with 39 explicit public tools while retaining private /mcp behavior.",
+    "Add targeted contract, protocol, route, and compatibility tests; run worker typecheck, tests, and deployment dry-run.",
+    "Deploy the verified public endpoint, migrate only the public plugin package/connection, upload a new draft version, and rescan it.",
+    "Once the rescan is clear, capture and publish the reviewer video, save its URL, complete truthful attestations, and obtain user confirmation immediately before external video publication and final review submission."
+  ],
+  "blockers": [
+    "The current v0.2.4 public endpoint remains unsuitable for submission because the fresh scan retains four model-callable-operation findings.",
+    "The authenticated ChatGPT in-app-browser account has no Selemene Personal plugin, so it cannot yet demonstrate the currently saved draft."
+  ],
+  "decisions": [
+    "Do not attach a video or submit v0.2.4 while the known scan findings persist.",
+    "Keep the private eight-tool /mcp endpoint unchanged; add the 39-tool public contract only at /mcp/public.",
+    "Use the clean codex/selemene-free-plugin worktree for the migration and preserve unrelated root work."
+  ],
+  "uncommitted_files": [],
+  "next_action": "Implement and test the /mcp/public public registry in workers/selemene-free-mcp/src/mcp.ts and route selection in src/index.ts.",
+  "next_command": "cd /Users/sheshnarayaniyer/.codex/worktrees/selemene-free-plugin/Selemene-engine/workers/selemene-free-mcp && npm test -- --run test/protocol.test.ts"
+}
