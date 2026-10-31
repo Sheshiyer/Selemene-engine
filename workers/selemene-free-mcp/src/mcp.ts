@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ALL_TOOLS, type ToolContext, type ToolRegistration, type ToolResult } from "../../selemene-mcp/src/tools/index.js";
 import { ALLOWED_ENGINE_IDS, isEngineAllowed, isWorkflowAllowed, type AllowedEngineId } from "../../selemene-mcp/src/allowlist.js";
 import { ENGINE_SCHEMAS, validateEngineInput } from "../../selemene-mcp/src/engine-schemas.js";
-import { callSelemene, MAX_RESPONSE_BYTES } from "../../selemene-mcp/src/upstream.js";
+import { callSelemene, MAX_RESPONSE_BYTES, CALCULATE_TIMEOUT_MS } from "../../selemene-mcp/src/upstream.js";
 import type { FreeContext } from "./env.js";
 import type { RateDecision } from "./rate-limiter.js";
 import { sanitizeValue, SHARED_STORAGE_DISCLOSURE } from "./sanitize.js";
@@ -28,7 +28,7 @@ const legacyByName = new Map(FREE_TOOLS.map((tool) => [tool.name, tool]));
 const noInput = z.object({}).strict();
 const minimalDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
   const date = new Date(value + "T00:00:00Z");
-  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value && Number(value.slice(0, 4)) >= 1000;
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value && Number(value.slice(0, 4)) >= 1000 && Number(value.slice(0, 4)) <= 3000;
 });
 const MINIMAL_PUBLIC_SCHEMAS: Partial<Record<AllowedEngineId, z.AnyZodObject>> = {
   numerology: z.object({ name: z.string().trim().min(1).max(500), birth_date: minimalDate }).strict(),
@@ -97,7 +97,7 @@ function fixedEngineTool(
           errors: checked.success ? [] : checked.error.issues.filter((issue) => !(issue.code === "invalid_type" && issue.received === "undefined")).map((issue) => issue.path.join(".") + ": invalid input") });
         if (!checked.success) return failed("Invalid tool input.");
         const { current_time, ...options } = checked.data;
-        const outcome = await callSelemene(ctx.env, { method: "POST", path: { kind: "engine_calculate", engineId }, apiKey: ctx.props.apiKey,
+        const outcome = await callSelemene(ctx.env, { method: "POST", path: { kind: "engine_calculate", engineId }, apiKey: ctx.props.apiKey, timeoutMs: CALCULATE_TIMEOUT_MS,
           body: { contract_version: "v1", consciousness_level: ctx.props.consciousnessLevel, parameters: {}, options,
             current_time: current_time ?? new Date().toISOString() } });
         if (outcome.kind !== "ok") return failed("The sponsored calculation failed. Do not retry automatically.");
