@@ -1,6 +1,6 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "selemene-engine",
+  "name": "selemene-reflection",
   "version": "0.2.5",
   "description": "Selemene onboarding, engine calculations, and detailed symbolic reflection readings composed in ChatGPT.",
   "extensions": {
