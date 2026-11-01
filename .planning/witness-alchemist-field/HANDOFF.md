@@ -141,3 +141,16 @@ Every 3D scene has a 2D path (no WebGL or low-power device) and a static path un
 | `room-today.js` | Today: loom (with Planets and Gene Keys overlays) beside the dial, an eight-engine lens matrix (birth, this day, where they meet, provenance per cell) and a 31-day ribbon (definition, Moon nakshatra, tithi phase, Tarabala, biorhythm, events) |
 
 Provenance words on the page: **Engine** is read from a stored response; **Field · engine method** is recomputed by a method checked against the engine; **Field** is a classical or Swiss Ephemeris computation the engines do not return.
+
+## Public site: daily.10869.space (31 Oct 2026)
+
+The same page is hosted on Cloudflare Pages (project `witness-alchemist-field`, account 9d9d23b27f32e70ae3afb6a1aa2c0f10, custom domain `daily.10869.space` via a proxied CNAME to `witness-alchemist-field.pages.dev`). `export_site.py` turns the build into `dist/` with agent-readable data beside the page:
+
+| Path | What |
+|---|---|
+| `/` | the field (same HTML as the artifact) |
+| `/today.json`, `/today.md`, `/api/today` | the current IST day, schema `witness-alchemist-field/day/v1`: `engine` (stored Selemene responses, trimmed) + `field` (tropical HD transits, channels, definition, contacts, events) + `subject` |
+| `/daily/<date>.json`, `/daily/<date>.md`, `/daily/index.json` | every day the engine has held |
+| `/llms.txt` | where an agent starts |
+
+Every file carries `Access-Control-Allow-Origin: *`. The scheduled task `witness-field-daily-sync` now runs sync, build, test, `python3 export_site.py`, `wrangler pages deploy dist --project-name witness-alchemist-field`, then republishes the artifact. `dist/` is ignored by git. Nothing in the export needs the Selemene key.
