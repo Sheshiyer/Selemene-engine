@@ -116,6 +116,7 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::admin::update_user_state,
         handlers::admin::update_user_tier,
         handlers::admin::update_user_roles,
+        handlers::admin::api_key_tiers,
         handlers::admin::list_api_keys,
         handlers::admin::create_api_key,
         handlers::admin::revoke_api_key,
@@ -235,6 +236,7 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::admin::UpdateUserRolesResponse,
             handlers::admin::AdminApiKeysResponse,
             handlers::admin::AdminApiKeyItem,
+            handlers::admin::AdminKeyTier,
             handlers::admin::CreateApiKeyRequest,
             handlers::admin::CreateApiKeyResponse,
             handlers::admin::RotateApiKeyResponse,
@@ -896,6 +898,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/admin/users/:user_id/roles",
             put(handlers::admin::update_user_roles),
         )
+        .route("/admin/api-key-tiers", get(handlers::admin::api_key_tiers))
         .route(
             "/admin/api-keys",
             get(handlers::admin::list_api_keys).post(handlers::admin::create_api_key),

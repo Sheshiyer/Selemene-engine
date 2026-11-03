@@ -1,3 +1,12 @@
+# Admin API key creation and tiers — 2026-11-03
+
+- Fixed API key creation by supplying the missing lifecycle INSERT value and retaining atomic audit events.
+- Simplified the admin form to Basic, Pro, and Enterprise with server-owned engine scopes, access levels, and rate limits.
+- Preserved restricted-key intent and engine scopes across tier changes, role changes, and rotation; serialized rotation with tier changes to prevent stale privilege restoration.
+- Added protected nonsecret tier metadata, inline creation errors, and duplicate-submit protection.
+- Preserved the recent minimal-input Numerology/Biorhythm behavior and embedded-mode build inclusion.
+- Verified on staging and the production admin dashboard at `144.tryambakam.space`; see [release evidence](docs/release/admin-api-key-tiers-2026-11-03.md).
+
 # 3.3.1 — Dodo-free billing production release (2026-09-08)
 
 > [Production release record](https://github.com/Sheshiyer/Selemene-engine/releases/tag/release-3.3.1-free-mode-20260908)

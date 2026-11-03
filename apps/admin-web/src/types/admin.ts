@@ -867,3 +867,11 @@ export interface AdminSkillsEcosystemStatus {
   report_modes: AdminSelemeneReportMode[];
   mcp: AdminSelemeneMcp;
 }
+
+export interface AdminApiKeyTier {
+  code: string;
+  label: string;
+  permissions: string[];
+  consciousness_level: number;
+  rate_limit: number;
+}

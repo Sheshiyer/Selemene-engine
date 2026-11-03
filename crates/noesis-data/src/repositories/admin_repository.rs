@@ -1,5 +1,6 @@
 use crate::repositories::living_readings_repository::LivingReadingsRepository;
 use chrono::{DateTime, Utc};
+use noesis_auth::key_tiers::KeyTier;
 use serde::Serialize;
 use serde_json::Value;
 use sqlx::{Error, PgPool, Postgres, QueryBuilder};
@@ -57,6 +58,7 @@ pub struct NewApiKeyRecord {
     pub rate_limit: i32,
     pub expires_at: Option<DateTime<Utc>>,
     pub rotated_from_key_id: Option<Uuid>,
+    pub tier_managed: bool,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -582,11 +584,28 @@ impl AdminRepository {
         .await?;
 
         if updated.is_some() {
-            sqlx::query("UPDATE api_keys SET tier = $2 WHERE user_id = $1")
-                .bind(user_id)
-                .bind(tier)
-                .execute(&mut *tx)
-                .await?;
+            let target =
+                KeyTier::parse(tier).ok_or_else(|| Error::Protocol("Invalid key tier".into()))?;
+            let has_events: bool =
+                sqlx::query_scalar("SELECT to_regclass('api_key_events') IS NOT NULL")
+                    .fetch_one(&mut *tx)
+                    .await?;
+            let managed = if has_events {
+                "EXISTS (SELECT 1 FROM api_key_events e WHERE e.key_id=k.id AND e.event_type='created' AND e.metadata->'tier_managed'='true'::jsonb)"
+            } else {
+                "false"
+            };
+            let keys = sqlx::query_as::<_, (Uuid, Value, i32, i32, bool)>(&format!(
+                "SELECT k.id, k.permissions, k.consciousness_level, k.rate_limit, {managed} FROM api_keys k WHERE k.user_id=$1 FOR UPDATE",
+            )).bind(user_id).fetch_all(&mut *tx).await?;
+            for (id, permissions, level, rate, managed) in keys {
+                let permissions = parse_permissions_value(&permissions);
+                let e = target.transition(managed, &permissions, level, rate);
+                sqlx::query("UPDATE api_keys SET tier=$2, permissions=$3, consciousness_level=$4, rate_limit=$5 WHERE id=$1")
+                    .bind(id).bind(target.code()).bind(serde_json::json!(e.permissions))
+                    .bind(i32::from(e.consciousness_level)).bind(e.rate_limit as i32)
+                    .execute(&mut *tx).await?;
+            }
 
             if let Err(err) =
                 sync_user_active_plan_subscription(&mut tx, user_id, tier, Utc::now()).await
@@ -701,7 +720,7 @@ impl AdminRepository {
         .await?;
 
         let updated_keys = sqlx::query(
-            "UPDATE api_keys SET permissions = $2 WHERE user_id = $1 AND is_active = true",
+            "UPDATE api_keys SET permissions = (SELECT jsonb_agg(DISTINCT p) FROM (SELECT jsonb_array_elements_text(permissions) AS p UNION SELECT jsonb_array_elements_text($2::jsonb)) merged WHERE p NOT LIKE 'admin:%' OR p IN (SELECT jsonb_array_elements_text($2::jsonb))) WHERE user_id = $1 AND is_active = true",
         )
         .bind(user_id)
         .bind(serde_json::json!(permissions))
@@ -766,7 +785,7 @@ impl AdminRepository {
         .await?;
 
         let updated_keys = sqlx::query(
-            "UPDATE api_keys SET permissions = $2 WHERE user_id = $1 AND is_active = true",
+            "UPDATE api_keys SET permissions = (SELECT jsonb_agg(DISTINCT p) FROM (SELECT jsonb_array_elements_text(permissions) AS p UNION SELECT jsonb_array_elements_text($2::jsonb)) merged WHERE p NOT LIKE 'admin:%' OR p IN (SELECT jsonb_array_elements_text($2::jsonb))) WHERE user_id = $1 AND is_active = true",
         )
         .bind(user_id)
         .bind(serde_json::json!(permissions))
@@ -1082,6 +1101,7 @@ impl AdminRepository {
             rate_limit,
             expires_at,
             rotated_from_key_id,
+            tier_managed,
         } = new_key;
         let event_name = name.clone();
         let event_key_prefix = key_prefix.clone();
@@ -1105,7 +1125,7 @@ impl AdminRepository {
                 rotated_from_key_id,
                 is_active
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, true)
             RETURNING id
             "#,
         )
@@ -1143,6 +1163,7 @@ impl AdminRepository {
             "name": event_name,
             "key_prefix": event_key_prefix,
             "rotated_from_key_id": event_rotated_from_key_id,
+            "tier_managed": tier_managed,
         }))
         .execute(&mut *tx)
         .await?;
@@ -1170,6 +1191,7 @@ impl AdminRepository {
             rate_limit,
             expires_at,
             rotated_from_key_id: _,
+            tier_managed: _,
         } = new_key;
 
         let key_id_result = sqlx::query_scalar::<_, Uuid>(
@@ -1353,12 +1375,19 @@ impl AdminRepository {
         actor_user_id: Option<Uuid>,
     ) -> Result<Option<AdminApiKeyRecord>, Error> {
         let mut tx = self.pool.begin().await?;
+        // Same owner-first lock order as set_user_tier, so rotation cannot copy stale privileges.
+        sqlx::query(
+            "SELECT id FROM users WHERE id=(SELECT user_id FROM api_keys WHERE id=$1) FOR UPDATE",
+        )
+        .bind(key_id)
+        .fetch_optional(&mut *tx)
+        .await?;
 
         let existing_result = sqlx::query_as::<_, ExistingApiKeyRecord>(
             r#"
             SELECT user_id, name, tier, permissions, consciousness_level, rate_limit, expires_at
             FROM api_keys
-            WHERE id = $1 AND is_active = true
+            WHERE id = $1 AND is_active = true FOR UPDATE
             "#,
         )
         .bind(key_id)
@@ -1381,6 +1410,8 @@ impl AdminRepository {
             tx.rollback().await?;
             return Ok(None);
         };
+        let tier_managed: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM api_key_events WHERE key_id=$1 AND event_type='created' AND metadata->'tier_managed'='true'::jsonb)")
+            .bind(key_id).fetch_one(&mut *tx).await?;
         let replacement_name = existing.name.clone();
 
         sqlx::query(
@@ -1452,6 +1483,7 @@ impl AdminRepository {
             "name": replacement_name,
             "key_prefix": new_key_prefix,
             "rotated_from_key_id": key_id,
+            "tier_managed": tier_managed,
         }))
         .execute(&mut *tx)
         .await?;
@@ -1585,12 +1617,19 @@ impl AdminRepository {
         new_key_hash: &str,
     ) -> Result<Option<AdminApiKeyRecord>, Error> {
         let mut tx = self.pool.begin().await?;
+        // Same owner-first lock order as set_user_tier, so rotation cannot copy stale privileges.
+        sqlx::query(
+            "SELECT id FROM users WHERE id=(SELECT user_id FROM api_keys WHERE id=$1) FOR UPDATE",
+        )
+        .bind(key_id)
+        .fetch_optional(&mut *tx)
+        .await?;
 
         let existing = sqlx::query_as::<_, (Uuid, String, Value, i32, i32, Option<DateTime<Utc>>)>(
             r#"
             SELECT user_id, tier, permissions, consciousness_level, rate_limit, expires_at
             FROM api_keys
-            WHERE id = $1 AND is_active = true
+            WHERE id = $1 AND is_active = true FOR UPDATE
             "#,
         )
         .bind(key_id)
