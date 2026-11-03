@@ -1,3 +1,10 @@
+# Enterprise key tooling repair — 2026-11-03
+
+- Added a replay-safe compatibility migration for legacy Biofield baselines missing the notes column, preserving their existing data and dependencies.
+- Applied pending desktop-session and reading-job migrations to staging and production; verified baseline creation/comparison/export and job-store availability.
+- Replaced retired Enterprise NVIDIA role endpoints with a live-verified supported endpoint and disabled its reasoning mode to retain the response budget for complete Witness output.
+- Verified the original Enterprise key across 19 engines and six workflows; recorded provider/fallback limits in the [audit evidence](docs/release/enterprise-key-full-audit-2026-11-03.md).
+
 # Admin API key creation and tiers — 2026-11-03
 
 - Fixed API key creation by supplying the missing lifecycle INSERT value and retaining atomic audit events.
