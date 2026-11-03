@@ -1,3 +1,10 @@
+# Render source preservation and repository ownership — 2026-11-04
+
+- Preserve 54 original generated PNGs and their two prompt manifests, with the dark set identified as the selected brand direction.
+- Document exact dimensions, historical generation limits and the optional offline lens helper.
+- Clarify that Noesis Daily owns its application and personal readings in a separate private repository.
+- Keep the original historical handoff and unrelated unfinished source in private recovery; this change does not deploy a service.
+
 # Enterprise image and audio generation — 2026-11-03
 
 - Added an explicit Cloudflare Workers AI Sigil provider for the existing account, with inference-only credentials, honest MIME/provider metadata and no fabricated image-seed claim.
