@@ -1,3 +1,9 @@
+# Enterprise image and audio generation — 2026-11-03
+
+- Added an explicit Cloudflare Workers AI Sigil provider for the existing account, with inference-only credentials, honest MIME/provider metadata and no fabricated image-seed claim.
+- Fixed bridge constructors ignoring the configured timeout and bounded NVIDIA image requests.
+- Verified real Raaga WAV generation, R2 upload/reuse and downloaded audio integrity; retained consent requirements and the original Enterprise key.
+
 # Enterprise key tooling repair — 2026-11-03
 
 - Added a replay-safe compatibility migration for legacy Biofield baselines missing the notes column, preserving their existing data and dependencies.
