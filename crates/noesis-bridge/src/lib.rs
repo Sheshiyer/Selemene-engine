@@ -232,7 +232,7 @@ pub struct BridgeEngine {
 }
 
 impl BridgeEngine {
-    /// Create a new bridge to a TypeScript engine.
+    /// Create a new bridge using the runtime-configured TypeScript timeout.
     ///
     /// * `engine_id`      - Unique engine identifier (e.g. `"tarot"`)
     /// * `engine_name`    - Human-readable name (e.g. `"Tarot"`)
@@ -244,14 +244,8 @@ impl BridgeEngine {
         required_phase: u8,
         base_url: impl Into<String>,
     ) -> Self {
-        Self::with_timeout(
-            engine_id,
-            engine_name,
-            required_phase,
-            base_url,
-            Duration::from_secs(DEFAULT_TIMEOUT_SECS),
-        )
-        .expect("Failed to build BridgeEngine HTTP client — TLS initialization failed")
+        Self::with_env_timeout(engine_id, engine_name, required_phase, base_url)
+            .expect("Failed to build BridgeEngine HTTP client — TLS initialization failed")
     }
 
     /// Create a new bridge using the runtime-configured timeout (reads `TS_BRIDGE_TIMEOUT` env).
@@ -943,8 +937,24 @@ mod tests {
 
     #[test]
     fn bridge_engine_default_timeout() {
+        let _guard = BRIDGE_TIMEOUT_ENV_LOCK.lock().unwrap();
         let engine = BridgeEngine::tarot();
-        assert_eq!(engine.timeout, Duration::from_secs(DEFAULT_TIMEOUT_SECS));
+        assert_eq!(engine.timeout, configured_timeout());
+    }
+
+    static BRIDGE_TIMEOUT_ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    #[test]
+    fn manager_engine_constructors_honor_configured_timeout() {
+        let _guard = BRIDGE_TIMEOUT_ENV_LOCK.lock().unwrap();
+        let previous = std::env::var("TS_BRIDGE_TIMEOUT").ok();
+        std::env::set_var("TS_BRIDGE_TIMEOUT", "90");
+        let engine = BridgeEngine::sigil_forge_with_url("http://localhost:3001");
+        match previous {
+            Some(value) => std::env::set_var("TS_BRIDGE_TIMEOUT", value),
+            None => std::env::remove_var("TS_BRIDGE_TIMEOUT"),
+        }
+        assert_eq!(engine.timeout, Duration::from_secs(90));
     }
 
     #[test]

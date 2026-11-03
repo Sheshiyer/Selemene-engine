@@ -59,6 +59,7 @@ const SELECTABLE_PROVIDERS: ReadonlyArray<ImageProviderConfig['provider']> = [
   'nvidia',
   'nano-banana',
   'kimi',
+  'cloudflare',
 ]
 
 /** Raw provider result as stored under `result.generated_image`. */
@@ -75,6 +76,8 @@ interface SigilGeneratedImage {
     finish_reason?: string
     provider_requested?: string
     provider_note?: string
+    mime_type?: string
+    seed?: number
   }
 }
 
@@ -183,7 +186,7 @@ export class SigilForgeEngine implements ConsciousnessEngine {
           type: 'string',
           required: false,
           description:
-            'Image provider to use (nvidia | nano-banana | kimi). Honoured only when that provider is configured; otherwise the default is used and a note is recorded.',
+            'Image provider to use (nvidia | nano-banana | kimi | cloudflare). Honoured only when that provider is configured; otherwise the default is used and a note is recorded.',
           enum: [...SELECTABLE_PROVIDERS],
         },
         image_style: {
@@ -319,6 +322,8 @@ export class SigilForgeEngine implements ConsciousnessEngine {
         model: result.metadata.model,
         metadata: baseMetadata(result.metadata.model, result.metadata.finish_reason),
       }
+      if (result.metadata.mime_type) image.metadata.mime_type = result.metadata.mime_type
+      if (result.metadata.seed !== undefined) image.metadata.seed = result.metadata.seed
       if (result.error || result.mock) {
         image.error = result.error ?? `${provider.name} returned a mock/placeholder image.`
       } else if (result.b64_json || result.url) {
@@ -484,7 +489,8 @@ export class SigilForgeEngine implements ConsciousnessEngine {
               prompt: generatedImage.prompt_used ?? cleanIntention,
               provider: provider.name,
               style: generatedImage.style,
-              seed,
+              seed: generatedImage.metadata.seed,
+              mime_type: generatedImage.metadata.mime_type,
               finish_reason: generatedImage.metadata.finish_reason,
             },
           }
