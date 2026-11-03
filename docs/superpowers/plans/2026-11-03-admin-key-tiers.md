@@ -8,7 +8,7 @@
 
 **Tech stack:** Rust/Axum, SQLx/PostgreSQL, Next.js/React, Railway, Cloudflare Access.
 
-**Spec:** User request in this chat on 3 November 2026: repair the existing enterprise key, fix new-key creation, and plan three simple tiers with internally mapped scopes. This document records the follow-up product contract and implementation tasks; the dashboard changes are planned, not deployed.
+**Spec:** User request in this chat on 3 November 2026: repair the existing enterprise key, fix new-key creation, and plan three simple tiers with internally mapped scopes. Implementation completed and deployed on 3 November 2026. See `docs/release/admin-api-key-tiers-2026-11-03.md` for actual release evidence and deviations.
 
 ## Current evidence and completed production repair
 
@@ -51,10 +51,10 @@
 
 **Files:** `crates/noesis-data/src/repositories/admin_repository.rs`, `crates/noesis-api/src/handlers/admin.rs`, and focused API/data integration tests.
 
-- [ ] Carry the existing 12-column/11-bind repair into an isolated branch based on current remote source, preserving unrelated diagnostics and tests in the original checkout.
-- [ ] Add a real PostgreSQL test covering successful insertion with nullable `rotated_from_key_id`, matching lifecycle event, and transaction rollback if the event insert fails. A skipped database test is not acceptance.
-- [ ] Verify the create API returns 201 with a usable one-time secret, list returns the new row without the secret/hash, and a failed request returns a bounded actionable error without SQL or credentials.
-- [ ] Run focused repository and API tests against a disposable database. Never point test suites at production.
+- [x] Carry the existing 12-column/11-bind repair into an isolated branch based on current remote source, preserving unrelated diagnostics and tests in the original checkout.
+- [x] Add a real PostgreSQL test covering successful insertion with nullable `rotated_from_key_id`, matching lifecycle event, and transaction rollback if the event insert fails. A skipped database test is not acceptance.
+- [x] Verify the create API returns 201 with a usable one-time secret, list returns the new row without the secret/hash, and a failed request returns a bounded actionable error without SQL or credentials.
+- [x] Run focused repository and API tests against a disposable database. Never point test suites at production.
 
 ## Task 2: Centralize tier entitlement mapping
 
@@ -62,35 +62,39 @@
 
 **Interfaces:** Introduce `KeyTier` with Basic/Pro/Enterprise variants and `KeyEntitlements { permissions: Vec<String>, consciousness_level: u8, rate_limit: u32 }`. Parse aliases once and return the canonical stored code. Creation, tier changes, and response labels consume this policy.
 
-- [ ] Test all three bundles, aliases, invalid tiers, deduplicated canonical `<engine-id>:read` scopes, and every supported engine's phase requirement.
-- [ ] Derive all defaults server-side. Keep `POST /api/v1/admin/api-keys` and its existing one-time-secret response contract; require no raw scopes from the dashboard. If tier is omitted by an old client, normalize the owner's existing supported tier and apply its bundle.
-- [ ] Retain legacy optional scope/rate/access-level fields only as restrictions within the tier bundle. Reject attempts to exceed it with 422. The new dashboard does not send these fields. Unknown tiers fail closed.
-- [ ] Ensure tier changes recompute tier-owned entitlements atomically and rotation preserves the effective bundle. Role updates must preserve engine permissions instead of replacing every active key's permission array with admin-role permissions.
-- [ ] Test Basic allowed/denied calls, Pro/Enterprise phase access, admin-role separation, rejected privilege escalation, tier downgrade, role updates, and rotation.
-- [ ] Prepare a preview of existing keys whose stored bundle differs from their tier. Preserve explicitly scoped service keys by default; do not run a broad entitlement backfill. Identify the repaired existing key separately and record the proposed Enterprise bundle transition before rollout.
+- [x] Test all three bundles, aliases, invalid tiers, deduplicated canonical `<engine-id>:read` scopes, and every supported engine's phase requirement.
+- [x] Derive all defaults server-side. Keep `POST /api/v1/admin/api-keys` and its existing one-time-secret response contract; require no raw scopes from the dashboard. If tier is omitted by an old client, normalize the owner's existing supported tier and apply its bundle.
+- [x] Retain legacy optional scope/rate/access-level fields only as restrictions within the tier bundle. Reject attempts to exceed it with 422. The new dashboard does not send these fields. Unknown tiers fail closed.
+- [x] Ensure tier changes recompute tier-owned entitlements atomically and rotation preserves the effective bundle. Role updates must preserve engine permissions instead of replacing every active key's permission array with admin-role permissions.
+- [x] Test Basic allowed/denied calls, Pro/Enterprise phase access, admin-role separation, rejected privilege escalation, tier downgrade, role updates, and rotation.
+- [x] Prepare a preview of existing keys whose stored bundle differs from their tier. Preserve explicitly scoped service keys by default; do not run a broad entitlement backfill. Identify the repaired existing key separately and record the proposed Enterprise bundle transition before rollout.
 
 ## Task 3: Simplify the admin key form
 
 **Files:** `apps/admin-web/app/(protected)/api-keys/page.tsx`, `apps/admin-web/src/lib/api.ts`, and `apps/admin-web/src/types/admin.ts`.
 
-- [ ] Replace permission checkboxes and access-level/rate-limit controls with a tier selector containing exactly Basic, Pro, and Enterprise. Keep key name; default the owner to the signed-in administrator, allowing existing owner selection for managed customer keys. Keep expiry optional.
-- [ ] Send the selected canonical tier and ordinary key metadata only. Render entitlement summaries from server-derived values. Do not maintain a second scope policy in the browser.
-- [ ] Display Enterprise prominently for the repaired key; use friendly tier labels in filters, detail panels, and list rows. Keep baseline permission details secondary.
-- [ ] Disable submission while pending, retain form values on error, prevent blind automatic create retries, and keep the existing one-time secret/copy experience without logging or persistent browser storage.
-- [ ] Run dashboard typecheck/build and meaningful form tests for all three tiers, keyboard use, server errors, duplicate-click prevention, and one-time secret handling.
+- [x] Replace permission checkboxes and access-level/rate-limit controls with a tier selector containing exactly Basic, Pro, and Enterprise. Keep key name; default the owner to the signed-in administrator, allowing existing owner selection for managed customer keys. Keep expiry optional.
+- [x] Send the selected canonical tier and ordinary key metadata only. Render entitlement summaries from server-derived values. Do not maintain a second scope policy in the browser.
+- [x] Display Enterprise prominently for the repaired key; use friendly tier labels in filters, detail panels, and list rows. Keep baseline permission details secondary.
+- [x] Disable submission while pending, retain form values on error, prevent blind automatic create retries, and keep the existing one-time secret/copy experience without logging or persistent browser storage.
+- [x] Run dashboard typecheck/build and meaningful form tests for all three tiers, keyboard use, server errors, duplicate-click prevention, and one-time secret handling.
 
 ## Task 4: Rollout and end-to-end acceptance
 
-- [ ] Deploy the reviewed API and dashboard together through their existing Railway/Vercel paths, leaving the Cloudflare Worker and Access policies intact.
-- [ ] Use staging first: through `144`'s equivalent staging/browser path, create one disposable key per tier, verify real API access against the tier policy, exercise rotation/revocation, then clean up only those disposable keys. Record IDs and sanitized results, never raw secrets.
-- [ ] Verify the actual production browser flow at `https://144.tryambakam.space/admin/api-keys`: create a named disposable key, copy its secret once, use it successfully, refresh the listing, and revoke it. Use existing browser tooling and complete the browser QA gate before claiming the dashboard is fixed.
-- [ ] Recheck the original enterprise key and its eight previously verified calculations. Any wider Enterprise bundle transition must be explicit in the release receipt; do not describe the current eight-scope repair as full-tier reconciliation.
-- [ ] Record API/browser acceptance separately from database tests and deployment health. Roll back deployments if creation fails; use targeted saved authorization fields for a key-access reversal, preserving later concurrent changes.
+- [x] Deploy the reviewed API and dashboard together through their existing Railway/Vercel paths, leaving the Cloudflare Worker and Access policies intact.
+- [x] Use staging first: through `144`'s equivalent staging/browser path, create one disposable key per tier, verify real API access against the tier policy, exercise rotation/revocation, then clean up only those disposable keys. Record IDs and sanitized results, never raw secrets.
+- [x] Verify the actual production browser flow at `https://144.tryambakam.space/admin/api-keys`: create a named disposable key, copy its secret once, use it successfully, refresh the listing, and revoke it. Use existing browser tooling and complete the browser QA gate before claiming the dashboard is fixed.
+- [x] Recheck the original enterprise key and its eight previously verified calculations. Any wider Enterprise bundle transition must be explicit in the release receipt; do not describe the current eight-scope repair as full-tier reconciliation.
+- [x] Record API/browser acceptance separately from database tests and deployment health. Roll back deployments if creation fails; use targeted saved authorization fields for a key-access reversal, preserving later concurrent changes.
 
 ## Status
 
 - [x] Existing enterprise key repaired for the eight requested calculations and verified live.
 - [x] Three-tier creation and server-side mapping work added to project planning.
-- [ ] Key-creation code integrated, tested, and deployed.
-- [ ] Basic / Pro / Enterprise form and entitlement policy implemented.
-- [ ] Production browser creation accepted.
+- [x] Key-creation code integrated, tested, and deployed.
+- [x] Basic / Pro / Enterprise form and entitlement policy implemented.
+- [x] Production browser creation accepted.
+
+## Release outcome
+
+All four tasks are complete. The later user instruction expanded the original Enterprise key to all 19 engine scopes and access level 5. Staging API acceptance and actual production Cloudflare browser acceptance passed; full evidence and recovery pointers are in `docs/release/admin-api-key-tiers-2026-11-03.md`.
