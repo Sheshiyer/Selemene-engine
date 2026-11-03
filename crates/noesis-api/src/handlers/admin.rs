@@ -9,6 +9,7 @@ use axum::{
 };
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use chrono::{DateTime, Duration, Utc};
+use noesis_auth::key_tiers::KeyTier;
 use noesis_auth::{sha256_hex, ApiKey, AuthUser};
 use noesis_bridge;
 use noesis_core::EngineError;
@@ -967,15 +968,6 @@ fn user_state(locked_until: Option<DateTime<Utc>>) -> String {
     }
 }
 
-pub(crate) fn default_rate_limit_for_tier(tier: &str) -> i32 {
-    match tier.to_ascii_lowercase().as_str() {
-        "free" => 60,
-        "premium" => 1_000,
-        "enterprise" => 10_000,
-        _ => 100,
-    }
-}
-
 pub(crate) fn generate_secret_api_key() -> String {
     format!("nk_{}{}", Uuid::new_v4().simple(), Uuid::new_v4().simple())
 }
@@ -1478,28 +1470,15 @@ pub async fn update_user_tier(
         Err(resp) => return Ok(resp),
     };
 
-    let tier = payload.tier.trim().to_ascii_lowercase();
-    if tier.is_empty() {
+    let Some(tier) = KeyTier::parse(&payload.tier) else {
         return Ok(json_error_response(
             StatusCode::UNPROCESSABLE_ENTITY,
-            "Tier cannot be empty",
+            "Choose Basic, Pro, or Enterprise",
             "VALIDATION_ERROR",
             None,
         ));
-    }
-    const VALID_TIERS: &[&str] = &["free", "basic", "premium", "enterprise"];
-    if !VALID_TIERS.contains(&tier.as_str()) {
-        return Ok(json_error_response(
-            StatusCode::UNPROCESSABLE_ENTITY,
-            format!(
-                "Invalid tier '{}'. Must be one of: {}",
-                tier,
-                VALID_TIERS.join(", ")
-            ),
-            "VALIDATION_ERROR",
-            None,
-        ));
-    }
+    };
+    let tier = tier.code();
 
     let updated = repo
         .set_user_tier(user_uuid, &tier)
@@ -1622,6 +1601,44 @@ pub async fn update_user_roles(
 }
 
 /// GET /api/v1/admin/api-keys -- list API key records
+#[derive(Serialize, ToSchema)]
+pub struct AdminKeyTier {
+    pub code: String,
+    pub label: String,
+    pub permissions: Vec<String>,
+    pub consciousness_level: u8,
+    pub rate_limit: u32,
+}
+
+#[utoipa::path(get, path = "/api/v1/admin/api-key-tiers", tag = "admin",
+    responses((status = 200, body = Vec<AdminKeyTier>)),
+    security(("bearer_auth" = []), ("api_key" = [])))]
+pub async fn api_key_tiers(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+) -> Result<Response, ApiError> {
+    let permissions = effective_permissions(&state, &user).await?;
+    if !has_permission(&permissions, "admin:keys:list")
+        && !has_permission(&permissions, "admin:keys:create")
+    {
+        return Ok(forbidden_response("admin:keys:list"));
+    }
+    let tiers: Vec<_> = KeyTier::ALL
+        .into_iter()
+        .map(|tier| {
+            let e = tier.entitlements();
+            AdminKeyTier {
+                code: tier.code().into(),
+                label: tier.label().into(),
+                permissions: e.permissions,
+                consciousness_level: e.consciousness_level,
+                rate_limit: e.rate_limit,
+            }
+        })
+        .collect();
+    Ok(Json(tiers).into_response())
+}
+
 #[utoipa::path(
     get,
     path = "/api/v1/admin/api-keys",
@@ -1746,58 +1763,58 @@ pub async fn create_api_key(
         ));
     }
 
-    let tier = if let Some(tier) = payload
-        .tier
-        .as_deref()
-        .map(|t| t.trim().to_ascii_lowercase())
-        .filter(|t| !t.is_empty())
-    {
-        const VALID_TIERS: &[&str] = &["free", "basic", "premium", "enterprise"];
-        if !VALID_TIERS.contains(&tier.as_str()) {
+    let requested_tier = match payload.tier.as_deref() {
+        Some(value) => value.to_string(),
+        None => repo
+            .get_user_tier(user_uuid)
+            .await
+            .map_err(|e| {
+                tracing::error!(error = %e, "Failed to read key owner tier");
+                EngineError::InternalError("Unable to read key owner tier".into())
+            })?
+            .unwrap_or_else(|| "free".into()),
+    };
+    let Some(key_tier) = KeyTier::parse(&requested_tier) else {
+        return Ok(json_error_response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "Choose Basic, Pro, or Enterprise",
+            "VALIDATION_ERROR",
+            None,
+        ));
+    };
+    let tier_managed = payload.permissions.is_none()
+        && payload.consciousness_level.is_none()
+        && payload.rate_limit.is_none();
+    let entitlements = match key_tier.restrict(
+        payload.permissions,
+        payload.consciousness_level,
+        payload.rate_limit,
+    ) {
+        Ok(e) => e,
+        Err(message) => {
             return Ok(json_error_response(
                 StatusCode::UNPROCESSABLE_ENTITY,
-                format!(
-                    "Invalid tier '{}'. Must be one of: {}",
-                    tier,
-                    VALID_TIERS.join(", ")
-                ),
+                message,
                 "VALIDATION_ERROR",
                 None,
-            ));
+            ))
         }
-        tier
-    } else if let Some(existing_tier) = repo
-        .get_user_tier(user_uuid)
-        .await
-        .map_err(|e| EngineError::InternalError(format!("Failed to read user tier: {e}")))?
+    };
+    if payload
+        .expires_at
+        .is_some_and(|expiry| expiry <= Utc::now())
     {
-        existing_tier.to_ascii_lowercase()
-    } else {
-        "free".to_string()
-    };
-
-    let permissions = payload
-        .permissions
-        .unwrap_or_else(|| vec!["basic:access".to_string()]);
-
-    let rate_limit = {
-        let rl = payload
-            .rate_limit
-            .unwrap_or_else(|| default_rate_limit_for_tier(&tier));
-        // Enforce sane bounds: 0 disables rate limiting (allowed for enterprise),
-        // 100_000 is a hard ceiling to prevent runaway values.
-        if !(0..=100_000).contains(&rl) {
-            return Ok(json_error_response(
-                StatusCode::UNPROCESSABLE_ENTITY,
-                format!("rate_limit must be between 0 and 100000, got {rl}"),
-                "VALIDATION_ERROR",
-                None,
-            ));
-        }
-        rl
-    };
-
-    let consciousness_level = payload.consciousness_level.unwrap_or(0).clamp(0, 5);
+        return Ok(json_error_response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "Expiration must be in the future",
+            "VALIDATION_ERROR",
+            None,
+        ));
+    }
+    let tier = key_tier.code().to_string();
+    let permissions = entitlements.permissions;
+    let rate_limit = entitlements.rate_limit as i32;
+    let consciousness_level = i32::from(entitlements.consciousness_level);
 
     let secret_key = generate_secret_api_key();
     let key_hash = sha256_hex(&secret_key);
@@ -1818,10 +1835,16 @@ pub async fn create_api_key(
                 rate_limit,
                 expires_at: payload.expires_at,
                 rotated_from_key_id: None,
+                tier_managed,
             },
         )
         .await
-        .map_err(|e| EngineError::InternalError(format!("Failed to create api key: {e}")))?;
+        .map_err(|e| {
+            tracing::error!(error = %e, "Failed to create API key");
+            EngineError::InternalError(
+                "Unable to create API key. Please retry or contact the administrator.".into(),
+            )
+        })?;
 
     let _ = state
         .auth
