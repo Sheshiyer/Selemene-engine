@@ -1,3 +1,7 @@
+# I Ching bridge provenance regression — 2026-11-04
+
+- Keep contract provenance, cast derivation and separate hexagram text attribution unchanged through the Rust bridge.
+
 # Enneagram bridge provenance regression — 2026-11-04
 
 - Keep assessment versus user-supplied provenance, confidence and answer coverage unchanged through the Rust bridge.
