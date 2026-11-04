@@ -1226,7 +1226,7 @@ mod tests {
         // `probe:bridge-fixture`). The five-field provenance block must reach the
         // reserved key intact, and the engine's result.provenance_detail must
         // pass through unchanged so callers can still tell lookup from
-        // not-implemented geometry and rendering.
+        // calculated construction data and unimplemented rendering.
         let fixture: Value = serde_json::from_str(include_str!(
             "../../../ts-engines/tests/fixtures/sacred-geometry/bridge-round-trip-seed-1401.json"
         ))
@@ -1262,7 +1262,8 @@ mod tests {
         assert_eq!(detail, &sidecar["result"]["provenance_detail"]);
         assert_eq!(detail["form"]["kind"], "symbolic_lookup");
         assert_eq!(detail["form_selection"]["kind"], "seeded_random");
-        assert_eq!(detail["calculated_geometry"]["status"], "not_implemented");
+        assert_eq!(detail["calculated_geometry"]["status"], "calculated");
+        assert_eq!(output.result["geometry"], sidecar["result"]["geometry"]);
         assert_eq!(detail["rendered_artifact"]["status"], "not_implemented");
         assert_eq!(detail["svg_preview"]["status"], "rejected");
 

@@ -34,6 +34,201 @@
       "numerology": 6,
       "symbolism": "Unity, creation, and the interconnectedness of all life. Contains the blueprint for all existence - from the structure of atoms to galaxies."
     },
+    "geometry": {
+      "circles": [
+        {
+          "cx": 0,
+          "cy": 0,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.333333,
+          "cy": 0,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.166667,
+          "cy": 0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.166667,
+          "cy": 0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.333333,
+          "cy": 0,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.166667,
+          "cy": -0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.166667,
+          "cy": -0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.666667,
+          "cy": 0,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.5,
+          "cy": 0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.333333,
+          "cy": 0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": 0,
+          "cy": 0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.333333,
+          "cy": 0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.5,
+          "cy": 0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.666667,
+          "cy": 0,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.5,
+          "cy": -0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.333333,
+          "cy": -0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": 0,
+          "cy": -0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.333333,
+          "cy": -0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.5,
+          "cy": -0.288675,
+          "r": 0.333333
+        }
+      ],
+      "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
+      "frame": {
+        "center": [
+          0,
+          0
+        ],
+        "radius": 1,
+        "y_axis": "up"
+      },
+      "lines": [],
+      "measures": {
+        "circle_count": 19,
+        "circle_radius": 0.333333,
+        "lattice_spacing": 0.333333
+      },
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0.333333,
+          0
+        ],
+        [
+          0.166667,
+          0.288675
+        ],
+        [
+          -0.166667,
+          0.288675
+        ],
+        [
+          -0.333333,
+          0
+        ],
+        [
+          -0.166667,
+          -0.288675
+        ],
+        [
+          0.166667,
+          -0.288675
+        ],
+        [
+          0.666667,
+          0
+        ],
+        [
+          0.5,
+          0.288675
+        ],
+        [
+          0.333333,
+          0.57735
+        ],
+        [
+          0,
+          0.57735
+        ],
+        [
+          -0.333333,
+          0.57735
+        ],
+        [
+          -0.5,
+          0.288675
+        ],
+        [
+          -0.666667,
+          0
+        ],
+        [
+          -0.5,
+          -0.288675
+        ],
+        [
+          -0.333333,
+          -0.57735
+        ],
+        [
+          0,
+          -0.57735
+        ],
+        [
+          0.333333,
+          -0.57735
+        ],
+        [
+          0.5,
+          -0.288675
+        ]
+      ],
+      "polygons": [],
+      "polylines": [],
+      "unit": "relative"
+    },
     "intention": null,
     "meditation": {
       "duration_suggestion": "5-15 minutes",
@@ -41,8 +236,18 @@
     },
     "provenance_detail": {
       "calculated_geometry": {
-        "reason": "No ratios, coordinates or constructions are computed; numerology and elements are table values.",
-        "status": "not_implemented"
+        "computed": {
+          "circles": 19,
+          "lines": 0,
+          "points": 19,
+          "polygons": 0,
+          "polylines": 0,
+          "solid": false
+        },
+        "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
+        "kind": "deterministic_construction",
+        "source": "geometry.buildGeometry",
+        "status": "calculated"
       },
       "form": {
         "kind": "symbolic_lookup",
@@ -57,7 +262,7 @@
         "source": "wisdom.SACRED_FORMS"
       },
       "rendered_artifact": {
-        "reason": "The engine renders no SVG or image; svg_preview only validates a caller-supplied svg_template.",
+        "reason": "The engine renders no SVG or image; clients draw result.geometry from its numbers, and svg_preview only validates a caller-supplied svg_template.",
         "status": "not_implemented"
       },
       "svg_preview": {

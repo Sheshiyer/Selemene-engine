@@ -1,7 +1,7 @@
 //! Shared types used across all Noesis engines and services
 
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+use serde::{ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -34,7 +34,7 @@ fn default_current_time() -> DateTime<Utc> {
 }
 
 /// Output from any consciousness engine
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct EngineOutput {
     /// Which engine produced this output
@@ -48,6 +48,87 @@ pub struct EngineOutput {
     pub consciousness_level: u8,
     /// Calculation metadata (timing, backend, precision)
     pub metadata: CalculationMetadata,
+}
+
+/// Transport scaffolding shared with the TypeScript bridge. Engine-owned
+/// `result.provenance` remains separate from this contract-v1 block.
+pub const CONTRACT_PROVENANCE_KEY: &str = "__contract_provenance";
+
+#[derive(Deserialize)]
+struct EngineOutputWire {
+    engine_id: String,
+    result: Value,
+    witness_prompt: String,
+    consciousness_level: u8,
+    metadata: CalculationMetadata,
+    #[serde(default)]
+    provenance: Option<Value>,
+}
+
+impl<'de> Deserialize<'de> for EngineOutput {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let mut wire = EngineOutputWire::deserialize(deserializer)?;
+        if let Some(raw) = wire.provenance {
+            let parsed: crate::contract::Provenance =
+                serde_json::from_value(raw.clone()).map_err(serde::de::Error::custom)?;
+            let result = wire.result.as_object_mut().ok_or_else(|| {
+                serde::de::Error::custom("contract provenance requires an object result")
+            })?;
+            if let Some(existing) = result.get(CONTRACT_PROVENANCE_KEY) {
+                let existing: crate::contract::Provenance =
+                    serde_json::from_value(existing.clone()).map_err(serde::de::Error::custom)?;
+                if existing != parsed {
+                    return Err(serde::de::Error::custom(
+                        "conflicting contract provenance blocks",
+                    ));
+                }
+            }
+            result.insert(CONTRACT_PROVENANCE_KEY.to_string(), raw);
+        }
+        Ok(Self {
+            engine_id: wire.engine_id,
+            result: wire.result,
+            witness_prompt: wire.witness_prompt,
+            consciousness_level: wire.consciousness_level,
+            metadata: wire.metadata,
+        })
+    }
+}
+
+impl Serialize for EngineOutput {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        // Keep the public constructor unchanged and reuse the bridge's reserved
+        // storage. Only the wire representation lifts it to the envelope.
+        let mut result = self.result.clone();
+        let provenance = result
+            .as_object_mut()
+            .and_then(|object| object.remove(CONTRACT_PROVENANCE_KEY));
+        if let Some(raw) = &provenance {
+            serde_json::from_value::<crate::contract::Provenance>(raw.clone())
+                .map_err(serde::ser::Error::custom)?;
+        }
+        let mut wire =
+            serializer.serialize_struct("EngineOutput", 5 + usize::from(provenance.is_some()))?;
+        wire.serialize_field("engine_id", &self.engine_id)?;
+        wire.serialize_field("result", &result)?;
+        wire.serialize_field("witness_prompt", &self.witness_prompt)?;
+        wire.serialize_field("consciousness_level", &self.consciousness_level)?;
+        wire.serialize_field("metadata", &self.metadata)?;
+        if let Some(provenance) = provenance {
+            wire.serialize_field("provenance", &provenance)?;
+        }
+        wire.end()
+    }
+}
+
+impl EngineOutput {
+    /// Server/sidecar contract provenance, if supplied and valid. Old outputs
+    /// remain unknown; metadata is never used to invent a replacement claim.
+    pub fn contract_provenance(&self) -> Option<crate::contract::Provenance> {
+        self.result
+            .get(CONTRACT_PROVENANCE_KEY)
+            .and_then(|raw| serde_json::from_value(raw.clone()).ok())
+    }
 }
 
 /// Birth data for chart-based calculations

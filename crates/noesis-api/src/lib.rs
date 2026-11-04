@@ -5135,7 +5135,7 @@ mod p4_contract_tests {
         );
         assert_eq!(
             wire["result"]["provenance_detail"]["calculated_geometry"]["status"],
-            "not_implemented"
+            "calculated"
         );
     }
 

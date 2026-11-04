@@ -51,7 +51,8 @@ describe("NoesisClient sacred-geometry provenance (GH #1401)", () => {
     const detail = output.result.provenance_detail as Record<string, Record<string, unknown>>;
     expect(detail.form.kind).toBe("symbolic_lookup");
     expect(detail.form_selection.kind).toBe("seeded_random");
-    expect(detail.calculated_geometry.status).toBe("not_implemented");
+    expect(detail.calculated_geometry.status).toBe("calculated");
+    expect(output.result.geometry).toEqual(envelope.result.geometry);
     expect(detail.rendered_artifact.status).toBe("not_implemented");
     expect(detail.svg_preview.status).toBe("rejected");
     expect(output.result).not.toHaveProperty("__contract_provenance");

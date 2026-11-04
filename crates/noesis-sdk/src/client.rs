@@ -619,15 +619,18 @@ mod tests {
         assert!(!output.metadata.fallback_used);
         assert!(output.metadata.provider_id.is_none());
 
-        // Known gap: `noesis_core::EngineOutput` has no field for the
-        // envelope's top-level contract `provenance` block, so the SDK drops
-        // it (runtime_kind, implementation_version, confidence). Only the
-        // fallback/provider flags survive, via `metadata`. If the SDK gains a
-        // provenance field, replace this with a round-trip assertion.
-        assert!(envelope.get("provenance").is_some());
-        assert!(serde_json::to_value(&output)
-            .unwrap()
-            .get("provenance")
-            .is_none());
+        let provenance = output
+            .contract_provenance()
+            .expect("API provenance retained");
+        assert_eq!(
+            provenance.runtime_kind,
+            noesis_core::contract::RuntimeKind::TypeScript
+        );
+        assert_eq!(provenance.implementation_version, "1.0.0");
+        assert_eq!(provenance.confidence, Some(1.0));
+        assert_eq!(
+            serde_json::to_value(&output).unwrap()["provenance"],
+            envelope["provenance"]
+        );
     }
 }

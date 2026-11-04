@@ -1,3 +1,10 @@
+# Rust SDK/TUI contract provenance — 2026-11-04
+
+- Preserve valid API contract provenance through the shared Rust output type, SDK client, TUI result screen and JSON/Markdown/text reports, without adding required fields to public output constructors.
+- Keep contract provenance separate from engine-owned attribution; reject malformed/conflicting new envelope blocks and preserve legacy outputs without inventing provenance.
+- Refresh the synthetic sacred-geometry round-trip fixtures against the construction code already on main; distinguish calculated geometry from unimplemented rendering.
+- Add focused core, bridge, API, SDK, TUI and TypeScript probes. Existing saved readings and the separate Daily repository are unchanged; this change does not publish packages or deploy services.
+
 # I Ching bridge provenance regression — 2026-11-04
 
 - Keep contract provenance, cast derivation and separate hexagram text attribution unchanged through the Rust bridge.
