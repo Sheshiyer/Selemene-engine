@@ -573,4 +573,64 @@ mod tests {
         // Expected minimum ~30ms + 60ms exponential backoff.
         assert!(elapsed_ms >= 85, "elapsed_ms={elapsed_ms}");
     }
+
+    #[tokio::test]
+    async fn sacred_geometry_calculate_round_trips_api_envelope() {
+        // GH #1401: serve the real noesis-api envelope for sacred-geometry
+        // (pinned by noesis-api `sacred_geometry_api_envelope_matches_committed_fixture`)
+        // and read it back through `calculate`, the path the TUI uses.
+        let envelope: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/sacred-geometry/api-envelope-seed-1401.json"
+        ))
+        .unwrap();
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/api/v1/engines/sacred-geometry/calculate"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(envelope.clone()))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let client = NoesisClient::builder()
+            .base_url(server.uri())
+            .api_key("test-key")
+            .build()
+            .unwrap();
+        let input = EngineInput {
+            birth_data: None,
+            current_time: chrono::Utc::now(),
+            location: None,
+            precision: noesis_core::Precision::Standard,
+            options: std::collections::HashMap::new(),
+        };
+
+        let output = client.calculate("sacred-geometry", input).await.unwrap();
+
+        // Per-part provenance lives inside `result`, so it survives intact.
+        assert_eq!(
+            output.result["provenance_detail"],
+            envelope["result"]["provenance_detail"]
+        );
+        assert_eq!(
+            output.result["provenance_detail"]["rendered_artifact"]["status"],
+            "not_implemented"
+        );
+        assert_eq!(output.engine_id, "sacred-geometry");
+        assert_eq!(output.metadata.backend, "typescript");
+        assert!(!output.metadata.fallback_used);
+        assert!(output.metadata.provider_id.is_none());
+
+        let provenance = output
+            .contract_provenance()
+            .expect("API provenance retained");
+        assert_eq!(
+            provenance.runtime_kind,
+            noesis_core::contract::RuntimeKind::TypeScript
+        );
+        assert_eq!(provenance.implementation_version, "1.0.0");
+        assert_eq!(provenance.confidence, Some(1.0));
+        assert_eq!(
+            serde_json::to_value(&output).unwrap()["provenance"],
+            envelope["provenance"]
+        );
+    }
 }

@@ -122,6 +122,26 @@ impl MarkdownRenderer {
             if !output.metadata.engine_version.is_empty() {
                 writeln!(md, "- **Version**: {}", output.metadata.engine_version).unwrap();
             }
+            if let Some(provenance) = output.contract_provenance() {
+                writeln!(md, "- **Runtime**: {:?}", provenance.runtime_kind).unwrap();
+                writeln!(
+                    md,
+                    "- **Implementation**: {}",
+                    provenance.implementation_version
+                )
+                .unwrap();
+                writeln!(md, "- **Contract cached**: {}", provenance.cached).unwrap();
+                writeln!(md, "- **Fallback used**: {}", provenance.fallback_used).unwrap();
+                if let Some(backend) = provenance.backend_id {
+                    writeln!(md, "- **Contract backend**: {backend}").unwrap();
+                }
+                if let Some(provider) = provenance.provider_id {
+                    writeln!(md, "- **Provider**: {provider}").unwrap();
+                }
+                if let Some(confidence) = provenance.confidence {
+                    writeln!(md, "- **Confidence**: {confidence}").unwrap();
+                }
+            }
             writeln!(md).unwrap();
             writeln!(md, "</details>").unwrap();
         }
@@ -183,6 +203,9 @@ impl MarkdownRenderer {
         match value {
             Value::Object(obj) => {
                 for (key, val) in obj {
+                    if depth == 0 && key == noesis_core::CONTRACT_PROVENANCE_KEY {
+                        continue;
+                    }
                     let formatted_key = format_key(key);
                     match val {
                         Value::Object(_) | Value::Array(_) => {
@@ -255,6 +278,17 @@ impl MarkdownRenderer {
 
         self.render_value_plain(&mut text, &output.result, 0);
 
+        if self.include_metadata {
+            if let Some(provenance) = output.contract_provenance() {
+                writeln!(
+                    text,
+                    "Contract provenance: {}",
+                    serde_json::to_string(&provenance).unwrap()
+                )
+                .unwrap();
+            }
+        }
+
         writeln!(text).unwrap();
         writeln!(text, "WITNESS PROMPT:").unwrap();
         writeln!(text, "  {}", output.witness_prompt).unwrap();
@@ -289,6 +323,9 @@ impl MarkdownRenderer {
         match value {
             Value::Object(obj) => {
                 for (key, val) in obj {
+                    if depth == 0 && key == noesis_core::CONTRACT_PROVENANCE_KEY {
+                        continue;
+                    }
                     match val {
                         Value::Object(_) | Value::Array(_) => {
                             writeln!(text, "{}{}:", "  ".repeat(depth), format_key(key)).unwrap();
@@ -522,5 +559,47 @@ mod tests {
         let filename = report_filename("numerology", ReportFormat::Markdown);
         assert!(filename.starts_with("numerology_"));
         assert!(filename.ends_with(".md"));
+    }
+
+    #[test]
+    fn sacred_geometry_tui_render_keeps_provenance_detail() {
+        // GH #1401: the TUI result screen and its exports go through this
+        // renderer. Feed it the sacred-geometry API envelope as the SDK
+        // deserializes it and check the per-part labels stay visible.
+        let envelope: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/sacred-geometry/api-envelope-seed-1401.json"
+        ))
+        .unwrap();
+        let output: EngineOutput = serde_json::from_value(envelope.clone()).unwrap();
+        let renderer = MarkdownRenderer::new();
+
+        let markdown = renderer.render(&output, ReportFormat::Markdown).unwrap();
+        for label in [
+            "symbolic_lookup",
+            "seeded_random",
+            "not_implemented",
+            "caller_template_validation",
+            "rejected",
+        ] {
+            assert!(markdown.contains(label), "markdown lost {label}");
+        }
+
+        let text = renderer.render(&output, ReportFormat::Text).unwrap();
+        assert!(text.contains("not_implemented"), "text export lost labels");
+
+        let json: Value =
+            serde_json::from_str(&renderer.render(&output, ReportFormat::Json).unwrap()).unwrap();
+        assert_eq!(
+            json["result"]["provenance_detail"],
+            envelope["result"]["provenance_detail"]
+        );
+        assert_eq!(json["provenance"], envelope["provenance"]);
+        assert!(json["result"]
+            .get(noesis_core::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+        assert!(markdown.contains("**Runtime**: TypeScript"));
+        assert!(markdown.contains("**Implementation**: 1.0.0"));
+        assert!(text.contains("implementation_version"));
+        assert!(!markdown.contains(noesis_core::CONTRACT_PROVENANCE_KEY));
     }
 }
