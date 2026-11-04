@@ -1,3 +1,7 @@
+# Enneagram bridge provenance regression — 2026-11-04
+
+- Keep assessment versus user-supplied provenance, confidence and answer coverage unchanged through the Rust bridge.
+
 # Biofield provenance documentation — 2026-11-04
 
 - Remove the stale statement that Biofield does not report Moshier fallback; the existing table and implementation already describe that behavior correctly.
