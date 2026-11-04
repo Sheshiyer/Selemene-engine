@@ -1,6 +1,6 @@
 [package]
 name = "engine-panchanga"
-version.workspace = true
+version = "3.3.2"
 edition = "2021"
 description = "Panchanga (Vedic almanac) consciousness engine — Tithi, Nakshatra, Yoga, Karana, Vara"
 
@@ -9,6 +9,8 @@ noesis-core = { path = "../noesis-core" }
 engine-human-design = { path = "../engine-human-design" }
 async-trait = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.10"
+libswisseph-sys = "0.1.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha2 = "0.10"

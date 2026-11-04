@@ -340,22 +340,12 @@ pub fn compute_panchang_native(
         paksha,
         planets,
         day_boundaries,
-        ayanamsa: lahiri_ayanamsa_from_julian_day(result.julian_day),
+        // The ayanamsa the engine subtracted to get the sidereal longitudes
+        // above, so the reported value and the positions agree.
+        ayanamsa: result
+            .ayanamsa_degrees
+            .unwrap_or_else(|| engine_panchanga::lahiri_ayanamsa(result.julian_day)),
     })
-}
-
-/// Lahiri (Chitrapaksha) ayanamsa as a function of Julian Day.
-///
-/// Linear approximation around the 1990–2050 epoch — Lahiri drifts at
-/// roughly 50.27″/yr from the reference point (JD 2451545.0 = 2000-01-01,
-/// 23.853°). Good to ±10″ across modern births; sufficient for sign /
-/// nakshatra boundaries.  PR3 will replace this with the engine's
-/// internally-computed value once `engine-panchanga` exposes it.
-pub(crate) fn lahiri_ayanamsa_from_julian_day(jd: f64) -> f64 {
-    const J2000: f64 = 2_451_545.0;
-    const AYANAMSA_AT_J2000: f64 = 23.853;
-    const PRECESSION_DEG_PER_DAY: f64 = 50.2876 / 3600.0 / 365.25;
-    AYANAMSA_AT_J2000 + (jd - J2000) * PRECESSION_DEG_PER_DAY
 }
 
 impl VedicApiClient {
@@ -517,5 +507,21 @@ mod tests {
         assert_eq!(p.day_boundaries.sunset.len(), 5);
         // ayanamsa populated
         assert!(p.ayanamsa > 0.0);
+    }
+
+    /// The reported ayanamsa is the dated Lahiri value engine-panchanga
+    /// applied, so `moon.longitude + ayanamsa` gives back the tropical Moon.
+    #[test]
+    fn test_compute_panchang_native_reports_engine_ayanamsa() {
+        let p = compute_panchang_native(2026, 5, 13, 15, 30, 0, 12.9716, 77.5946, 5.5)
+            .expect("native panchang must succeed");
+        let engine = engine_panchanga::compute_panchanga("2026-05-13", "15:30", 5.5);
+        assert_eq!(Some(p.ayanamsa), engine.ayanamsa_degrees);
+        assert_eq!(
+            p.ayanamsa,
+            engine_panchanga::lahiri_ayanamsa(engine.julian_day)
+        );
+        // 2026 Lahiri is ~24.23°, not a J2000-anchored 23.85° approximation.
+        assert!((p.ayanamsa - 24.2254).abs() < 1e-3, "{}", p.ayanamsa);
     }
 }
