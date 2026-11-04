@@ -1,3 +1,7 @@
+# Biofield provenance documentation — 2026-11-04
+
+- Remove the stale statement that Biofield does not report Moshier fallback; the existing table and implementation already describe that behavior correctly.
+
 # Panchanga API method and provenance fields — 2026-11-04
 
 - Carry `position_source`, `birth_time_assumed`, `vara_basis` and `ayanamsa_degrees` through OpenAPI and the legacy Panchanga response.
