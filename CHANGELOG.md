@@ -1,3 +1,11 @@
+# Panchanga 3.3.2 calculation corrections — 2026-11-04
+
+- Keep daily `current_time` as its UTC instant and resolve IANA timezones with dated DST rules; reject unknown zones rather than silently treating them as UTC.
+- Take vara from the local civil date and report `vara_basis: local_date`; calculate and report the dated Swiss Ephemeris Lahiri ayanamsa instead of subtracting a fixed 23.72 degrees.
+- Separate cache identity by mode, instant, timezone and missing-versus-explicit birth time, preventing reuse of the old cache entries.
+- Report the engine calculation version as 3.3.2 and keep the Vedic adapter's ayanamsa consistent with the value actually applied.
+- Document result changes and DST ambiguity behavior in the [Panchanga reference](docs/engines/panchanga.md). Synthetic regression fixtures are updated; existing saved readings and the separate Daily repository are unchanged. This source change does not deploy or recalculate stored results.
+
 # Render source preservation and repository ownership — 2026-11-04
 
 - Preserve 54 original generated PNGs and their two prompt manifests, with the dark set identified as the selected brand direction.

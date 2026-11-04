@@ -1111,9 +1111,13 @@ mod tests {
         let obj = output.result.as_object_mut().unwrap();
         obj.remove("position_source");
         obj.remove("birth_time_assumed");
+        obj.remove("vara_basis");
+        obj.remove("ayanamsa_degrees");
         let pr = result_of(&output);
         assert_eq!(pr.position_source, None);
         assert!(!pr.birth_time_assumed);
+        assert_eq!(pr.vara_basis, None);
+        assert_eq!(pr.ayanamsa_degrees, None);
         assert!(engine.validate(&output).await.unwrap().valid);
     }
 
