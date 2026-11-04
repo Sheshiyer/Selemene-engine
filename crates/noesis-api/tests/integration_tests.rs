@@ -778,6 +778,47 @@ async fn test_legacy_panchanga_calculate_success() {
     assert!(body["nakshatra_name"].is_string());
     assert!(body["solar_longitude"].is_number());
     assert!(body["lunar_longitude"].is_number());
+
+    // #1191 provenance fields are carried through, not dropped.
+    assert!(
+        matches!(
+            body["position_source"].as_str(),
+            Some("swiss_ephemeris_files" | "swiss_ephemeris_moshier" | "mean_longitude")
+        ),
+        "position_source missing or unknown: {}",
+        body["position_source"]
+    );
+    assert_eq!(body["birth_time_assumed"], false);
+    assert_eq!(body["vara_basis"], "local_date");
+    let applied = body["ayanamsa_degrees"].as_f64().expect("dated ayanamsa");
+    let expected = engine_panchanga::compute_panchanga("2024-01-15", "14:30", 5.5);
+    assert_eq!(Some(applied), expected.ayanamsa_degrees);
+}
+
+#[tokio::test]
+async fn test_legacy_panchanga_missing_time_reports_assumed_noon() {
+    let router = get_test_router().await;
+
+    let legacy_request = json!({
+        "date": "2024-01-15",
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "timezone": "Asia/Kolkata"
+    });
+
+    let (status, body) = make_unauthenticated_request(
+        router,
+        "POST",
+        "/api/legacy/panchanga/calculate",
+        Some(legacy_request),
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["birth_time_assumed"], true);
+    assert_eq!(body["vara_basis"], "local_date");
+    let expected = engine_panchanga::compute_panchanga("2024-01-15", "12:00", 5.5);
+    assert_eq!(body["ayanamsa_degrees"].as_f64(), expected.ayanamsa_degrees);
 }
 
 #[tokio::test]

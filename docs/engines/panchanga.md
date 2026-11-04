@@ -46,6 +46,13 @@ Saved readings keep their original values and provenance. The separate
 noesis-daily repository retains its accepted readings and its 06:00 IST
 refresh anchor; changing or recalculating those is outside this correction.
 
+The OpenAPI Panchanga schema and `POST /api/legacy/panchanga/calculate`
+carry `position_source`, `birth_time_assumed`, `vara_basis` and
+`ayanamsa_degrees`. Source/basis/ayanamsa are nullable for historical
+compatibility; current native calculations report their actual method values.
+The pre-existing broader schema mismatch described below remains a separate
+issue.
+
 ## 1. Identity
 | | |
 |---|---|
@@ -73,7 +80,9 @@ refresh anchor; changing or recalculating those is outside this correction.
 **Domain struct `PanchangaResult` (engine-panchanga path — FLAT, different shape):**
 `tithi_index:u8` `tithi_name:String` `tithi_value:f64` · `nakshatra_index:u8` `nakshatra_name` `nakshatra_value` · `yoga_index:u8` `yoga_name` `yoga_value` · `karana_index:u8` `karana_name` `karana_value` · `vara_index:u8` `vara_name` · `solar_longitude:f64` `lunar_longitude:f64` `julian_day:f64`.
 
-**OpenAPI stub:** `{ vara:String, paksha:String, nakshatra:String }` — examples only.
+**OpenAPI stub:** `{ vara:String, paksha:String, nakshatra:String }` plus
+`position_source`, `birth_time_assumed`, `vara_basis`, `ayanamsa_degrees`.
+It documents provenance/method fields but still needs full result-shape alignment.
 
 ## 3. Ranges, constraints & invariants
 | Field | Range / domain | Notes |

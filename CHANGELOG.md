@@ -1,3 +1,8 @@
+# Panchanga API method and provenance fields — 2026-11-04
+
+- Carry `position_source`, `birth_time_assumed`, `vara_basis` and `ayanamsa_degrees` through OpenAPI and the legacy Panchanga response.
+- Test explicit/missing-time behavior and the ayanamsa against the native calculation. These fields are additive; saved readings and Daily files are unchanged.
+
 # Panchanga 3.3.2 calculation corrections — 2026-11-04
 
 - Keep daily `current_time` as its UTC instant and resolve IANA timezones with dated DST rules; reject unknown zones rather than silently treating them as UTC.
