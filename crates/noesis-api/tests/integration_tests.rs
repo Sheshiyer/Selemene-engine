@@ -789,6 +789,10 @@ async fn test_legacy_panchanga_calculate_success() {
         body["position_source"]
     );
     assert_eq!(body["birth_time_assumed"], false);
+    assert_eq!(body["vara_basis"], "local_date");
+    let applied = body["ayanamsa_degrees"].as_f64().expect("dated ayanamsa");
+    let expected = engine_panchanga::compute_panchanga("2024-01-15", "14:30", 5.5);
+    assert_eq!(Some(applied), expected.ayanamsa_degrees);
 }
 
 #[tokio::test]
@@ -812,6 +816,9 @@ async fn test_legacy_panchanga_missing_time_reports_assumed_noon() {
 
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["birth_time_assumed"], true);
+    assert_eq!(body["vara_basis"], "local_date");
+    let expected = engine_panchanga::compute_panchanga("2024-01-15", "12:00", 5.5);
+    assert_eq!(body["ayanamsa_degrees"].as_f64(), expected.ayanamsa_degrees);
 }
 
 #[tokio::test]

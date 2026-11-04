@@ -234,6 +234,12 @@ pub struct PanchangaResultSchema {
     /// defaulting, not a calculation fallback.
     #[schema(example = false)]
     pub birth_time_assumed: bool,
+    /// Weekday convention applied by the native engine; absent on old results.
+    #[schema(nullable = true)]
+    pub vara_basis: Option<PanchangaVaraBasisSchema>,
+    /// Dated Lahiri ayanamsa actually subtracted from the tropical positions.
+    #[schema(nullable = true, example = 24.2254)]
+    pub ayanamsa_degrees: Option<f64>,
 }
 
 /// Mirrors `engine_panchanga::PositionSource`. Only `swiss_ephemeris_files`
@@ -245,6 +251,13 @@ pub enum PanchangaPositionSourceSchema {
     SwissEphemerisFiles,
     SwissEphemerisMoshier,
     MeanLongitude,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum PanchangaVaraBasisSchema {
+    LocalDate,
 }
 
 #[cfg(feature = "openapi")]

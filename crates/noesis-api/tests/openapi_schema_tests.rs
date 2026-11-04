@@ -285,6 +285,8 @@ async fn panchanga_result_schema_documents_provenance_fields() {
     let properties = schema_properties(panchanga, schemas);
     assert!(properties.contains("position_source"));
     assert!(properties.contains("birth_time_assumed"));
+    assert!(properties.contains("vara_basis"));
+    assert!(properties.contains("ayanamsa_degrees"));
     assert_eq!(
         panchanga["properties"]["birth_time_assumed"]["type"],
         "boolean"
@@ -304,5 +306,16 @@ async fn panchanga_result_schema_documents_provenance_fields() {
             "swiss_ephemeris_moshier",
             "mean_longitude"
         ])
+    );
+    assert_eq!(
+        schemas["PanchangaVaraBasisSchema"]["enum"],
+        serde_json::json!(["local_date"])
+    );
+    let number_type = &panchanga["properties"]["ayanamsa_degrees"]["type"];
+    assert!(
+        number_type == "number"
+            || number_type
+                .as_array()
+                .is_some_and(|types| types.contains(&serde_json::json!("number")))
     );
 }
