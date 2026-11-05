@@ -5,6 +5,54 @@
 
 The five limbs of Vedic time (pañcāṅga) for a moment + place: tithi, nakshatra, yoga, karana, vara.
 
+## Calculation contract from engine-panchanga 3.3.2
+
+`POST /api/v1/engines/panchanga/calculate` returns the flat native result
+described below. The historical nested Vedic adapter shape is a separate API
+surface. The native calculation now follows these rules:
+
+- `options.mode: "daily"` calculates positions at the exact UTC `current_time`,
+  including seconds. A supplied `birth_data.timezone` selects the local date
+  for vara without shifting that instant. Without birth data, vara uses UTC.
+- Birth mode interprets `birth_data.date` and `time` in its timezone; a missing
+  time uses local noon and sets `birth_time_assumed: true`.
+- IANA zones use their rules at the calculation instant. Fixed `+HH:MM`,
+  `-HH:MM` and whole-hour offsets are supported, along with legacy fixed
+  `PST`, `CST` and `AEST`. Unknown or malformed zones return a validation error.
+- A repeated DST wall time uses its earlier occurrence. A skipped wall time
+  uses the offset before the transition. Callers requiring a different
+  occurrence should supply an explicit fixed offset for that birth time.
+- Vara uses the local civil date, with `vara_basis: "local_date"`. This is a
+  midnight-based weekday, not a sunrise-based convention.
+- Sidereal longitudes subtract the Swiss Ephemeris dated Lahiri ayanamsa.
+  `ayanamsa_degrees` reports the value actually applied, and the native Vedic
+  adapter reports the same value.
+
+These corrections can change DST/previously unrecognized-zone positions,
+local-midnight vara, and sidereal values previously based on a fixed 23.72
+degrees. Tithi and karana are unaffected by an ayanamsa-only change because
+the same correction cancels in Moon minus Sun. Time corrections can change
+them too. New outputs identify this calculation as `metadata.engine_version:
+"3.3.2"`.
+
+The cache identity now distinguishes daily/birth mode, daily instant and
+timezone, and missing versus explicit birth time. It differs from the old
+identity, so old cached calculations are not reused. No cache flush, database
+migration or rewrite of stored readings is required. Existing result JSON
+remains readable: absent `vara_basis`, `ayanamsa_degrees` and `position_source`
+deserialize as unknown rather than being relabelled as newly calculated.
+
+Saved readings keep their original values and provenance. The separate
+noesis-daily repository retains its accepted readings and its 06:00 IST
+refresh anchor; changing or recalculating those is outside this correction.
+
+The OpenAPI Panchanga schema and `POST /api/legacy/panchanga/calculate`
+carry `position_source`, `birth_time_assumed`, `vara_basis` and
+`ayanamsa_degrees`. Source/basis/ayanamsa are nullable for historical
+compatibility; current native calculations report their actual method values.
+The pre-existing broader schema mismatch described below remains a separate
+issue.
+
 ## 1. Identity
 | | |
 |---|---|
@@ -32,7 +80,9 @@ The five limbs of Vedic time (pañcāṅga) for a moment + place: tithi, nakshat
 **Domain struct `PanchangaResult` (engine-panchanga path — FLAT, different shape):**
 `tithi_index:u8` `tithi_name:String` `tithi_value:f64` · `nakshatra_index:u8` `nakshatra_name` `nakshatra_value` · `yoga_index:u8` `yoga_name` `yoga_value` · `karana_index:u8` `karana_name` `karana_value` · `vara_index:u8` `vara_name` · `solar_longitude:f64` `lunar_longitude:f64` `julian_day:f64`.
 
-**OpenAPI stub:** `{ vara:String, paksha:String, nakshatra:String }` — examples only.
+**OpenAPI stub:** `{ vara:String, paksha:String, nakshatra:String }` plus
+`position_source`, `birth_time_assumed`, `vara_basis`, `ayanamsa_degrees`.
+It documents provenance/method fields but still needs full result-shape alignment.
 
 ## 3. Ranges, constraints & invariants
 | Field | Range / domain | Notes |

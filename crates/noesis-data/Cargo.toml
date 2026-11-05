@@ -16,6 +16,7 @@ tracing = "0.1"
 
 # Internal dependencies
 noesis-core = { path = "../noesis-core" }
+noesis-auth = { path = "../noesis-auth" }
 
 [features]
 # Opt-in writer for the humdes ground-truth validation harness. Gates the

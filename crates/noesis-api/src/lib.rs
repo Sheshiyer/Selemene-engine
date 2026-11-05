@@ -116,6 +116,7 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::admin::update_user_state,
         handlers::admin::update_user_tier,
         handlers::admin::update_user_roles,
+        handlers::admin::api_key_tiers,
         handlers::admin::list_api_keys,
         handlers::admin::create_api_key,
         handlers::admin::revoke_api_key,
@@ -235,6 +236,7 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::admin::UpdateUserRolesResponse,
             handlers::admin::AdminApiKeysResponse,
             handlers::admin::AdminApiKeyItem,
+            handlers::admin::AdminKeyTier,
             handlers::admin::CreateApiKeyRequest,
             handlers::admin::CreateApiKeyResponse,
             handlers::admin::RotateApiKeyResponse,
@@ -896,6 +898,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/admin/users/:user_id/roles",
             put(handlers::admin::update_user_roles),
         )
+        .route("/admin/api-key-tiers", get(handlers::admin::api_key_tiers))
         .route(
             "/admin/api-keys",
             get(handlers::admin::list_api_keys).post(handlers::admin::create_api_key),
@@ -4194,6 +4197,11 @@ struct LegacyPanchangaResponse {
     solar_longitude: f64,
     lunar_longitude: f64,
     julian_day: f64,
+    // Additive provenance fields (#1191).
+    position_source: Option<String>,
+    birth_time_assumed: bool,
+    vara_basis: Option<String>,
+    ayanamsa_degrees: Option<f64>,
 }
 
 /// POST /api/legacy/panchanga/calculate -- backward compatible Panchanga endpoint
@@ -4275,6 +4283,14 @@ async fn legacy_panchanga_handler(
         solar_longitude: panchanga_result["solar_longitude"].as_f64().unwrap_or(0.0),
         lunar_longitude: panchanga_result["lunar_longitude"].as_f64().unwrap_or(0.0),
         julian_day: panchanga_result["julian_day"].as_f64().unwrap_or(0.0),
+        position_source: panchanga_result["position_source"]
+            .as_str()
+            .map(str::to_string),
+        birth_time_assumed: panchanga_result["birth_time_assumed"]
+            .as_bool()
+            .unwrap_or(false),
+        vara_basis: panchanga_result["vara_basis"].as_str().map(str::to_string),
+        ayanamsa_degrees: panchanga_result["ayanamsa_degrees"].as_f64(),
     };
 
     Ok(Json(legacy_response))
@@ -5078,6 +5094,57 @@ mod p4_contract_tests {
             .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
             .is_none());
         assert_eq!(wire["generated_image"]["b64_json"], "iVBORw0KGgo=");
+    }
+    #[test]
+    fn sacred_geometry_api_envelope_matches_committed_fixture() {
+        // GH #1401: build the real /calculate envelope from the sacred-geometry
+        // sidecar fixture (bridge -> ApiEngineOutputResponse) and pin it as the
+        // API-side fixture that the Rust SDK, TUI renderer and TS SDK probes
+        // consume. Set UPDATE_SACRED_GEOMETRY_FIXTURE=1 to rewrite it.
+        const ENVELOPE_PATH: &str = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../ts-engines/tests/fixtures/sacred-geometry/api-envelope-seed-1401.json"
+        );
+        let sidecar: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/sacred-geometry/bridge-round-trip-seed-1401.json"
+        ))
+        .unwrap();
+        let response: noesis_bridge::ts_client::TsEngineResponse =
+            serde_json::from_value(sidecar["sidecar_response"].clone()).unwrap();
+        let mut output = noesis_bridge::ts_response_into_output(response, 0);
+        // The bridge stamps its own crate version; pin it so releases don't churn the fixture.
+        output.metadata.engine_version = "fixture".to_string();
+
+        let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
+        let wire = serde_json::to_value(&envelope).unwrap();
+
+        if std::env::var_os("UPDATE_SACRED_GEOMETRY_FIXTURE").is_some() {
+            let mut text = serde_json::to_string_pretty(&wire).unwrap();
+            text.push('\n');
+            std::fs::write(ENVELOPE_PATH, text).unwrap();
+        }
+        let committed: Value =
+            serde_json::from_str(&std::fs::read_to_string(ENVELOPE_PATH).unwrap()).unwrap();
+        assert_eq!(
+            wire, committed,
+            "api envelope drifted from the committed fixture"
+        );
+
+        // The bridge block is lifted to the top level and stripped from result;
+        // the engine's own per-part provenance stays inside result.
+        assert_eq!(wire["provenance"]["fallback_used"], false);
+        assert_eq!(wire["provenance"]["runtime_kind"], "typescript");
+        assert!(wire["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+        assert_eq!(
+            wire["result"]["provenance_detail"],
+            sidecar["sidecar_response"]["result"]["provenance_detail"]
+        );
+        assert_eq!(
+            wire["result"]["provenance_detail"]["calculated_geometry"]["status"],
+            "calculated"
+        );
     }
 
     #[test]

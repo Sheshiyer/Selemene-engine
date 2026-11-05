@@ -29,6 +29,7 @@ build/
 # Documentation
 *.md
 !README.md
+!crates/noesis-api/modes/integrated-kundali-l0.md
 
 # Tests
 tests/
@@ -48,3 +49,6 @@ tests/
 # Logs
 *.log
 logs/
+
+# Local execution evidence
+.superpowers/

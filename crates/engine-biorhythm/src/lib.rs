@@ -175,13 +175,14 @@ impl ConsciousnessEngine for BiorhythmEngine {
         let start = Instant::now();
 
         // --- Extract birth date ---
-        let birth_data = input.birth_data.as_ref().ok_or_else(|| {
+        let date = input.birth_data.as_ref().map(|birth| birth.date.as_str())
+            .or_else(|| input.options.get("birth_date").and_then(|value| value.as_str())).ok_or_else(|| {
             EngineError::CalculationError(
                 "birth_data is required for biorhythm calculations".into(),
             )
         })?;
 
-        let birth_date = parse_date(&birth_data.date)?;
+        let birth_date = parse_date(date)?;
         let target_date = target_date_of(&input)?;
 
         let days_alive = (target_date - birth_date).num_days();
@@ -375,6 +376,8 @@ impl ConsciousnessEngine for BiorhythmEngine {
 
         if let Some(ref bd) = input.birth_data {
             hasher.update(bd.date.as_bytes());
+        } else if let Some(date) = input.options.get("birth_date").and_then(|value| value.as_str()) {
+            hasher.update(date.as_bytes());
         }
 
         let target_date = match target_date_of(input) {
@@ -408,6 +411,17 @@ mod tests {
     use chrono::{DateTime, NaiveDate, TimeZone, Utc};
     use noesis_core::{BirthData, Precision};
     use std::collections::HashMap;
+
+    #[tokio::test]
+    async fn minimal_options_match_legacy_birth_data() {
+        let legacy = make_input("1990-01-01", Utc.with_ymd_and_hms(2026, 10, 31, 12, 0, 0).unwrap());
+        let mut minimal = legacy.clone();
+        minimal.birth_data = None;
+        minimal.options.insert("birth_date".into(), serde_json::json!("1990-01-01"));
+        let engine = BiorhythmEngine::new();
+        assert_eq!(engine.cache_key(&legacy), engine.cache_key(&minimal));
+        assert_eq!(engine.calculate(legacy).await.unwrap().result, engine.calculate(minimal).await.unwrap().result);
+    }
 
     fn make_input(birth_date: &str, target: DateTime<Utc>) -> EngineInput {
         EngineInput {

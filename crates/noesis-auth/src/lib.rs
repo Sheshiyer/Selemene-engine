@@ -12,6 +12,7 @@ use noesis_core::EngineError;
 use serde::{Deserialize, Serialize};
 
 pub mod password;
+pub mod key_tiers;
 
 use chrono::{DateTime, Duration, Utc};
 use std::collections::HashMap;

@@ -319,3 +319,31 @@ impl ResultDisplay {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn api_provenance_reaches_the_result_screen_and_json_export() {
+        let envelope: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../ts-engines/tests/fixtures/sacred-geometry/api-envelope-seed-1401.json"
+        ))
+        .unwrap();
+        let output: EngineOutput = serde_json::from_value(envelope.clone()).unwrap();
+        let mut screen = ResultDisplay::new();
+        screen.set_engine_result("sacred-geometry".into(), output);
+        assert!(screen.rendered_text.contains("**Runtime**: TypeScript"));
+        assert!(screen.rendered_text.contains("**Implementation**: 1.0.0"));
+        assert!(!screen.rendered_text.contains("__contract_provenance"));
+        let ResultKind::Engine { output, .. } = &screen.result else {
+            panic!("screen should retain the engine result");
+        };
+        let json = MarkdownRenderer::new()
+            .render(output, ReportFormat::Json)
+            .unwrap();
+        let exported: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(exported["provenance"], envelope["provenance"]);
+        assert_eq!(exported["result"], envelope["result"]);
+    }
+}
