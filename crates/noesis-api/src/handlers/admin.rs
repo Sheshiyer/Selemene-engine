@@ -1481,7 +1481,7 @@ pub async fn update_user_tier(
     let tier = tier.code();
 
     let updated = repo
-        .set_user_tier(user_uuid, &tier)
+        .set_user_tier(user_uuid, tier)
         .await
         .map_err(|e| EngineError::InternalError(format!("Failed to update user tier: {e}")))?;
 
