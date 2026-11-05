@@ -181,6 +181,9 @@ pub mod naming;
 // Remedies (FAPI-119, FAPI-120)
 pub mod remedies;
 
+// Offline sunrise/sunset (NOAA solar position)
+pub mod sun;
+
 // Common types
 pub mod types;
 

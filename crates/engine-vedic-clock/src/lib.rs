@@ -38,7 +38,8 @@ pub mod organ_clock;
 pub mod panchang_integration;
 pub mod panchanga_qualities;
 pub mod recommendations;
-pub mod sun;
+/// Offline sunrise/sunset; lives in `noesis-vedic-api` so panchang shares it.
+pub use noesis_vedic_api::sun;
 pub mod vedic_time;
 pub mod wisdom;
 pub mod witness;

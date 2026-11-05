@@ -1,6 +1,7 @@
 //! Daily panchang calculator
 
 use super::{DailyPanchang, KaranaInfo, NakshatraInfo, TimePeriod, TithiInfo, YogaInfo};
+use crate::sun::{local_event_hhmm, SunEvent};
 use chrono::{Datelike, NaiveDate};
 
 /// Calculate daily panchang for a given date and location
@@ -10,7 +11,7 @@ pub fn calculate_daily_panchang(
     longitude: f64,
     timezone: f64,
 ) -> DailyPanchang {
-    // Calculate sunrise/sunset (simplified - would use actual astronomical calculation)
+    // Sunrise/sunset in local clock time ("polar_day"/"polar_night" if none)
     let sunrise = calculate_sunrise(date, latitude, longitude, timezone);
     let sunset = calculate_sunset(date, latitude, longitude, timezone);
 
@@ -66,15 +67,12 @@ pub fn calculate_daily_panchang(
     }
 }
 
-fn calculate_sunrise(_date: NaiveDate, lat: f64, _lon: f64, _tz: f64) -> String {
-    // Simplified sunrise calculation
-    let base_hour = if lat > 0.0 { 6 } else { 5 };
-    format!("{:02}:15", base_hour)
+fn calculate_sunrise(date: NaiveDate, lat: f64, lon: f64, tz: f64) -> String {
+    local_event_hhmm(date, lat, lon, tz, SunEvent::Rise)
 }
 
-fn calculate_sunset(_date: NaiveDate, lat: f64, _lon: f64, _tz: f64) -> String {
-    let base_hour = if lat > 0.0 { 18 } else { 19 };
-    format!("{:02}:30", base_hour)
+fn calculate_sunset(date: NaiveDate, lat: f64, lon: f64, tz: f64) -> String {
+    local_event_hhmm(date, lat, lon, tz, SunEvent::Set)
 }
 
 fn get_vara(date: NaiveDate) -> String {

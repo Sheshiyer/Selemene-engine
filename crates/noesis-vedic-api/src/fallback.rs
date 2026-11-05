@@ -34,8 +34,7 @@ use crate::{
     panchang::data::PlanetPosition as PanchangPlanetPos,
     panchang::*,
     resilience::{
-        approximate_sun_longitude, approximate_sunrise, approximate_sunset, julian_day_number,
-        sign_from_longitude,
+        approximate_sun_longitude, day_boundary_times, julian_day_number, sign_from_longitude,
     },
 };
 
@@ -178,8 +177,7 @@ impl FallbackCalculator {
         let vara_num = (((jdn as i64 + 1) % 7) as u8).max(1);
         let vara = Vara::from_number(vara_num).unwrap_or(Vara::Monday);
 
-        let sunrise = approximate_sunrise(lat, jdn);
-        let sunset = approximate_sunset(lat, jdn);
+        let (sunrise, sunset, next_sunrise) = day_boundary_times(year, month, day, lat, lng, tzone);
 
         Ok(Panchang {
             date: DateInfo {
@@ -255,9 +253,9 @@ impl FallbackCalculator {
                 ketu: None,
             },
             day_boundaries: DayBoundaries {
-                sunrise: sunrise.clone(),
-                sunset: sunset.clone(),
-                next_sunrise: sunrise,
+                sunrise,
+                sunset,
+                next_sunrise,
                 day_duration: "12:00".to_string(),
                 night_duration: "12:00".to_string(),
             },
