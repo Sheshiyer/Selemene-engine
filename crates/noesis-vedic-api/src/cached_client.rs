@@ -512,17 +512,16 @@ impl CachedVedicClient {
         &self,
         day_of_week: &str,
         sunrise: &str,
-        _sunset: &str,
+        sunset: &str,
     ) -> Result<MuhurtaCollection> {
         use crate::panchang::muhurta::*;
 
         // Calculate Rahu Kalam
-        let rahu = RahuKalam::for_day(day_of_week, sunrise, _sunset);
-        let rahu_muhurta = Muhurta {
+        let rahu_muhurta = RahuKalam::for_day(day_of_week, sunrise, sunset).map(|rahu| Muhurta {
             name: "Rahu Kalam".to_string(),
             start: rahu.start,
             end: rahu.end,
-            duration_minutes: 90,
+            duration_minutes: rahu.duration_minutes,
             nature: MuhurtaNature::VeryInauspicious,
             ruler: "Rahu".to_string(),
             suitable_activities: vec!["Worship of Durga".to_string()],
@@ -532,15 +531,14 @@ impl CachedVedicClient {
                 "Travel".to_string(),
                 "Marriage".to_string(),
             ],
-        };
+        });
 
         // Calculate Yama Gandam
-        let yama = YamaGandam::for_day(day_of_week);
-        let yama_muhurta = Muhurta {
+        let yama_muhurta = YamaGandam::for_day(day_of_week, sunrise, sunset).map(|yama| Muhurta {
             name: "Yama Gandam".to_string(),
             start: yama.start,
             end: yama.end,
-            duration_minutes: 90,
+            duration_minutes: yama.duration_minutes,
             nature: MuhurtaNature::VeryInauspicious,
             ruler: "Yama".to_string(),
             suitable_activities: vec!["Charity".to_string()],
@@ -548,36 +546,37 @@ impl CachedVedicClient {
                 "Important activities".to_string(),
                 "New beginnings".to_string(),
             ],
-        };
+        });
 
         // Calculate Gulika Kaal
-        let gulika = GulikaKaal::for_day(day_of_week);
-        let gulika_muhurta = Muhurta {
-            name: "Gulika Kaal".to_string(),
-            start: gulika.start,
-            end: gulika.end,
-            duration_minutes: 90,
-            nature: MuhurtaNature::Inauspicious,
-            ruler: "Gulika".to_string(),
-            suitable_activities: vec!["Building construction".to_string()],
-            avoid_activities: vec!["New ventures".to_string(), "Starting journeys".to_string()],
-        };
+        let gulika_muhurta =
+            GulikaKaal::for_day(day_of_week, sunrise, sunset).map(|gulika| Muhurta {
+                name: "Gulika Kaal".to_string(),
+                start: gulika.start,
+                end: gulika.end,
+                duration_minutes: gulika.duration_minutes,
+                nature: MuhurtaNature::Inauspicious,
+                ruler: "Gulika".to_string(),
+                suitable_activities: vec!["Building construction".to_string()],
+                avoid_activities: vec!["New ventures".to_string(), "Starting journeys".to_string()],
+            });
 
-        // Abhijit Muhurta (approximately 11:40 AM to 12:20 PM)
-        let abhijit_muhurta = Muhurta {
-            name: "Abhijit Muhurta".to_string(),
-            start: "11:40".to_string(),
-            end: "12:20".to_string(),
-            duration_minutes: 40,
-            nature: MuhurtaNature::Auspicious,
-            ruler: "Mercury".to_string(),
-            suitable_activities: vec![
-                "All activities".to_string(),
-                "New beginnings".to_string(),
-                "Important work".to_string(),
-            ],
-            avoid_activities: vec![],
-        };
+        // Abhijit Muhurta: 8th of the 15 daytime muhurtas
+        let abhijit_muhurta =
+            abhijit_period(sunrise, sunset).map(|(start, end, duration_minutes)| Muhurta {
+                name: "Abhijit Muhurta".to_string(),
+                start,
+                end,
+                duration_minutes,
+                nature: MuhurtaNature::Auspicious,
+                ruler: "Mercury".to_string(),
+                suitable_activities: vec![
+                    "All activities".to_string(),
+                    "New beginnings".to_string(),
+                    "Important work".to_string(),
+                ],
+                avoid_activities: vec![],
+            });
 
         // Amrit Kaal (varies by day, simplified)
         let amrit_muhurta = Muhurta {
@@ -595,12 +594,12 @@ impl CachedVedicClient {
             avoid_activities: vec![],
         };
 
-        // Brahma Muhurta (approx 1h 36m before sunrise)
-        let brahma_muhurta = Muhurta {
+        // Brahma Muhurta: 96 to 48 minutes before sunrise
+        let brahma_muhurta = BrahmaMuhurta::from_sunrise(sunrise).map(|brahma| Muhurta {
             name: "Brahma Muhurta".to_string(),
-            start: "04:24".to_string(), // Simplified: assumes 6:00 AM sunrise
-            end: sunrise.to_string(),
-            duration_minutes: 96,
+            start: brahma.start,
+            end: brahma.end,
+            duration_minutes: brahma.duration_minutes,
             nature: MuhurtaNature::Auspicious,
             ruler: "Brahma".to_string(),
             suitable_activities: vec![
@@ -610,17 +609,17 @@ impl CachedVedicClient {
                 "Yoga".to_string(),
             ],
             avoid_activities: vec!["Sleep".to_string()],
-        };
+        });
 
         Ok(MuhurtaCollection {
-            abhijit: Some(abhijit_muhurta),
+            abhijit: abhijit_muhurta,
             amrit_kaal: Some(amrit_muhurta),
-            rahu_kalam: Some(rahu_muhurta),
-            yama_gandam: Some(yama_muhurta),
-            gulika_kaal: Some(gulika_muhurta),
+            rahu_kalam: rahu_muhurta,
+            yama_gandam: yama_muhurta,
+            gulika_kaal: gulika_muhurta,
             dur_muhurta: None,
             varjyam: None,
-            brahma_muhurta: Some(brahma_muhurta),
+            brahma_muhurta,
         })
     }
 

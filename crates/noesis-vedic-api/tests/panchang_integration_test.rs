@@ -94,21 +94,24 @@ fn test_karana_type() {
 fn test_muhurta_calculations() {
     use muhurta::*;
 
-    // Test Rahu Kalam for different days
-    let rahu_sunday = RahuKalam::for_day("Sunday", "06:00", "18:00");
+    // Rahu Kalam, Yama Gandam and Gulika Kaal are eighths of sunrise→sunset
+    let rahu_sunday = RahuKalam::for_day("Sunday", "06:00", "18:00").unwrap();
     assert_eq!(rahu_sunday.start, "16:30");
     assert_eq!(rahu_sunday.end, "18:00");
 
-    let rahu_monday = RahuKalam::for_day("Monday", "06:00", "18:00");
+    let rahu_monday = RahuKalam::for_day("Monday", "06:00", "18:00").unwrap();
     assert_eq!(rahu_monday.start, "07:30");
 
-    // Test Yama Gandam
-    let yama_tuesday = YamaGandam::for_day("Tuesday");
+    let yama_tuesday = YamaGandam::for_day("Tuesday", "06:00", "18:00").unwrap();
     assert_eq!(yama_tuesday.start, "09:00");
 
-    // Test Gulika Kaal
-    let gulika_saturday = GulikaKaal::for_day("Saturday");
+    let gulika_saturday = GulikaKaal::for_day("Saturday", "06:00", "18:00").unwrap();
     assert_eq!(gulika_saturday.start, "06:00");
+
+    // A shorter day shifts and shrinks the segments
+    let rahu_thursday = RahuKalam::for_day("Thursday", "07:14", "18:21").unwrap();
+    assert_eq!(rahu_thursday.start, "14:10");
+    assert_eq!(rahu_thursday.end, "15:34");
 }
 
 #[test]

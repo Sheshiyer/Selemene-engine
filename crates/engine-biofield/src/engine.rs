@@ -611,12 +611,14 @@ impl ConsciousnessEngine for BiofieldEngine {
     }
 
     fn cache_key(&self, input: &EngineInput) -> String {
-        // Vedic analysis: cache by birth data + transit hour
+        // Vedic analysis: cache by birth data + transit hour. The timezone is
+        // part of the key because it decides the birth instant.
         if let Some(birth_data) = &input.birth_data {
             let birth_str = format!(
-                "{}_{}",
+                "{}_{}_{}",
                 birth_data.date,
-                birth_data.time.as_deref().unwrap_or("12:00")
+                birth_data.time.as_deref().unwrap_or("12:00"),
+                birth_data.timezone
             );
             let transit_hour = input.current_time.format("%Y-%m-%d-%H").to_string();
             let raw = format!("biofield:vedic:{}:{}", birth_str, transit_hour);
@@ -907,6 +909,22 @@ mod tests {
 
         let key = engine.cache_key(&input);
         assert!(key.starts_with("biofield:vedic:"));
+    }
+
+    #[tokio::test]
+    async fn test_cache_key_vedic_depends_on_birth_timezone() {
+        let engine = BiofieldEngine::new();
+        let input = create_vedic_input();
+        let mut other_zone = create_vedic_input();
+        if let Some(birth_data) = other_zone.birth_data.as_mut() {
+            birth_data.timezone = "America/New_York".to_string();
+        }
+        // Same local date and time, different zone: a different birth instant.
+        assert_ne!(engine.cache_key(&input), engine.cache_key(&other_zone));
+        assert_eq!(
+            engine.cache_key(&input),
+            engine.cache_key(&create_vedic_input())
+        );
     }
 
     #[tokio::test]
