@@ -61,7 +61,7 @@ issue.
 | Runtime source | **`crates/noesis-vedic-api/src/panchang/`** (mod.rs, mappers.rs) — JHora-verified |
 | Renderer | `apps/noesis-web/src/components/engines/Panchanga.tsx` |
 | Fixture (real values) | `crates/noesis-vedic-api/tests/fixtures/reference_data/panchang_jhora_reference.json` |
-| OpenAPI stub | `noesis-core/src/types.rs:192` (`PanchangaResultSchema` — vara/paksha/nakshatra only) |
+| OpenAPI schema | `noesis-core/src/types.rs` `PanchangaResultSchema`: mirrors `PanchangaResult`; drift test `noesis-api/tests/openapi_schema_tests.rs::panchanga_result_schema_matches_engine_output` |
 
 ## 2. Output schema
 
@@ -80,9 +80,10 @@ issue.
 **Domain struct `PanchangaResult` (engine-panchanga path — FLAT, different shape):**
 `tithi_index:u8` `tithi_name:String` `tithi_value:f64` · `nakshatra_index:u8` `nakshatra_name` `nakshatra_value` · `yoga_index:u8` `yoga_name` `yoga_value` · `karana_index:u8` `karana_name` `karana_value` · `vara_index:u8` `vara_name` · `solar_longitude:f64` `lunar_longitude:f64` `julian_day:f64`.
 
-**OpenAPI stub:** `{ vara:String, paksha:String, nakshatra:String }` plus
-`position_source`, `birth_time_assumed`, `vara_basis`, `ayanamsa_degrees`.
-It documents provenance/method fields but still needs full result-shape alignment.
+**OpenAPI schema:** `PanchangaResultSchema` documents the flat `PanchangaResult`
+above field for field, plus `vara_basis`, `ayanamsa_degrees`, `position_source`
+(nullable) and `birth_time_assumed`. A test serializes a real result and fails
+if the property names, required set or JSON types diverge.
 
 ## 3. Ranges, constraints & invariants
 | Field | Range / domain | Notes |
