@@ -197,7 +197,7 @@ fn karana_type_from_index(idx: u8) -> KaranaType {
 /// `compute_panchanga` entry point is sync-only.
 ///
 /// `lat`/`lng`/`tz_offset_hours` drive both the Panchanga (via tz_offset)
-/// and the `DayBoundaries` block (via approximate-sunrise math). The HH:MM
+/// and the `DayBoundaries` block (via `crate::sun`, local clock time). The HH:MM
 /// format is preserved so downstream `calculate_muhurtas`,
 /// `calculate_hora_timings`, `calculate_choghadiya` keep working.
 pub fn compute_panchang_native(
@@ -275,9 +275,8 @@ pub fn compute_panchang_native(
     let paksha = paksha_from_tithi_index(result.tithi_index);
 
     // ---- Day boundaries ----
-    let sunrise = crate::resilience::approximate_sunrise(lat, result.julian_day);
-    let sunset = crate::resilience::approximate_sunset(lat, result.julian_day);
-    let next_sunrise = crate::resilience::approximate_sunrise(lat, result.julian_day + 1.0);
+    let (sunrise, sunset, next_sunrise) =
+        crate::resilience::day_boundary_times(year, month, day, lat, lng, tz_offset_hours);
     let day_boundaries = DayBoundaries {
         sunrise,
         sunset,
@@ -428,10 +427,17 @@ impl VedicApiClient {
         let date = NaiveDate::parse_from_str(&request.date, "%Y-%m-%d").map_err(|e| {
             VedicApiError::ParseError(format!("invalid date '{}': {}", request.date, e))
         })?;
-        let _ = date;
-        let jdn = engine_panchanga::calculate_julian_day(&request.date, "12:00", request.timezone);
-        let sunrise = crate::resilience::approximate_sunrise(request.latitude, jdn);
-        let sunset = crate::resilience::approximate_sunset(request.latitude, jdn);
+        let event = |kind| {
+            crate::sun::local_event_hhmm(
+                date,
+                request.latitude,
+                request.longitude,
+                request.timezone,
+                kind,
+            )
+        };
+        let sunrise = event(crate::sun::SunEvent::Rise);
+        let sunset = event(crate::sun::SunEvent::Set);
         Ok(SunriseSunsetResponse {
             sunrise,
             sunset,

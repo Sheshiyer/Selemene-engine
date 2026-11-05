@@ -368,12 +368,10 @@ impl FallbackChain {
         let vara_num = (((jdn as i64 + 1) % 7) as u8).max(1);
         let vara = Vara::from_number(vara_num).unwrap_or(Vara::Monday);
 
-        // Approximate sunrise/sunset (simplified for latitude). `next_sunrise`
-        // must be tomorrow's sunrise — feeding `sunrise` itself collapses the
+        // Sunrise/sunset in local clock time. `next_sunrise` must be
+        // tomorrow's sunrise — feeding `sunrise` itself collapses the
         // downstream night window in choghadiya/hora helpers to zero.
-        let sunrise = approximate_sunrise(lat, jdn);
-        let sunset = approximate_sunset(lat, jdn);
-        let next_sunrise = approximate_sunrise(lat, jdn + 1.0);
+        let (sunrise, sunset, next_sunrise) = day_boundary_times(year, month, day, lat, lng, tzone);
 
         Ok(Panchang {
             date: DateInfo {
@@ -507,45 +505,26 @@ pub fn sign_from_longitude(lng: f64) -> &'static str {
     SIGNS[index.min(11)]
 }
 
-/// Approximate sunrise time string for a latitude and JDN
-pub fn approximate_sunrise(lat: f64, jdn: f64) -> String {
-    // Simplified sunrise calculation
-    let day_of_year = (jdn - julian_day_number(2024, 1, 1)) % 365.25;
-    let declination = 23.45 * ((360.0 / 365.0 * (day_of_year + 284.0)).to_radians().sin());
-    let lat_rad = lat.to_radians();
-    let decl_rad = declination.to_radians();
-
-    let cos_ha = -(lat_rad.tan() * decl_rad.tan());
-    let ha = if cos_ha.abs() > 1.0 {
-        90.0 // Polar edge case
-    } else {
-        cos_ha.acos().to_degrees()
+/// Local sunrise/sunset/next-sunrise (`HH:MM` at `tz_hours`, or a
+/// `polar_day` / `polar_night` marker) for the civil date at the location.
+pub fn day_boundary_times(
+    year: i32,
+    month: u32,
+    day: u32,
+    lat: f64,
+    lng: f64,
+    tz_hours: f64,
+) -> (String, String, String) {
+    use crate::sun::{local_event_hhmm, SunEvent};
+    let Some(date) = chrono::NaiveDate::from_ymd_opt(year, month, day) else {
+        return (String::new(), String::new(), String::new());
     };
-
-    let sunrise_hours = 12.0 - ha / 15.0;
-    let h = sunrise_hours.floor() as u32;
-    let m = ((sunrise_hours - h as f64) * 60.0).round() as u32;
-    format!("{:02}:{:02}", h.min(23), m.min(59))
-}
-
-/// Approximate sunset time string for a latitude and JDN
-pub fn approximate_sunset(lat: f64, jdn: f64) -> String {
-    let day_of_year = (jdn - julian_day_number(2024, 1, 1)) % 365.25;
-    let declination = 23.45 * ((360.0 / 365.0 * (day_of_year + 284.0)).to_radians().sin());
-    let lat_rad = lat.to_radians();
-    let decl_rad = declination.to_radians();
-
-    let cos_ha = -(lat_rad.tan() * decl_rad.tan());
-    let ha = if cos_ha.abs() > 1.0 {
-        90.0
-    } else {
-        cos_ha.acos().to_degrees()
-    };
-
-    let sunset_hours = 12.0 + ha / 15.0;
-    let h = sunset_hours.floor() as u32;
-    let m = ((sunset_hours - h as f64) * 60.0).round() as u32;
-    format!("{:02}:{:02}", h.min(23), m.min(59))
+    let next = date.succ_opt().unwrap_or(date);
+    (
+        local_event_hhmm(date, lat, lng, tz_hours, SunEvent::Rise),
+        local_event_hhmm(date, lat, lng, tz_hours, SunEvent::Set),
+        local_event_hhmm(next, lat, lng, tz_hours, SunEvent::Rise),
+    )
 }
 
 // ====================== RESILIENCE METRICS ======================
@@ -742,14 +721,34 @@ mod tests {
     }
 
     #[test]
-    fn test_approximate_sunrise_reasonable() {
-        // Bangalore at equinox-ish
-        let sunrise = approximate_sunrise(12.97, julian_day_number(2024, 3, 20));
-        // Should be roughly 6:00-6:30
+    fn test_day_boundary_times_bengaluru() {
+        // Bengaluru 2026-01-15, IST: Swiss Ephemeris 06:45 / 18:12 (#1537).
+        // Times are rounded to the nearest minute, so allow one minute.
+        let (rise, set, next) = day_boundary_times(2026, 1, 15, 12.9716, 77.5946, 5.5);
         assert!(
-            sunrise.starts_with("06:") || sunrise.starts_with("05:"),
-            "Sunrise at lat 12.97 should be around 6am, got {}",
-            sunrise
+            ["06:45", "06:46"].contains(&rise.as_str()),
+            "sunrise {rise}"
         );
+        assert!(
+            ["18:11", "18:12", "18:13"].contains(&set.as_str()),
+            "sunset {set}"
+        );
+        assert!(
+            ["06:45", "06:46"].contains(&next.as_str()),
+            "next sunrise {next}"
+        );
+    }
+
+    #[test]
+    fn test_day_boundary_times_polar() {
+        // Longyearbyen: polar night in December, midnight sun in June.
+        let (rise, set, next) = day_boundary_times(2026, 12, 21, 78.22, 15.65, 1.0);
+        assert_eq!(
+            (rise.as_str(), set.as_str()),
+            ("polar_night", "polar_night")
+        );
+        assert_eq!(next, "polar_night");
+        let (rise, set, _) = day_boundary_times(2026, 6, 21, 78.22, 15.65, 2.0);
+        assert_eq!((rise.as_str(), set.as_str()), ("polar_day", "polar_day"));
     }
 }
