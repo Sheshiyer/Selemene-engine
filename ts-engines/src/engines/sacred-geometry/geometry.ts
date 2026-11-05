@@ -454,6 +454,244 @@ function torus(): SacredGeometryConstruction {
   return g
 }
 
+// --- Sri Yantra ------------------------------------------------------------
+
+/**
+ * Concurrent Sri Yantra after A. Chiodo, "On the construction of the Śrī
+ * Yantra", C. R. Math. 359 (2021) 377-397, doi:10.5802/crmath.163 (CC-BY 4.0).
+ *
+ * Triangles t1..t9 are numbered by the height of their base, top first; t1-t5
+ * point down, t6-t9 point up. A diagram is concurrent when (Chiodo, sec. 1):
+ *  (i)   t3 and t7 share the circumscribed circle;
+ *  (ii)  the apex of t' is the base point of t'' for each pair in SRI_APEX_ON_BASE;
+ *  (iii) on each side of the axis, the leg of the downward t', the leg of the
+ *        upward t''' and the base of t'' meet in one point, for each triple in
+ *        SRI_CONCURRENT.
+ * Up to scale the family has four parameters, the base points of t3, t6, t7
+ * and t9 on the vertical diameter (sec. 2.2.2). Every line then follows from
+ * (i)-(iii) except the leg of t1, whose slope solves one equation (sec. 2.3.2:
+ * the legs of t1 and t6 and the legs of t4 and t8 must meet on the same base,
+ * that of t4). Of its roots exactly one gives an ordered diagram (sec. 2.3.3);
+ * a fixed scan and bisection find it, and the build fails if it is not unique.
+ */
+const SRI_APEX_ON_BASE: [number, number][] = [
+  [8, 1],
+  [6, 2],
+  [9, 3],
+  [1, 6],
+  [5, 7],
+  [4, 8],
+  [2, 9],
+]
+
+const SRI_CONCURRENT: [number, number, number][] = [
+  [1, 2, 7],
+  [2, 3, 7],
+  [1, 3, 8],
+  [1, 4, 6],
+  [1, 5, 9],
+  [4, 6, 9],
+  [2, 7, 9],
+  [3, 7, 8],
+  [3, 8, 9],
+  [4, 4, 8],
+  [5, 5, 6],
+  [2, 6, 6],
+]
+
+/**
+ * Base points of t3, t6, t7, t9 as fractions of the diameter from its top.
+ * These are Huet's parameters as Chiodo restates them (fn. 20) and uses for
+ * his final figure (Fig. 11); Huet, "Śrī Yantra Geometry", TCS 281 (2002).
+ */
+const SRI_PARAMS = { t3: 0.332, t6: 0.537, t7: 0.602, t9: 0.835 }
+
+/** One isosceles triangle: apex and base depth from the top, base half-width. */
+interface SriTriangle {
+  apex: number
+  base: number
+  half: number
+}
+
+/** In-house coordinates: x from the axis, s = depth below the top of a unit diameter. */
+type XS = [number, number]
+
+const onAxis = (s: number): XS => [0, s]
+const halfChord = (s: number): number => Math.sqrt(s * (1 - s))
+
+/** x on the line through a and b at depth s. */
+function xAtDepth(a: XS, b: XS, s: number): number {
+  return a[0] + ((b[0] - a[0]) * (s - a[1])) / (b[1] - a[1])
+}
+
+function meetLines(a: XS, b: XS, c: XS, d: XS): XS {
+  const ux = b[0] - a[0]
+  const us = b[1] - a[1]
+  const vx = d[0] - c[0]
+  const vs = d[1] - c[1]
+  const k = ((c[0] - a[0]) * vs - (c[1] - a[1]) * vx) / (ux * vs - us * vx)
+  return [a[0] + k * ux, a[1] + k * us]
+}
+
+/** x of triangle t's right leg at depth s. */
+function legX(t: SriTriangle, s: number): number {
+  return (t.half * (s - t.apex)) / (t.base - t.apex)
+}
+
+/**
+ * The nine triangles for a trial leg of t1 through (u, base of t3), plus the
+ * mismatch of the one equation left to solve.
+ */
+function sriTrial(u: number): { triangles: SriTriangle[]; mismatch: number } {
+  const { t3: P, t6: Q, t7: R, t9: S } = SRI_PARAMS
+  const U: XS = [halfChord(P), P] // right base end of t3, on the circle (i)
+  const V: XS = [halfChord(R), R] // right base end of t7, on the circle (i)
+  const top = onAxis(0) // apex of t7
+  const bottom = onAxis(1) // apex of t3
+  const W = meetLines(top, V, onAxis(P), U) // leg t7 x base t3: on leg t2 (2,3,7)
+  const X: XS = [xAtDepth(onAxis(S), W, R), R] // leg t2 x base t7: on leg t9 (2,7,9)
+  const Y = meetLines(onAxis(P), X, U, bottom) // legs t9 x t3: on base t8 (3,8,9)
+  const b8 = Y[1]
+  const F: XS = [xAtDepth(onAxis(P), X, Q), Q] // leg t9 x base t6: on leg t4 (4,6,9)
+  const G: XS = [xAtDepth(onAxis(S), W, Q), Q] // leg t2 x base t6: base end of t6 (2,6,6)
+  const A: XS = [u, P] // trial: leg t1 x base t3, on leg t8 (1,3,8)
+  const b2 = meetLines(onAxis(Q), A, top, V)[1] // legs t1 x t7 on base t2 (1,2,7)
+  const Z: XS = [xAtDepth(U, bottom, R), R] // leg t3 x base t7: on leg t8 (3,7,8)
+  const b1 = meetLines(A, Z, top, bottom)[1] // apex of t8 = base point of t1
+  const D = meetLines(onAxis(Q), A, onAxis(b2), G) // legs t1 x t6: on base t4 (1,4,6)
+  const I = meetLines(onAxis(b8), F, onAxis(b1), A) // legs t4 x t8: base end of t4 (4,4,8)
+  const b4 = D[1]
+  const b5 = meetLines(onAxis(Q), A, onAxis(P), X)[1] // legs t1 x t9 on base t5 (1,5,9)
+  const t6: SriTriangle = { apex: b2, base: Q, half: G[0] }
+  const triangles: SriTriangle[] = [
+    { apex: Q, base: b1, half: xAtDepth(onAxis(Q), A, b1) },
+    { apex: S, base: b2, half: xAtDepth(onAxis(S), W, b2) },
+    { apex: 1, base: P, half: U[0] },
+    { apex: b8, base: b4, half: xAtDepth(onAxis(b8), F, b4) },
+    { apex: R, base: b5, half: legX(t6, b5) }, // base end on leg t6 (5,5,6)
+    t6,
+    { apex: 0, base: R, half: V[0] },
+    { apex: b1, base: b8, half: xAtDepth(onAxis(b1), A, b8) },
+    { apex: P, base: S, half: xAtDepth(onAxis(P), X, S) },
+  ]
+  return { triangles, mismatch: D[1] - I[1] }
+}
+
+/** Largest violation of (i)-(iii), or Infinity if the diagram is not ordered. */
+function sriResidual(t: SriTriangle[]): number {
+  const tri = (i: number) => t[i - 1]
+  for (let i = 0; i < 9; i++) {
+    const { apex, base, half } = t[i]
+    const down = i < 5
+    if (!(half > 0) || (down ? apex <= base : apex >= base)) return Number.POSITIVE_INFINITY
+    if (half > halfChord(base) + 1e-12) return Number.POSITIVE_INFINITY
+    if (i > 0 && !(base > t[i - 1].base)) return Number.POSITIVE_INFINITY
+  }
+  let worst = 0
+  for (const i of [3, 7]) {
+    const { apex, base, half } = tri(i)
+    worst = Math.max(
+      worst,
+      Math.abs(Math.hypot(half, base - 0.5) - 0.5),
+      Math.abs(Math.abs(apex - 0.5) - 0.5),
+    )
+  }
+  for (const [a, b] of SRI_APEX_ON_BASE)
+    worst = Math.max(worst, Math.abs(tri(a).apex - tri(b).base))
+  for (const [down, base, up] of SRI_CONCURRENT) {
+    const s = tri(base).base
+    const x = legX(tri(down), s)
+    if (x > tri(base).half + 1e-12) return Number.POSITIVE_INFINITY
+    worst = Math.max(worst, Math.abs(x - legX(tri(up), s)))
+  }
+  return worst
+}
+
+function solveSriYantra(): { triangles: SriTriangle[]; residual: number } {
+  const steps = 4096
+  const bisections = 200
+  const span = halfChord(SRI_PARAMS.t3)
+  const solutions: { triangles: SriTriangle[]; residual: number }[] = []
+  let prevU = span / steps
+  let prevF = sriTrial(prevU).mismatch
+  for (let k = 2; k < steps; k++) {
+    const u = (span * k) / steps
+    const f = sriTrial(u).mismatch
+    if (Math.sign(f) !== Math.sign(prevF)) {
+      let lo = prevU
+      let hi = u
+      let fLo = prevF
+      for (let n = 0; n < bisections && hi - lo > 0; n++) {
+        const mid = (lo + hi) / 2
+        if (mid === lo || mid === hi) break
+        const fMid = sriTrial(mid).mismatch
+        if (Math.sign(fMid) === Math.sign(fLo)) {
+          lo = mid
+          fLo = fMid
+        } else {
+          hi = mid
+        }
+      }
+      const root = (lo + hi) / 2
+      const { triangles, mismatch } = sriTrial(root)
+      const residual = Math.max(sriResidual(triangles), Math.abs(mismatch))
+      // A sign change across a pole of the mismatch leaves a large residual.
+      if (residual < 1e-12) solutions.push({ triangles, residual })
+    }
+    prevU = u
+    prevF = f
+  }
+  if (solutions.length !== 1) {
+    throw new Error(`Sri Yantra solve found ${solutions.length} concurrent diagrams, expected 1.`)
+  }
+  return solutions[0]
+}
+
+// The solve depends only on SRI_PARAMS, so it runs once per process.
+let sriSolution: ReturnType<typeof solveSriYantra> | undefined
+
+function sriYantra(): SacredGeometryConstruction {
+  sriSolution ??= solveSriYantra()
+  const { triangles, residual } = sriSolution
+  const { t3: P, t6: Q, t7: R, t9: S } = SRI_PARAMS
+  // Unit diameter with depth s from the top -> unit circle, y up.
+  const toFrame = (x: number, s: number): Point2 => pt(2 * x, 1 - 2 * s)
+
+  // Bindu: the incentre of the central triangle t1 ∩ t5 (Chiodo, sec. 1.1),
+  // bounded above by the base of t5 and by the legs of t1 down to its apex.
+  // Chiodo does not place the bindu; the incentre is the point Kulaichev's
+  // extra condition (d) refers to, and is used here without imposing (d).
+  const t1 = triangles[0]
+  const t5 = triangles[4]
+  const halfTop = legX(t1, t5.base)
+  const height = t1.apex - t5.base
+  const inradius = (halfTop * height) / (halfTop + Math.hypot(halfTop, height))
+  const huetXF = legX(t1, P) // concurrency (1,3,8): Huet's X_F
+  const huetXA = legX(triangles[2], triangles[7].base) // concurrency (3,8,9): Huet's X_A
+
+  const g = empty(
+    `Sri Yantra: the nine triangles of a concurrent Sri Yantra after Chiodo (C. R. Math. 359 (2021) 377-397, doi:10.5802/crmath.163), meeting his conditions (i)-(iii): t3 and t7 inscribed in the outer circle, seven apexes on base points and twelve triple concurrencies. Free parameters: the base points of t3, t6, t7 and t9 at ${P}, ${Q}, ${R} and ${S} of the vertical diameter from the top (Huet's values, as in Chiodo's Fig. 11); the leg of t1 is solved to machine precision. polygons[0..8] are t1..t9 by base height from the top (t1-t5 point down, t6-t9 up), each [base left, base right, apex]. The bindu is the incentre of the central triangle t1∩t5, a choice the source leaves open. The lotus petals and the bhupura are omitted: the source does not construct them. measures.param_* and huet_x_* are fractions of the diameter; huet_x_f and huet_x_a are the half-widths of concurrencies (1,3,8) and (3,8,9), which Huet gives as 0.126 and 0.187.`,
+  )
+  g.circles = [circle(0, 0, 1)]
+  g.polygons = triangles.map((t) => ({
+    points: [toFrame(-t.half, t.base), toFrame(t.half, t.base), toFrame(0, t.apex)],
+  }))
+  g.points = [toFrame(0, t5.base + inradius)]
+  g.measures = {
+    triangle_count: 9,
+    downward_count: 5,
+    upward_count: 4,
+    param_base_t3: P,
+    param_base_t6: Q,
+    param_base_t7: R,
+    param_base_t9: S,
+    huet_x_f: round(huetXF),
+    huet_x_a: round(huetXA),
+    max_condition_residual: residual,
+  }
+  return g
+}
+
 // --- Registry --------------------------------------------------------------
 
 const BUILDERS: Record<string, () => SacredGeometryConstruction> = {
@@ -468,14 +706,12 @@ const BUILDERS: Record<string, () => SacredGeometryConstruction> = {
   icosahedron: () => platonicSolid('icosahedron'),
   'golden-spiral': goldenSpiral,
   torus,
+  'sri-yantra': sriYantra,
 }
 
-const UNSUPPORTED: Record<string, UnsupportedConstruction> = {
-  'sri-yantra': {
-    reason:
-      'The nine interlocking triangles must meet concurrency constraints that are only met by a numeric solve against a chosen canonical construction; none is implemented, so no coordinates are guessed.',
-  },
-}
+// Every form currently has a construction. A form added without one goes
+// here with the reason, and stays not_implemented rather than guessed.
+const UNSUPPORTED: Record<string, UnsupportedConstruction> = {}
 
 /**
  * Deterministic construction data for a form, or the reason it is not
