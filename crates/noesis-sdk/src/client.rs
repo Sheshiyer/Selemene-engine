@@ -53,6 +53,7 @@ pub struct NoesisClient {
     http: Client,
     base_url: String,
     api_key: Option<String>,
+    bearer_token: Option<String>,
     max_retries: u32,
     backoff_ms: u64,
 }
@@ -70,6 +71,7 @@ impl NoesisClient {
             http,
             base_url: config.api_url.clone(),
             api_key: config.api_key.clone(),
+            bearer_token: None,
             max_retries: config.max_retries,
             backoff_ms: config.backoff_ms,
         })
@@ -83,6 +85,7 @@ impl NoesisClient {
     /// Set the API key for authenticated requests.
     pub fn with_api_key(mut self, api_key: impl Into<String>) -> Self {
         self.api_key = Some(api_key.into());
+        self.bearer_token = None;
         self
     }
 
@@ -165,7 +168,60 @@ impl NoesisClient {
             .await
     }
 
+    /// Human account sessions are separate from service API keys.
+    pub fn with_bearer_token(mut self, token: impl Into<String>) -> Self {
+        self.bearer_token = Some(token.into());
+        self.api_key = None;
+        self
+    }
+    pub async fn account_context(&self) -> Result<crate::shared_identity::AccountContext> {
+        let url = format!("{}/api/v1/users/me/context", self.base_url);
+        self.send_with_retry(|| self.authenticated(self.http.get(&url)))
+            .await
+    }
+    pub async fn subject_profile(
+        &self,
+        id: uuid::Uuid,
+    ) -> Result<crate::shared_identity::SubjectProfile> {
+        let url = format!("{}/api/v1/subjects/{id}/profile", self.base_url);
+        self.send_with_retry(|| self.authenticated(self.http.get(&url)))
+            .await
+    }
+    pub async fn update_subject_profile(
+        &self,
+        id: uuid::Uuid,
+        expected_revision: i64,
+        patch: &serde_json::Value,
+    ) -> Result<crate::shared_identity::SubjectProfile> {
+        let url = format!("{}/api/v1/subjects/{id}/profile", self.base_url);
+        let body = serde_json::json!({"expected_revision":expected_revision,"patch":patch});
+        self.handle_response(
+            self.authenticated(self.http.patch(&url).json(&body))
+                .send()
+                .await
+                .map_err(Error::Http)?,
+        )
+        .await
+    }
+    pub async fn set_default_subject(
+        &self,
+        id: Option<uuid::Uuid>,
+    ) -> Result<crate::shared_identity::AccountContext> {
+        let url = format!("{}/api/v1/users/me/context", self.base_url);
+        let body = serde_json::json!({"default_subject_id":id});
+        self.handle_response(
+            self.authenticated(self.http.patch(&url).json(&body))
+                .send()
+                .await
+                .map_err(Error::Http)?,
+        )
+        .await
+    }
     fn authenticated(&self, request: RequestBuilder) -> RequestBuilder {
+        if let Some(ref token) = self.bearer_token {
+            return request.bearer_auth(token);
+        }
+
         if let Some(ref key) = self.api_key {
             request.header("X-API-Key", key)
         } else {
@@ -248,6 +304,7 @@ impl NoesisClient {
 pub struct NoesisClientBuilder {
     base_url: Option<String>,
     api_key: Option<String>,
+    bearer_token: Option<String>,
     timeout_ms: u64,
     max_retries: Option<u32>,
     backoff_ms: Option<u64>,
@@ -317,6 +374,7 @@ impl NoesisClientBuilder {
             http,
             base_url,
             api_key: self.api_key,
+            bearer_token: self.bearer_token,
             max_retries,
             backoff_ms,
         })
