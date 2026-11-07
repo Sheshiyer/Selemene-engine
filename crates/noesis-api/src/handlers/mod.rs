@@ -4,6 +4,7 @@ pub mod assets;
 pub mod auth;
 pub mod billing;
 pub mod biofield;
+pub mod daily;
 pub mod desktop_auth;
 pub mod living_reading_invites;
 pub mod onboarding;
