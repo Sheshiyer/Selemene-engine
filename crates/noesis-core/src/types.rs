@@ -297,15 +297,58 @@ pub struct WorkflowResult {
 // OpenAPI-only engine result schemas
 // ---------------------------------------------------------------------------
 
+/// Mirrors `engine_panchanga::PanchangaResult`; the `noesis-api` test
+/// `panchanga_result_schema_matches_engine_output` fails if the two drift.
+/// Examples are the engine's output for 2000-01-01 12:00 UTC.
 #[cfg(feature = "openapi")]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct PanchangaResultSchema {
-    #[schema(example = "Sunday")]
-    pub vara: String,
-    #[schema(example = "Shukla")]
-    pub paksha: String,
-    #[schema(example = "Punarvasu")]
-    pub nakshatra: String,
+    /// Tithi index, 0-based (0..30; 0-14 Shukla, 15-29 Krishna).
+    #[schema(example = 25)]
+    pub tithi_index: u8,
+    #[schema(example = "Ekadashi (Krishna)")]
+    pub tithi_name: String,
+    /// Continuous tithi value (0..30): Moon-Sun elongation / 12°.
+    #[schema(example = 25.246)]
+    pub tithi_value: f64,
+    /// Nakshatra index, 0-based (0..27).
+    #[schema(example = 14)]
+    pub nakshatra_index: u8,
+    #[schema(example = "Swati")]
+    pub nakshatra_name: String,
+    /// Continuous nakshatra value (0..27): sidereal Moon / 13°20'.
+    #[schema(example = 14.96)]
+    pub nakshatra_value: f64,
+    /// Yoga index, 0-based (0..27).
+    #[schema(example = 7)]
+    pub yoga_index: u8,
+    #[schema(example = "Dhriti")]
+    pub yoga_name: String,
+    /// Continuous yoga value (0..27).
+    #[schema(example = 7.198)]
+    pub yoga_value: f64,
+    /// Karana name index, 0-based (0..11).
+    #[schema(example = 0)]
+    pub karana_index: u8,
+    #[schema(example = "Bava")]
+    pub karana_name: String,
+    /// Half-tithi slot (1..=60), not a continuous value.
+    #[schema(example = 51.0)]
+    pub karana_value: f64,
+    /// Weekday, 0 = Sunday.
+    #[schema(example = 6)]
+    pub vara_index: u8,
+    #[schema(example = "Shanivara (Saturday)")]
+    pub vara_name: String,
+    /// Sidereal (Lahiri) solar longitude in degrees, 0..360.
+    #[schema(example = 256.512)]
+    pub solar_longitude: f64,
+    /// Sidereal (Lahiri) lunar longitude in degrees, 0..360.
+    #[schema(example = 199.467)]
+    pub lunar_longitude: f64,
+    /// Julian Day (UT) the calculation used.
+    #[schema(example = 2451545.0)]
+    pub julian_day: f64,
     /// Path that produced the solar and lunar longitudes behind tithi,
     /// nakshatra, yoga and karana. Absent only on results serialized before
     /// the field existed.

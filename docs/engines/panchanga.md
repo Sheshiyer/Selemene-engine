@@ -50,39 +50,46 @@ The OpenAPI Panchanga schema and `POST /api/legacy/panchanga/calculate`
 carry `position_source`, `birth_time_assumed`, `vara_basis` and
 `ayanamsa_degrees`. Source/basis/ayanamsa are nullable for historical
 compatibility; current native calculations report their actual method values.
-The pre-existing broader schema mismatch described below remains a separate
-issue.
+The schema mirrors the full flat result (§2) and a drift test keeps them in step.
 
 ## 1. Identity
 | | |
 |---|---|
 | `engine_id` | `panchanga` |
-| Domain crate | `crates/engine-panchanga/src/lib.rs` (`PanchangaResult`, L179) |
-| Runtime source | **`crates/noesis-vedic-api/src/panchang/`** (mod.rs, mappers.rs) — JHora-verified |
-| Renderer | `apps/noesis-web/src/components/engines/Panchanga.tsx` |
-| Fixture (real values) | `crates/noesis-vedic-api/tests/fixtures/reference_data/panchang_jhora_reference.json` |
-| OpenAPI stub | `noesis-core/src/types.rs:192` (`PanchangaResultSchema` — vara/paksha/nakshatra only) |
+| Domain crate | `crates/engine-panchanga/src/lib.rs` (`PanchangaResult`) |
+| Runtime source | `engine_panchanga::PanchangaEngine`, registered under `panchanga` in `noesis-orchestrator/src/lib.rs` (`register_native_runtime_engines`) |
+| Renderer | None in this repository. `apps/noesis-web` (`Panchanga.tsx`) was retired; the renderer is being ported to Sankalpa, outside Selemene |
+| Tests | `crates/engine-panchanga/src/lib.rs` (`probe_*`), `crates/engine-panchanga/tests/` |
+| OpenAPI schema | `noesis-core/src/types.rs` `PanchangaResultSchema`: mirrors `PanchangaResult`; drift test `noesis-api/tests/openapi_schema_tests.rs::panchanga_result_schema_matches_engine_output` |
+| SDK round-trip tests | `crates/noesis-sdk/src/client.rs::panchanga_calculate_keeps_provenance_fields`, `packages/noesis-sdk-ts/src/index.test.ts` ("panchanga provenance") |
 
 ## 2. Output schema
 
-**Runtime JSON (authoritative — the shape the renderer reads & the fixture verifies):**
+**Runtime JSON (authoritative):** `/api/v1/engines/panchanga/calculate` returns
+the flat `PanchangaResult` as `result`. Synthetic example, 2000-01-01 12:00 UTC:
 ```jsonc
 {
-  "tithi":     { "name": "Chaturthi", "paksha": "Shukla", "number": 4 },   // renderer also reads .percentage
-  "nakshatra": { "name": "Revati", "number": 27, "pada": 2, "ruler": "Mercury" }, // renderer reads .lord (alias of ruler?)
-  "yoga":      { "name": "Shiva", "number": 20, "nature": "auspicious" },
-  "karana":    { "name": "Vanija", "type": "Movable" },
-  "vara":      "Monday",                                                    // renderer also accepts result.weekday
-  "muhurta":   { "quality": "auspicious" }                                 // renderer reads result.muhurta.quality | result.quality
+  "tithi_index": 25,      "tithi_name": "Ekadashi (Krishna)",   "tithi_value": 25.246,   // 0..30; 0-14 Shukla, 15-29 Krishna
+  "nakshatra_index": 14,  "nakshatra_name": "Swati",            "nakshatra_value": 14.96, // 0..27
+  "yoga_index": 7,        "yoga_name": "Dhriti",                "yoga_value": 7.198,      // 0..27
+  "karana_index": 0,      "karana_name": "Bava",                "karana_value": 51.0,     // value = half-tithi slot 1..=60
+  "vara_index": 6,        "vara_name": "Shanivara (Saturday)",  "vara_basis": "local_date",
+  "solar_longitude": 256.512, "lunar_longitude": 199.467,       // sidereal (Lahiri), 0..360
+  "julian_day": 2451545.0,    "ayanamsa_degrees": 23.857,       // dated Lahiri value applied
+  "position_source": "swiss_ephemeris_files",                   // or swiss_ephemeris_moshier / mean_longitude (fallbacks)
+  "birth_time_assumed": false                                   // true when birth time was missing and noon was used
 }
 ```
+`vara_basis`, `ayanamsa_degrees` and `position_source` are absent only on results
+stored before those fields existed. All indices are 0-based. Paksha is not a
+field: it follows from `tithi_index` (below 15 is Shukla).
 
-**Domain struct `PanchangaResult` (engine-panchanga path — FLAT, different shape):**
-`tithi_index:u8` `tithi_name:String` `tithi_value:f64` · `nakshatra_index:u8` `nakshatra_name` `nakshatra_value` · `yoga_index:u8` `yoga_name` `yoga_value` · `karana_index:u8` `karana_name` `karana_value` · `vara_index:u8` `vara_name` · `solar_longitude:f64` `lunar_longitude:f64` `julian_day:f64`.
-
-**OpenAPI stub:** `{ vara:String, paksha:String, nakshatra:String }` plus
-`position_source`, `birth_time_assumed`, `vara_basis`, `ayanamsa_degrees`.
-It documents provenance/method fields but still needs full result-shape alignment.
+**Not this route:** the nested shape (`tithi.name`, `tithi.paksha`,
+`nakshatra.pada`, `nakshatra.ruler`, `muhurta.quality`, ...) belongs to the
+historical `crates/noesis-vedic-api/src/panchang/` adapter and the retired
+noesis-web renderer. Its JHora reference fixture is
+`crates/noesis-vedic-api/tests/fixtures/reference_data/panchang_jhora_reference.json`.
+Sections 3 to 5 below still describe fields in that nested shape.
 
 ## 3. Ranges, constraints & invariants
 | Field | Range / domain | Notes |

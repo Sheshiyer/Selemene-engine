@@ -12,13 +12,14 @@ mod capabilities;
 pub mod cf_access;
 mod config;
 pub mod desktop_auth;
+pub mod engine_requirements;
 pub mod error;
 pub mod error_mapper;
 mod handlers;
 mod living_reading_publication;
 mod logging;
-pub mod reading;
 mod middleware;
+pub mod reading;
 pub use middleware::ApiKeyPrincipal;
 pub mod workflow_parity;
 
@@ -143,6 +144,18 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::auth::forgot_password,
         handlers::auth::reset_password,
         handlers::auth::change_password,
+        handlers::shared_identity::context,
+        handlers::shared_identity::update_context,
+        handlers::shared_identity::profile,
+        handlers::shared_identity::update_profile,
+        handlers::shared_identity::calculate,
+        handlers::shared_identity::readings,
+        handlers::shared_identity::reading,
+        handlers::shared_identity::create_enrollment,
+        handlers::shared_identity::claim_enrollment,
+        handlers::shared_identity::confirm_enrollment,
+        handlers::shared_identity::start_email_link,
+        handlers::shared_identity::complete_email_link,
         handlers::desktop_auth::authorize,
         handlers::desktop_auth::token,
         handlers::desktop_auth::revoke,
@@ -825,6 +838,20 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     // token rather than a session, so they sit outside auth_middleware but are
     // rate limited by IP.
     let desktop_token_routes = Router::new()
+        .route("/sessions/token", post(handlers::sessions::token))
+        .route("/sessions/revoke", post(handlers::sessions::revoke))
+        .route(
+            "/account/email-links/complete",
+            post(handlers::shared_identity::complete_email_link),
+        )
+        .route(
+            "/account/email-links/begin",
+            get(handlers::shared_identity::email_begin_page).post(handlers::shared_identity::bind_email_browser),
+        )
+        .route(
+            "/account/email-links/verify",
+            get(handlers::shared_identity::verify_email_link),
+        )
         .route("/desktop/token", post(handlers::desktop_auth::token))
         .route("/desktop/revoke", post(handlers::desktop_auth::revoke))
         .layer(axum_middleware::from_fn_with_state(
@@ -833,6 +860,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         ));
 
     let api_v1 = Router::new()
+        .route("/subjects/:id/witness", get(handlers::witness_catalog::catalog).post(handlers::witness_catalog::publish))
         .route(
             "/auth/change-password",
             post(handlers::auth::change_password),
@@ -840,6 +868,54 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/auth/logout", post(handlers::auth::logout))
         // Desktop sign-in starts here in the browser; requires a Cloudflare Access identity.
         .route("/desktop/authorize", get(handlers::desktop_auth::authorize))
+        .route("/sessions/authorize", get(handlers::sessions::authorize))
+        .route(
+            "/users/me/context",
+            get(handlers::shared_identity::context)
+                .patch(handlers::shared_identity::update_context),
+        )
+        .route(
+            "/subjects/:id/profile",
+            get(handlers::shared_identity::profile)
+                .patch(handlers::shared_identity::update_profile),
+        )
+        .route(
+            "/subjects/:id/engines/:engine/calculate",
+            post(handlers::shared_identity::calculate),
+        )
+        .route(
+            "/subjects/:id/readings",
+            get(handlers::shared_identity::readings),
+        )
+        .route(
+            "/subjects/:id/readings/:reading",
+            get(handlers::shared_identity::reading),
+        )
+        .route(
+            "/account/enrollments",
+            post(handlers::shared_identity::create_enrollment)
+                .get(handlers::shared_identity::pending_enrollments),
+        )
+        .route(
+            "/account/enrollments/preview",
+            post(handlers::shared_identity::preview_enrollment),
+        )
+        .route(
+            "/account/enrollments/claim",
+            post(handlers::shared_identity::claim_enrollment),
+        )
+        .route(
+            "/account/enrollments/:id/confirm",
+            post(handlers::shared_identity::confirm_enrollment),
+        )
+        .route(
+            "/account/enrollments/:id",
+            axum::routing::delete(handlers::shared_identity::revoke_enrollment),
+        )
+        .route(
+            "/account/email-links",
+            post(handlers::shared_identity::start_email_link),
+        )
         .route(
             "/users/me",
             get(handlers::users::get_me).patch(handlers::users::update_me),
@@ -1326,6 +1402,7 @@ struct WorkflowSummary {
 
 #[derive(Serialize, ToSchema)]
 struct EngineInfoResponse {
+    input_guidance: serde_json::Value,
     engine_id: String,
     engine_name: String,
     required_phase: u8,
@@ -1997,9 +2074,10 @@ pub(crate) fn check_engine_scope(
         return Ok(());
     }
     let required = engine_scope_permission(engine_id);
-    let allowed = user.permissions.iter().any(|perm| {
-        perm == &required || perm == "engines:*" || perm == "admin:*" || perm == "*"
-    });
+    let allowed = user
+        .permissions
+        .iter()
+        .any(|perm| perm == &required || perm == "engines:*" || perm == "admin:*" || perm == "*");
     if allowed {
         Ok(())
     } else {
@@ -2014,7 +2092,13 @@ pub(crate) fn enforce_engine_scope(
     engine_id: &str,
     route: &'static str,
 ) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
-    enforce_engine_scope_with_mode(user, is_api_key, engine_id, route, EngineScopeMode::from_env())
+    enforce_engine_scope_with_mode(
+        user,
+        is_api_key,
+        engine_id,
+        route,
+        EngineScopeMode::from_env(),
+    )
 }
 
 /// Scope rule for composed routes (assets, witness) that run a fixed set of
@@ -2059,9 +2143,7 @@ fn enforce_engine_scope_with_mode(
                     Err(ErrorMapper::response(
                         StatusCode::FORBIDDEN,
                         "ENGINE_SCOPE_FORBIDDEN",
-                        format!(
-                            "This API key is not permitted to execute engine '{engine_id}'."
-                        ),
+                        format!("This API key is not permitted to execute engine '{engine_id}'."),
                         Some(serde_json::json!({
                             "engine_id": engine_id,
                             "required_permission": required,
@@ -3496,6 +3578,7 @@ async fn engine_info_handler(
         })?;
 
     Ok(Json(EngineInfoResponse {
+        input_guidance: engine_requirements::requirements(&engine_id),
         engine_id: engine.engine_id().to_string(),
         engine_name: engine.engine_name().to_string(),
         required_phase: engine.required_phase(),
@@ -3706,7 +3789,10 @@ async fn execute_workflow_by_id(
                 });
             }
 
-            Ok(Json(ApiWorkflowResultResponse::new(workflow_result, provenance)))
+            Ok(Json(ApiWorkflowResultResponse::new(
+                workflow_result,
+                provenance,
+            )))
         }
         Err(e) => {
             state.metrics.record_engine_calculation_with_status(
@@ -3768,7 +3854,14 @@ async fn birth_blueprint_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "birth-blueprint".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "birth-blueprint".to_string(),
+        input,
+    )
+    .await
 }
 
 /// POST /api/v1/workflows/daily-practice/execute -- workflow-specific OpenAPI shape
@@ -3794,7 +3887,14 @@ async fn daily_practice_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "daily-practice".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "daily-practice".to_string(),
+        input,
+    )
+    .await
 }
 
 /// POST /api/v1/workflows/decision-support/execute -- workflow-specific OpenAPI shape
@@ -3820,7 +3920,14 @@ async fn decision_support_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "decision-support".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "decision-support".to_string(),
+        input,
+    )
+    .await
 }
 
 /// POST /api/v1/workflows/self-inquiry/execute -- workflow-specific OpenAPI shape
@@ -3846,7 +3953,14 @@ async fn self_inquiry_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "self-inquiry".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "self-inquiry".to_string(),
+        input,
+    )
+    .await
 }
 
 /// POST /api/v1/workflows/creative-expression/execute -- workflow-specific OpenAPI shape
@@ -3872,7 +3986,14 @@ async fn creative_expression_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "creative-expression".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "creative-expression".to_string(),
+        input,
+    )
+    .await
 }
 
 /// POST /api/v1/workflows/full-spectrum/execute -- workflow-specific OpenAPI shape
@@ -3898,7 +4019,14 @@ async fn full_spectrum_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "full-spectrum".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "full-spectrum".to_string(),
+        input,
+    )
+    .await
 }
 
 /// GET /api/v1/workflows -- list all workflow IDs
@@ -5023,7 +5151,9 @@ mod p4_contract_tests {
                 provider_id: None,
             },
         };
-        let response = serde_json::to_value(ApiEngineOutputResponse::from_engine_output(output, false)).unwrap();
+        let response =
+            serde_json::to_value(ApiEngineOutputResponse::from_engine_output(output, false))
+                .unwrap();
 
         assert_eq!(response["generated_audio"], fixture("audio"));
         assert_eq!(response["generated_image"], fixture("image"));
@@ -5197,9 +5327,13 @@ mod p4_contract_tests {
 
     #[test]
     fn native_engine_envelope_derives_block_from_metadata() {
-        let envelope = ApiEngineOutputResponse::from_engine_output(native_output(false, None), true);
+        let envelope =
+            ApiEngineOutputResponse::from_engine_output(native_output(false, None), true);
         let prov = envelope.provenance.as_ref().expect("native block derived");
-        assert_eq!(prov.runtime_kind, noesis_core::contract::RuntimeKind::Native);
+        assert_eq!(
+            prov.runtime_kind,
+            noesis_core::contract::RuntimeKind::Native
+        );
         assert_eq!(prov.implementation_version, "0.1.0");
         assert!(!prov.cached);
         assert!(!prov.fallback_used);
@@ -5216,8 +5350,12 @@ mod p4_contract_tests {
         );
         let wire = serde_json::to_value(&envelope).unwrap();
         let block = &wire["provenance"];
-        let keys: std::collections::BTreeSet<&str> =
-            block.as_object().unwrap().keys().map(String::as_str).collect();
+        let keys: std::collections::BTreeSet<&str> = block
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect();
         assert_eq!(
             keys,
             std::collections::BTreeSet::from([
@@ -5277,8 +5415,7 @@ mod p4_contract_tests {
             timestamp: chrono::Utc::now(),
         };
 
-        let provenance =
-            strip_workflow_contract_provenance(&mut workflow, |id| id == "panchanga");
+        let provenance = strip_workflow_contract_provenance(&mut workflow, |id| id == "panchanga");
 
         assert_eq!(
             provenance["panchanga"].runtime_kind,
@@ -5297,14 +5434,18 @@ mod p4_contract_tests {
                 .is_none());
         }
 
-        let response = serde_json::to_value(ApiWorkflowResultResponse::new(workflow, provenance))
-            .unwrap();
+        let response =
+            serde_json::to_value(ApiWorkflowResultResponse::new(workflow, provenance)).unwrap();
         assert_eq!(
             response["engine_results"]["panchanga"]["provenance"]["runtime_kind"],
             "native"
         );
-        assert!(response["engine_results"]["tarot"].get("provenance").is_none());
-        assert!(response["engine_outputs"]["panchanga"].get("provenance").is_none());
+        assert!(response["engine_results"]["tarot"]
+            .get("provenance")
+            .is_none());
+        assert!(response["engine_outputs"]["panchanga"]
+            .get("provenance")
+            .is_none());
     }
 
     fn scope_user(permissions: &[&str]) -> AuthUser {
@@ -5323,10 +5464,19 @@ mod p4_contract_tests {
     fn engine_scope_mode_parses_env_values_and_defaults_to_audit() {
         assert_eq!(EngineScopeMode::parse(None), EngineScopeMode::Audit);
         assert_eq!(EngineScopeMode::parse(Some("")), EngineScopeMode::Audit);
-        assert_eq!(EngineScopeMode::parse(Some("audit")), EngineScopeMode::Audit);
+        assert_eq!(
+            EngineScopeMode::parse(Some("audit")),
+            EngineScopeMode::Audit
+        );
         assert_eq!(EngineScopeMode::parse(Some("off")), EngineScopeMode::Off);
-        assert_eq!(EngineScopeMode::parse(Some(" Enforce ")), EngineScopeMode::Enforce);
-        assert_eq!(EngineScopeMode::parse(Some("bogus")), EngineScopeMode::Audit);
+        assert_eq!(
+            EngineScopeMode::parse(Some(" Enforce ")),
+            EngineScopeMode::Enforce
+        );
+        assert_eq!(
+            EngineScopeMode::parse(Some("bogus")),
+            EngineScopeMode::Audit
+        );
     }
 
     #[test]
@@ -5400,14 +5550,8 @@ mod p4_contract_tests {
         let user = scope_user(&["basic:access"]);
         for mode in [EngineScopeMode::Audit, EngineScopeMode::Off] {
             assert!(
-                enforce_engine_scope_with_mode(
-                    &user,
-                    true,
-                    "panchanga",
-                    "engines/calculate",
-                    mode
-                )
-                .is_ok(),
+                enforce_engine_scope_with_mode(&user, true, "panchanga", "engines/calculate", mode)
+                    .is_ok(),
                 "{mode:?}"
             );
         }
@@ -5447,9 +5591,10 @@ mod p4_contract_tests {
         .await;
         assert_eq!(degraded.status, "degraded");
 
-        let unavailable =
-            probe_with(serde_json::json!({"status": "healthy", "capability_status": "unavailable"}))
-                .await;
+        let unavailable = probe_with(
+            serde_json::json!({"status": "healthy", "capability_status": "unavailable"}),
+        )
+        .await;
         assert_eq!(unavailable.status, "unavailable");
 
         let available =

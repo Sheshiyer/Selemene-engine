@@ -3,11 +3,13 @@
 //! All 16 consciousness engines implement the `ConsciousnessEngine` trait defined here.
 //! This crate provides the universal interface, shared types, and error definitions.
 
+pub mod birth_time;
 pub mod contract;
 pub mod error;
 pub mod intake;
 pub mod types;
 
+pub use birth_time::{BirthTime, DEFAULT_BIRTH_TIME};
 pub use error::*;
 pub use types::*;
 

@@ -319,3 +319,64 @@ async fn panchanga_result_schema_documents_provenance_fields() {
                 .is_some_and(|types| types.contains(&serde_json::json!("number")))
     );
 }
+
+/// The documented Panchanga schema must describe exactly what the engine
+/// serializes: same property names, same JSON types, and only the fields old
+/// results may lack are optional. Fails when either side drifts.
+#[tokio::test]
+async fn panchanga_result_schema_matches_engine_output() {
+    let result = engine_panchanga::compute_panchanga("2000-01-01", "12:00", 0.0);
+    let actual = serde_json::to_value(&result).expect("serialize PanchangaResult");
+    let actual = actual.as_object().expect("PanchangaResult is an object");
+
+    let spec = openapi_spec().await;
+    let schemas = spec["components"]["schemas"]
+        .as_object()
+        .expect("components.schemas object");
+    let panchanga = &schemas["PanchangaResultSchema"];
+    let documented = schema_properties(panchanga, schemas);
+    let emitted: BTreeSet<String> = actual.keys().cloned().collect();
+    assert_eq!(
+        documented, emitted,
+        "schema properties vs engine output keys"
+    );
+
+    let optional = BTreeSet::from(["position_source", "vara_basis", "ayanamsa_degrees"]);
+    let required: BTreeSet<&str> = panchanga["required"]
+        .as_array()
+        .expect("required list")
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    let expected_required: BTreeSet<&str> = emitted
+        .iter()
+        .map(String::as_str)
+        .filter(|key| !optional.contains(key))
+        .collect();
+    assert_eq!(required, expected_required);
+
+    // Each emitted JSON value has the type the schema declares. Nullable
+    // fields declare `["<type>", "null"]` or a `$ref`/`oneOf` to an enum.
+    for (key, value) in actual {
+        let property = &panchanga["properties"][key];
+        let declared: Vec<&str> = match &property["type"] {
+            Value::String(t) => vec![t.as_str()],
+            Value::Array(ts) => ts.iter().filter_map(Value::as_str).collect(),
+            _ => continue, // enum reference; covered by the provenance test
+        };
+        let emitted_type = match value {
+            Value::Bool(_) => "boolean",
+            Value::String(_) => "string",
+            Value::Number(n) if n.is_u64() || n.is_i64() => "integer",
+            Value::Number(_) => "number",
+            Value::Null => "null",
+            _ => "object",
+        };
+        let ok = declared.contains(&emitted_type)
+            || (emitted_type == "integer" && declared.contains(&"number"));
+        assert!(
+            ok,
+            "{key}: emitted {emitted_type}, schema declares {declared:?}"
+        );
+    }
+}

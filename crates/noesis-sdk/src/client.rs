@@ -53,6 +53,7 @@ pub struct NoesisClient {
     http: Client,
     base_url: String,
     api_key: Option<String>,
+    bearer_token: Option<String>,
     max_retries: u32,
     backoff_ms: u64,
 }
@@ -70,6 +71,7 @@ impl NoesisClient {
             http,
             base_url: config.api_url.clone(),
             api_key: config.api_key.clone(),
+            bearer_token: None,
             max_retries: config.max_retries,
             backoff_ms: config.backoff_ms,
         })
@@ -83,6 +85,7 @@ impl NoesisClient {
     /// Set the API key for authenticated requests.
     pub fn with_api_key(mut self, api_key: impl Into<String>) -> Self {
         self.api_key = Some(api_key.into());
+        self.bearer_token = None;
         self
     }
 
@@ -165,7 +168,60 @@ impl NoesisClient {
             .await
     }
 
+    /// Human account sessions are separate from service API keys.
+    pub fn with_bearer_token(mut self, token: impl Into<String>) -> Self {
+        self.bearer_token = Some(token.into());
+        self.api_key = None;
+        self
+    }
+    pub async fn account_context(&self) -> Result<crate::shared_identity::AccountContext> {
+        let url = format!("{}/api/v1/users/me/context", self.base_url);
+        self.send_with_retry(|| self.authenticated(self.http.get(&url)))
+            .await
+    }
+    pub async fn subject_profile(
+        &self,
+        id: uuid::Uuid,
+    ) -> Result<crate::shared_identity::SubjectProfile> {
+        let url = format!("{}/api/v1/subjects/{id}/profile", self.base_url);
+        self.send_with_retry(|| self.authenticated(self.http.get(&url)))
+            .await
+    }
+    pub async fn update_subject_profile(
+        &self,
+        id: uuid::Uuid,
+        expected_revision: i64,
+        patch: &serde_json::Value,
+    ) -> Result<crate::shared_identity::SubjectProfile> {
+        let url = format!("{}/api/v1/subjects/{id}/profile", self.base_url);
+        let body = serde_json::json!({"expected_revision":expected_revision,"patch":patch});
+        self.handle_response(
+            self.authenticated(self.http.patch(&url).json(&body))
+                .send()
+                .await
+                .map_err(Error::Http)?,
+        )
+        .await
+    }
+    pub async fn set_default_subject(
+        &self,
+        id: Option<uuid::Uuid>,
+    ) -> Result<crate::shared_identity::AccountContext> {
+        let url = format!("{}/api/v1/users/me/context", self.base_url);
+        let body = serde_json::json!({"default_subject_id":id});
+        self.handle_response(
+            self.authenticated(self.http.patch(&url).json(&body))
+                .send()
+                .await
+                .map_err(Error::Http)?,
+        )
+        .await
+    }
     fn authenticated(&self, request: RequestBuilder) -> RequestBuilder {
+        if let Some(ref token) = self.bearer_token {
+            return request.bearer_auth(token);
+        }
+
         if let Some(ref key) = self.api_key {
             request.header("X-API-Key", key)
         } else {
@@ -248,6 +304,7 @@ impl NoesisClient {
 pub struct NoesisClientBuilder {
     base_url: Option<String>,
     api_key: Option<String>,
+    bearer_token: Option<String>,
     timeout_ms: u64,
     max_retries: Option<u32>,
     backoff_ms: Option<u64>,
@@ -317,6 +374,7 @@ impl NoesisClientBuilder {
             http,
             base_url,
             api_key: self.api_key,
+            bearer_token: self.bearer_token,
             max_retries,
             backoff_ms,
         })
@@ -632,5 +690,92 @@ mod tests {
             serde_json::to_value(&output).unwrap()["provenance"],
             envelope["provenance"]
         );
+    }
+
+    #[tokio::test]
+    async fn panchanga_calculate_keeps_provenance_fields() {
+        // GH #1191: the flat panchanga result (PanchangaResultSchema) carries
+        // provenance and method fields inside `result`. Synthetic envelope:
+        // a native Moshier-fallback calculation for 2000-01-01 12:00 UTC.
+        let envelope = serde_json::json!({
+            "contract_version": "v1",
+            "envelope_version": "v1",
+            "engine_id": "panchanga",
+            "result": {
+                "tithi_index": 25, "tithi_name": "Ekadashi (Krishna)", "tithi_value": 25.246,
+                "nakshatra_index": 14, "nakshatra_name": "Swati", "nakshatra_value": 14.96,
+                "yoga_index": 7, "yoga_name": "Dhriti", "yoga_value": 7.198,
+                "karana_index": 0, "karana_name": "Bava", "karana_value": 51.0,
+                "vara_index": 6, "vara_name": "Shanivara (Saturday)", "vara_basis": "local_date",
+                "solar_longitude": 256.512, "lunar_longitude": 199.467,
+                "julian_day": 2451545.0, "ayanamsa_degrees": 23.857,
+                "position_source": "swiss_ephemeris_moshier",
+                "birth_time_assumed": true
+            },
+            "witness_prompt": "synthetic",
+            "witness_prompts": [],
+            "consciousness_level": 0,
+            "calculated_at": "2026-11-07T00:00:00Z",
+            "processing_time_ms": 1.0,
+            "provenance": {
+                "runtime_kind": "native",
+                "implementation_version": "3.3.1",
+                "cached": false,
+                "fallback_used": true,
+                "backend_id": "native-rust"
+            },
+            "metadata": {
+                "calculation_time_ms": 1.0,
+                "backend": "native-rust",
+                "precision_achieved": "Standard",
+                "cached": false,
+                "timestamp": "2026-11-07T00:00:00Z",
+                "engine_version": "3.3.1",
+                "fallback_used": true
+            }
+        });
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/api/v1/engines/panchanga/calculate"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(envelope.clone()))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let client = NoesisClient::builder()
+            .base_url(server.uri())
+            .api_key("test-key")
+            .build()
+            .unwrap();
+        let input = EngineInput {
+            birth_data: None,
+            current_time: chrono::Utc::now(),
+            location: None,
+            precision: noesis_core::Precision::Standard,
+            options: std::collections::HashMap::new(),
+        };
+
+        let output = client.calculate("panchanga", input).await.unwrap();
+
+        // Every field the API sent arrives unchanged (the SDK also stashes the
+        // envelope provenance under `__contract_provenance`).
+        for (key, value) in envelope["result"].as_object().unwrap() {
+            assert_eq!(&output.result[key], value, "result.{key}");
+        }
+        assert_eq!(output.result["ayanamsa_degrees"], 23.857);
+        assert_eq!(output.result["vara_basis"], "local_date");
+        assert_eq!(output.result["position_source"], "swiss_ephemeris_moshier");
+        assert_eq!(output.result["birth_time_assumed"], true);
+        assert!(output.metadata.fallback_used);
+        let provenance = output
+            .contract_provenance()
+            .expect("API provenance retained");
+        assert!(provenance.fallback_used);
+        assert_eq!(provenance.backend_id.as_deref(), Some("native-rust"));
+
+        // The Markdown renderer (CLI/TUI output) shows them too.
+        let md = crate::render::MarkdownRenderer::default().render_engine_output(&output);
+        for needle in ["swiss_ephemeris_moshier", "local_date", "23.857"] {
+            assert!(md.contains(needle), "rendered report lacks {needle}:\n{md}");
+        }
     }
 }

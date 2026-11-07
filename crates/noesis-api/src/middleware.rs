@@ -2,7 +2,7 @@
 
 use crate::billing;
 use axum::{
-    extract::{Request, State},
+    extract::{OriginalUri, Request, State},
     http::{header::AUTHORIZATION, StatusCode},
     middleware::Next,
     response::{IntoResponse, Response},
@@ -124,7 +124,19 @@ pub async fn auth_middleware(
         }
     }
 
-    if let Some(validator) = state.cf_access_validator.as_ref() {
+    // Axum strips nest prefixes from req.uri(); OriginalUri retains the
+    // canonical route used to select the independent Access trust boundary.
+    let canonical_uri = req
+        .extensions()
+        .get::<OriginalUri>()
+        .map(|uri| &uri.0)
+        .unwrap_or_else(|| req.uri());
+    let end_user = if crate::cf_access::is_shared_browser_path(canonical_uri.path()) {
+        crate::cf_access::end_user_validator()
+    } else {
+        None
+    };
+    if let Some(validator) = end_user.or(state.cf_access_validator.as_deref()) {
         let cf_token = req
             .headers()
             .get("cf-authorization")
@@ -142,7 +154,7 @@ pub async fn auth_middleware(
                 Ok(identity) => {
                     let user = state
                         .user_repository
-                        .find_or_create_cloudflare_user(&identity.email, &identity.sub)
+                        .find_or_create_verified_user(&identity.issuer, &identity.email, &identity.sub)
                         .await
                         .map_err(|e| {
                             ErrorMapper::response(
@@ -153,11 +165,19 @@ pub async fn auth_middleware(
                             )
                         })?;
                     let platform_admin_emails = std::env::var("CF_PLATFORM_ADMIN_EMAILS").ok();
-                    let roles = crate::cf_access::role_values_for_identity(
-                        &identity,
-                        platform_admin_emails.as_deref(),
-                    );
-                    if let Some(repo) = state.admin_repository.as_ref() {
+                    let roles = if end_user.is_some() {
+                        vec!["viewer".to_string()]
+                    } else {
+                        crate::cf_access::role_values_for_identity(
+                            &identity,
+                            platform_admin_emails.as_deref(),
+                        )
+                    };
+                    if let Some(repo) = state
+                        .admin_repository
+                        .as_ref()
+                        .filter(|_| end_user.is_none())
+                    {
                         repo.replace_user_roles_from_cloudflare(user.id, &roles)
                             .await
                             .map_err(|e| {
@@ -177,6 +197,7 @@ pub async fn auth_middleware(
                             &roles,
                         ));
                     req.extensions_mut().insert(InteractivePrincipal);
+                    req.extensions_mut().insert(identity);
                     return Ok(next.run(req).await);
                 }
                 Err(e) => {
@@ -200,7 +221,8 @@ pub async fn auth_middleware(
             if let Some(token) = auth_str.strip_prefix("Bearer ") {
                 match state.auth.validate_jwt_token(token).await {
                     Ok(user) => {
-                        // Insert authenticated user into request extensions
+                        // Registered sessions check live family, account and provider revocation.
+                        crate::handlers::sessions::validate_access(&state, &user).await?;
                         req.extensions_mut().insert(user);
                         return Ok(next.run(req).await);
                     }

@@ -25,7 +25,9 @@ use crate::vedic_time::{
     VedicDay,
 };
 use crate::witness::generate_witness_prompt;
-use noesis_vedic_api::panchang::{get_activities_to_avoid, get_suitable_activities};
+use noesis_vedic_api::panchang::{
+    get_activities_to_avoid, get_suitable_activities, GulikaKaal, RahuKalam, YamaGandam,
+};
 
 /// VedicClock-TCM consciousness engine
 pub struct VedicClockEngine {
@@ -252,6 +254,7 @@ impl VedicClockEngine {
                     "sun_event_method": SUN_EVENT_METHOD,
                     "sun_event_altitude_deg": SUN_EVENT_ALTITUDE_DEG,
                 });
+                output["day_periods"] = day_periods(day, offset_minutes);
                 output["hora"] = json!({
                     "number": hora.number,
                     "ruler": hora.ruler.as_str(),
@@ -290,7 +293,7 @@ impl VedicClockEngine {
                     "status": "not_computed",
                     "not_computed_reason": reason,
                     "detail": detail,
-                    "omitted": ["hora", "choghadiya"],
+                    "omitted": ["hora", "choghadiya", "day_periods"],
                     "location": location.as_ref().map(location_json),
                 });
             }
@@ -435,6 +438,53 @@ impl VedicClockEngine {
 
         transitions
     }
+}
+
+/// Rahu Kalam, Yama Gandam and Gulika Kaal for `day`: each one eighth of
+/// sunrise→sunset in its weekday segment, from the shared
+/// `noesis_vedic_api::panchang::muhurta` table. Times are RFC 3339 at the
+/// request's offset, to the minute (sunrise and sunset are truncated to the
+/// minute before the day is split, as in the muhurta code).
+fn day_periods(day: &VedicDay, offset_minutes: i32) -> Value {
+    let Some(tz) = FixedOffset::east_opt(offset_minutes * 60) else {
+        return Value::Null;
+    };
+    let hhmm = |instant: &DateTime<Utc>| instant.with_timezone(&tz).format("%H:%M").to_string();
+    let (sunrise, sunset) = (hhmm(&day.sunrise), hhmm(&day.sunset));
+    let weekday = weekday_name(day.weekday);
+    // Every segment lies between sunrise and sunset, so on the sunrise's
+    // local date.
+    let date = day.sunrise.with_timezone(&tz).date_naive();
+    let instant = |hm: &str| -> Option<String> {
+        let time = chrono::NaiveTime::parse_from_str(hm, "%H:%M").ok()?;
+        let local = date.and_time(time).and_local_timezone(tz).single()?;
+        Some(local.to_rfc3339_opts(SecondsFormat::Secs, true))
+    };
+    let period = |found: Option<(String, String, u32)>| -> Value {
+        match found
+            .and_then(|(start, end, minutes)| Some((instant(&start)?, instant(&end)?, minutes)))
+        {
+            Some((start, end, minutes)) => {
+                json!({ "start": start, "end": end, "duration_minutes": minutes })
+            }
+            None => Value::Null,
+        }
+    };
+    json!({
+        "rahu_kalam": period(
+            RahuKalam::for_day(weekday, &sunrise, &sunset)
+                .map(|p| (p.start, p.end, p.duration_minutes)),
+        ),
+        "yama_gandam": period(
+            YamaGandam::for_day(weekday, &sunrise, &sunset)
+                .map(|p| (p.start, p.end, p.duration_minutes)),
+        ),
+        "gulika_kaal": period(
+            GulikaKaal::for_day(weekday, &sunrise, &sunset)
+                .map(|p| (p.start, p.end, p.duration_minutes)),
+        ),
+        "method": "eighth_of_daytime",
+    })
 }
 
 fn weekday_name(weekday: chrono::Weekday) -> &'static str {
