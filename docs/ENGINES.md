@@ -346,7 +346,7 @@ Every native Rust engine's calculate envelope (and each native entry in a workfl
 | panchanga | `native-rust` | Swiss Ephemeris substituted Moshier for the `.se1` files (`result.position_source: swiss_ephemeris_moshier`), or Swiss Ephemeris was unavailable and the mean-longitude approximation was used (`mean_longitude`); `swiss_ephemeris_files` is the only non-fallback source. A missing birth time is computed at local noon and reported as `result.birth_time_assumed: true` (not a fallback); an unparseable date or time is a `ValidationError` |
 | vimshottari | `swiss-ephemeris-lahiri-full-v1:*` or `moon-longitude` | Swiss Ephemeris substituted Moshier because no `.se1` files were reachable (`…:moshier`); the shared resolver reads `SWISS_EPHE_PATH`, `SWISS_EPHEMERIS_PATH`, `EPHEMERIS_DIR`, then `data/ephemeris` near the cwd or executable |
 | face-reading | `mediapipe-face-cv`, `heuristic-image-landmark-hook`, `birth-physiognomy-fallback`, `mock-stub` | anything but real CV landmarks: no image (birth-data physiognomy or mock), no consent, sidecar disabled/erroring/deterministic |
-| biofield | `vedic-ephemeris` or `mock` | the mock and capture-mock paths (no birth data, `is_mock_data: true`), or the vedic path when Swiss Ephemeris substituted Moshier for the `.se1` files (`result.provenance.fallback_reason` names Moshier; `is_mock_data` stays `false`). Not reported: a missing birth time defaulted to 12:00 (no contract field). Unsupported: image/CV analysis (served by `biofield-capture`), `confidence` |
+| biofield | `vedic-ephemeris` or `mock` | the mock and capture-mock paths (no birth data, `is_mock_data: true`), or the vedic path when Swiss Ephemeris substituted Moshier for the `.se1` files (`result.provenance.fallback_reason` names Moshier; `is_mock_data` stays `false`). Unsupported: image/CV analysis (served by `biofield-capture`), `confidence` |
 | biofield-capture | `persisted-reading` | never: a missing or foreign reading is an error, not a silent mock |
 | vedic-clock | `native` | never (local organ clock; does not call the vedic provider) |
 | transits | `swiss-ephemeris` | Swiss Ephemeris substituted Moshier for the `.se1` files |
@@ -359,7 +359,7 @@ Every native Rust engine's calculate envelope (and each native entry in a workfl
 
 Swiss Ephemeris keeps its state per thread on Linux, so every calculation runs under `engine_human_design::lock_ephemeris()`, which applies the resolved ephemeris path to each thread on first use; Moshier substitution is read from the flags each calculation returns.
 
-Bridge (TypeScript) engines keep the block their sidecar emits; a malformed sidecar block is dropped, not replaced. Input defaulting (an unknown timezone resolved to UTC, a missing birth time treated as noon) is not reported as a fallback.
+Bridge (TypeScript) engines keep the block their sidecar emits; a malformed sidecar block is dropped, not replaced. Input defaulting (an unknown timezone resolved to UTC, a missing birth time treated as noon) is not reported as a fallback. A missing birth time is reported in `result` instead: biofield (vedic path), transits and vimshottari set `birth_time_assumed: true` and `assumed_birth_time` (the local time used, `"12:00"`), or `birth_time_assumed: false` when the caller supplied a time, via `noesis_core::BirthTime`. Panchanga sets `birth_time_assumed` only.
 
 <br>
 

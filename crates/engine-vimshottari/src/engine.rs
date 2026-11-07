@@ -8,7 +8,7 @@
 use async_trait::async_trait;
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
 use noesis_core::{
-    CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
+    BirthTime, CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
     ValidationResult,
 };
 use serde_json::{json, Value};
@@ -71,27 +71,31 @@ impl VimshottariEngine {
         date_str: &str,
         time_str: Option<&str>,
         timezone: Option<&str>,
-    ) -> Result<chrono::DateTime<Utc>, EngineError> {
+    ) -> Result<(chrono::DateTime<Utc>, BirthTime), EngineError> {
         let date = NaiveDate::parse_from_str(date_str, "%Y-%m-%d").map_err(|e| {
             EngineError::CalculationError(format!("Invalid date format '{}': {}", date_str, e))
         })?;
 
-        let time = if let Some(t) = time_str {
-            NaiveTime::parse_from_str(t, "%H:%M")
+        let birth_time = if let Some(t) = time_str {
+            let time = NaiveTime::parse_from_str(t, "%H:%M")
                 .or_else(|_| NaiveTime::parse_from_str(t, "%H:%M:%S"))
                 .map_err(|e| {
                     EngineError::CalculationError(format!("Invalid time format '{}': {}", t, e))
-                })?
+                })?;
+            BirthTime {
+                time,
+                assumed: false,
+            }
         } else {
-            NaiveTime::from_hms_opt(12, 0, 0).unwrap() // Default to noon
+            BirthTime::resolve(None)? // Default to local noon
         };
 
-        let naive_local_dt = NaiveDateTime::new(date, time);
+        let naive_local_dt = NaiveDateTime::new(date, birth_time.time);
         let tz_offset_hours = timezone.map(Self::tz_offset_from_string).unwrap_or(0.0);
         let offset_seconds = (tz_offset_hours * 3600.0) as i64;
         let naive_utc_dt = naive_local_dt - chrono::Duration::seconds(offset_seconds);
 
-        Ok(Utc.from_utc_datetime(&naive_utc_dt))
+        Ok((Utc.from_utc_datetime(&naive_utc_dt), birth_time))
     }
 
     /// Extract Moon longitude from options (Mode 2: direct longitude)
@@ -233,43 +237,48 @@ impl ConsciousnessEngine for VimshottariEngine {
         let start = Instant::now();
 
         // Determine Moon longitude and birth time
-        let (moon_longitude, birth_time, backend, fallback_used) = if let Some(ref birth_data) =
-            input.birth_data
-        {
-            // Mode 1: Calculate from birth_data using Swiss Ephemeris, then convert
-            // tropical Moon longitude to sidereal for Vedic nakshatra/dasha logic.
-            let utc_dt = Self::parse_birth_datetime(
-                &birth_data.date,
-                birth_data.time.as_deref(),
-                Some(&birth_data.timezone),
-            )?;
+        let (moon_longitude, (birth_time, birth_clock), backend, fallback_used) =
+            if let Some(ref birth_data) = input.birth_data {
+                // Mode 1: Calculate from birth_data using Swiss Ephemeris, then convert
+                // tropical Moon longitude to sidereal for Vedic nakshatra/dasha logic.
+                let (utc_dt, birth_clock) = Self::parse_birth_datetime(
+                    &birth_data.date,
+                    birth_data.time.as_deref(),
+                    Some(&birth_data.timezone),
+                )?;
 
-            // "" = the shared resolver (SWISS_EPHE_PATH / SWISS_EPHEMERIS_PATH /
-            // EPHEMERIS_DIR, then data/ephemeris near the cwd or executable).
-            // Without .se1 files Swiss Ephemeris uses Moshier: a declared fallback.
-            let moon = crate::ephemeris::lahiri_moon(&utc_dt, "")?;
-            (moon.longitude, utc_dt, moon.backend(), moon.fallback_used())
-        } else if input.options.contains_key("moon_longitude") {
-            // Mode 2: Moon longitude provided directly
-            let longitude = Self::extract_moon_longitude(&input.options)?;
+                // "" = the shared resolver (SWISS_EPHE_PATH / SWISS_EPHEMERIS_PATH /
+                // EPHEMERIS_DIR, then data/ephemeris near the cwd or executable).
+                // Without .se1 files Swiss Ephemeris uses Moshier: a declared fallback.
+                let moon = crate::ephemeris::lahiri_moon(&utc_dt, "")?;
+                (
+                    moon.longitude,
+                    (utc_dt, birth_clock),
+                    moon.backend(),
+                    moon.fallback_used(),
+                )
+            } else if input.options.contains_key("moon_longitude") {
+                // Mode 2: Moon longitude provided directly
+                let longitude = Self::extract_moon_longitude(&input.options)?;
 
-            // Extract birth date from options or use a default
-            let date_str = input
-                .options
-                .get("birth_date")
-                .and_then(|v| v.as_str())
-                .unwrap_or("2000-01-01");
-            let time_str = input.options.get("birth_time").and_then(|v| v.as_str());
-            let timezone = input.options.get("timezone").and_then(|v| v.as_str());
+                // Extract birth date from options or use a default
+                let date_str = input
+                    .options
+                    .get("birth_date")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("2000-01-01");
+                let time_str = input.options.get("birth_time").and_then(|v| v.as_str());
+                let timezone = input.options.get("timezone").and_then(|v| v.as_str());
 
-            let birth_time = Self::parse_birth_datetime(date_str, time_str, timezone)?;
+                let birth_time = Self::parse_birth_datetime(date_str, time_str, timezone)?;
 
-            (longitude, birth_time, "moon-longitude", false)
-        } else {
-            return Err(EngineError::CalculationError(
-                "Vimshottari requires either birth_data or moon_longitude in options".to_string(),
-            ));
-        };
+                (longitude, birth_time, "moon-longitude", false)
+            } else {
+                return Err(EngineError::CalculationError(
+                    "Vimshottari requires either birth_data or moon_longitude in options"
+                        .to_string(),
+                ));
+            };
 
         // Step 1: Get birth nakshatra from Moon longitude
         let nakshatra = get_nakshatra_from_longitude(moon_longitude);
@@ -328,7 +337,7 @@ impl ConsciousnessEngine for VimshottariEngine {
         }
 
         // Step 10: Serialize result
-        let result = Self::serialize_timeline(
+        let mut result = Self::serialize_timeline(
             birth_time,
             &nakshatra.name,
             nakshatra.number,
@@ -338,6 +347,7 @@ impl ConsciousnessEngine for VimshottariEngine {
             &upcoming,
             enrichment.as_ref(),
         );
+        birth_clock.write_to(&mut result);
 
         let elapsed = start.elapsed();
 
@@ -495,6 +505,40 @@ mod tests {
         }
     }
 
+    #[tokio::test]
+    async fn missing_birth_time_is_reported_as_assumed_local_noon() {
+        let engine = VimshottariEngine::new();
+
+        // Mode 1: birth_data without a time.
+        let mut untimed = create_test_input_with_birth_data();
+        untimed.birth_data.as_mut().unwrap().time = None;
+        let mut noon = untimed.clone();
+        noon.birth_data.as_mut().unwrap().time = Some("12:00".to_string());
+        let untimed_out = engine.calculate(untimed).await.unwrap();
+        let noon_out = engine.calculate(noon).await.unwrap();
+        assert_eq!(
+            untimed_out.result["birth_date"],
+            noon_out.result["birth_date"]
+        );
+        assert_eq!(untimed_out.result["birth_time_assumed"], json!(true));
+        assert_eq!(untimed_out.result["assumed_birth_time"], json!("12:00"));
+        assert_eq!(noon_out.result["birth_time_assumed"], json!(false));
+        assert!(noon_out.result.get("assumed_birth_time").is_none());
+
+        // Mode 2: moon_longitude with and without options.birth_time.
+        let timed = engine
+            .calculate(create_test_input_with_moon_longitude(125.0))
+            .await
+            .unwrap();
+        assert_eq!(timed.result["birth_time_assumed"], json!(false));
+        assert!(timed.result.get("assumed_birth_time").is_none());
+        let mut input = create_test_input_with_moon_longitude(125.0);
+        input.options.remove("birth_time");
+        let untimed = engine.calculate(input).await.unwrap();
+        assert_eq!(untimed.result["birth_time_assumed"], json!(true));
+        assert_eq!(untimed.result["assumed_birth_time"], json!("12:00"));
+    }
+
     /// Helper: create input with birth_data (Mode 1)
     fn create_test_input_with_birth_data() -> EngineInput {
         EngineInput {
@@ -515,12 +559,13 @@ mod tests {
 
     #[test]
     fn test_parse_birth_datetime_respects_timezone() {
-        let utc_dt = VimshottariEngine::parse_birth_datetime(
+        let (utc_dt, birth_clock) = VimshottariEngine::parse_birth_datetime(
             "1991-08-13",
             Some("13:31"),
             Some("Asia/Kolkata"),
         )
         .expect("timezone conversion should work");
+        assert!(!birth_clock.assumed);
 
         assert_eq!(
             utc_dt.format("%Y-%m-%d %H:%M").to_string(),

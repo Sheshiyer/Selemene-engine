@@ -9,9 +9,9 @@ pub mod chakra_map;
 pub mod planetary;
 pub mod temporal;
 
-use chrono::{DateTime, NaiveDate, NaiveTime, TimeZone, Utc};
+use chrono::{DateTime, NaiveDate, TimeZone, Utc};
 use engine_human_design::EphemerisCalculator;
-use noesis_core::{BirthData, EngineError};
+use noesis_core::{BirthData, BirthTime, EngineError};
 
 use crate::models::{BiofieldAnalysis, BiofieldMetrics, Chakra};
 use crate::wisdom::get_chakra_wisdom;
@@ -40,6 +40,8 @@ pub struct VedicContext {
 pub struct VedicAnalysisResult {
     pub analysis: BiofieldAnalysis,
     pub context: VedicContext,
+    /// Birth time used for the natal chart, and whether it was assumed.
+    pub birth_time: BirthTime,
 }
 
 /// Orchestrator for Vedic birth-data-driven biofield analysis
@@ -61,7 +63,7 @@ impl VedicBiofieldAnalyzer {
         current_time: DateTime<Utc>,
     ) -> Result<VedicAnalysisResult, EngineError> {
         // 1. Parse birth datetime
-        let birth_dt = parse_birth_datetime(birth_data)?;
+        let (birth_dt, birth_time) = parse_birth_datetime(birth_data)?;
 
         // 2. Calculate natal planetary positions
         let natal_positions = calculate_all_positions(&self.calculator, &birth_dt)?;
@@ -129,6 +131,7 @@ impl VedicBiofieldAnalyzer {
                 quality: None,
             },
             context,
+            birth_time,
         })
     }
 }
@@ -140,21 +143,18 @@ impl Default for VedicBiofieldAnalyzer {
 }
 
 /// Parse BirthData (local date and time in `birth_data.timezone`) into a
-/// DateTime<Utc>
-fn parse_birth_datetime(birth_data: &BirthData) -> Result<DateTime<Utc>, EngineError> {
+/// DateTime<Utc>, with the birth time used (local noon when none was given).
+fn parse_birth_datetime(birth_data: &BirthData) -> Result<(DateTime<Utc>, BirthTime), EngineError> {
     let date = NaiveDate::parse_from_str(&birth_data.date, "%Y-%m-%d")
         .map_err(|e| EngineError::ValidationError(format!("Invalid date: {}", e)))?;
 
-    let time_str = birth_data.time.as_deref().unwrap_or("12:00");
-    let time = NaiveTime::parse_from_str(time_str, "%H:%M")
-        .or_else(|_| NaiveTime::parse_from_str(time_str, "%H:%M:%S"))
-        .map_err(|e| EngineError::ValidationError(format!("Invalid time: {}", e)))?;
+    let birth_time = BirthTime::resolve(birth_data.time.as_deref())?;
 
     let timezone: chrono_tz::Tz = birth_data.timezone.parse().map_err(|e| {
         EngineError::ValidationError(format!("Invalid timezone '{}': {}", birth_data.timezone, e))
     })?;
 
-    let naive_dt = date.and_time(time);
+    let naive_dt = date.and_time(birth_time.time);
     let local_dt = timezone
         .from_local_datetime(&naive_dt)
         .single()
@@ -162,7 +162,7 @@ fn parse_birth_datetime(birth_data: &BirthData) -> Result<DateTime<Utc>, EngineE
             EngineError::ValidationError("Ambiguous or nonexistent local birth time".to_string())
         })?;
 
-    Ok(local_dt.with_timezone(&Utc))
+    Ok((local_dt.with_timezone(&Utc), birth_time))
 }
 
 /// Build VedicContext from analysis data
@@ -413,13 +413,13 @@ mod tests {
     #[test]
     fn test_parse_birth_datetime_converts_local_time_to_utc() {
         // 14:30 IST (UTC+05:30) is 09:00 UTC.
-        let dt = parse_birth_datetime(&test_birth_data()).unwrap();
+        let dt = parse_birth_datetime(&test_birth_data()).unwrap().0;
         assert_eq!(dt.to_rfc3339(), "1990-01-01T09:00:00+00:00");
 
         // Crossing midnight backwards: 03:00 IST on Jan 1 is 21:30 UTC on Dec 31.
         let mut bd = test_birth_data();
         bd.time = Some("03:00".to_string());
-        let dt = parse_birth_datetime(&bd).unwrap();
+        let dt = parse_birth_datetime(&bd).unwrap().0;
         assert_eq!(dt.to_rfc3339(), "1989-12-31T21:30:00+00:00");
 
         // DST is applied: 12:00 in New York on 1990-07-04 is EDT (UTC-4).
@@ -427,7 +427,7 @@ mod tests {
         bd.date = "1990-07-04".to_string();
         bd.time = Some("12:00".to_string());
         bd.timezone = "America/New_York".to_string();
-        let dt = parse_birth_datetime(&bd).unwrap();
+        let dt = parse_birth_datetime(&bd).unwrap().0;
         assert_eq!(dt.to_rfc3339(), "1990-07-04T16:00:00+00:00");
     }
 
@@ -435,7 +435,7 @@ mod tests {
     fn test_parse_birth_datetime_missing_time_is_local_noon() {
         let mut bd = test_birth_data();
         bd.time = None;
-        let dt = parse_birth_datetime(&bd).unwrap();
+        let dt = parse_birth_datetime(&bd).unwrap().0;
         assert_eq!(dt.to_rfc3339(), "1990-01-01T06:30:00+00:00");
     }
 
