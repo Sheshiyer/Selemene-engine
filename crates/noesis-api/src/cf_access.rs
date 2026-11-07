@@ -9,6 +9,7 @@ use tokio::sync::RwLock;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CfIdentity {
+    pub issuer: String,
     pub sub: String,
     pub email: String,
     pub groups: Vec<String>,
@@ -156,6 +157,7 @@ pub fn identity_from_claims(claims: CfAccessClaims) -> Result<CfIdentity, String
     }
 
     Ok(CfIdentity {
+        issuer: claims.iss,
         sub: claims.sub,
         email,
         groups: claims.groups,
@@ -331,6 +333,28 @@ impl CfAccessValidator {
     }
 }
 
+/// Separate end-user Access application. It never expands the administrative
+/// audience and is consulted only by shared-account browser entrypoints.
+pub fn end_user_validator() -> Option<&'static CfAccessValidator> {
+    static VALIDATOR: std::sync::OnceLock<Option<CfAccessValidator>> = std::sync::OnceLock::new();
+    VALIDATOR
+        .get_or_init(|| {
+            let issuer = std::env::var("CF_END_USER_ISSUER").ok()?;
+            let audience = std::env::var("CF_END_USER_AUDIENCE").ok()?;
+            if issuer.trim().is_empty() || audience.trim().is_empty() {
+                return None;
+            }
+            Some(CfAccessValidator::new(issuer, audience))
+        })
+        .as_ref()
+}
+pub fn is_shared_browser_path(path: &str) -> bool {
+    path == "/api/v1/sessions/authorize"
+        || path.starts_with("/api/v1/account/")
+        || path == "/api/v1/users/me/context"
+        || path.starts_with("/api/v1/subjects/")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -435,6 +459,7 @@ mod tests {
     #[test]
     fn validated_identity_requires_explicit_email_match_for_platform_admin() {
         let identity = CfIdentity {
+            issuer: "https://test.cloudflareaccess.com".into(),
             sub: "cf-sub-123".to_string(),
             email: "sheshnarayan.iyer@gmail.com".to_string(),
             groups: vec![],

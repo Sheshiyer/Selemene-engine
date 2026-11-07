@@ -1,3 +1,5 @@
+import type { AccountContext, SubjectProfile, SubjectProfileFields, EmailLinkChallenge, SubjectCalculation, SubjectReading } from "./shared-identity.js";
+export * from "./shared-identity.js";
 export * from "./billing.js";
 export * from "./premium-assets.js";
 
@@ -180,6 +182,7 @@ export interface HealthResponse {
 }
 
 export interface EngineInfo {
+  input_guidance?: { schema: string; kind: string; required_inputs: string[]; notes: string; supporting_runtime: boolean; registered: boolean; callable_for_session: boolean | null; awaiting_user_input: boolean | null; computed: boolean; artifact_delivered: boolean; readiness: string };
   id: string;
   name: string;
   engine_id?: string;
@@ -413,6 +416,28 @@ export class NoesisClient {
       this.maxRetries = options.maxRetries ?? 0;
       this.backoffMs = options.backoffMs ?? 150;
     }
+  }
+
+  async accountContext(options?: RequestOptions): Promise<AccountContext> {
+    return this.request("/api/v1/users/me/context", { method: "GET" }, options);
+  }
+  async setDefaultSubject(subjectId: string | null, options?: RequestOptions): Promise<AccountContext> {
+    return this.request("/api/v1/users/me/context", { method: "PATCH", body: JSON.stringify({default_subject_id: subjectId}) }, options);
+  }
+  async subjectProfile(subjectId: string, options?: RequestOptions): Promise<SubjectProfile> {
+    return this.request(`/api/v1/subjects/${encodeURIComponent(subjectId)}/profile`, { method: "GET" }, options);
+  }
+  async updateSubjectProfile(subjectId: string, expectedRevision: number, patch: Partial<SubjectProfileFields>, options?: RequestOptions): Promise<SubjectProfile> {
+    return this.request(`/api/v1/subjects/${encodeURIComponent(subjectId)}/profile`, { method: "PATCH", body: JSON.stringify({expected_revision: expectedRevision, patch}) }, options);
+  }
+  async startEmailLink(email: string, options?: RequestOptions): Promise<EmailLinkChallenge> {
+    return this.request("/api/v1/account/email-links", { method: "POST", body: JSON.stringify({email}) }, options);
+  }
+  async calculateForSubject(subjectId: string, engineId: string, input: SubjectCalculation, options?: RequestOptions): Promise<SubjectReading> {
+    return this.request(`/api/v1/subjects/${encodeURIComponent(subjectId)}/engines/${encodeURIComponent(engineId)}/calculate`, { method: "POST", body: JSON.stringify(input) }, options);
+  }
+  async subjectReading(subjectId: string, readingId: string, options?: RequestOptions): Promise<SubjectReading> {
+    return this.request(`/api/v1/subjects/${encodeURIComponent(subjectId)}/readings/${encodeURIComponent(readingId)}`, { method: "GET" }, options);
   }
 
   async health(options?: RequestOptions): Promise<HealthResponse> {
