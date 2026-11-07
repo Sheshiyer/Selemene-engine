@@ -1,4 +1,4 @@
-//! Hora and Choghadiya in the calculate output (#1523).
+//! Hora and Choghadiya in the calculate output (#1523), and the day periods (#1538).
 //!
 //! Synthetic location and instants only. Sunrise/sunset for the hand-checked
 //! case were cross-checked against Swiss Ephemeris `swe_rise_trans`
@@ -144,7 +144,10 @@ async fn missing_location_omits_hora_and_choghadiya() {
     assert!(r.get("choghadiya").is_none(), "{r}");
     assert_eq!(r["vedic_day"]["status"], "not_computed");
     assert_eq!(r["vedic_day"]["not_computed_reason"], "location_missing");
-    assert_eq!(r["vedic_day"]["omitted"], json!(["hora", "choghadiya"]));
+    assert_eq!(
+        r["vedic_day"]["omitted"],
+        json!(["hora", "choghadiya", "day_periods"])
+    );
     assert!(r["vedic_day"].get("sunrise").is_none());
     // The organ clock is unaffected.
     assert_eq!(r["current_organ"]["organ"], "Heart");
@@ -243,4 +246,37 @@ async fn located_cache_key_tracks_instant_and_place() {
             json!({ "timezone_offset": IST, "latitude": LAT, "longitude": 0.0 })
         ))
     );
+}
+
+/// Rahu Kalam, Yama Gandam and Gulika Kaal on the same Sunday (#1538).
+///
+/// Sunrise 06:31, sunset 18:29 IST (to the minute): day = 718 min, so each
+/// eighth is 89.75 min. Sunday segments: Rahu 8th, Yama 5th, Gulika 7th.
+#[tokio::test]
+async fn day_periods_follow_sunrise_and_weekday() {
+    let instant = Utc.with_ymd_and_hms(2026, 3, 8, 6, 43, 16).unwrap();
+    let r = result(located(instant)).await;
+    let periods = &r["day_periods"];
+
+    // Rahu Kalam on Sunday is the last eighth: it ends at sunset.
+    starts_with(&periods["rahu_kalam"]["start"], "2026-03-08T16:59");
+    assert_eq!(periods["rahu_kalam"]["end"], "2026-03-08T18:29:00+05:30");
+    starts_with(&periods["yama_gandam"]["start"], "2026-03-08T12:30");
+    starts_with(&periods["gulika_kaal"]["start"], "2026-03-08T15:29");
+    for name in ["rahu_kalam", "yama_gandam", "gulika_kaal"] {
+        let minutes = periods[name]["duration_minutes"].as_u64().unwrap();
+        assert!((89..=90).contains(&minutes), "{name}: {minutes} min");
+    }
+    assert_eq!(periods["method"], "eighth_of_daytime");
+}
+
+#[tokio::test]
+async fn day_periods_are_omitted_without_a_location() {
+    let instant = Utc.with_ymd_and_hms(2026, 3, 8, 6, 43, 16).unwrap();
+    let r = result(input(instant, json!({ "timezone_offset": IST }))).await;
+    assert!(r.get("day_periods").is_none());
+    assert!(r["vedic_day"]["omitted"]
+        .as_array()
+        .unwrap()
+        .contains(&json!("day_periods")));
 }
