@@ -39,7 +39,7 @@ pub mod hora;
 // Choghadiya
 pub mod choghadiya;
 
-mod clock;
+pub(crate) mod clock;
 
 // Re-export main types for convenience
 pub use choghadiya::*;
