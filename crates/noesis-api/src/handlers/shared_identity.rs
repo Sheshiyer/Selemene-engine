@@ -231,7 +231,7 @@ pub fn validate_patch(p: &Value) -> Result<(), HandlerError> {
             "birth_time_confidence" => v.as_str().is_some_and(|x| {
                 matches!(
                     x,
-                    "unspecified" | "unknown" | "approximate" | "exact" | "recorded"
+                    "unspecified" | "unknown" | "unverified" | "approximate" | "exact" | "recorded"
                 )
             }),
             "preferences" => v.is_object() && v.to_string().len() <= 16384,
@@ -689,6 +689,21 @@ pub async fn reading(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn preserves_unverified_birth_time_confidence_and_rejects_invalid_qualifiers() {
+        let patch = json!({"birth_time": "12:30", "birth_time_confidence": "unverified"});
+        assert!(validate_patch(&patch).is_ok());
+        assert_eq!(patch["birth_time_confidence"], "unverified");
+        for confidence in [
+            json!("verified"),
+            json!("Unverified"),
+            json!(""),
+            json!(null),
+            json!(1),
+        ] {
+            assert!(validate_patch(&json!({"birth_time_confidence": confidence})).is_err());
+        }
+    }
     #[test]
     fn rejects_authority_and_malformed_profiles() {
         for p in [

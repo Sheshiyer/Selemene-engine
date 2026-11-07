@@ -13,7 +13,7 @@ export interface SubjectProfileFields {
   birth_location: {lat: number; lng: number; name: string} | null;
   timezone: string;
   preferences: Record<string, unknown>;
-  birth_time_confidence: "unspecified" | "unknown" | "approximate" | "exact" | "recorded";
+  birth_time_confidence: "unspecified" | "unknown" | "unverified" | "approximate" | "exact" | "recorded";
   source_hashes: Record<string,string>;
 }
 export interface SubjectProfile { schema: "noesis.subject-profile.v1"; subject_id: string; revision: number; profile: SubjectProfileFields }
