@@ -405,3 +405,24 @@ describe('I Ching provenance and degradation (#1341)', () => {
     }
   })
 })
+
+describe('I Ching seam fixture (#1341)', () => {
+  it('committed sidecar fixture matches live engine output', async () => {
+    // crates/noesis-bridge, noesis-api, noesis-sdk, noesis-tui and the TS SDK
+    // replay this file (or the API envelopes built from it), so those probes
+    // can only pass against what this engine really emits.
+    const fixture = JSON.parse(
+      await Bun.file(
+        new URL('./fixtures/i-ching/bridge-round-trip-seed-42.json', import.meta.url),
+      ).text(),
+    )
+    const live = await engine.calculate(fixture.input)
+    expect({
+      ...live,
+      calculated_at: fixture.sidecar_response.calculated_at,
+      processing_time_ms: fixture.sidecar_response.processing_time_ms,
+    }).toEqual(fixture.sidecar_response)
+    expect(fixture.sidecar_response.result.derivation.line_values.origin).toBe('cast')
+    expect(fixture.sidecar_response.result.derivation.relating_hexagram.origin).toBe('derived')
+  })
+})
