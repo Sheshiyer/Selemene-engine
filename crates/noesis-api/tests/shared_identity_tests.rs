@@ -929,17 +929,19 @@ async fn bounded_runtime_role_enforces_rls_and_resets_pooled_context() {
             .await
             .unwrap();
     assert_eq!(flags, (false, false));
-    assert!(sqlx::query("SET ROLE postgres")
-        .execute(&runtime)
+    let (_, pool) = app().await;
+    let migration_role: String = sqlx::query_scalar("SELECT current_user::text")
+        .fetch_one(&pool)
         .await
-        .is_err());
+        .unwrap();
+    let switch = format!("SET ROLE \"{}\"", migration_role.replace('"', "\"\""));
+    assert!(sqlx::query(&switch).execute(&runtime).await.is_err());
     assert!(
         sqlx::query("CREATE TABLE public.runtime_escape_probe(id integer)")
             .execute(&runtime)
             .await
             .is_err()
     );
-    let (_, pool) = app().await;
     let uid = user(&pool).await;
     let subject:Uuid=sqlx::query_scalar("INSERT INTO corpus_subjects(owner_user_id,subject_key,canonical_name) VALUES($1,$2,'Runtime RLS synthetic') RETURNING id").bind(uid).bind(Uuid::new_v4().to_string()).fetch_one(&pool).await.unwrap();
     sqlx::query("INSERT INTO subject_grants(subject_id,owner_user_id,grantee_user_id,grantor_user_id,can_edit) VALUES($1,$2,$2,$2,true)").bind(subject).bind(uid).execute(&pool).await.unwrap();
