@@ -1,0 +1,359 @@
+{
+ "personality": {
+  "Sun": {
+   "lon": 140.09349888585197,
+   "gate": 4,
+   "line": 2,
+   "color": 2,
+   "tone": 5,
+   "base": 4,
+   "retro": false
+  },
+  "Moon": {
+   "lon": 183.55074772004997,
+   "gate": 46,
+   "line": 6,
+   "color": 4,
+   "tone": 6,
+   "base": 3,
+   "retro": false
+  },
+  "NorthNode": {
+   "lon": 288.5628704168808,
+   "gate": 54,
+   "line": 4,
+   "color": 5,
+   "tone": 1,
+   "base": 1,
+   "retro": true
+  },
+  "Mercury": {
+   "lon": 154.6360141305333,
+   "gate": 59,
+   "line": 5,
+   "color": 5,
+   "tone": 6,
+   "base": 2,
+   "retro": true
+  },
+  "Venus": {
+   "lon": 154.58442400399,
+   "gate": 59,
+   "line": 5,
+   "color": 5,
+   "tone": 4,
+   "base": 2,
+   "retro": true
+  },
+  "Mars": {
+   "lon": 167.93420019961374,
+   "gate": 47,
+   "line": 1,
+   "color": 6,
+   "tone": 6,
+   "base": 5,
+   "retro": false
+  },
+  "Jupiter": {
+   "lon": 143.50658323067537,
+   "gate": 4,
+   "line": 5,
+   "color": 6,
+   "tone": 4,
+   "base": 5,
+   "retro": false
+  },
+  "Saturn": {
+   "lon": 302.2517000171084,
+   "gate": 41,
+   "line": 1,
+   "color": 2,
+   "tone": 4,
+   "base": 4,
+   "retro": true
+  },
+  "Uranus": {
+   "lon": 280.3803765554524,
+   "gate": 38,
+   "line": 1,
+   "color": 6,
+   "tone": 4,
+   "base": 5,
+   "retro": true
+  },
+  "Neptune": {
+   "lon": 284.47639653847926,
+   "gate": 38,
+   "line": 6,
+   "color": 2,
+   "tone": 6,
+   "base": 1,
+   "retro": true
+  },
+  "Pluto": {
+   "lon": 227.6305194208465,
+   "gate": 1,
+   "line": 5,
+   "color": 5,
+   "tone": 1,
+   "base": 2,
+   "retro": false
+  },
+  "Earth": {
+   "lon": 320.093498885852,
+   "gate": 49,
+   "line": 2,
+   "color": 2,
+   "tone": 5,
+   "base": 4,
+   "retro": false
+  },
+  "SouthNode": {
+   "lon": 108.5628704168808,
+   "gate": 53,
+   "line": 4,
+   "color": 5,
+   "tone": 1,
+   "base": 1,
+   "retro": false
+  }
+ },
+ "design": {
+  "Sun": {
+   "lon": 52.09349889593146,
+   "gate": 23,
+   "line": 4,
+   "color": 3,
+   "tone": 4,
+   "base": 3,
+   "retro": false
+  },
+  "Moon": {
+   "lon": 40.5217407388859,
+   "gate": 24,
+   "line": 4,
+   "color": 1,
+   "tone": 4,
+   "base": 2,
+   "retro": false
+  },
+  "NorthNode": {
+   "lon": 290.63206880669696,
+   "gate": 54,
+   "line": 6,
+   "color": 6,
+   "tone": 2,
+   "base": 3,
+   "retro": true
+  },
+  "Mercury": {
+   "lon": 26.091480547870198,
+   "gate": 42,
+   "line": 6,
+   "color": 5,
+   "tone": 2,
+   "base": 1,
+   "retro": false
+  },
+  "Venus": {
+   "lon": 94.78579582332212,
+   "gate": 52,
+   "line": 1,
+   "color": 6,
+   "tone": 5,
+   "base": 5,
+   "retro": false
+  },
+  "Mars": {
+   "lon": 112.36655475713442,
+   "gate": 62,
+   "line": 2,
+   "color": 5,
+   "tone": 3,
+   "base": 1,
+   "retro": false
+  },
+  "Jupiter": {
+   "lon": 126.37639398210398,
+   "gate": 31,
+   "line": 5,
+   "color": 5,
+   "tone": 1,
+   "base": 1,
+   "retro": false
+  },
+  "Saturn": {
+   "lon": 306.8302345514715,
+   "gate": 41,
+   "line": 6,
+   "color": 1,
+   "tone": 6,
+   "base": 3,
+   "retro": false
+  },
+  "Uranus": {
+   "lon": 283.5609111140284,
+   "gate": 38,
+   "line": 5,
+   "color": 2,
+   "tone": 6,
+   "base": 5,
+   "retro": true
+  },
+  "Neptune": {
+   "lon": 286.6072197945418,
+   "gate": 54,
+   "line": 2,
+   "color": 4,
+   "tone": 3,
+   "base": 5,
+   "retro": true
+  },
+  "Pluto": {
+   "lon": 228.9005349602745,
+   "gate": 43,
+   "line": 1,
+   "color": 1,
+   "tone": 1,
+   "base": 5,
+   "retro": true
+  },
+  "Earth": {
+   "lon": 232.09349889593148,
+   "gate": 43,
+   "line": 4,
+   "color": 3,
+   "tone": 4,
+   "base": 3,
+   "retro": false
+  },
+  "SouthNode": {
+   "lon": 110.63206880669696,
+   "gate": 53,
+   "line": 6,
+   "color": 6,
+   "tone": 2,
+   "base": 3,
+   "retro": false
+  }
+ },
+ "transit": {
+  "Sun": {
+   "lon": 216.52398353816952,
+   "gate": 28,
+   "line": 5,
+   "color": 5,
+   "tone": 6,
+   "base": 4,
+   "retro": false
+  },
+  "Moon": {
+   "lon": 87.93927369709027,
+   "gate": 12,
+   "line": 6,
+   "color": 5,
+   "tone": 1,
+   "base": 1,
+   "retro": false
+  },
+  "NorthNode": {
+   "lon": 327.06104453650653,
+   "gate": 30,
+   "line": 3,
+   "color": 5,
+   "tone": 3,
+   "base": 2,
+   "retro": true
+  },
+  "Mercury": {
+   "lon": 228.66735868271266,
+   "gate": 1,
+   "line": 6,
+   "color": 5,
+   "tone": 5,
+   "base": 1,
+   "retro": true
+  },
+  "Venus": {
+   "lon": 207.32270756415335,
+   "gate": 50,
+   "line": 2,
+   "color": 1,
+   "tone": 1,
+   "base": 2,
+   "retro": true
+  },
+  "Mars": {
+   "lon": 137.5803187778154,
+   "gate": 7,
+   "line": 5,
+   "color": 4,
+   "tone": 5,
+   "base": 2,
+   "retro": false
+  },
+  "Jupiter": {
+   "lon": 144.0686716496408,
+   "gate": 4,
+   "line": 6,
+   "color": 4,
+   "tone": 2,
+   "base": 3,
+   "retro": false
+  },
+  "Saturn": {
+   "lon": 9.417899591306654,
+   "gate": 17,
+   "line": 6,
+   "color": 6,
+   "tone": 3,
+   "base": 5,
+   "retro": true
+  },
+  "Uranus": {
+   "lon": 64.74967355302802,
+   "gate": 20,
+   "line": 5,
+   "color": 6,
+   "tone": 4,
+   "base": 3,
+   "retro": true
+  },
+  "Neptune": {
+   "lon": 2.127604581810452,
+   "gate": 25,
+   "line": 5,
+   "color": 1,
+   "tone": 5,
+   "base": 5,
+   "retro": true
+  },
+  "Pluto": {
+   "lon": 303.1138302514292,
+   "gate": 41,
+   "line": 2,
+   "color": 2,
+   "tone": 1,
+   "base": 4,
+   "retro": false
+  },
+  "Earth": {
+   "lon": 36.523983538169546,
+   "gate": 27,
+   "line": 5,
+   "color": 5,
+   "tone": 6,
+   "base": 4,
+   "retro": false
+  },
+  "SouthNode": {
+   "lon": 147.06104453650653,
+   "gate": 29,
+   "line": 3,
+   "color": 5,
+   "tone": 3,
+   "base": 2,
+   "retro": false
+  }
+ }
+}
