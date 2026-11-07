@@ -124,7 +124,12 @@ pub async fn auth_middleware(
         }
     }
 
-    if let Some(validator) = state.cf_access_validator.as_ref() {
+    let end_user = if crate::cf_access::is_shared_browser_path(req.uri().path()) {
+        crate::cf_access::end_user_validator()
+    } else {
+        None
+    };
+    if let Some(validator) = end_user.or(state.cf_access_validator.as_deref()) {
         let cf_token = req
             .headers()
             .get("cf-authorization")
@@ -153,11 +158,19 @@ pub async fn auth_middleware(
                             )
                         })?;
                     let platform_admin_emails = std::env::var("CF_PLATFORM_ADMIN_EMAILS").ok();
-                    let roles = crate::cf_access::role_values_for_identity(
-                        &identity,
-                        platform_admin_emails.as_deref(),
-                    );
-                    if let Some(repo) = state.admin_repository.as_ref() {
+                    let roles = if end_user.is_some() {
+                        vec!["viewer".to_string()]
+                    } else {
+                        crate::cf_access::role_values_for_identity(
+                            &identity,
+                            platform_admin_emails.as_deref(),
+                        )
+                    };
+                    if let Some(repo) = state
+                        .admin_repository
+                        .as_ref()
+                        .filter(|_| end_user.is_none())
+                    {
                         repo.replace_user_roles_from_cloudflare(user.id, &roles)
                             .await
                             .map_err(|e| {

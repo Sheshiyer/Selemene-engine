@@ -333,6 +333,28 @@ impl CfAccessValidator {
     }
 }
 
+/// Separate end-user Access application. It never expands the administrative
+/// audience and is consulted only by shared-account browser entrypoints.
+pub fn end_user_validator() -> Option<&'static CfAccessValidator> {
+    static VALIDATOR: std::sync::OnceLock<Option<CfAccessValidator>> = std::sync::OnceLock::new();
+    VALIDATOR
+        .get_or_init(|| {
+            let issuer = std::env::var("CF_END_USER_ISSUER").ok()?;
+            let audience = std::env::var("CF_END_USER_AUDIENCE").ok()?;
+            if issuer.trim().is_empty() || audience.trim().is_empty() {
+                return None;
+            }
+            Some(CfAccessValidator::new(issuer, audience))
+        })
+        .as_ref()
+}
+pub fn is_shared_browser_path(path: &str) -> bool {
+    path == "/api/v1/sessions/authorize"
+        || path.starts_with("/api/v1/account/")
+        || path == "/api/v1/users/me/context"
+        || path.starts_with("/api/v1/subjects/")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
