@@ -845,6 +845,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             post(handlers::shared_identity::complete_email_link),
         )
         .route(
+            "/account/email-links/begin",
+            get(handlers::shared_identity::email_begin_page).post(handlers::shared_identity::bind_email_browser),
+        )
+        .route(
             "/account/email-links/verify",
             get(handlers::shared_identity::verify_email_link),
         )

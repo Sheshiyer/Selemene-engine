@@ -47,6 +47,22 @@ pub fn db(s: &AppState) -> Result<&PgPool, HandlerError> {
     })
 }
 pub async fn active(pool: &PgPool, u: &AuthUser) -> Result<Uuid, HandlerError> {
+    if std::env::var("RUST_ENV").as_deref() == Ok("production")
+        || std::env::var("NOESIS_REQUIRE_BOUNDED_DB_ROLE").as_deref() == Ok("true")
+    {
+        let bypass: bool = sqlx::query_scalar(
+            "SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE rolname=current_user",
+        )
+        .fetch_one(pool)
+        .await
+        .map_err(storage)?;
+        if bypass {
+            return Err(fail(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "BOUNDED_DATABASE_ROLE_REQUIRED",
+            ));
+        }
+    }
     let id = Uuid::parse_str(&u.user_id)
         .map_err(|_| fail(StatusCode::UNAUTHORIZED, "ACCOUNT_REQUIRED"))?;
     let yes: bool = sqlx::query_scalar(
@@ -82,6 +98,29 @@ pub(crate) async fn subject_access(
     sqlx::query_scalar("SELECT s.owner_user_id FROM corpus_subjects s JOIN subject_grants g ON g.subject_id=s.id AND g.owner_user_id=s.owner_user_id JOIN user_account_state a ON a.user_id=g.grantee_user_id WHERE s.id=$1 AND g.grantee_user_id=$2 AND g.revoked_at IS NULL AND s.archived_at IS NULL AND a.state='active' AND (NOT $3 OR g.can_edit) FOR SHARE OF g,a")
         .bind(id).bind(uid).bind(edit).fetch_optional(&mut **tx).await.map_err(storage)?.ok_or_else(||fail(StatusCode::NOT_FOUND,"SUBJECT_NOT_FOUND"))
 }
+/// A live registered family establishes trusted account identity without granting
+/// interactive/browser authority. Never infer this from a password JWT or API key.
+async fn verified_identity(
+    s: &AppState,
+    u: &AuthUser,
+    interactive: Option<Extension<CfIdentity>>,
+) -> Result<CfIdentity, HandlerError> {
+    if let Some(Extension(identity)) = interactive {
+        return Ok(identity);
+    }
+    if !u.permissions.iter().any(|p| p == "session:registered") {
+        return Err(fail(StatusCode::FORBIDDEN, "VERIFIED_IDENTITY_REQUIRED"));
+    }
+    crate::handlers::sessions::validate_access(s, u).await?;
+    let row=sqlx::query_as::<_,(String,String,String)>("SELECT i.issuer,i.provider_subject,i.verified_email FROM registered_access_tokens t JOIN registered_session_families f ON f.id=t.family_id JOIN account_identities i ON i.issuer=f.identity_issuer AND i.provider_subject=f.identity_subject AND i.user_id=f.user_id WHERE t.jti=$1 AND f.user_id::text=$2 AND i.revoked_at IS NULL AND f.revoked_at IS NULL AND f.expires_at>now() AND t.expires_at>now()")
+        .bind(&u.jti).bind(&u.user_id).fetch_optional(db(s)?).await.map_err(storage)?.ok_or_else(||fail(StatusCode::FORBIDDEN,"VERIFIED_IDENTITY_REQUIRED"))?;
+    Ok(CfIdentity {
+        issuer: row.0,
+        sub: row.1,
+        email: row.2,
+        groups: vec![],
+    })
+}
 #[utoipa::path(get, path="/api/v1/users/me/context", tag="shared-identity", responses((status=200,description="Authorized private response"),(status=403,description="Current grant or verified identity required"),(status=409,description="Revision or identity conflict")))]
 pub async fn context(
     State(s): State<AppState>,
@@ -92,7 +131,7 @@ pub async fn context(
     let mut tx = transaction(pool, uid).await?;
     let account:Value=sqlx::query_scalar("SELECT jsonb_build_object('id',u.id,'email',CASE WHEN EXISTS(SELECT 1 FROM account_identities i WHERE i.user_id=u.id AND i.verified_email=p.preferred_email AND i.revoked_at IS NULL) THEN p.preferred_email END,'full_name',u.full_name,'preferred_email',CASE WHEN EXISTS(SELECT 1 FROM account_identities i WHERE i.user_id=u.id AND i.verified_email=p.preferred_email AND i.revoked_at IS NULL) THEN p.preferred_email END) FROM users u LEFT JOIN account_preferences p ON p.user_id=u.id WHERE u.id=$1")
         .bind(uid).fetch_one(&mut *tx).await.map_err(storage)?;
-    let subjects:Vec<Value>=sqlx::query_scalar("SELECT jsonb_build_object('id',s.id,'key',s.subject_key,'display_name',s.canonical_name,'can_read',true,'can_edit',g.can_edit,'can_calculate',g.can_calculate,'profile_revision',COALESCE((SELECT max(revision) FROM subject_profile_revisions p WHERE p.subject_id=s.id),0)) FROM corpus_subjects s JOIN subject_grants g ON g.subject_id=s.id AND g.owner_user_id=s.owner_user_id WHERE g.grantee_user_id=$1 AND g.revoked_at IS NULL AND s.archived_at IS NULL ORDER BY s.id")
+    let subjects:Vec<Value>=sqlx::query_scalar("SELECT jsonb_build_object('id',s.id,'key',s.subject_key,'display_name',s.canonical_name,'can_read',true,'can_edit',g.can_edit,'can_calculate',g.can_calculate,'can_manage_enrollment',s.owner_user_id=$1,'profile_revision',COALESCE((SELECT max(revision) FROM subject_profile_revisions p WHERE p.subject_id=s.id),0)) FROM corpus_subjects s JOIN subject_grants g ON g.subject_id=s.id AND g.owner_user_id=s.owner_user_id WHERE g.grantee_user_id=$1 AND g.revoked_at IS NULL AND s.archived_at IS NULL ORDER BY s.id")
         .bind(uid).fetch_all(&mut *tx).await.map_err(storage)?;
     let relationships:Vec<Value>=sqlx::query_scalar("SELECT jsonb_build_object('id',r.id,'key',r.relationship_key,'label',r.label,'can_read',true,'member_subject_ids',COALESCE((SELECT jsonb_agg(m.subject_id ORDER BY m.subject_id) FROM corpus_relationship_members m WHERE m.relationship_id=r.id),'[]'::jsonb)) FROM corpus_relationships r JOIN relationship_grants g ON g.relationship_id=r.id AND g.owner_user_id=r.owner_user_id WHERE g.grantee_user_id=$1 AND g.revoked_at IS NULL AND r.archived_at IS NULL ORDER BY r.id")
         .bind(uid).fetch_all(&mut *tx).await.map_err(storage)?;
@@ -271,6 +310,8 @@ pub struct EnrollmentCreate {
     intended_email: Option<String>,
     sharing_reader_id: Option<Uuid>,
     expires_in_seconds: Option<i64>,
+    #[serde(default)]
+    relationship_ids: Vec<Uuid>,
 }
 #[utoipa::path(post, path="/api/v1/account/enrollments", tag="shared-identity", responses((status=200,description="Authorized private response"),(status=403,description="Current grant or verified identity required"),(status=409,description="Revision or identity conflict")))]
 pub async fn create_enrollment(
@@ -279,9 +320,7 @@ pub async fn create_enrollment(
     identity: Option<Extension<CfIdentity>>,
     Json(p): Json<EnrollmentCreate>,
 ) -> Result<Response, HandlerError> {
-    if identity.is_none() {
-        return Err(fail(StatusCode::FORBIDDEN, "VERIFIED_IDENTITY_REQUIRED"));
-    }
+    verified_identity(&s, &u, identity).await?;
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
     let own:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM corpus_subjects WHERE id=$1 AND owner_user_id=$2 AND archived_at IS NULL)").bind(p.subject_id).bind(uid).fetch_one(pool).await.map_err(storage)?;
@@ -297,9 +336,25 @@ pub async fn create_enrollment(
     if email.as_ref().is_some_and(|e| !valid_email(e)) {
         return Err(fail(StatusCode::BAD_REQUEST, "INVALID_EMAIL"));
     }
+    if p.relationship_ids.len() > 16
+        || p.relationship_ids
+            .iter()
+            .collect::<std::collections::HashSet<_>>()
+            .len()
+            != p.relationship_ids.len()
+    {
+        return Err(fail(StatusCode::BAD_REQUEST, "INVALID_RELATIONSHIPS"));
+    }
+    let mut tx = transaction(pool, uid).await?;
     let id:Uuid=sqlx::query_scalar("INSERT INTO subject_enrollments(token_hash,subject_id,owner_user_id,intended_email,sharing_reader_id,expires_at) VALUES($1,$2,$3,$4,$5,now()+$6*interval '1 second') RETURNING id")
-        .bind(hash_secret(&token)).bind(p.subject_id).bind(uid).bind(email).bind(p.sharing_reader_id).bind(ttl as f64).fetch_one(pool).await.map_err(storage)?;
-    Ok(private(Json(json!({"id":id,"token":token,"subject_id":p.subject_id,"sharing_reader_id":p.sharing_reader_id,"expires_in":ttl})).into_response()))
+        .bind(hash_secret(&token)).bind(p.subject_id).bind(uid).bind(email).bind(p.sharing_reader_id).bind(ttl as f64).fetch_one(&mut *tx).await.map_err(storage)?;
+    for relationship in &p.relationship_ids {
+        let role:String=sqlx::query_scalar("SELECT m.member_role FROM corpus_relationships r JOIN corpus_relationship_members m ON m.relationship_id=r.id AND m.owner_user_id=r.owner_user_id WHERE r.id=$1 AND r.owner_user_id=$2 AND m.subject_id=$3 AND r.archived_at IS NULL ORDER BY m.member_role LIMIT 1 FOR SHARE OF r,m")
+            .bind(relationship).bind(uid).bind(p.subject_id).fetch_optional(&mut *tx).await.map_err(storage)?.ok_or_else(||fail(StatusCode::BAD_REQUEST,"RELATIONSHIP_NOT_OWNED_ACTIVE_MEMBER"))?;
+        sqlx::query("INSERT INTO subject_enrollment_relationships(enrollment_id,subject_id,owner_user_id,relationship_id,member_role) VALUES($1,$2,$3,$4,$5)").bind(id).bind(p.subject_id).bind(uid).bind(relationship).bind(role).execute(&mut *tx).await.map_err(storage)?;
+    }
+    tx.commit().await.map_err(storage)?;
+    Ok(private(Json(json!({"id":id,"token":token,"subject_id":p.subject_id,"sharing_reader_id":p.sharing_reader_id,"relationship_ids":p.relationship_ids,"expires_in":ttl})).into_response()))
 }
 #[derive(Deserialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
@@ -315,6 +370,14 @@ async fn bind_enrollment(
     claimant: Uuid,
     reader: Option<Uuid>,
 ) -> Result<(), HandlerError> {
+    let relationships:Vec<(Uuid,bool)>=sqlx::query_as("SELECT r.id,r.archived_at IS NULL FROM subject_enrollment_relationships e JOIN corpus_relationships r ON r.id=e.relationship_id AND r.owner_user_id=e.owner_user_id WHERE e.enrollment_id=$1 AND e.subject_id=$2 AND e.owner_user_id=$3 FOR SHARE OF r,e")
+        .bind(id).bind(subject).bind(owner).fetch_all(&mut **tx).await.map_err(storage)?;
+    if relationships.iter().any(|(_, active)| !*active) {
+        return Err(fail(
+            StatusCode::CONFLICT,
+            "ENROLLMENT_RELATIONSHIP_UNAVAILABLE",
+        ));
+    }
     // Subject lock plus unique active self account prevent racing/conflicting binds.
     sqlx::query("SELECT id FROM corpus_subjects WHERE id=$1 FOR UPDATE")
         .bind(subject)
@@ -333,6 +396,10 @@ async fn bind_enrollment(
             sqlx::query("INSERT INTO subject_grants(subject_id,owner_user_id,grantee_user_id,can_edit,grantor_user_id) VALUES($1,$2,$3,false,$2) ON CONFLICT(subject_id,grantee_user_id) DO UPDATE SET revoked_at=NULL,can_edit=false").bind(subject).bind(owner).bind(reader).execute(&mut **tx).await.map_err(storage)?;
         }
     }
+    for (relationship, _) in relationships {
+        sqlx::query("INSERT INTO relationship_grants(relationship_id,owner_user_id,grantee_user_id,grantor_user_id) VALUES($1,$2,$3,$2) ON CONFLICT(relationship_id,grantee_user_id) DO UPDATE SET revoked_at=NULL,grantor_user_id=excluded.grantor_user_id")
+            .bind(relationship).bind(owner).bind(claimant).execute(&mut **tx).await.map_err(storage)?;
+    }
     sqlx::query("UPDATE subject_enrollments SET confirmed_at=now() WHERE id=$1")
         .bind(id)
         .execute(&mut **tx)
@@ -348,9 +415,7 @@ pub async fn claim_enrollment(
     identity: Option<Extension<CfIdentity>>,
     Json(p): Json<EnrollmentClaim>,
 ) -> Result<Response, HandlerError> {
-    let Some(Extension(identity)) = identity else {
-        return Err(fail(StatusCode::FORBIDDEN, "VERIFIED_IDENTITY_REQUIRED"));
-    };
+    let identity = verified_identity(&s, &u, identity).await?;
     if !p.accept_sharing {
         return Err(fail(StatusCode::BAD_REQUEST, "SHARING_ACCEPTANCE_REQUIRED"));
     }
@@ -376,9 +441,7 @@ pub async fn confirm_enrollment(
     identity: Option<Extension<CfIdentity>>,
     Path(id): Path<Uuid>,
 ) -> Result<Response, HandlerError> {
-    if identity.is_none() {
-        return Err(fail(StatusCode::FORBIDDEN, "VERIFIED_IDENTITY_REQUIRED"));
-    }
+    verified_identity(&s, &u, identity).await?;
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
     let mut tx = transaction(pool, uid).await?;
@@ -423,9 +486,7 @@ pub async fn start_email_link(
     Json(p): Json<EmailStart>,
 ) -> Result<Response, HandlerError> {
     // Fresh interactive reauthentication, not an API key or arbitrary account email.
-    if identity.is_none() && !u.permissions.iter().any(|p| p == "session:registered") {
-        return Err(fail(StatusCode::FORBIDDEN, "VERIFIED_IDENTITY_REQUIRED"));
-    }
+    verified_identity(&s, &u, identity).await?;
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
     let email = p.email.trim().to_ascii_lowercase();
@@ -434,12 +495,14 @@ pub async fn start_email_link(
     }
     let token = new_secret();
     sqlx::query("INSERT INTO account_email_links(token_hash,user_id,requested_email,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes')").bind(hash_secret(&token)).bind(uid).bind(email).execute(pool).await.map_err(storage)?;
-    Ok(private(Json(json!({"status":"pending_verification","challenge":token,"expires_in":600,"complete_path":"/api/v1/account/email-links/complete","verification_path":format!("/api/v1/account/email-links/verify?challenge={token}")})).into_response()))
+    Ok(private(Json(json!({"status":"pending_verification","challenge":token,"expires_in":600,"complete_path":"/api/v1/account/email-links/complete","verification_path":format!("/api/v1/account/email-links/begin?challenge={token}")})).into_response()))
 }
 #[derive(Deserialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct EmailComplete {
     challenge: String,
+    #[serde(default)]
+    confirm: bool,
 }
 /// Public route verifies the provider assertion directly, BEFORE resolving a new
 /// email into a different account. Challenge binds proof to the original account.
@@ -449,23 +512,15 @@ pub async fn complete_email_link(
     headers: axum::http::HeaderMap,
     Json(p): Json<EmailComplete>,
 ) -> Result<Response, HandlerError> {
-    let assertion = headers
-        .get("cf-access-jwt-assertion")
-        .or_else(|| headers.get("cf-authorization"))
-        .and_then(|h| h.to_str().ok())
-        .ok_or_else(|| fail(StatusCode::UNAUTHORIZED, "VERIFIED_IDENTITY_REQUIRED"))?;
-    let validator = crate::cf_access::end_user_validator()
-        .or(s.cf_access_validator.as_deref())
-        .ok_or_else(|| {
-            fail(
-                StatusCode::SERVICE_UNAVAILABLE,
-                "IDENTITY_PROVIDER_UNAVAILABLE",
-            )
-        })?;
-    let identity = validator
-        .validate_token(assertion)
-        .await
-        .map_err(|_| fail(StatusCode::UNAUTHORIZED, "INVALID_IDENTITY_PROOF"))?;
+    require_same_origin(&headers)?;
+    if !p.confirm {
+        return Err(fail(
+            StatusCode::BAD_REQUEST,
+            "EXPLICIT_CONFIRMATION_REQUIRED",
+        ));
+    }
+    let nonce = browser_nonce(&headers)?;
+    let identity = browser_identity(&s, &headers).await?;
     let pool = db(&s)?;
     let mut tx = pool.begin().await.map_err(storage)?;
     sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))")
@@ -478,8 +533,8 @@ pub async fn complete_email_link(
         .execute(&mut *tx)
         .await
         .map_err(storage)?;
-    let uid:Uuid=sqlx::query_scalar("UPDATE account_email_links SET consumed_at=now() WHERE token_hash=$1 AND requested_email=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING user_id")
-        .bind(hash_secret(&p.challenge)).bind(&identity.email).fetch_optional(&mut *tx).await.map_err(storage)?.ok_or_else(||fail(StatusCode::BAD_REQUEST,"INVALID_EMAIL_CHALLENGE"))?;
+    let uid:Uuid=sqlx::query_scalar("UPDATE account_email_links SET consumed_at=now() WHERE token_hash=$1 AND requested_email=$2 AND browser_nonce_hash=$3 AND browser_bound_at IS NOT NULL AND consumed_at IS NULL AND expires_at>now() RETURNING user_id")
+        .bind(hash_secret(&p.challenge)).bind(&identity.email).bind(hash_secret(&nonce)).fetch_optional(&mut *tx).await.map_err(storage)?.ok_or_else(||fail(StatusCode::BAD_REQUEST,"INVALID_EMAIL_CHALLENGE"))?;
     let conflict:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM account_identities WHERE (verified_email=$1 OR (issuer=$2 AND provider_subject=$3)) AND (user_id<>$4 OR revoked_at IS NOT NULL)) OR EXISTS(SELECT 1 FROM users WHERE lower(btrim(email))=$1 AND id<>$4)")
         .bind(&identity.email).bind(&identity.issuer).bind(&identity.sub).bind(uid).fetch_one(&mut *tx).await.map_err(storage)?;
     if conflict {
@@ -649,15 +704,105 @@ mod tests {
         .is_ok());
     }
 }
-/// Browser callback uses the unguessable, account-bound challenge as state and
-/// verifies the exact requested email against a fresh provider assertion.
-pub async fn verify_email_link(
-    State(s): State<AppState>,
-    headers: axum::http::HeaderMap,
+/// GETs render only. All mutations require explicit same-origin POSTs.
+fn require_same_origin(headers: &axum::http::HeaderMap) -> Result<(), HandlerError> {
+    let origin = headers
+        .get("origin")
+        .and_then(|v| v.to_str().ok())
+        .ok_or_else(|| fail(StatusCode::FORBIDDEN, "ORIGIN_REQUIRED"))?;
+    let expected = std::env::var("NOESIS_ACCOUNT_ORIGIN").map_err(|_| {
+        fail(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "ACCOUNT_ORIGIN_NOT_CONFIGURED",
+        )
+    })?;
+    if origin != expected {
+        return Err(fail(StatusCode::FORBIDDEN, "ORIGIN_MISMATCH"));
+    }
+    Ok(())
+}
+fn browser_nonce(headers: &axum::http::HeaderMap) -> Result<String, HandlerError> {
+    headers
+        .get("cookie")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| {
+            v.split(';')
+                .map(str::trim)
+                .find_map(|c| c.strip_prefix("__Host-noesis-email-link="))
+        })
+        .filter(|v| v.len() == 43)
+        .map(str::to_owned)
+        .ok_or_else(|| fail(StatusCode::FORBIDDEN, "SOURCE_BROWSER_REQUIRED"))
+}
+async fn browser_identity(
+    s: &AppState,
+    headers: &axum::http::HeaderMap,
+) -> Result<CfIdentity, HandlerError> {
+    let assertion = headers
+        .get("cf-access-jwt-assertion")
+        .or_else(|| headers.get("cf-authorization"))
+        .and_then(|h| h.to_str().ok())
+        .ok_or_else(|| fail(StatusCode::UNAUTHORIZED, "VERIFIED_IDENTITY_REQUIRED"))?;
+    let validator = crate::cf_access::end_user_validator()
+        .or(s.cf_access_validator.as_deref())
+        .ok_or_else(|| {
+            fail(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "IDENTITY_PROVIDER_UNAVAILABLE",
+            )
+        })?;
+    let identity = validator
+        .validate_token(assertion)
+        .await
+        .map_err(|_| fail(StatusCode::UNAUTHORIZED, "INVALID_IDENTITY_PROOF"))?;
+    Ok(identity)
+}
+fn email_page(challenge: &str, begin: bool) -> Result<Response, HandlerError> {
+    if !crate::desktop_auth::valid_code_challenge(challenge) {
+        return Err(fail(StatusCode::BAD_REQUEST, "INVALID_EMAIL_CHALLENGE"));
+    }
+    let (title, instructions, action) = if begin {
+        ("Confirm your current account","First confirm the account that requested this email change. After confirmation, sign in to the identity provider with the requested new email, then return to the verification link.","begin")
+    } else {
+        ("Confirm your new email","Sign in to the identity provider with your requested new email. Confirm only if you personally started this change in this browser.","complete")
+    };
+    let page = format!(
+        r#"<!doctype html><meta charset="utf-8"><title>{title}</title><h1>{title}</h1><p>{instructions}</p><button id="confirm">Confirm</button><p id="result"></p><script>document.getElementById('confirm').onclick=async()=>{{const r=await fetch('/api/v1/account/email-links/{action}',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{challenge:'{challenge}',confirm:true}})}});const v=await r.json();const out=document.getElementById('result');out.textContent=r.ok?(v.status==='browser_bound'?'Current account confirmed. Switch to the requested email at your identity provider, then use the verification link below.':'Email verified. Return to your app and sign in again.'):'Verification failed: '+(v.error?.code||v.code||r.status);if(r.ok&&v.verification_path){{const a=document.createElement('a');a.href=v.verification_path;a.textContent='Verify new email';out.appendChild(document.createElement('br'));out.appendChild(a);}}}};</script>"#
+    );
+    Ok(private(axum::response::Html(page).into_response()))
+}
+pub async fn email_begin_page(
     axum::extract::Query(p): axum::extract::Query<EmailComplete>,
 ) -> Result<Response, HandlerError> {
-    complete_email_link(State(s), headers, Json(p)).await?;
-    Ok(private(axum::response::Html("<!doctype html><meta charset=utf-8><title>Email verified</title><h1>Email verified</h1><p>Your preferred email is saved to your existing account. Return to your app and sign in again.</p>").into_response()))
+    email_page(&p.challenge, true)
+}
+pub async fn verify_email_link(
+    axum::extract::Query(p): axum::extract::Query<EmailComplete>,
+) -> Result<Response, HandlerError> {
+    email_page(&p.challenge, false)
+}
+pub async fn bind_email_browser(
+    State(s): State<AppState>,
+    headers: axum::http::HeaderMap,
+    Json(p): Json<EmailComplete>,
+) -> Result<Response, HandlerError> {
+    require_same_origin(&headers)?;
+    if !p.confirm {
+        return Err(fail(
+            StatusCode::BAD_REQUEST,
+            "EXPLICIT_CONFIRMATION_REQUIRED",
+        ));
+    }
+    let identity = browser_identity(&s, &headers).await?;
+    let nonce = new_secret();
+    let bound=sqlx::query("UPDATE account_email_links e SET browser_nonce_hash=$4,browser_bound_at=now() FROM account_identities i JOIN user_account_state a ON a.user_id=i.user_id WHERE e.token_hash=$1 AND e.user_id=i.user_id AND i.issuer=$2 AND i.provider_subject=$3 AND i.revoked_at IS NULL AND a.state='active' AND e.consumed_at IS NULL AND e.expires_at>now() AND e.browser_bound_at IS NULL")
+        .bind(hash_secret(&p.challenge)).bind(identity.issuer).bind(identity.sub).bind(hash_secret(&nonce)).execute(db(&s)?).await.map_err(storage)?;
+    if bound.rows_affected() != 1 {
+        return Err(fail(StatusCode::FORBIDDEN, "SOURCE_ACCOUNT_REQUIRED"));
+    }
+    let mut response=private(Json(json!({"status":"browser_bound","verification_path":format!("/api/v1/account/email-links/verify?challenge={}",p.challenge)})).into_response());
+    response.headers_mut().insert(header::SET_COOKIE,HeaderValue::from_str(&format!("__Host-noesis-email-link={nonce}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=600")).map_err(|_|fail(StatusCode::INTERNAL_SERVER_ERROR,"COOKIE_FAILED"))?);
+    Ok(response)
 }
 #[derive(Deserialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
@@ -671,7 +816,7 @@ pub async fn preview_enrollment(
 ) -> Result<Response, HandlerError> {
     let pool = db(&s)?;
     active(pool, &u).await?;
-    let preview:Value=sqlx::query_scalar("SELECT jsonb_build_object('id',e.id,'subject_id',s.id,'display_name',s.canonical_name,'sharing_reader_id',e.sharing_reader_id,'sharing_reader_name',r.full_name,'requires_owner_confirmation',e.intended_email IS NULL,'expires_at',e.expires_at) FROM subject_enrollments e JOIN corpus_subjects s ON s.id=e.subject_id AND s.owner_user_id=e.owner_user_id LEFT JOIN users r ON r.id=e.sharing_reader_id WHERE e.token_hash=$1 AND e.claimed_at IS NULL AND e.revoked_at IS NULL AND e.expires_at>now()")
+    let preview:Value=sqlx::query_scalar("SELECT jsonb_build_object('id',e.id,'subject_id',s.id,'display_name',s.canonical_name,'sharing_reader_id',e.sharing_reader_id,'sharing_reader_name',r.full_name,'relationships',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',r.id,'label',r.label) ORDER BY r.id) FROM subject_enrollment_relationships er JOIN corpus_relationships r ON r.id=er.relationship_id AND r.owner_user_id=er.owner_user_id WHERE er.enrollment_id=e.id),'[]'::jsonb),'requires_owner_confirmation',e.intended_email IS NULL,'expires_at',e.expires_at) FROM subject_enrollments e JOIN corpus_subjects s ON s.id=e.subject_id AND s.owner_user_id=e.owner_user_id LEFT JOIN users r ON r.id=e.sharing_reader_id WHERE e.token_hash=$1 AND e.claimed_at IS NULL AND e.revoked_at IS NULL AND e.expires_at>now()")
         .bind(hash_secret(&p.token)).fetch_optional(pool).await.map_err(storage)?.ok_or_else(||fail(StatusCode::NOT_FOUND,"ENROLLMENT_NOT_FOUND"))?;
     Ok(private(Json(preview).into_response()))
 }

@@ -44,6 +44,16 @@ async fn app() -> (axum::Router, PgPool) {
         .await
         .expect("connect to local Postgres (run scripts/cloud/test-db.sh)");
 
+    let fixture_pool = pool.clone();
+    let pool = if let Ok(url) = std::env::var("TEST_SHARED_RUNTIME_URL") {
+        PgPoolOptions::new()
+            .max_connections(2)
+            .connect(&url)
+            .await
+            .unwrap()
+    } else {
+        pool
+    };
     let config = ApiConfig {
         host: "127.0.0.1".into(),
         port: 0,
@@ -101,7 +111,7 @@ async fn app() -> (axum::Router, PgPool) {
         startup_time: Instant::now(),
         ephemeris_checksums: Arc::new(std::collections::HashMap::new()),
     };
-    (create_router(state, &config), pool)
+    (create_router(state, &config), fixture_pool)
 }
 
 async fn call(
@@ -151,6 +161,26 @@ fn jwt(pool: &PgPool, id: Uuid) -> String {
     AuthService::with_pool(JWT_SECRET.into(), Some(pool.clone()))
         .generate_jwt_token(&id.to_string(), "free", &["basic:access".into()], 0)
         .unwrap()
+}
+async fn registered_jwt(pool: &PgPool, id: Uuid) -> String {
+    let identity=sqlx::query_as::<_,(String,String)>("SELECT issuer,provider_subject FROM account_identities WHERE user_id=$1 AND revoked_at IS NULL LIMIT 1").bind(id).fetch_optional(pool).await.unwrap();
+    let (issuer, sub) =
+        identity.unwrap_or_else(|| ("https://registered.example.test".into(), id.to_string()));
+    sqlx::query("INSERT INTO account_identities(issuer,provider_subject,user_id,verified_email) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING").bind(&issuer).bind(&sub).bind(id).bind(format!("{id}@example.test")).execute(pool).await.unwrap();
+    let family = Uuid::new_v4();
+    sqlx::query("INSERT INTO registered_session_families(id,client_id,user_id,identity_issuer,identity_subject,expires_at) VALUES($1,'noesis-daily',$2,$3,$4,now()+interval '1 hour')").bind(family).bind(id).bind(issuer).bind(sub).execute(pool).await.unwrap();
+    let auth = AuthService::with_pool(JWT_SECRET.into(), Some(pool.clone()));
+    let token = auth
+        .generate_jwt_token(
+            &id.to_string(),
+            "free",
+            &["basic:access".into(), "session:registered".into()],
+            0,
+        )
+        .unwrap();
+    let u = auth.validate_jwt_token(&token).await.unwrap();
+    sqlx::query("INSERT INTO registered_access_tokens(jti,family_id,expires_at) VALUES($1,$2,now()+interval '1 hour')").bind(u.jti).bind(family).execute(pool).await.unwrap();
+    token
 }
 #[tokio::test]
 #[serial]
@@ -514,17 +544,10 @@ async fn enrollment_pending_confirmation_replay_and_independent_relationships() 
     let sub = Uuid::new_v4().to_string();
     let email = format!("{claimant}@example.test");
     sqlx::query("INSERT INTO account_identities(issuer,provider_subject,user_id,verified_email) VALUES($1,$2,$3,$4)").bind(issuer).bind(&sub).bind(claimant).bind(&email).execute(&pool).await.unwrap();
-    let browser = app
-        .clone()
-        .layer(axum::Extension(noesis_api::cf_access::CfIdentity {
-            issuer: issuer.into(),
-            sub,
-            email,
-            groups: vec![],
-        }));
+    let browser = app.clone();
     let subject:Uuid=sqlx::query_scalar("INSERT INTO corpus_subjects(owner_user_id,subject_key,canonical_name) VALUES($1,$2,'Synthetic enrollment') RETURNING id").bind(owner).bind(Uuid::new_v4().to_string()).fetch_one(&pool).await.unwrap();
-    let owner_token = jwt(&pool, owner);
-    let claim_token = jwt(&pool, claimant);
+    let owner_token = registered_jwt(&pool, owner).await;
+    let claim_token = registered_jwt(&pool, claimant).await;
     let (status, invite) = call(
         &browser,
         "POST",
@@ -576,7 +599,7 @@ async fn enrollment_pending_confirmation_replay_and_independent_relationships() 
             &browser,
             "POST",
             &confirm,
-            Some(&jwt(&pool, outsider)),
+            Some(&registered_jwt(&pool, outsider).await),
             json!({})
         )
         .await
@@ -616,7 +639,7 @@ async fn enrollment_pending_confirmation_replay_and_independent_relationships() 
         &app,
         "GET",
         "/api/v1/users/me/context",
-        Some(&jwt(&pool, outsider)),
+        Some(&registered_jwt(&pool, outsider).await),
         Value::Null,
     )
     .await
@@ -632,7 +655,7 @@ async fn enrollment_pending_confirmation_replay_and_independent_relationships() 
         &app,
         "GET",
         "/api/v1/users/me/context",
-        Some(&jwt(&pool, outsider)),
+        Some(&registered_jwt(&pool, outsider).await),
         Value::Null,
     )
     .await
@@ -700,36 +723,146 @@ async fn email_link_verifies_signature_audience_and_single_use_without_merging_a
         header.kid = Some("synthetic".into());
         jsonwebtoken::encode(&header,&json!({"iss":server.uri(),"sub":format!("sub-{email}"),"email":email,"aud":[audience],"iat":chrono::Utc::now().timestamp(),"exp":chrono::Utc::now().timestamp()+300}),&key).unwrap()
     };
-    async fn finish(app: &axum::Router, challenge: &Value, proof: String) -> (StatusCode, Value) {
-        let req = Request::post("/api/v1/account/email-links/complete")
+    std::env::set_var("NOESIS_ACCOUNT_ORIGIN", "https://account.example.test");
+    sqlx::query("INSERT INTO account_identities(issuer,provider_subject,user_id,verified_email) VALUES($1,$2,$3,$4)").bind(server.uri()).bind(format!("sub-{original}")).bind(uid).bind(&original).execute(&pool).await.unwrap();
+    async fn browser_post(
+        app: &axum::Router,
+        path: &str,
+        challenge: &Value,
+        proof: String,
+        cookie: Option<&str>,
+        origin: &str,
+    ) -> (StatusCode, Value, Option<String>) {
+        let mut req = Request::post(path)
             .header("content-type", "application/json")
-            .header("cf-access-jwt-assertion", proof)
-            .body(Body::from(
-                json!({"challenge":challenge["challenge"]}).to_string(),
-            ))
+            .header("origin", origin)
+            .header("cf-access-jwt-assertion", proof);
+        if let Some(cookie) = cookie {
+            req = req.header("cookie", cookie);
+        }
+        let response = app
+            .clone()
+            .oneshot(
+                req.body(Body::from(
+                    json!({"challenge":challenge["challenge"],"confirm":true}).to_string(),
+                ))
+                .unwrap(),
+            )
+            .await
             .unwrap();
-        let response = app.clone().oneshot(req).await.unwrap();
         let status = response.status();
+        let cookie = response
+            .headers()
+            .get("set-cookie")
+            .map(|h| h.to_str().unwrap().split(';').next().unwrap().to_string());
         let bytes = response.into_body().collect().await.unwrap().to_bytes();
         (
             status,
             serde_json::from_slice(&bytes).unwrap_or(Value::Null),
+            cookie,
         )
     }
+    let origin = "https://account.example.test";
+    // The original attack: an unregistered victim's fresh identity plus stolen URL
+    // cannot bind the browser or complete the attacker's pending email change.
     assert_eq!(
-        finish(&app, &challenge, proof(&desired, "wrong-audience"))
-            .await
-            .0,
+        browser_post(
+            &app,
+            "/api/v1/account/email-links/begin",
+            &challenge,
+            proof(&desired, "shared-test-audience"),
+            None,
+            origin
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    assert_eq!(
+        browser_post(
+            &app,
+            "/api/v1/account/email-links/complete",
+            &challenge,
+            proof(&desired, "shared-test-audience"),
+            None,
+            origin
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    for page in ["begin", "verify"] {
+        let uri = format!(
+            "/api/v1/account/email-links/{page}?challenge={}",
+            challenge["challenge"].as_str().unwrap()
+        );
+        assert_eq!(
+            call(&app, "GET", &uri, None, Value::Null).await.0,
+            StatusCode::OK
+        );
+    }
+    let bound:bool=sqlx::query_scalar("SELECT browser_bound_at IS NOT NULL OR consumed_at IS NOT NULL FROM account_email_links WHERE token_hash=$1").bind(hash_secret(challenge["challenge"].as_str().unwrap())).fetch_one(&pool).await.unwrap();
+    assert!(!bound);
+    let (status, _, cookie) = browser_post(
+        &app,
+        "/api/v1/account/email-links/begin",
+        &challenge,
+        proof(&original, "shared-test-audience"),
+        None,
+        origin,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let cookie = cookie.unwrap();
+    assert_eq!(
+        browser_post(
+            &app,
+            "/api/v1/account/email-links/complete",
+            &challenge,
+            proof(&desired, "shared-test-audience"),
+            Some(&cookie),
+            "https://attacker.example.test"
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    assert_eq!(
+        browser_post(
+            &app,
+            "/api/v1/account/email-links/complete",
+            &challenge,
+            proof(&desired, "wrong-audience"),
+            Some(&cookie),
+            origin
+        )
+        .await
+        .0,
         StatusCode::UNAUTHORIZED
     );
-    let (status, result) = finish(&app, &challenge, proof(&desired, "shared-test-audience")).await;
+    let (status, result, _) = browser_post(
+        &app,
+        "/api/v1/account/email-links/complete",
+        &challenge,
+        proof(&desired, "shared-test-audience"),
+        Some(&cookie),
+        origin,
+    )
+    .await;
     assert_eq!(status, StatusCode::OK, "{result}");
     assert_eq!(result["account_id"], uid.to_string());
     assert_eq!(result["preferred_email"], desired);
     assert_eq!(
-        finish(&app, &challenge, proof(&desired, "shared-test-audience"))
-            .await
-            .0,
+        browser_post(
+            &app,
+            "/api/v1/account/email-links/complete",
+            &challenge,
+            proof(&desired, "shared-test-audience"),
+            Some(&cookie),
+            origin
+        )
+        .await
+        .0,
         StatusCode::BAD_REQUEST
     );
     let stored: String = sqlx::query_scalar("SELECT email FROM users WHERE id=$1")
@@ -748,10 +881,28 @@ async fn email_link_verifies_signature_audience_and_single_use_without_merging_a
         json!({"email":taken}),
     )
     .await;
+    let (status, _, cookie) = browser_post(
+        &app,
+        "/api/v1/account/email-links/begin",
+        &challenge,
+        proof(&original, "shared-test-audience"),
+        None,
+        origin,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let cookie = cookie.unwrap();
     assert_eq!(
-        finish(&app, &challenge, proof(&taken, "shared-test-audience"))
-            .await
-            .0,
+        browser_post(
+            &app,
+            "/api/v1/account/email-links/complete",
+            &challenge,
+            proof(&taken, "shared-test-audience"),
+            Some(&cookie),
+            origin
+        )
+        .await
+        .0,
         StatusCode::CONFLICT
     );
     let preferred: String =
@@ -761,4 +912,220 @@ async fn email_link_verifies_signature_audience_and_single_use_without_merging_a
             .await
             .unwrap();
     assert_eq!(preferred, desired);
+}
+#[tokio::test]
+#[serial]
+async fn bounded_runtime_role_enforces_rls_and_resets_pooled_context() {
+    let runtime = std::env::var("TEST_SHARED_RUNTIME_URL")
+        .expect("bounded runtime URL required for role verification");
+    let runtime = PgPoolOptions::new()
+        .max_connections(1)
+        .connect(&runtime)
+        .await
+        .unwrap();
+    let flags: (bool, bool) =
+        sqlx::query_as("SELECT rolsuper,rolbypassrls FROM pg_roles WHERE rolname=current_user")
+            .fetch_one(&runtime)
+            .await
+            .unwrap();
+    assert_eq!(flags, (false, false));
+    assert!(sqlx::query("SET ROLE postgres")
+        .execute(&runtime)
+        .await
+        .is_err());
+    assert!(
+        sqlx::query("CREATE TABLE public.runtime_escape_probe(id integer)")
+            .execute(&runtime)
+            .await
+            .is_err()
+    );
+    let (_, pool) = app().await;
+    let uid = user(&pool).await;
+    let subject:Uuid=sqlx::query_scalar("INSERT INTO corpus_subjects(owner_user_id,subject_key,canonical_name) VALUES($1,$2,'Runtime RLS synthetic') RETURNING id").bind(uid).bind(Uuid::new_v4().to_string()).fetch_one(&pool).await.unwrap();
+    sqlx::query("INSERT INTO subject_grants(subject_id,owner_user_id,grantee_user_id,grantor_user_id,can_edit) VALUES($1,$2,$2,$2,true)").bind(subject).bind(uid).execute(&pool).await.unwrap();
+    sqlx::query("INSERT INTO subject_profile_revisions(subject_id,owner_user_id,revision,profile,source_hash,changed_by) VALUES($1,$2,1,'{}',$3,$2)").bind(subject).bind(uid).bind("a".repeat(64)).execute(&pool).await.unwrap();
+    let count: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM subject_profile_revisions WHERE subject_id=$1")
+            .bind(subject)
+            .fetch_one(&runtime)
+            .await
+            .unwrap();
+    assert_eq!(count, 0);
+    let mut tx = runtime.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.account_id',$1,true)")
+        .bind(uid.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let count: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM subject_profile_revisions WHERE subject_id=$1")
+            .bind(subject)
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
+    assert_eq!(count, 1);
+    tx.commit().await.unwrap();
+    let count: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM subject_profile_revisions WHERE subject_id=$1")
+            .bind(subject)
+            .fetch_one(&runtime)
+            .await
+            .unwrap();
+    assert_eq!(count, 0);
+    let configured = std::env::var("TEST_SHARED_RUNTIME_URL").unwrap();
+    std::env::remove_var("TEST_SHARED_RUNTIME_URL");
+    let (unbounded, _) = app().await;
+    std::env::set_var("TEST_SHARED_RUNTIME_URL", configured);
+    assert_eq!(
+        call(
+            &unbounded,
+            "GET",
+            "/api/v1/users/me/context",
+            Some(&jwt(&pool, uid)),
+            Value::Null
+        )
+        .await
+        .0,
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+}
+#[tokio::test]
+#[serial]
+async fn enrollment_pins_only_owned_member_relationships_and_grants_after_confirmation() {
+    let (app, pool) = app().await;
+    let owner = user(&pool).await;
+    let recipient = user(&pool).await;
+    let other = user(&pool).await;
+    let owner_token = registered_jwt(&pool, owner).await;
+    let recipient_token = registered_jwt(&pool, recipient).await;
+    async fn subject(pool: &PgPool, owner: Uuid) -> Uuid {
+        sqlx::query_scalar("INSERT INTO corpus_subjects(owner_user_id,subject_key,canonical_name) VALUES($1,$2,'Pinned pair synthetic') RETURNING id").bind(owner).bind(Uuid::new_v4().to_string()).fetch_one(pool).await.unwrap()
+    }
+    let selected = subject(&pool, owner).await;
+    let nonmember = subject(&pool, owner).await;
+    let pair:Uuid=sqlx::query_scalar("INSERT INTO corpus_relationships(owner_user_id,relationship_key,relationship_kind,label) VALUES($1,$2,'pair','Explicit joint projection') RETURNING id").bind(owner).bind(Uuid::new_v4().to_string()).fetch_one(&pool).await.unwrap();
+    sqlx::query("INSERT INTO corpus_relationship_members(relationship_id,subject_id,owner_user_id,member_role,position) VALUES($1,$2,$3,'member',1)").bind(pair).bind(selected).bind(owner).execute(&pool).await.unwrap();
+    assert_eq!(
+        call(
+            &app,
+            "POST",
+            "/api/v1/account/enrollments",
+            Some(&owner_token),
+            json!({"subject_id":nonmember,"relationship_ids":[pair]})
+        )
+        .await
+        .0,
+        StatusCode::BAD_REQUEST
+    );
+    let other_pair:Uuid=sqlx::query_scalar("INSERT INTO corpus_relationships(owner_user_id,relationship_key,relationship_kind,label) VALUES($1,$2,'pair','Other owner') RETURNING id").bind(other).bind(Uuid::new_v4().to_string()).fetch_one(&pool).await.unwrap();
+    assert_eq!(
+        call(
+            &app,
+            "POST",
+            "/api/v1/account/enrollments",
+            Some(&owner_token),
+            json!({"subject_id":selected,"relationship_ids":[other_pair]})
+        )
+        .await
+        .0,
+        StatusCode::BAD_REQUEST
+    );
+    let (status, invite) = call(
+        &app,
+        "POST",
+        "/api/v1/account/enrollments",
+        Some(&owner_token),
+        json!({"subject_id":selected,"relationship_ids":[pair],"sharing_reader_id":owner}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{invite}");
+    let (status, preview) = call(
+        &app,
+        "POST",
+        "/api/v1/account/enrollments/preview",
+        Some(&recipient_token),
+        json!({"token":invite["token"]}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        preview["relationships"],
+        json!([{"id":pair,"label":"Explicit joint projection"}])
+    );
+    let (status, claim) = call(
+        &app,
+        "POST",
+        "/api/v1/account/enrollments/claim",
+        Some(&recipient_token),
+        json!({"token":invite["token"],"accept_sharing":true}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(claim["status"], "pending_owner_confirmation");
+    assert_eq!(
+        call(
+            &app,
+            "GET",
+            "/api/v1/users/me/context",
+            Some(&recipient_token),
+            Value::Null
+        )
+        .await
+        .1["relationships"],
+        json!([])
+    );
+    sqlx::query("UPDATE corpus_relationships SET reconciliation_state='archived',archived_at=now() WHERE id=$1").bind(pair).execute(&pool).await.unwrap();
+    let path = format!(
+        "/api/v1/account/enrollments/{}/confirm",
+        invite["id"].as_str().unwrap()
+    );
+    assert_eq!(
+        call(&app, "POST", &path, Some(&owner_token), json!({}))
+            .await
+            .0,
+        StatusCode::CONFLICT
+    );
+    assert_eq!(
+        call(
+            &app,
+            "POST",
+            "/api/v1/account/enrollments",
+            Some(&owner_token),
+            json!({"subject_id":selected,"relationship_ids":[pair]})
+        )
+        .await
+        .0,
+        StatusCode::BAD_REQUEST
+    );
+    sqlx::query("UPDATE corpus_relationships SET reconciliation_state='verified',archived_at=NULL WHERE id=$1").bind(pair).execute(&pool).await.unwrap();
+    assert_eq!(
+        call(&app, "POST", &path, Some(&owner_token), json!({}))
+            .await
+            .0,
+        StatusCode::OK
+    );
+    let ctx = call(
+        &app,
+        "GET",
+        "/api/v1/users/me/context",
+        Some(&recipient_token),
+        Value::Null,
+    )
+    .await
+    .1;
+    assert_eq!(ctx["relationships"][0]["id"], pair.to_string());
+    assert_eq!(ctx["subjects"][0]["can_edit"], true);
+    assert_eq!(ctx["subjects"][0]["can_manage_enrollment"], false);
+    sqlx::query("UPDATE relationship_grants SET revoked_at=now() WHERE relationship_id=$1 AND grantee_user_id=$2").bind(pair).bind(recipient).execute(&pool).await.unwrap();
+    let ctx = call(
+        &app,
+        "GET",
+        "/api/v1/users/me/context",
+        Some(&recipient_token),
+        Value::Null,
+    )
+    .await
+    .1;
+    assert_eq!(ctx["relationships"], json!([]));
+    assert_eq!(ctx["subjects"].as_array().unwrap().len(), 1);
 }

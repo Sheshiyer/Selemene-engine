@@ -26,22 +26,22 @@ Configure `CF_END_USER_ISSUER` and `CF_END_USER_AUDIENCE` for a separate end-use
 
 ## Enrollment
 
-Fresh interactive CF identity is required to create, claim or confirm enrollment. The browser can use the same configured end-user application.
+A fresh CF identity or a current registered human session is required to create, claim or confirm enrollment. Registered identity is recovered through the live access JTI, family and provider link; it never grants interactive/browser authority. Password JWTs and API keys do not qualify.
 
-- `POST /account/enrollments`: `{subject_id,intended_email?,sharing_reader_id?,expires_in_seconds?}`. Only that corpus resource owner can create; default TTL one day, maximum seven days. Returns `{id,token,subject_id,sharing_reader_id,expires_in}` once. Store the returned token privately; PostgreSQL stores only its digest.
-- `POST /account/enrollments/preview`: `{token}` returns the selected subject name and disclosed sharing reader. Requires authentication. The recipient must see this before acceptance.
+- `POST /account/enrollments`: `{subject_id,intended_email?,sharing_reader_id?,expires_in_seconds?,relationship_ids?}`. Only that corpus resource owner can create; default TTL one day, maximum seven days. Returns `{id,token,subject_id,sharing_reader_id,expires_in}` once. Store the returned token privately; PostgreSQL stores only its digest.
+- `POST /account/enrollments/preview`: `{token}` returns the selected subject name, disclosed sharing reader and pinned `relationships:[{id,label}]`. Requires authentication. The recipient must see this before acceptance.
 - `POST /account/enrollments/claim`: `{token,accept_sharing:true}`. A pre-bound intended email must match fresh verified proof. Unknown emails consume the claim and return `pending_owner_confirmation`, granting no profile access.
 - `GET /account/enrollments`: owner's pending claims and verified claim email, for explicit confirmation.
-- `POST /account/enrollments/:id/confirm`: owner confirms an unexpired live pending claim. Duplicate subject/self mappings fail; names and birth dates are never account selectors.
+- `POST /account/enrollments/:id/confirm`: owner confirms an unexpired live pending claim. Confirmation atomically grants read to only the pinned relationships after rechecking they are active. Creation requires each relationship to be owned by the invitation owner and contain the selected subject; composite references preserve that exact membership. Duplicate subject/self mappings fail; names and birth dates are never account selectors.
 - `DELETE /account/enrollments/:id`: owner revokes an unconfirmed enrollment. Accepted grants are separately revoked through the owner-managed grant records.
 
 All account paths above have prefix `/api/v1`.
 
 ## Preferred email verification
 
-`POST /api/v1/account/email-links` accepts `{email}` only from fresh CF proof or a live registered human session. Password JWTs/API keys do not establish verified email authority. Returns `{status:"pending_verification",challenge,expires_in:600,complete_path,verification_path}`. Open `verification_path` at the trusted API origin in the browser after selecting the requested email at the identity provider. The challenge is high entropy state bound to the existing account and exact requested address.
+`POST /api/v1/account/email-links` accepts `{email}` only from fresh CF proof or a live registered human session. Password JWTs/API keys do not establish verified email authority. Returns `{status:"pending_verification",challenge,expires_in:600,complete_path,verification_path}`. Open `verification_path` at the trusted API origin while signed in to the initiating account first. The challenge is high entropy state bound to the existing account and exact requested address.
 
-`GET /api/v1/account/email-links/verify?challenge=...` directly verifies a fresh provider assertion **before** normal account resolution, then atomically consumes the challenge, rejects account/email collisions, links to the original UUID, and sets the preferred verified email. `POST /api/v1/account/email-links/complete` with `{challenge}` performs the same completion and returns JSON. Original login email is preserved. Completion revokes registered session families, returns `reauthentication_required:true`, and records an audit event. A collision requires deliberate reconciliation; it never merges accounts.
+`verification_path` now points to `/api/v1/account/email-links/begin?challenge=...`. GET only renders a confirmation page. POST `/begin` requires explicit `confirm:true`, exact `NOESIS_ACCOUNT_ORIGIN`, and fresh CF proof mapping to the initiating account. It sets a Secure HttpOnly browser nonce and returns the `/verify` page link. After switching provider email, GET `/verify` renders only; POST `/complete` with `{challenge,confirm:true}` requires the source-bound browser cookie, exact Origin and fresh requested-email proof. Challenge possession alone grants nothing. Successful completion preserves the stable UUID/original login email, revokes registered families, and returns `reauthentication_required:true`. See [the rollout runbook](ROLLOUT.md) for browser and database authority setup.
 
 Private responses are no-store. Profile/run readers use transaction-local account context plus explicit current-grant queries and FORCE RLS, including table-owner enforcement. Superuser/BYPASSRLS connections remain privileged; production runtime-role verification is a separate rollout gate.
 

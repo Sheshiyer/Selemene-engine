@@ -16,6 +16,8 @@ pub struct SubjectAccess {
     pub can_read: bool,
     pub can_edit: bool,
     pub can_calculate: bool,
+    #[serde(default)]
+    pub can_manage_enrollment: bool,
     pub profile_revision: i64,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]

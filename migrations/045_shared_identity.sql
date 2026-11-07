@@ -54,9 +54,21 @@ CREATE TABLE subject_enrollments (
 );
 CREATE INDEX subject_enrollments_subject ON subject_enrollments(subject_id);
 CREATE INDEX subject_enrollments_owner ON subject_enrollments(owner_user_id);
+ALTER TABLE subject_enrollments ADD UNIQUE(id,subject_id,owner_user_id);
+CREATE TABLE subject_enrollment_relationships (
+ enrollment_id uuid NOT NULL, subject_id uuid NOT NULL, owner_user_id uuid NOT NULL,
+ relationship_id uuid NOT NULL, member_role varchar(24) NOT NULL,
+ PRIMARY KEY(enrollment_id,relationship_id),
+ FOREIGN KEY(enrollment_id,subject_id,owner_user_id) REFERENCES subject_enrollments(id,subject_id,owner_user_id),
+ FOREIGN KEY(relationship_id,owner_user_id) REFERENCES corpus_relationships(id,owner_user_id),
+ FOREIGN KEY(relationship_id,subject_id,member_role) REFERENCES corpus_relationship_members(relationship_id,subject_id,member_role)
+);
+CREATE INDEX subject_enrollment_relationships_member ON subject_enrollment_relationships(relationship_id,subject_id,member_role);
+CREATE INDEX subject_enrollment_relationships_owner ON subject_enrollment_relationships(owner_user_id);
 CREATE TABLE account_email_links (
  token_hash text PRIMARY KEY CHECK(token_hash ~ '^[0-9a-f]{64}$'), user_id uuid NOT NULL REFERENCES users(id),
  requested_email text NOT NULL CHECK(requested_email=lower(btrim(requested_email))),
+ browser_nonce_hash text CHECK(browser_nonce_hash ~ '^[0-9a-f]{64}$'), browser_bound_at timestamptz,
  expires_at timestamptz NOT NULL, consumed_at timestamptz, created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX account_email_links_user ON account_email_links(user_id);
