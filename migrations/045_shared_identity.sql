@@ -3,7 +3,7 @@ CREATE TABLE account_identities (
  issuer text NOT NULL, provider_subject text NOT NULL, user_id uuid NOT NULL REFERENCES users(id),
  verified_email text NOT NULL CHECK (verified_email=lower(btrim(verified_email))),
  verified_at timestamptz NOT NULL DEFAULT now(), revoked_at timestamptz,
- PRIMARY KEY(issuer,provider_subject), CHECK(length(issuer)>0 AND length(provider_subject)>0)
+ PRIMARY KEY(issuer,provider_subject), UNIQUE(issuer,provider_subject,user_id), CHECK(length(issuer)>0 AND length(provider_subject)>0)
 );
 CREATE INDEX account_identities_user ON account_identities(user_id);
 CREATE INDEX account_identities_email ON account_identities(verified_email);
@@ -74,11 +74,11 @@ CREATE TABLE registered_session_families (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), client_id text NOT NULL, user_id uuid NOT NULL REFERENCES users(id),
  identity_issuer text NOT NULL, identity_subject text NOT NULL,
  expires_at timestamptz NOT NULL, revoked_at timestamptz,
- FOREIGN KEY(identity_issuer,identity_subject) REFERENCES account_identities(issuer,provider_subject)
+ FOREIGN KEY(identity_issuer,identity_subject,user_id) REFERENCES account_identities(issuer,provider_subject,user_id)
 );
 ALTER TABLE registered_auth_codes ADD COLUMN identity_issuer text NOT NULL;
 ALTER TABLE registered_auth_codes ADD COLUMN identity_subject text NOT NULL;
-ALTER TABLE registered_auth_codes ADD FOREIGN KEY(identity_issuer,identity_subject) REFERENCES account_identities(issuer,provider_subject);
+ALTER TABLE registered_auth_codes ADD FOREIGN KEY(identity_issuer,identity_subject,user_id) REFERENCES account_identities(issuer,provider_subject,user_id);
 CREATE INDEX registered_session_families_user ON registered_session_families(user_id);
 CREATE TABLE registered_refresh_tokens (
  token_hash text PRIMARY KEY, family_id uuid NOT NULL REFERENCES registered_session_families(id), rotated_at timestamptz

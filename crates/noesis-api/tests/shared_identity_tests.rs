@@ -298,6 +298,16 @@ async fn real_reader_matrix_revision_conflict_rls_and_revocation() {
             .0,
         StatusCode::OK
     );
+    let a = json!({"expected_revision":1,"patch":{"full_name":"Concurrent A"}});
+    let b = json!({"expected_revision":1,"patch":{"full_name":"Concurrent B"}});
+    let (a, b) = tokio::join!(
+        call(&app, "PATCH", &path, Some(&own_token), a),
+        call(&app, "PATCH", &path, Some(&own_token), b)
+    );
+    assert!(
+        (a.0 == StatusCode::OK && b.0 == StatusCode::CONFLICT)
+            || (b.0 == StatusCode::OK && a.0 == StatusCode::CONFLICT)
+    );
     // FORCE RLS tested as non-superuser, including a pooled transaction without context.
     sqlx::query("DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='identity_test_reader') THEN CREATE ROLE identity_test_reader NOLOGIN; END IF; END $$").execute(&pool).await.unwrap();
     sqlx::query("GRANT SELECT ON subject_profile_revisions,subject_grants,user_account_state TO identity_test_reader").execute(&pool).await.unwrap();
@@ -324,7 +334,7 @@ async fn real_reader_matrix_revision_conflict_rls_and_revocation() {
             .fetch_one(&mut *tx)
             .await
             .unwrap();
-    assert_eq!(count, 1);
+    assert_eq!(count, 2);
     tx.commit().await.unwrap();
     sqlx::query(
         "UPDATE subject_grants SET revoked_at=now() WHERE subject_id=$1 AND grantee_user_id=$2",
