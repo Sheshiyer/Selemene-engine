@@ -21,7 +21,241 @@
     "svg_preview": {
       "status": "absent"
     },
-    "seed": 1337
+    "seed": 1337,
+    "geometry": {
+      "unit": "relative",
+      "frame": {
+        "center": [
+          0,
+          0
+        ],
+        "radius": 1,
+        "y_axis": "up"
+      },
+      "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
+      "circles": [
+        {
+          "cx": 0,
+          "cy": 0,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.333333,
+          "cy": 0,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.166667,
+          "cy": 0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.166667,
+          "cy": 0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.333333,
+          "cy": 0,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.166667,
+          "cy": -0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.166667,
+          "cy": -0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.666667,
+          "cy": 0,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.5,
+          "cy": 0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.333333,
+          "cy": 0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": 0,
+          "cy": 0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.333333,
+          "cy": 0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.5,
+          "cy": 0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.666667,
+          "cy": 0,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.5,
+          "cy": -0.288675,
+          "r": 0.333333
+        },
+        {
+          "cx": -0.333333,
+          "cy": -0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": 0,
+          "cy": -0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.333333,
+          "cy": -0.57735,
+          "r": 0.333333
+        },
+        {
+          "cx": 0.5,
+          "cy": -0.288675,
+          "r": 0.333333
+        }
+      ],
+      "polygons": [],
+      "polylines": [],
+      "lines": [],
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0.333333,
+          0
+        ],
+        [
+          0.166667,
+          0.288675
+        ],
+        [
+          -0.166667,
+          0.288675
+        ],
+        [
+          -0.333333,
+          0
+        ],
+        [
+          -0.166667,
+          -0.288675
+        ],
+        [
+          0.166667,
+          -0.288675
+        ],
+        [
+          0.666667,
+          0
+        ],
+        [
+          0.5,
+          0.288675
+        ],
+        [
+          0.333333,
+          0.57735
+        ],
+        [
+          0,
+          0.57735
+        ],
+        [
+          -0.333333,
+          0.57735
+        ],
+        [
+          -0.5,
+          0.288675
+        ],
+        [
+          -0.666667,
+          0
+        ],
+        [
+          -0.5,
+          -0.288675
+        ],
+        [
+          -0.333333,
+          -0.57735
+        ],
+        [
+          0,
+          -0.57735
+        ],
+        [
+          0.333333,
+          -0.57735
+        ],
+        [
+          0.5,
+          -0.288675
+        ]
+      ],
+      "measures": {
+        "circle_count": 19,
+        "circle_radius": 0.333333,
+        "lattice_spacing": 0.333333
+      }
+    },
+    "provenance_detail": {
+      "form": {
+        "kind": "symbolic_lookup",
+        "source": "wisdom.SACRED_FORMS"
+      },
+      "form_selection": {
+        "kind": "seeded_random",
+        "seed": 1337
+      },
+      "meditation": {
+        "kind": "symbolic_lookup",
+        "source": "wisdom.SACRED_FORMS"
+      },
+      "calculated_geometry": {
+        "status": "calculated",
+        "kind": "deterministic_construction",
+        "source": "geometry.buildGeometry",
+        "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
+        "computed": {
+          "circles": 19,
+          "polygons": 0,
+          "polylines": 0,
+          "lines": 0,
+          "points": 19,
+          "solid": false
+        }
+      },
+      "rendered_artifact": {
+        "status": "not_implemented",
+        "reason": "The engine renders no SVG or image; clients draw result.geometry from its numbers, and svg_preview only validates a caller-supplied svg_template."
+      },
+      "svg_preview": {
+        "kind": "caller_template_validation",
+        "status": "absent"
+      },
+      "witness_prompts": {
+        "kind": "templated_narrative"
+      }
+    }
   },
   "witness_prompts": [
     {
@@ -56,5 +290,12 @@
     }
   ],
   "calculated_at": "2024-01-15T14:30:00.000Z",
-  "processing_time_ms": 0
+  "processing_time_ms": 0,
+  "provenance": {
+    "runtime_kind": "typescript",
+    "implementation_version": "1.0.0",
+    "cached": false,
+    "fallback_used": false,
+    "confidence": 1
+  }
 }
