@@ -54,6 +54,10 @@ pub struct EngineOutput {
 /// `result.provenance` remains separate from this contract-v1 block.
 pub const CONTRACT_PROVENANCE_KEY: &str = "__contract_provenance";
 
+/// Transport scaffolding for the contract-v1 `witness_prompts` list (prompt,
+/// context, themes), which `witness_prompt` alone cannot carry (GH #1411).
+pub const CONTRACT_WITNESS_PROMPTS_KEY: &str = "__contract_witness_prompts";
+
 #[derive(Deserialize)]
 struct EngineOutputWire {
     engine_id: String,
@@ -63,6 +67,8 @@ struct EngineOutputWire {
     metadata: CalculationMetadata,
     #[serde(default)]
     provenance: Option<Value>,
+    #[serde(default)]
+    witness_prompts: Option<Value>,
 }
 
 impl<'de> Deserialize<'de> for EngineOutput {
@@ -84,6 +90,25 @@ impl<'de> Deserialize<'de> for EngineOutput {
                 }
             }
             result.insert(CONTRACT_PROVENANCE_KEY.to_string(), raw);
+        }
+        if let Some(raw) = wire.witness_prompts {
+            let parsed: Vec<crate::contract::WitnessPrompt> =
+                serde_json::from_value(raw.clone()).map_err(serde::de::Error::custom)?;
+            // Every API envelope carries this list, so a non-object result keeps
+            // the single `witness_prompt` rather than failing the whole output.
+            if let Some(result) = wire.result.as_object_mut() {
+                if let Some(existing) = result.get(CONTRACT_WITNESS_PROMPTS_KEY) {
+                    let existing: Vec<crate::contract::WitnessPrompt> =
+                        serde_json::from_value(existing.clone())
+                            .map_err(serde::de::Error::custom)?;
+                    if existing != parsed {
+                        return Err(serde::de::Error::custom(
+                            "conflicting contract witness_prompts lists",
+                        ));
+                    }
+                }
+                result.insert(CONTRACT_WITNESS_PROMPTS_KEY.to_string(), raw);
+            }
         }
         Ok(Self {
             engine_id: wire.engine_id,
@@ -107,8 +132,15 @@ impl Serialize for EngineOutput {
             serde_json::from_value::<crate::contract::Provenance>(raw.clone())
                 .map_err(serde::ser::Error::custom)?;
         }
-        let mut wire =
-            serializer.serialize_struct("EngineOutput", 5 + usize::from(provenance.is_some()))?;
+        let witness_prompts = result
+            .as_object_mut()
+            .and_then(|object| object.remove(CONTRACT_WITNESS_PROMPTS_KEY));
+        if let Some(raw) = &witness_prompts {
+            serde_json::from_value::<Vec<crate::contract::WitnessPrompt>>(raw.clone())
+                .map_err(serde::ser::Error::custom)?;
+        }
+        let fields = 5 + usize::from(provenance.is_some()) + usize::from(witness_prompts.is_some());
+        let mut wire = serializer.serialize_struct("EngineOutput", fields)?;
         wire.serialize_field("engine_id", &self.engine_id)?;
         wire.serialize_field("result", &result)?;
         wire.serialize_field("witness_prompt", &self.witness_prompt)?;
@@ -116,6 +148,9 @@ impl Serialize for EngineOutput {
         wire.serialize_field("metadata", &self.metadata)?;
         if let Some(provenance) = provenance {
             wire.serialize_field("provenance", &provenance)?;
+        }
+        if let Some(witness_prompts) = witness_prompts {
+            wire.serialize_field("witness_prompts", &witness_prompts)?;
         }
         wire.end()
     }
@@ -127,6 +162,14 @@ impl EngineOutput {
     pub fn contract_provenance(&self) -> Option<crate::contract::Provenance> {
         self.result
             .get(CONTRACT_PROVENANCE_KEY)
+            .and_then(|raw| serde_json::from_value(raw.clone()).ok())
+    }
+
+    /// The full contract witness prompt list, if supplied and valid. Outputs
+    /// without one keep only `witness_prompt`; none is synthesized from it.
+    pub fn contract_witness_prompts(&self) -> Option<Vec<crate::contract::WitnessPrompt>> {
+        self.result
+            .get(CONTRACT_WITNESS_PROMPTS_KEY)
             .and_then(|raw| serde_json::from_value(raw.clone()).ok())
     }
 }

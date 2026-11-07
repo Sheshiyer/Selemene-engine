@@ -1613,6 +1613,29 @@ fn take_contract_provenance(
     }
 }
 
+/// Remove the bridge's reserved `witness_prompts` list from an engine
+/// output's `result` and parse it (GH #1411). Like the provenance block, an
+/// unparseable list is still removed so it never leaks, and `None` is returned.
+fn take_contract_witness_prompts(
+    output: &mut EngineOutput,
+) -> Option<Vec<noesis_core::contract::WitnessPrompt>> {
+    let raw = output
+        .result
+        .as_object_mut()
+        .and_then(|o| o.remove(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY))?;
+    match serde_json::from_value(raw) {
+        Ok(prompts) => Some(prompts),
+        Err(e) => {
+            tracing::warn!(
+                engine_id = %output.engine_id,
+                error = %e,
+                "sidecar witness_prompts failed contract-v1 parse; dropping them"
+            );
+            None
+        }
+    }
+}
+
 /// Contract-v1 provenance for a native engine, derived from the metadata the
 /// engine itself filled in (`fallback_used` and `provider_id` are set
 /// explicitly at every native construction site). `confidence` is omitted
@@ -1668,11 +1691,23 @@ impl ApiEngineOutputResponse {
         let provenance = envelope_contract_provenance(&mut output, is_native);
         let generated_image = output.result.get("generated_image").cloned();
         let generated_audio = output.result.get("generated_audio").cloned();
-        let witness_prompts = vec![ApiWitnessPrompt {
-            prompt: output.witness_prompt.clone(),
-            context: None,
-            themes: Vec::new(),
-        }];
+        // The full list (with context and themes) when the engine supplied one;
+        // otherwise the single `witness_prompt`, as before (GH #1411).
+        let witness_prompts = match take_contract_witness_prompts(&mut output) {
+            Some(prompts) if !prompts.is_empty() => prompts
+                .into_iter()
+                .map(|p| ApiWitnessPrompt {
+                    prompt: p.prompt,
+                    context: p.context,
+                    themes: p.themes.unwrap_or_default(),
+                })
+                .collect(),
+            _ => vec![ApiWitnessPrompt {
+                prompt: output.witness_prompt.clone(),
+                context: None,
+                themes: Vec::new(),
+            }],
+        };
         let calculated_at = output.metadata.timestamp.to_rfc3339();
         let processing_time_ms = output.metadata.calculation_time_ms;
 
@@ -5137,6 +5172,18 @@ mod p4_contract_tests {
             wire["result"]["provenance_detail"]["calculated_geometry"]["status"],
             "calculated"
         );
+
+        // GH #1411: the envelope carries every witness prompt with its context
+        // and themes, matching what the engine emitted; nothing leaks into result.
+        assert_eq!(
+            wire["witness_prompts"],
+            sidecar["sidecar_response"]["witness_prompts"]
+        );
+        assert_eq!(wire["witness_prompts"].as_array().unwrap().len(), 3);
+        assert_eq!(wire["witness_prompt"], wire["witness_prompts"][0]["prompt"]);
+        assert!(wire["result"]
+            .get(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY)
+            .is_none());
     }
 
     #[test]
