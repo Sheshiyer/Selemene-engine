@@ -380,3 +380,76 @@ async fn panchanga_result_schema_matches_engine_output() {
         );
     }
 }
+
+/// The documented vedic-clock schema must name exactly the top-level fields
+/// the engine emits, with the same JSON types; only the conditional blocks
+/// are optional. Fails when either side drifts.
+#[tokio::test]
+async fn vedic_clock_result_schema_matches_engine_output() {
+    use engine_vedic_clock::{ConsciousnessEngine, VedicClockEngine};
+
+    // A located request with an activity emits every optional block too.
+    let input: noesis_core::EngineInput = serde_json::from_value(serde_json::json!({
+        "current_time": "2026-03-08T06:43:16Z",
+        "options": {
+            "timezone_offset": 330,
+            "latitude": 12.9716,
+            "longitude": 77.5946,
+            "activity": "work",
+        },
+    }))
+    .expect("engine input");
+    let output = VedicClockEngine::new()
+        .calculate(input)
+        .await
+        .expect("vedic-clock calculates");
+    let actual = output.result.as_object().expect("result object");
+
+    let spec = openapi_spec().await;
+    let schemas = spec["components"]["schemas"]
+        .as_object()
+        .expect("components.schemas object");
+    let schema = &schemas["VedicClockResultSchema"];
+    let documented = schema_properties(schema, schemas);
+    let emitted: BTreeSet<String> = actual.keys().cloned().collect();
+    assert_eq!(
+        documented, emitted,
+        "schema properties vs engine output keys"
+    );
+
+    let optional = BTreeSet::from(["activity_timing", "hora", "choghadiya", "day_periods"]);
+    let required: BTreeSet<&str> = schema["required"]
+        .as_array()
+        .expect("required list")
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    let expected_required: BTreeSet<&str> = emitted
+        .iter()
+        .map(String::as_str)
+        .filter(|key| !optional.contains(key))
+        .collect();
+    assert_eq!(required, expected_required);
+
+    for (key, value) in actual {
+        let property = &schema["properties"][key];
+        let declared: Vec<&str> = match &property["type"] {
+            Value::String(t) => vec![t.as_str()],
+            Value::Array(ts) => ts.iter().filter_map(Value::as_str).collect(),
+            other => panic!("{key}: schema declares no type: {other}"),
+        };
+        let emitted_type = match value {
+            Value::Bool(_) => "boolean",
+            Value::String(_) => "string",
+            Value::Number(n) if n.is_u64() || n.is_i64() => "integer",
+            Value::Number(_) => "number",
+            Value::Null => "null",
+            Value::Array(_) => "array",
+            Value::Object(_) => "object",
+        };
+        assert!(
+            declared.contains(&emitted_type),
+            "{key}: emitted {emitted_type}, schema declares {declared:?}"
+        );
+    }
+}
