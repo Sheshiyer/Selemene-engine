@@ -45,16 +45,55 @@ function fillTemplate(template: string, replacements: Record<string, string | nu
   return result
 }
 
+/** Template family a witness prompt came from (GH #1411). */
+export type WitnessTemplate =
+  | 'form_contemplation'
+  | 'meditation'
+  | 'intention'
+  | 'numerology'
+  | 'integration'
+
 /**
- * Generate witness prompts for a sacred form contemplation
+ * How one witness prompt was derived: its template family, whether it is an
+ * inquiry (a question) or guidance (an instruction), and the deterministic
+ * `result.*` fields whose values it was filled from.
  */
-export function generateWitnessPrompts(
+export interface WitnessDerivation {
+  template: WitnessTemplate
+  mode: 'inquiry' | 'guidance'
+  inputs: string[]
+}
+
+/** Result field each template placeholder is filled from. */
+const PLACEHOLDER_INPUTS: Record<string, string> = {
+  form: 'result.form.name',
+  elements: 'result.form.elements',
+  number: 'result.form.numerology',
+  prompt: 'result.meditation.prompt',
+}
+
+/** The result fields a template actually uses, in the order they appear. */
+function placeholderInputs(template: string): string[] {
+  const inputs: string[] = []
+  for (const match of template.matchAll(/\{(\w+)\}/g)) {
+    const path = PLACEHOLDER_INPUTS[match[1]]
+    if (path && !inputs.includes(path)) inputs.push(path)
+  }
+  return inputs
+}
+
+/**
+ * Generate witness prompts for a sacred form contemplation, together with
+ * how each one was derived from the deterministic result.
+ */
+export function generateWitnessNarrative(
   form: SacredForm,
   intention?: string,
   seed?: number,
-): WitnessPrompt[] {
+): { prompts: WitnessPrompt[]; derivation: WitnessDerivation[] } {
   const rng = new SeededRandom(seed ?? getDefaultSeed())
   const prompts: WitnessPrompt[] = []
+  const derivation: WitnessDerivation[] = []
 
   // Primary contemplation prompt based on the form
   const contemplationTemplate = rng.pick(FORM_CONTEMPLATION_TEMPLATES)
@@ -66,6 +105,11 @@ export function generateWitnessPrompts(
     context: `Contemplating ${form.name}`,
     themes: ['geometry', 'pattern', 'awareness', ...form.elements],
   })
+  derivation.push({
+    template: 'form_contemplation',
+    mode: 'inquiry',
+    inputs: placeholderInputs(contemplationTemplate),
+  })
 
   // Meditation guidance
   const meditationTemplate = rng.pick(MEDITATION_TEMPLATES)
@@ -76,6 +120,11 @@ export function generateWitnessPrompts(
     context: 'Meditation guidance',
     themes: ['meditation', 'presence', 'visualization'],
   })
+  derivation.push({
+    template: 'meditation',
+    mode: 'guidance',
+    inputs: placeholderInputs(meditationTemplate),
+  })
 
   // If intention provided, add intention-based prompt
   if (intention) {
@@ -83,6 +132,11 @@ export function generateWitnessPrompts(
       prompt: `Holding your intention — "${intention}" — how does ${form.name} reflect or inform it?`,
       context: 'Intention reflection',
       themes: ['intention', 'guidance', 'clarity'],
+    })
+    derivation.push({
+      template: 'intention',
+      mode: 'inquiry',
+      inputs: ['result.intention', 'result.form.name'],
     })
   } else {
     // Otherwise add numerology or integration prompt
@@ -96,6 +150,11 @@ export function generateWitnessPrompts(
         context: 'Numerological resonance',
         themes: ['numerology', 'symbolism', 'synchronicity'],
       })
+      derivation.push({
+        template: 'numerology',
+        mode: 'inquiry',
+        inputs: placeholderInputs(numTemplate),
+      })
     } else {
       const intTemplate = rng.pick(INTEGRATION_TEMPLATES)
       prompts.push({
@@ -103,8 +162,24 @@ export function generateWitnessPrompts(
         context: 'Integration',
         themes: ['integration', 'embodiment', 'practice'],
       })
+      derivation.push({
+        template: 'integration',
+        mode: 'inquiry',
+        inputs: placeholderInputs(intTemplate),
+      })
     }
   }
 
-  return prompts.slice(0, 3)
+  return { prompts: prompts.slice(0, 3), derivation: derivation.slice(0, 3) }
+}
+
+/**
+ * Generate witness prompts for a sacred form contemplation
+ */
+export function generateWitnessPrompts(
+  form: SacredForm,
+  intention?: string,
+  seed?: number,
+): WitnessPrompt[] {
+  return generateWitnessNarrative(form, intention, seed).prompts
 }

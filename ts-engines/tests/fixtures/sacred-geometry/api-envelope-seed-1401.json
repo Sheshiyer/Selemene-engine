@@ -258,7 +258,9 @@
         "seed": 1401
       },
       "meditation": {
+        "duration_suggestion": "static_constant",
         "kind": "symbolic_lookup",
+        "mode": "guidance",
         "source": "wisdom.SACRED_FORMS"
       },
       "rendered_artifact": {
@@ -270,7 +272,33 @@
         "status": "rejected"
       },
       "witness_prompts": {
-        "kind": "templated_narrative"
+        "kind": "templated_narrative",
+        "prompts": [
+          {
+            "inputs": [
+              "result.form.name"
+            ],
+            "mode": "inquiry",
+            "template": "form_contemplation"
+          },
+          {
+            "inputs": [
+              "result.meditation.prompt"
+            ],
+            "mode": "guidance",
+            "template": "meditation"
+          },
+          {
+            "inputs": [
+              "result.form.numerology",
+              "result.form.name"
+            ],
+            "mode": "inquiry",
+            "template": "numerology"
+          }
+        ],
+        "seed": 1401,
+        "source": "witness.generateWitnessPrompts"
       }
     },
     "seed": 1401,
@@ -282,8 +310,34 @@
   "witness_prompt": "As you visualize Flower of Life, what patterns do you notice in your own life?",
   "witness_prompts": [
     {
+      "context": "Contemplating Flower of Life",
       "prompt": "As you visualize Flower of Life, what patterns do you notice in your own life?",
-      "themes": []
+      "themes": [
+        "geometry",
+        "pattern",
+        "awareness",
+        "circle",
+        "hexagon",
+        "vesica piscis"
+      ]
+    },
+    {
+      "context": "Meditation guidance",
+      "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe. Take three breaths and notice what arises.",
+      "themes": [
+        "meditation",
+        "presence",
+        "visualization"
+      ]
+    },
+    {
+      "context": "Numerological resonance",
+      "prompt": "The number 6 resonates through Flower of Life. Where does this number appear in your life?",
+      "themes": [
+        "numerology",
+        "symbolism",
+        "synchronicity"
+      ]
     }
   ]
 }
