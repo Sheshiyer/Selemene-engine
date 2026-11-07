@@ -31,7 +31,12 @@ async fn grant(pool: &PgPool, owner: Uuid, subject: Uuid, actor: Uuid, edit: boo
     sqlx::query("INSERT INTO subject_grants(subject_id,owner_user_id,grantee_user_id,can_edit,can_calculate,grantor_user_id) VALUES($1,$2,$3,$4,$4,$2)")
         .bind(subject).bind(owner).bind(actor).bind(edit).execute(pool).await.unwrap();
 }
-fn publication(profile: &str, sha: char, expected: serde_json::Value) -> WitnessPublish {
+fn publication(
+    subject: Uuid,
+    profile: &str,
+    sha: char,
+    expected: serde_json::Value,
+) -> WitnessPublish {
     let hash = sha.to_string().repeat(64);
     WitnessPublish {
         expected_head: expected,
@@ -41,7 +46,7 @@ fn publication(profile: &str, sha: char, expected: serde_json::Value) -> Witness
             kind: "daily".into(),
             date: "2026-11-07".into(),
             sha256: hash.clone(),
-            object_key: format!("witness-v2/{profile}/daily/2026-11-07/{hash}.json"),
+            object_key: format!("witness-v2/{subject}/{profile}/daily/2026-11-07/{hash}.json"),
             report_schema: "noesis.witness-report.v2".into(),
             packet_sha256: "d".repeat(64),
             contract_sha256: "e".repeat(64),
@@ -62,23 +67,24 @@ async fn publish(
 }
 #[test]
 fn rejects_malformed_descriptors_and_missing_cas() {
-    let good = publication("synthetic-subject", 'a', json!(null));
-    assert!(good.validate("synthetic-subject").is_ok());
+    let subject = Uuid::new_v4();
+    let good = publication(subject, "synthetic-subject", 'a', json!(null));
+    assert!(good.validate(subject, "synthetic-subject").is_ok());
     let mut p = good.clone();
     p.artifact.profile = "another".into();
-    assert!(p.validate("synthetic-subject").is_err());
+    assert!(p.validate(subject, "synthetic-subject").is_err());
     let mut p = good.clone();
     p.artifact.object_key = "witness-v2/../secret.json".into();
-    assert!(p.validate("synthetic-subject").is_err());
+    assert!(p.validate(subject, "synthetic-subject").is_err());
     let mut p = good.clone();
     p.artifact.effective_at = "2026-11-07T06:00:00Z".into();
-    assert!(p.validate("synthetic-subject").is_err());
+    assert!(p.validate(subject, "synthetic-subject").is_err());
     let mut p = good.clone();
     p.artifact.date = "2026-02-30".into();
-    assert!(p.validate("synthetic-subject").is_err());
+    assert!(p.validate(subject, "synthetic-subject").is_err());
     let mut p = good.clone();
     p.artifact.sha256 = "A".repeat(64);
-    assert!(p.validate("synthetic-subject").is_err());
+    assert!(p.validate(subject, "synthetic-subject").is_err());
     let mut p = good.clone();
     p.expected_head = json!({"sha256":"a".repeat(64),"revision":0});
     assert!(p.expected().is_err());
@@ -109,7 +115,7 @@ async fn real_postgres_catalog_authorization_cas_rollback_and_rls() {
     grant(&pool, owner, subject, owner, true).await;
     grant(&pool, owner, subject, reader, false).await;
     grant(&pool, owner, subject, editor, true).await;
-    let first = publication(&profile, 'a', json!(null));
+    let first = publication(subject, &profile, 'a', json!(null));
     for actor in [reader, editor, outsider] {
         assert!(matches!(
             publish(&pool, actor, subject, &first).await,
@@ -133,10 +139,16 @@ async fn real_postgres_catalog_authorization_cas_rollback_and_rls() {
         Err(WitnessCatalogError::Denied)
     ));
     t.rollback().await.unwrap();
+    // A different subject cannot claim an uploaded-but-unaccepted locator either.
+    let unaccepted = publication(Uuid::new_v4(), &profile, '9', json!(null));
+    assert!(matches!(
+        publish(&pool, owner, subject, &unaccepted).await,
+        Err(WitnessCatalogError::Invalid("INVALID_WITNESS_OBJECT_SCOPE"))
+    ));
     // Two publishers with the same expected head cannot both replace it.
     let expected = json!({"sha256":"a".repeat(64),"revision":1});
-    let second = publication(&profile, 'b', expected.clone());
-    let competing = publication(&profile, 'c', expected);
+    let second = publication(subject, &profile, 'b', expected.clone());
+    let competing = publication(subject, &profile, 'c', expected);
     let (a, b) = tokio::join!(
         publish(&pool, owner, subject, &second),
         publish(&pool, owner, subject, &competing)
@@ -173,10 +185,10 @@ async fn real_postgres_catalog_authorization_cas_rollback_and_rls() {
     ));
     // Granting publisher rights is independent of ordinary edit/calculate access.
     sqlx::query("INSERT INTO witness_publish_grants(subject_id,owner_user_id,grantee_user_id,grantor_user_id) VALUES($1,$2,$3,$2)").bind(subject).bind(owner).bind(editor).execute(&pool).await.unwrap();
-    let mut folio = publication(&profile, 'f', json!(null));
+    let mut folio = publication(subject, &profile, 'f', json!(null));
     folio.artifact.kind = "folio".into();
     folio.artifact.object_key = format!(
-        "witness-v2/{profile}/folio/2026-11-07/{}.json",
+        "witness-v2/{subject}/{profile}/folio/2026-11-07/{}.json",
         folio.artifact.sha256
     );
     publish(&pool, editor, subject, &folio).await.unwrap();
@@ -254,9 +266,7 @@ async fn real_postgres_catalog_authorization_cas_rollback_and_rls() {
     grant(&pool, outsider, other_subject, outsider, true).await;
     assert!(matches!(
         publish(&pool, outsider, other_subject, &first).await,
-        Err(WitnessCatalogError::Conflict(
-            "WITNESS_OBJECT_ALREADY_SCOPED"
-        ))
+        Err(WitnessCatalogError::Invalid("INVALID_WITNESS_OBJECT_SCOPE"))
     ));
     // Cross-owner links are rejected by composite FK even on a privileged connection.
     let mut t = tx(&pool, owner).await;

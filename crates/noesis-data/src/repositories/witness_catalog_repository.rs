@@ -103,7 +103,7 @@ pub async fn publish(
 ) -> Result<WitnessPublication, WitnessCatalogError> {
     // Validate before taking a lock, then validate the profile key against DB truth.
     let date = p
-        .validate(&p.artifact.profile)
+        .validate(subject, &p.artifact.profile)
         .map_err(WitnessCatalogError::Invalid)?;
     let expected = p.expected().map_err(WitnessCatalogError::Invalid)?;
     sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))")
@@ -114,7 +114,7 @@ pub async fn publish(
         .execute(&mut **tx)
         .await?;
     let (owner, profile_key) = readable(tx, actor, subject).await?;
-    p.validate(&profile_key)
+    p.validate(subject, &profile_key)
         .map_err(WitnessCatalogError::Invalid)?;
     if actor != owner {
         let granted:Option<Uuid>=sqlx::query_scalar("SELECT grantee_user_id FROM witness_publish_grants WHERE subject_id=$1 AND owner_user_id=$2 AND grantee_user_id=$3 AND revoked_at IS NULL FOR SHARE")

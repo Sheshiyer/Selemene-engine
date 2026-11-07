@@ -35,7 +35,7 @@ The exact body is:
     "kind": "daily",
     "date": "2026-11-07",
     "sha256": "64 lowercase hex characters",
-    "object_key": "witness-v2/synthetic-subject/daily/2026-11-07/<sha256>.json",
+    "object_key": "witness-v2/<subject_uuid>/synthetic-subject/daily/2026-11-07/<sha256>.json",
     "report_schema": "noesis.witness-report.v2",
     "packet_sha256": "64 lowercase hex characters",
     "contract_sha256": "64 lowercase hex characters",
@@ -45,7 +45,7 @@ The exact body is:
 }
 ```
 
-`expected_head` is required. Initial publication uses explicit null; replacement uses `{ "sha256": "<current hash>", "revision": <current head_revision> }`. `kind` is daily or folio, and approval is owner or automatic. The profile must exactly equal the subject's stored key. The date must be canonical and its effective anchor exactly 00:30 UTC (06:00 IST). Keys are strictly derived from profile/kind/date/hash and end in `.json`; accepted object locators cannot be reused across subjects/owners. `report_schema` accepts v1 or v2 so unchanged reviewed v1 bytes can be copied into the scoped immutable prefix before import. No schema/content rewrite is performed here. The descriptor emitted by the v2 worker includes the same fields plus `bytes`; omit `bytes` from this JSON request.
+`expected_head` is required. Initial publication uses explicit null; replacement uses `{ "sha256": "<current hash>", "revision": <current head_revision> }`. `kind` is daily or folio, and approval is owner or automatic. The profile must exactly equal the subject's stored key. The date must be canonical and its effective anchor exactly 00:30 UTC (06:00 IST). Keys are strictly derived from subject UUID/profile/kind/date/hash and end in `.json`; accepted object locators cannot be reused across subjects/owners. `report_schema` accepts v1 or v2 so unchanged reviewed v1 bytes can be copied into the scoped immutable prefix before import. No schema/content rewrite is performed here. The generation descriptor remains frozen under its admitted contract. The delivery adapter copies the exact reviewed bytes into the UUID-scoped immutable key and replaces only `artifact.object_key`; it omits `bytes` from the JSON request. It never rewrites report bodies, hashes, generation receipts or review records.
 
 Success returns `schema: noesis.witness-publication.v1`, subject ID, accepted `entry`, `idempotent`, and the head observed before the request as `previous_head`. Repeating an identical successful request is idempotent while its accepted head is still current. A stale unrelated head returns 409. Revisions increase on each head change; returning to an earlier hash cannot make a stale request valid (ABA protection). Rollback POSTs the original immutable artifact and original approval with the exact current hash/revision; the old version is reused, the new head revision is recorded, and immutable prior acceptance history remains.
 

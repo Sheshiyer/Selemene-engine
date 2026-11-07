@@ -43,7 +43,7 @@ impl WitnessPublish {
         }
         Ok(Some(h))
     }
-    pub fn validate(&self, subject_key: &str) -> Result<NaiveDate, &'static str> {
+    pub fn validate(&self, subject_id: Uuid, subject_key: &str) -> Result<NaiveDate, &'static str> {
         self.expected()?;
         let a = &self.artifact;
         if a.profile != subject_key
@@ -85,8 +85,8 @@ impl WitnessPublish {
         }
         if a.object_key
             != format!(
-                "witness-v2/{}/{}/{}/{}.json",
-                a.profile, a.kind, a.date, a.sha256
+                "witness-v2/{}/{}/{}/{}/{}.json",
+                subject_id, a.profile, a.kind, a.date, a.sha256
             )
         {
             return Err("INVALID_WITNESS_OBJECT_SCOPE");

@@ -47,7 +47,7 @@ CREATE TABLE witness_versions (
  FOREIGN KEY(subject_id,owner_user_id,profile_key) REFERENCES corpus_subjects(id,owner_user_id,subject_key),
  UNIQUE(subject_id,kind,report_date,sha256),
  UNIQUE(id,subject_id,owner_user_id,kind,report_date),
- CHECK(object_key='witness-v2/'||profile_key||'/'||kind||'/'||to_char(report_date,'YYYY-MM-DD')||'/'||sha256||'.json'),
+ CONSTRAINT witness_versions_object_scope_check CHECK(object_key='witness-v2/'||subject_id::text||'/'||profile_key||'/'||kind||'/'||to_char(report_date,'YYYY-MM-DD')||'/'||sha256||'.json'),
  CHECK(effective_at=(report_date::timestamp + interval '30 minutes') AT TIME ZONE 'UTC')
 );
 CREATE INDEX witness_versions_owner ON witness_versions(owner_user_id);
