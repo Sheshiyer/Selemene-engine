@@ -825,6 +825,9 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     // token rather than a session, so they sit outside auth_middleware but are
     // rate limited by IP.
     let desktop_token_routes = Router::new()
+        .route("/sessions/token", post(handlers::sessions::token))
+        .route("/sessions/revoke", post(handlers::sessions::revoke))
+        .route("/account/email-links/complete", post(handlers::shared_identity::complete_email_link))
         .route("/desktop/token", post(handlers::desktop_auth::token))
         .route("/desktop/revoke", post(handlers::desktop_auth::revoke))
         .layer(axum_middleware::from_fn_with_state(
@@ -840,6 +843,17 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/auth/logout", post(handlers::auth::logout))
         // Desktop sign-in starts here in the browser; requires a Cloudflare Access identity.
         .route("/desktop/authorize", get(handlers::desktop_auth::authorize))
+        .route("/sessions/authorize", get(handlers::sessions::authorize))
+        .route("/users/me/context", get(handlers::shared_identity::context).patch(handlers::shared_identity::update_context))
+        .route("/subjects/:id/profile", get(handlers::shared_identity::profile).patch(handlers::shared_identity::update_profile))
+        .route("/subjects/:id/engines/:engine/calculate", post(handlers::shared_identity::calculate))
+        .route("/subjects/:id/readings", get(handlers::shared_identity::readings))
+        .route("/subjects/:id/readings/:reading", get(handlers::shared_identity::reading))
+        .route("/account/enrollments", post(handlers::shared_identity::create_enrollment))
+        .route("/account/enrollments/claim", post(handlers::shared_identity::claim_enrollment))
+        .route("/account/enrollments/:id/confirm", post(handlers::shared_identity::confirm_enrollment))
+        .route("/account/enrollments/:id", axum::routing::delete(handlers::shared_identity::revoke_enrollment))
+        .route("/account/email-links", post(handlers::shared_identity::start_email_link))
         .route(
             "/users/me",
             get(handlers::users::get_me).patch(handlers::users::update_me),

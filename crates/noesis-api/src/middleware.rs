@@ -142,7 +142,7 @@ pub async fn auth_middleware(
                 Ok(identity) => {
                     let user = state
                         .user_repository
-                        .find_or_create_cloudflare_user(&identity.email, &identity.sub)
+                        .find_or_create_verified_user(&identity.issuer, &identity.email, &identity.sub)
                         .await
                         .map_err(|e| {
                             ErrorMapper::response(
@@ -177,6 +177,7 @@ pub async fn auth_middleware(
                             &roles,
                         ));
                     req.extensions_mut().insert(InteractivePrincipal);
+                    req.extensions_mut().insert(identity);
                     return Ok(next.run(req).await);
                 }
                 Err(e) => {
@@ -200,7 +201,8 @@ pub async fn auth_middleware(
             if let Some(token) = auth_str.strip_prefix("Bearer ") {
                 match state.auth.validate_jwt_token(token).await {
                     Ok(user) => {
-                        // Insert authenticated user into request extensions
+                        // Registered sessions check live family, account and provider revocation.
+                        crate::handlers::sessions::validate_access(&state, &user).await?;
                         req.extensions_mut().insert(user);
                         return Ok(next.run(req).await);
                     }

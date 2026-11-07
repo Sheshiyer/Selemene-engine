@@ -9,6 +9,7 @@ use tokio::sync::RwLock;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CfIdentity {
+    pub issuer: String,
     pub sub: String,
     pub email: String,
     pub groups: Vec<String>,
@@ -156,6 +157,7 @@ pub fn identity_from_claims(claims: CfAccessClaims) -> Result<CfIdentity, String
     }
 
     Ok(CfIdentity {
+        issuer: claims.iss,
         sub: claims.sub,
         email,
         groups: claims.groups,
@@ -435,6 +437,7 @@ mod tests {
     #[test]
     fn validated_identity_requires_explicit_email_match_for_platform_admin() {
         let identity = CfIdentity {
+            issuer: "https://test.cloudflareaccess.com".into(),
             sub: "cf-sub-123".to_string(),
             email: "sheshnarayan.iyer@gmail.com".to_string(),
             groups: vec![],
