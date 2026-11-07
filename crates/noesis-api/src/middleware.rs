@@ -2,7 +2,7 @@
 
 use crate::billing;
 use axum::{
-    extract::{Request, State},
+    extract::{OriginalUri, Request, State},
     http::{header::AUTHORIZATION, StatusCode},
     middleware::Next,
     response::{IntoResponse, Response},
@@ -124,7 +124,14 @@ pub async fn auth_middleware(
         }
     }
 
-    let end_user = if crate::cf_access::is_shared_browser_path(req.uri().path()) {
+    // Axum strips nest prefixes from req.uri(); OriginalUri retains the
+    // canonical route used to select the independent Access trust boundary.
+    let canonical_uri = req
+        .extensions()
+        .get::<OriginalUri>()
+        .map(|uri| &uri.0)
+        .unwrap_or_else(|| req.uri());
+    let end_user = if crate::cf_access::is_shared_browser_path(canonical_uri.path()) {
         crate::cf_access::end_user_validator()
     } else {
         None
