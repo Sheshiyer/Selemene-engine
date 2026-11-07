@@ -633,4 +633,91 @@ mod tests {
             envelope["provenance"]
         );
     }
+
+    #[tokio::test]
+    async fn panchanga_calculate_keeps_provenance_fields() {
+        // GH #1191: the flat panchanga result (PanchangaResultSchema) carries
+        // provenance and method fields inside `result`. Synthetic envelope:
+        // a native Moshier-fallback calculation for 2000-01-01 12:00 UTC.
+        let envelope = serde_json::json!({
+            "contract_version": "v1",
+            "envelope_version": "v1",
+            "engine_id": "panchanga",
+            "result": {
+                "tithi_index": 25, "tithi_name": "Ekadashi (Krishna)", "tithi_value": 25.246,
+                "nakshatra_index": 14, "nakshatra_name": "Swati", "nakshatra_value": 14.96,
+                "yoga_index": 7, "yoga_name": "Dhriti", "yoga_value": 7.198,
+                "karana_index": 0, "karana_name": "Bava", "karana_value": 51.0,
+                "vara_index": 6, "vara_name": "Shanivara (Saturday)", "vara_basis": "local_date",
+                "solar_longitude": 256.512, "lunar_longitude": 199.467,
+                "julian_day": 2451545.0, "ayanamsa_degrees": 23.857,
+                "position_source": "swiss_ephemeris_moshier",
+                "birth_time_assumed": true
+            },
+            "witness_prompt": "synthetic",
+            "witness_prompts": [],
+            "consciousness_level": 0,
+            "calculated_at": "2026-11-07T00:00:00Z",
+            "processing_time_ms": 1.0,
+            "provenance": {
+                "runtime_kind": "native",
+                "implementation_version": "3.3.1",
+                "cached": false,
+                "fallback_used": true,
+                "backend_id": "native-rust"
+            },
+            "metadata": {
+                "calculation_time_ms": 1.0,
+                "backend": "native-rust",
+                "precision_achieved": "Standard",
+                "cached": false,
+                "timestamp": "2026-11-07T00:00:00Z",
+                "engine_version": "3.3.1",
+                "fallback_used": true
+            }
+        });
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/api/v1/engines/panchanga/calculate"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(envelope.clone()))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let client = NoesisClient::builder()
+            .base_url(server.uri())
+            .api_key("test-key")
+            .build()
+            .unwrap();
+        let input = EngineInput {
+            birth_data: None,
+            current_time: chrono::Utc::now(),
+            location: None,
+            precision: noesis_core::Precision::Standard,
+            options: std::collections::HashMap::new(),
+        };
+
+        let output = client.calculate("panchanga", input).await.unwrap();
+
+        // Every field the API sent arrives unchanged (the SDK also stashes the
+        // envelope provenance under `__contract_provenance`).
+        for (key, value) in envelope["result"].as_object().unwrap() {
+            assert_eq!(&output.result[key], value, "result.{key}");
+        }
+        assert_eq!(output.result["ayanamsa_degrees"], 23.857);
+        assert_eq!(output.result["vara_basis"], "local_date");
+        assert_eq!(output.result["position_source"], "swiss_ephemeris_moshier");
+        assert_eq!(output.result["birth_time_assumed"], true);
+        assert!(output.metadata.fallback_used);
+        let provenance = output
+            .contract_provenance()
+            .expect("API provenance retained");
+        assert!(provenance.fallback_used);
+        assert_eq!(provenance.backend_id.as_deref(), Some("native-rust"));
+
+        // The Markdown renderer (CLI/TUI output) shows them too.
+        let md = crate::render::MarkdownRenderer::default().render_engine_output(&output);
+        for needle in ["swiss_ephemeris_moshier", "local_date", "23.857"] {
+            assert!(md.contains(needle), "rendered report lacks {needle}:\n{md}");
+        }
+    }
 }
