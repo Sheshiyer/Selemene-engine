@@ -1131,3 +1131,92 @@ async fn enrollment_pins_only_owned_member_relationships_and_grants_after_confir
     assert_eq!(ctx["relationships"], json!([]));
     assert_eq!(ctx["subjects"].as_array().unwrap().len(), 1);
 }
+#[tokio::test]
+#[serial]
+async fn service_api_key_reads_owned_context_but_cannot_operate_enrollment_or_email() {
+    let (app, pool) = app().await;
+    let owner = user(&pool).await;
+    let key = new_secret();
+    AuthService::with_pool(JWT_SECRET.into(), Some(pool.clone()))
+        .add_api_key(noesis_auth::ApiKey {
+            key: key.clone(),
+            user_id: owner.to_string(),
+            tier: "free".into(),
+            permissions: vec!["basic:access".into()],
+            created_at: chrono::Utc::now(),
+            expires_at: None,
+            last_used: None,
+            rate_limit: 1000,
+            consciousness_level: 0,
+        })
+        .await
+        .unwrap();
+    async fn request(
+        app: &axum::Router,
+        key: &str,
+        method: &str,
+        path: &str,
+        body: Value,
+    ) -> StatusCode {
+        app.clone()
+            .oneshot(
+                Request::builder()
+                    .method(method)
+                    .uri(path)
+                    .header("x-api-key", key)
+                    .header("content-type", "application/json")
+                    .body(Body::from(body.to_string()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap()
+            .status()
+    }
+    assert_eq!(
+        request(&app, &key, "GET", "/api/v1/users/me/context", Value::Null).await,
+        StatusCode::OK
+    );
+    for (method, path, body) in [
+        (
+            "GET",
+            "/api/v1/account/enrollments".to_string(),
+            Value::Null,
+        ),
+        (
+            "POST",
+            "/api/v1/account/enrollments".to_string(),
+            json!({"subject_id":Uuid::new_v4()}),
+        ),
+        (
+            "POST",
+            "/api/v1/account/enrollments/preview".to_string(),
+            json!({"token":new_secret()}),
+        ),
+        (
+            "POST",
+            "/api/v1/account/enrollments/claim".to_string(),
+            json!({"token":new_secret(),"accept_sharing":true}),
+        ),
+        (
+            "POST",
+            format!("/api/v1/account/enrollments/{}/confirm", Uuid::new_v4()),
+            json!({}),
+        ),
+        (
+            "DELETE",
+            format!("/api/v1/account/enrollments/{}", Uuid::new_v4()),
+            Value::Null,
+        ),
+        (
+            "POST",
+            "/api/v1/account/email-links".to_string(),
+            json!({"email":"synthetic@example.test"}),
+        ),
+    ] {
+        assert_eq!(
+            request(&app, &key, method, &path, body).await,
+            StatusCode::FORBIDDEN,
+            "{method} {path}"
+        );
+    }
+}

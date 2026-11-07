@@ -460,8 +460,10 @@ pub async fn confirm_enrollment(
 pub async fn revoke_enrollment(
     State(s): State<AppState>,
     Extension(u): Extension<AuthUser>,
+    identity: Option<Extension<CfIdentity>>,
     Path(id): Path<Uuid>,
 ) -> Result<Response, HandlerError> {
+    verified_identity(&s, &u, identity).await?;
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
     sqlx::query("UPDATE subject_enrollments SET revoked_at=now() WHERE id=$1 AND owner_user_id=$2 AND confirmed_at IS NULL").bind(id).bind(uid).execute(pool).await.map_err(storage)?;
@@ -812,8 +814,10 @@ pub struct EnrollmentPreview {
 pub async fn preview_enrollment(
     State(s): State<AppState>,
     Extension(u): Extension<AuthUser>,
+    identity: Option<Extension<CfIdentity>>,
     Json(p): Json<EnrollmentPreview>,
 ) -> Result<Response, HandlerError> {
+    verified_identity(&s, &u, identity).await?;
     let pool = db(&s)?;
     active(pool, &u).await?;
     let preview:Value=sqlx::query_scalar("SELECT jsonb_build_object('id',e.id,'subject_id',s.id,'display_name',s.canonical_name,'sharing_reader_id',e.sharing_reader_id,'sharing_reader_name',r.full_name,'relationships',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',r.id,'label',r.label) ORDER BY r.id) FROM subject_enrollment_relationships er JOIN corpus_relationships r ON r.id=er.relationship_id AND r.owner_user_id=er.owner_user_id WHERE er.enrollment_id=e.id),'[]'::jsonb),'requires_owner_confirmation',e.intended_email IS NULL,'expires_at',e.expires_at) FROM subject_enrollments e JOIN corpus_subjects s ON s.id=e.subject_id AND s.owner_user_id=e.owner_user_id LEFT JOIN users r ON r.id=e.sharing_reader_id WHERE e.token_hash=$1 AND e.claimed_at IS NULL AND e.revoked_at IS NULL AND e.expires_at>now()")
@@ -823,7 +827,9 @@ pub async fn preview_enrollment(
 pub async fn pending_enrollments(
     State(s): State<AppState>,
     Extension(u): Extension<AuthUser>,
+    identity: Option<Extension<CfIdentity>>,
 ) -> Result<Response, HandlerError> {
+    verified_identity(&s, &u, identity).await?;
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
     let rows:Vec<Value>=sqlx::query_scalar("SELECT jsonb_build_object('id',id,'subject_id',subject_id,'claimed_by',claimed_by,'claimed_email',claimed_email,'claimed_at',claimed_at,'expires_at',expires_at) FROM subject_enrollments WHERE owner_user_id=$1 AND claimed_at IS NOT NULL AND confirmed_at IS NULL AND revoked_at IS NULL AND expires_at>now() ORDER BY claimed_at DESC LIMIT 100").bind(uid).fetch_all(pool).await.map_err(storage)?;
