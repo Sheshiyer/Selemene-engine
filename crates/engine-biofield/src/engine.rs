@@ -451,6 +451,9 @@ impl ConsciousnessEngine for BiofieldEngine {
         let elapsed = start.elapsed();
 
         let mut result = Self::serialize_result(analysis);
+        if let AnalysisOutcome::Vedic(vedic_result, _) = &outcome {
+            vedic_result.birth_time.write_to(&mut result);
+        }
 
         if let Some(reason) = provenance.mock_reason {
             result["mock_reason"] = json!(reason);
@@ -1149,8 +1152,10 @@ mod tests {
         assert!(output.result["provenance"]["fallback_reason"].is_null());
     }
 
-    /// Boundary: a missing birth time is defaulted to 12:00 UTC (input
-    /// defaulting, not a fallback) and is not reported anywhere in the output.
+    /// Boundary: a missing birth time is defaulted to local 12:00. That is
+    /// input defaulting, not a fallback: the metrics match an explicit 12:00,
+    /// `fallback_used` is unaffected, and `birth_time_assumed` /
+    /// `assumed_birth_time` report the default.
     #[tokio::test]
     async fn test_missing_birth_time_defaults_to_noon_without_fallback() {
         let engine = BiofieldEngine::new();
@@ -1179,6 +1184,23 @@ mod tests {
             untimed_out.metadata.fallback_used,
             noon_out.metadata.fallback_used
         );
+
+        assert_eq!(untimed_out.result["birth_time_assumed"], json!(true));
+        assert_eq!(untimed_out.result["assumed_birth_time"], json!("12:00"));
+        assert_eq!(noon_out.result["birth_time_assumed"], json!(false));
+        assert!(noon_out.result.get("assumed_birth_time").is_none());
+    }
+
+    /// Without birth data there is no birth time to assume: the mock path
+    /// carries neither field.
+    #[tokio::test]
+    async fn test_mock_path_has_no_birth_time_fields() {
+        let output = BiofieldEngine::new()
+            .calculate(create_test_input())
+            .await
+            .unwrap();
+        assert!(output.result.get("birth_time_assumed").is_none());
+        assert!(output.result.get("assumed_birth_time").is_none());
     }
 
     /// Invalid input is a validation error, never a silent mock.
