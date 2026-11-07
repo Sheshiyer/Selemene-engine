@@ -450,15 +450,61 @@ pub struct BiofieldResultSchema {
     pub recommended_practice: String,
 }
 
+/// Top level of the vedic-clock `result`, as `engine_vedic_clock`'s
+/// `build_result` serializes it; the `noesis-api` test
+/// `vedic_clock_result_schema_matches_engine_output` fails if the two drift.
+/// Nested shapes are documented in `docs/engines/vedic-clock.md`.
 #[cfg(feature = "openapi")]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct VedicClockResultSchema {
-    #[schema(example = "Brahma Muhurta")]
-    pub current_segment: String,
-    #[schema(example = "Sattva")]
-    pub guna_bias: String,
-    #[schema(example = "06:12")]
-    pub next_transition_local: String,
+    /// TCM organ for the local hour: organ, element, time_window,
+    /// peak_energy, associated_emotion, recommended_activities.
+    #[schema(value_type = Object)]
+    pub current_organ: Value,
+    /// Ayurvedic dosha period for the local hour: dosha, qualities.
+    #[schema(value_type = Object)]
+    pub current_dosha: Value,
+    /// time_window, organ, dosha, activities, panchanga_quality.
+    #[schema(value_type = Object)]
+    pub recommendation: Value,
+    #[schema(example = "Heart (Fire) time during Pitta period - harmonious energy.")]
+    pub synthesis: String,
+    /// The requested instant (RFC 3339).
+    #[schema(example = "2026-03-08T06:43:16+00:00")]
+    pub calculated_for: String,
+    /// offset_minutes, source (`options.timezone_offset`,
+    /// `birth_data.timezone` or `default_utc`), local_hour.
+    #[schema(value_type = Object)]
+    pub timezone: Value,
+    /// Organ and dosha changes in the next six local hours.
+    #[schema(value_type = Vec<Object>)]
+    pub upcoming_transitions: Vec<Value>,
+    /// Sunrise-bounded day: `status` `computed` (sunrise, sunset,
+    /// next_sunrise, weekday, location) or `not_computed` with
+    /// `not_computed_reason`.
+    #[schema(value_type = Object)]
+    pub vedic_day: Value,
+    /// Every input the result depends on (`inputs`), a `fingerprint` of
+    /// them, and the volatile fields `excluded` from replay.
+    #[schema(value_type = Object)]
+    pub replay: Value,
+    /// Origin of each part: table_lookup, calculated, not_computed,
+    /// caller-supplied, derived_interpretation or templated_narrative.
+    #[schema(value_type = Object)]
+    pub provenance_detail: Value,
+    /// Only when `options.activity` is set.
+    #[schema(value_type = Option<Object>)]
+    pub activity_timing: Option<Value>,
+    /// Only when `vedic_day.status` is `computed`.
+    #[schema(value_type = Option<Object>)]
+    pub hora: Option<Value>,
+    /// Only when `vedic_day.status` is `computed`.
+    #[schema(value_type = Option<Object>)]
+    pub choghadiya: Option<Value>,
+    /// Rahu Kalam, Yama Gandam and Gulika Kaal; only when
+    /// `vedic_day.status` is `computed`.
+    #[schema(value_type = Option<Object>)]
+    pub day_periods: Option<Value>,
 }
 
 #[cfg(feature = "openapi")]
