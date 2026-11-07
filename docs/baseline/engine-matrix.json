@@ -66,7 +66,7 @@
     {
       "engine_id": "panchanga",
       "crate_name": "engine-panchanga",
-      "version": "3.3.1",
+      "version": "3.3.2",
       "required_phase": 0
     },
     {
