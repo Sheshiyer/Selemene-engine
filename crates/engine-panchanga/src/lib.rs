@@ -10,7 +10,7 @@ use chrono::{
 use engine_human_design::ephemeris::{lock_ephemeris, EphemerisCalculator, HDPlanet};
 use libswisseph_sys::tuple_result::simple::{swe_get_ayanamsa_ut, swe_set_sid_mode};
 use libswisseph_sys::SE_SIDM_LAHIRI;
-use noesis_core::{CalculationMetadata, ValidationResult};
+use noesis_core::{CalculationMetadata, ValidationResult, DEFAULT_BIRTH_TIME};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::sync::PoisonError;
@@ -289,6 +289,10 @@ pub struct PanchangaResult {
     /// defaulting, not a calculation fallback: `fallback_used` ignores it.
     #[serde(default)]
     pub birth_time_assumed: bool,
+    /// The local time assumed when `birth_time_assumed` is true (`"12:00"`);
+    /// absent otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub assumed_birth_time: Option<String>,
 }
 
 // ---------------------------------------------------------------------------
@@ -525,6 +529,7 @@ fn build_result(
         ayanamsa_degrees: Some(ayanamsa),
         position_source: Some(position_source),
         birth_time_assumed: false,
+        assumed_birth_time: None,
     };
     (result, position_source.is_fallback())
 }
@@ -690,7 +695,7 @@ impl ConsciousnessEngine for PanchangaEngine {
                     "birth_data is required for Panchanga calculations".into(),
                 )
             })?;
-            let time_str = birth.time.as_deref().unwrap_or("12:00");
+            let time_str = birth.time.as_deref().unwrap_or(DEFAULT_BIRTH_TIME);
 
             // Reject what Swiss Ephemeris cannot parse instead of serving a
             // mean-longitude result computed from a defaulted Julian Day.
@@ -705,6 +710,7 @@ impl ConsciousnessEngine for PanchangaEngine {
             let utc_dt = zone.local_to_utc(&local);
             let mut computed = compute_panchanga_at_instant(&utc_dt, zone.offset_hours_at(&utc_dt));
             computed.0.birth_time_assumed = birth.time.is_none();
+            computed.0.assumed_birth_time = birth.time.is_none().then(|| time_str.to_string());
             computed
         };
         let witness_prompt = generate_witness_prompt(&result);
@@ -1010,9 +1016,11 @@ mod tests {
             Some(PositionSource::SwissEphemerisFiles)
         );
         assert!(!pr.birth_time_assumed);
+        assert_eq!(pr.assumed_birth_time, None);
         assert!(!output.metadata.fallback_used);
         assert_eq!(output.result["position_source"], "swiss_ephemeris_files");
         assert_eq!(output.result["birth_time_assumed"], false);
+        assert!(output.result.get("assumed_birth_time").is_none());
     }
 
     /// Fallback path: the mean-longitude approximation is labelled as such in
@@ -1041,7 +1049,9 @@ mod tests {
             .expect("calculate failed");
         let pr = result_of(&output);
         assert!(pr.birth_time_assumed);
+        assert_eq!(pr.assumed_birth_time.as_deref(), Some("12:00"));
         assert_eq!(output.result["birth_time_assumed"], true);
+        assert_eq!(output.result["assumed_birth_time"], "12:00");
         // Same positions as an explicit noon, so only the flag differs.
         let noon = compute_panchanga("1991-08-13", "12:00", 5.5);
         assert_eq!(pr.tithi_name, noon.tithi_name);
@@ -1111,11 +1121,13 @@ mod tests {
         let obj = output.result.as_object_mut().unwrap();
         obj.remove("position_source");
         obj.remove("birth_time_assumed");
+        obj.remove("assumed_birth_time");
         obj.remove("vara_basis");
         obj.remove("ayanamsa_degrees");
         let pr = result_of(&output);
         assert_eq!(pr.position_source, None);
         assert!(!pr.birth_time_assumed);
+        assert_eq!(pr.assumed_birth_time, None);
         assert_eq!(pr.vara_basis, None);
         assert_eq!(pr.ayanamsa_degrees, None);
         assert!(engine.validate(&output).await.unwrap().valid);

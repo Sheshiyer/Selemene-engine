@@ -359,7 +359,7 @@ Every native Rust engine's calculate envelope (and each native entry in a workfl
 
 Swiss Ephemeris keeps its state per thread on Linux, so every calculation runs under `engine_human_design::lock_ephemeris()`, which applies the resolved ephemeris path to each thread on first use; Moshier substitution is read from the flags each calculation returns.
 
-Bridge (TypeScript) engines keep the block their sidecar emits; a malformed sidecar block is dropped, not replaced. Input defaulting (an unknown timezone resolved to UTC, a missing birth time treated as noon) is not reported as a fallback. A missing birth time is reported in `result` instead: biofield (vedic path), transits and vimshottari set `birth_time_assumed: true` and `assumed_birth_time` (the local time used, `"12:00"`), or `birth_time_assumed: false` when the caller supplied a time, via `noesis_core::BirthTime`. Panchanga sets `birth_time_assumed` only.
+Bridge (TypeScript) engines keep the block their sidecar emits; a malformed sidecar block is dropped, not replaced. Input defaulting (an unknown timezone resolved to UTC, a missing birth time treated as noon) is not reported as a fallback. A missing birth time is reported in `result` instead: biofield (vedic path), transits and vimshottari set `birth_time_assumed: true` and `assumed_birth_time` (the local time used, `"12:00"`), or `birth_time_assumed: false` when the caller supplied a time, via `noesis_core::BirthTime`. Panchanga sets the same two fields from its typed result.
 
 <br>
 
