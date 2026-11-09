@@ -15,7 +15,9 @@ surface. The native calculation now follows these rules:
   including seconds. A supplied `birth_data.timezone` selects the local date
   for vara without shifting that instant. Without birth data, vara uses UTC.
 - Birth mode interprets `birth_data.date` and `time` in its timezone; a missing
-  time uses local noon and sets `birth_time_assumed: true`.
+  time uses local noon and sets `birth_time_assumed: true` and
+  `assumed_birth_time: "12:00"`; `assumed_birth_time` is absent when a time was
+  supplied.
 - IANA zones use their rules at the calculation instant. Fixed `+HH:MM`,
   `-HH:MM` and whole-hour offsets are supported, along with legacy fixed
   `PST`, `CST` and `AEST`. Unknown or malformed zones return a validation error.
@@ -47,8 +49,8 @@ noesis-daily repository retains its accepted readings and its 06:00 IST
 refresh anchor; changing or recalculating those is outside this correction.
 
 The OpenAPI Panchanga schema and `POST /api/legacy/panchanga/calculate`
-carry `position_source`, `birth_time_assumed`, `vara_basis` and
-`ayanamsa_degrees`. Source/basis/ayanamsa are nullable for historical
+carry `position_source`, `birth_time_assumed`, `assumed_birth_time` (only when
+the time was assumed), `vara_basis` and `ayanamsa_degrees`. Source/basis/ayanamsa are nullable for historical
 compatibility; current native calculations report their actual method values.
 The schema mirrors the full flat result (§2) and a drift test keeps them in step.
 
@@ -79,6 +81,7 @@ the flat `PanchangaResult` as `result`. Synthetic example, 2000-01-01 12:00 UTC:
   "julian_day": 2451545.0,    "ayanamsa_degrees": 23.857,       // dated Lahiri value applied
   "position_source": "swiss_ephemeris_files",                   // or swiss_ephemeris_moshier / mean_longitude (fallbacks)
   "birth_time_assumed": false                                   // true when birth time was missing and noon was used
+  // "assumed_birth_time": "12:00"                              // present only when birth_time_assumed is true
 }
 ```
 `vara_basis`, `ayanamsa_degrees` and `position_source` are absent only on results

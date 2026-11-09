@@ -4360,6 +4360,8 @@ struct LegacyPanchangaResponse {
     // Additive provenance fields (#1191).
     position_source: Option<String>,
     birth_time_assumed: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    assumed_birth_time: Option<String>,
     vara_basis: Option<String>,
     ayanamsa_degrees: Option<f64>,
 }
@@ -4449,6 +4451,9 @@ async fn legacy_panchanga_handler(
         birth_time_assumed: panchanga_result["birth_time_assumed"]
             .as_bool()
             .unwrap_or(false),
+        assumed_birth_time: panchanga_result["assumed_birth_time"]
+            .as_str()
+            .map(str::to_string),
         vara_basis: panchanga_result["vara_basis"].as_str().map(str::to_string),
         ayanamsa_degrees: panchanga_result["ayanamsa_degrees"].as_f64(),
     };

@@ -401,6 +401,11 @@ pub struct PanchangaResultSchema {
     /// defaulting, not a calculation fallback.
     #[schema(example = false)]
     pub birth_time_assumed: bool,
+    /// The local time assumed when `birth_time_assumed` is true (`"12:00"`);
+    /// absent otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schema(nullable = false, example = "12:00")]
+    pub assumed_birth_time: Option<String>,
     /// Weekday convention applied by the native engine; absent on old results.
     #[schema(nullable = true)]
     pub vara_basis: Option<PanchangaVaraBasisSchema>,

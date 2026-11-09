@@ -184,6 +184,7 @@ async fn calculated_panchanga_reading_persists_provenance_fields() {
     .await;
     assert_eq!(status, StatusCode::OK, "calculate: {calculated}");
     assert_eq!(calculated["result"]["birth_time_assumed"], true);
+    assert_eq!(calculated["result"]["assumed_birth_time"], "12:00");
 
     let id = wait_for_reading(&pool, uid).await;
     let (status, reading) = send(&router, get_reading(id)).await;
@@ -193,6 +194,7 @@ async fn calculated_panchanga_reading_persists_provenance_fields() {
     for field in [
         "position_source",
         "birth_time_assumed",
+        "assumed_birth_time",
         "vara_basis",
         "ayanamsa_degrees",
         "tithi_index",

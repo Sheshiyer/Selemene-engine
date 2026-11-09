@@ -285,11 +285,20 @@ async fn panchanga_result_schema_documents_provenance_fields() {
     let properties = schema_properties(panchanga, schemas);
     assert!(properties.contains("position_source"));
     assert!(properties.contains("birth_time_assumed"));
+    assert!(properties.contains("assumed_birth_time"));
     assert!(properties.contains("vara_basis"));
     assert!(properties.contains("ayanamsa_degrees"));
     assert_eq!(
         panchanga["properties"]["birth_time_assumed"]["type"],
         "boolean"
+    );
+    let assumed_type = &panchanga["properties"]["assumed_birth_time"]["type"];
+    assert!(
+        assumed_type == "string"
+            || assumed_type
+                .as_array()
+                .is_some_and(|types| types.contains(&serde_json::json!("string"))),
+        "assumed_birth_time type: {assumed_type}"
     );
 
     let source = &schemas["PanchangaPositionSourceSchema"];
@@ -335,9 +344,14 @@ async fn panchanga_result_schema_matches_engine_output() {
         .expect("components.schemas object");
     let panchanga = &schemas["PanchangaResultSchema"];
     let documented = schema_properties(panchanga, schemas);
+    // `assumed_birth_time` is emitted only when the birth time was assumed,
+    // which this supplied-time result is not.
+    let conditional = BTreeSet::from(["assumed_birth_time".to_string()]);
     let emitted: BTreeSet<String> = actual.keys().cloned().collect();
+    assert!(emitted.is_disjoint(&conditional), "{emitted:?}");
+    let emitted_or_conditional: BTreeSet<String> = emitted.union(&conditional).cloned().collect();
     assert_eq!(
-        documented, emitted,
+        documented, emitted_or_conditional,
         "schema properties vs engine output keys"
     );
 
