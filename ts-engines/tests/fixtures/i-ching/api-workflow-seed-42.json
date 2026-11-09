@@ -293,7 +293,36 @@
         },
         "seed": 42
       },
-      "witness_prompt": "What aspects of your situation would you like to examine through this symbolic reading?"
+      "witness_prompt": "What aspects of your situation would you like to examine through this symbolic reading?",
+      "witness_prompts": [
+        {
+          "context": "Primary King Wen hexagram 42. Text status: source_transcribed.",
+          "prompt": "What aspects of your situation would you like to examine through this symbolic reading?",
+          "themes": [
+            "inquiry",
+            "situation",
+            "reflection"
+          ]
+        },
+        {
+          "context": "Changing lines 4 (bottom to top) produce relating hexagram 25.",
+          "prompt": "What changes are you already noticing, and what remains uncertain about them?",
+          "themes": [
+            "change",
+            "uncertainty",
+            "reflection"
+          ]
+        },
+        {
+          "context": "Symbolic reflection, not a prediction or instruction.",
+          "prompt": "What question would help you explore this situation with more agency?",
+          "themes": [
+            "inquiry",
+            "agency",
+            "reflection"
+          ]
+        }
+      ]
     }
   },
   "engine_results": {
@@ -597,7 +626,36 @@
         },
         "seed": 42
       },
-      "witness_prompt": "What aspects of your situation would you like to examine through this symbolic reading?"
+      "witness_prompt": "What aspects of your situation would you like to examine through this symbolic reading?",
+      "witness_prompts": [
+        {
+          "context": "Primary King Wen hexagram 42. Text status: source_transcribed.",
+          "prompt": "What aspects of your situation would you like to examine through this symbolic reading?",
+          "themes": [
+            "inquiry",
+            "situation",
+            "reflection"
+          ]
+        },
+        {
+          "context": "Changing lines 4 (bottom to top) produce relating hexagram 25.",
+          "prompt": "What changes are you already noticing, and what remains uncertain about them?",
+          "themes": [
+            "change",
+            "uncertainty",
+            "reflection"
+          ]
+        },
+        {
+          "context": "Symbolic reflection, not a prediction or instruction.",
+          "prompt": "What question would help you explore this situation with more agency?",
+          "themes": [
+            "inquiry",
+            "agency",
+            "reflection"
+          ]
+        }
+      ]
     }
   },
   "synthesis": null,

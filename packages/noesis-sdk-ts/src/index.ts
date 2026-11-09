@@ -65,7 +65,8 @@ export interface EngineOutput {
   engine_id: string;
   result: Record<string, unknown>;
   witness_prompt?: string;
-  witness_prompts?: string[];
+  /** Contract-v1 prompt objects, as the API sends them (GH #1411). */
+  witness_prompts?: ContractWitnessPrompt[];
   metadata?: Record<string, unknown>;
   consciousness_level?: number;
   calculated_at?: string;

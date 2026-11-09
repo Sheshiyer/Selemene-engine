@@ -1,3 +1,10 @@
+# Witness prompts across the bridge and API — 2026-11-07
+
+- Carry every TypeScript engine's `witness_prompts` (prompt, context, themes) through the bridge, the API envelope, the Rust SDK and the TUI instead of collapsing them to the first prompt's text. `witness_prompt` is still the first prompt, and engines that supply no list keep the single-prompt envelope.
+- Sacred geometry labels each witness prompt beneath the deterministic result: its template family, inquiry versus guidance, and the `result.*` fields it was filled from. The meditation text and its fixed duration suggestion are marked as guidance; prompt wording is unchanged.
+- Fix the TypeScript SDK's `EngineOutput.witness_prompts` type (the API sends objects, not strings) and the premium-asset pipeline's fallback, which took the whole prompt object instead of its text.
+- Saved readings still store only the first prompt; this change does not publish packages or deploy services.
+
 # I Ching provenance across SDK, TUI, workflows and readings — 2026-11-07
 
 - Rust SDK `workflow()` now keeps each engine's contract provenance from `engine_results` (it previously read only `engine_outputs`, which never carries it). Missing or malformed blocks are skipped, never invented.
