@@ -306,10 +306,10 @@ impl VedicApiService {
 
     // ==================== Fallback-Aware Methods (FAPI-098) ====================
 
-    /// Get Panchang with automatic fallback to native calculation on API failure.
+    /// Get Panchang. Kept for callers of the fallback-aware API.
     ///
-    /// If the API call fails with a fallback-eligible error (network, 5xx, rate limit)
-    /// and the fallback calculator is enabled, computes the result locally.
+    /// Panchang is computed natively and never calls the vendor, so there is
+    /// no API failure to fall back from; this is the same as [`Self::panchang`].
     pub async fn panchang_with_fallback(
         &self,
         year: i32,
@@ -322,40 +322,8 @@ impl VedicApiService {
         lng: f64,
         tzone: f64,
     ) -> Result<Panchang> {
-        let start = Instant::now();
-        self.metrics.record_api_call("panchang").await;
-
-        let result = self
-            .client
-            .get_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
-            .await;
-
-        match result {
-            Ok(data) => {
-                self.record_result("panchang", &Ok::<_, crate::VedicApiError>(()), start)
-                    .await;
-                Ok(data)
-            }
-            Err(ref e) if e.should_fallback() && self.fallback.is_enabled() => {
-                let reason = fallback_reason_label(e);
-                warn!(
-                    endpoint = "panchang",
-                    error = %e,
-                    fallback_reason = reason,
-                    "API failed, using native fallback"
-                );
-                self.metrics.record_fallback_trigger("panchang").await;
-                self.metrics.record_fallback_reason(reason).await;
-                self.resilience_metrics.record_native_fallback();
-                self.fallback
-                    .calculate_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
-            }
-            Err(e) => {
-                self.record_result::<()>("panchang", &Err(e.clone()), start)
-                    .await;
-                Err(e)
-            }
-        }
+        self.panchang(year, month, day, hour, minute, second, lat, lng, tzone)
+            .await
     }
 
     /// Get Vimshottari Dasha with automatic fallback to native calculation.
