@@ -1,0 +1,353 @@
+{
+  "_comment": "Real EnneagramEngine.calculate sidecar responses (synthetic inputs, seed 7). calculated_at and processing_time_ms are pinned. Checked against live output by ts-engines/tests/enneagram_provenance.test.ts and replayed through the bridge into the API envelope by crates/noesis-api/src/lib.rs enneagram_api_envelope_lifts_provenance_for_both_paths (GH #1311).",
+  "seed": 7,
+  "cases": [
+    {
+      "name": "assessment-partial",
+      "input": {
+        "consciousness_level": 1,
+        "parameters": {
+          "answers": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            5,
+            5,
+            5,
+            5,
+            5
+          ]
+        },
+        "seed": 7
+      },
+      "sidecar_response": {
+        "engine_id": "enneagram",
+        "result": {
+          "mode": "assessment",
+          "typeSource": "assessment",
+          "assessment": {
+            "scores": [
+              {
+                "type": 7,
+                "normalizedScore": 100
+              },
+              {
+                "type": 1,
+                "normalizedScore": 60
+              },
+              {
+                "type": 2,
+                "normalizedScore": 60
+              },
+              {
+                "type": 3,
+                "normalizedScore": 60
+              },
+              {
+                "type": 4,
+                "normalizedScore": 60
+              },
+              {
+                "type": 5,
+                "normalizedScore": 60
+              },
+              {
+                "type": 6,
+                "normalizedScore": 60
+              },
+              {
+                "type": 8,
+                "normalizedScore": 0
+              },
+              {
+                "type": 9,
+                "normalizedScore": 0
+              }
+            ],
+            "primaryType": {
+              "number": 7,
+              "name": "The Enthusiast",
+              "description": "Spontaneous, versatile, acquisitive, and scattered. Sevens are enthusiastic, optimistic, and adventurous. They fear being trapped in pain and pursue endless positive experiences."
+            },
+            "wing": {
+              "number": 6,
+              "name": "The Loyalist",
+              "description": "Engaging, responsible, anxious, and suspicious. Sixes are reliable and hardworking, yet can be defensive. They fear being without support and seek security in systems and relationships."
+            },
+            "confidence": 1,
+            "tritype": [
+              7,
+              1,
+              2
+            ],
+            "answeredCount": 35,
+            "questionCount": 45,
+            "clampedCount": 0,
+            "note": "These results indicate pattern tendencies, not fixed identity. The Enneagram is a tool for self-observation, not labeling."
+          },
+          "typeAnalysis": {
+            "type": {
+              "number": 7,
+              "name": "The Enthusiast",
+              "coreFear": "Being deprived, in pain, or trapped",
+              "coreDesire": "To be satisfied and content",
+              "coreWeakness": "Gluttony—wanting more and more experiences",
+              "description": "Spontaneous, versatile, acquisitive, and scattered. Sevens are enthusiastic, optimistic, and adventurous. They fear being trapped in pain and pursue endless positive experiences.",
+              "keyMotivations": [
+                "Maintaining freedom and happiness",
+                "Avoiding missing out on worthwhile experiences",
+                "Keeping self excited and occupied",
+                "Avoiding and discharging pain"
+              ],
+              "healthyTraits": [
+                "Joyful and grateful",
+                "Accomplished and focused",
+                "Assimilating experiences deeply",
+                "Present and awed by life",
+                "Versatile and productive"
+              ],
+              "averageTraits": [
+                "Hyperactive and scattered",
+                "Uninhibited and excessive",
+                "Materialistic and acquisitive",
+                "Self-centered and impatient",
+                "Avoiding commitment and depth"
+              ],
+              "unhealthyTraits": [
+                "Impulsive and infantile",
+                "Addictive and debauched",
+                "Manic and out of control",
+                "Panic-stricken and paralyzed",
+                "Claustrophobic and erratic"
+              ]
+            },
+            "wings": [
+              {
+                "number": 6,
+                "name": "The Loyalist"
+              },
+              {
+                "number": 8,
+                "name": "The Challenger"
+              }
+            ],
+            "integration": {
+              "type": 5,
+              "name": "The Investigator",
+              "description": "Sevens access depth and focus of healthy Fives"
+            },
+            "disintegration": {
+              "type": 1,
+              "name": "The Reformer",
+              "description": "Sevens become critical and perfectionistic like unhealthy Ones"
+            },
+            "center": "head",
+            "hornevianGroup": "assertive",
+            "harmonicGroup": "positive"
+          }
+        },
+        "witness_prompts": [
+          {
+            "prompt": "Notice: recognizing The Enthusiast patterns does not mean you ARE this type. What opens when you hold this lightly?",
+            "context": "Pattern vs. identity",
+            "themes": [
+              "non-identification",
+              "freedom",
+              "awareness"
+            ]
+          },
+          {
+            "prompt": "What happens in your body when you feel trapped?",
+            "context": "Type 7 - Somatic awareness",
+            "themes": [
+              "body",
+              "sensation",
+              "embodiment"
+            ]
+          },
+          {
+            "prompt": "What does the The Loyalist bring to how you navigate the world?",
+            "context": "Wing influence - Type 6",
+            "themes": [
+              "wing",
+              "the loyalist",
+              "nuance"
+            ]
+          },
+          {
+            "prompt": "Where do you notice the pattern of being deprived, in pain, or trapped arising in your life?",
+            "context": "Type 7 - The Enthusiast core fear",
+            "themes": [
+              "fear",
+              "pattern recognition",
+              "the enthusiast"
+            ]
+          }
+        ],
+        "calculated_at": "2026-11-09T00:00:00.000Z",
+        "processing_time_ms": 1,
+        "provenance": {
+          "runtime_kind": "typescript",
+          "implementation_version": "1.0.0",
+          "cached": false,
+          "fallback_used": false,
+          "backend_id": "enneagram-assessment",
+          "confidence": 0.78
+        }
+      }
+    },
+    {
+      "name": "lookup",
+      "input": {
+        "consciousness_level": 1,
+        "parameters": {
+          "type": 4,
+          "wing": 5
+        },
+        "seed": 7
+      },
+      "sidecar_response": {
+        "engine_id": "enneagram",
+        "result": {
+          "mode": "lookup",
+          "typeSource": "user-supplied",
+          "suppliedWing": 5,
+          "typeAnalysis": {
+            "type": {
+              "number": 4,
+              "name": "The Individualist",
+              "coreFear": "Having no identity or personal significance",
+              "coreDesire": "To find themselves and their significance",
+              "coreWeakness": "Envy—feeling deficient and longing for what others have",
+              "description": "Expressive, dramatic, self-absorbed, and temperamental. Fours are sensitive, creative, and emotionally honest. They fear being without identity and create a unique self-image.",
+              "keyMotivations": [
+                "Expressing individuality and uniqueness",
+                "Creating an identity from inner experiences",
+                "Protecting self through withdrawal",
+                "Taking care of emotional needs before attending to others"
+              ],
+              "healthyTraits": [
+                "Inspired and highly creative",
+                "Self-aware and introspective",
+                "Emotionally honest and authentic",
+                "Compassionate toward suffering",
+                "Transforming pain into beauty"
+              ],
+              "averageTraits": [
+                "Melancholic and withdrawn",
+                "Self-conscious and envious",
+                "Moody and hypersensitive",
+                "Self-indulgent with feelings",
+                "Feeling misunderstood and different"
+              ],
+              "unhealthyTraits": [
+                "Depressed and hopeless",
+                "Self-destructive and alienated",
+                "Tormented by self-contempt",
+                "Emotionally blocked",
+                "Despising self and life"
+              ]
+            },
+            "wings": [
+              {
+                "number": 3,
+                "name": "The Achiever"
+              },
+              {
+                "number": 5,
+                "name": "The Investigator"
+              }
+            ],
+            "integration": {
+              "type": 1,
+              "name": "The Reformer",
+              "description": "Fours access objectivity and discipline of healthy Ones"
+            },
+            "disintegration": {
+              "type": 2,
+              "name": "The Helper",
+              "description": "Fours become clingy and manipulative like unhealthy Twos"
+            },
+            "center": "heart",
+            "hornevianGroup": "withdrawn",
+            "harmonicGroup": "reactive"
+          }
+        },
+        "witness_prompts": [
+          {
+            "prompt": "What happens in your body when others seem to have what you lack?",
+            "context": "Type 4 - Somatic awareness",
+            "themes": [
+              "body",
+              "sensation",
+              "embodiment"
+            ]
+          },
+          {
+            "prompt": "What does the The Investigator bring to how you navigate the world?",
+            "context": "Wing influence - Type 5",
+            "themes": [
+              "wing",
+              "the investigator",
+              "nuance"
+            ]
+          },
+          {
+            "prompt": "Where do you notice the pattern of having no identity or personal significance arising in your life?",
+            "context": "Type 4 - The Individualist core fear",
+            "themes": [
+              "fear",
+              "pattern recognition",
+              "the individualist"
+            ]
+          },
+          {
+            "prompt": "What becomes possible when you can simply observe this pattern?",
+            "context": "Open inquiry",
+            "themes": [
+              "self-inquiry",
+              "curiosity",
+              "compassion"
+            ]
+          }
+        ],
+        "calculated_at": "2026-11-09T00:00:00.000Z",
+        "processing_time_ms": 1,
+        "provenance": {
+          "runtime_kind": "typescript",
+          "implementation_version": "1.0.0",
+          "cached": false,
+          "fallback_used": false,
+          "backend_id": "enneagram-type-lookup"
+        }
+      }
+    }
+  ]
+}
