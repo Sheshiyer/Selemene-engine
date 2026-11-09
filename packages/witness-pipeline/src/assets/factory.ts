@@ -5,6 +5,7 @@
 import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 import type { SelemeneEngineOutput } from '../index.js';
+import type { ReportLevel } from '../modes/types.js';
 
 export interface SourcePackInput {
   personId: string;
@@ -13,7 +14,7 @@ export interface SourcePackInput {
   outputDir: string;
   deterministicOnly?: boolean;
   patternLearning?: { extracted: number; upserted: number; skipped: number };
-  reportLevel?: string;
+  reportLevel?: ReportLevel;
 }
 
 export interface SourcePack {
@@ -23,7 +24,7 @@ export interface SourcePack {
     created_at: string;
     reading_length: number;
     engines: string[];
-    report_level?: string;
+    report_level?: ReportLevel;
     quality: { facts_count: number; gate_status: string; pattern_learning?: { extracted: number; upserted: number; skipped: number } };
   };
   reflectionQuestions: string[];

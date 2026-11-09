@@ -93,7 +93,7 @@ async function main() {
 
   const patterns = extractReportPatterns({
     mode: mode.frontmatter.mode,
-    reportLevel: 'L0',
+    reportLevel: req.report_level,
     subjectNames: [subject.name],
     passes: runResult.passes,
   });
@@ -107,7 +107,7 @@ async function main() {
     engineResults,
     outputDir: sourcePackDir,
     patternLearning,
-    reportLevel: 'L0',
+    reportLevel: req.report_level,
   });
   console.log('Source pack created at', sourcePackDir);
   console.log('Manifest quality:', sourcePack.manifest.quality);

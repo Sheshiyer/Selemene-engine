@@ -102,6 +102,31 @@ describe('createSourcePack', () => {
     }
   });
 
+  it('records the report level chosen for the run', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'source-pack-level-'));
+    try {
+      const pack = await createSourcePack({
+        personId: 'p1',
+        readingMarkdown: '# Test',
+        engineResults: [],
+        outputDir: dir,
+        reportLevel: 'L2',
+      });
+
+      expect(pack.manifest.report_level).toBe('L2');
+      expect(JSON.parse(readFileSync(pack.paths.manifest, 'utf-8')).report_level).toBe('L2');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('only accepts known report levels', () => {
+    // Compile-time check; `pnpm typecheck` fails if an unknown level type-checks.
+    // @ts-expect-error 'L9' is not a ReportLevel
+    const input: Parameters<typeof createSourcePack>[0] = { personId: 'p1', readingMarkdown: '', engineResults: [], outputDir: '', reportLevel: 'L9' };
+    expect(input.reportLevel).toBe('L9');
+  });
+
   it('defaults report_level to L3', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'source-pack-level-'));
     try {
