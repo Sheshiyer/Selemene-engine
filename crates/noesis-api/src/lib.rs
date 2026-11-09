@@ -5380,6 +5380,10 @@ mod p4_contract_tests {
         assert!(persisted["result"]
             .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
             .is_none());
+        // GH #1411: the witness scaffolding key is never stored either.
+        assert!(!persisted
+            .to_string()
+            .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
     }
 
     #[test]
@@ -5406,6 +5410,10 @@ mod p4_contract_tests {
         assert!(persisted["engine_outputs"]["i-ching"]
             .get("provenance")
             .is_none());
+        // GH #1411: the witness scaffolding key is never stored either.
+        assert!(!persisted
+            .to_string()
+            .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
 
         let wire =
             serde_json::to_value(ApiWorkflowResultResponse::new(workflow, provenance)).unwrap();
@@ -5510,6 +5518,10 @@ mod p4_contract_tests {
             assert_eq!(result, &sidecar["result"], "{path}");
             assert_eq!(result["derivation"]["line_values"]["origin"], "cast");
             assert!(result.get(noesis_bridge::CONTRACT_PROVENANCE_KEY).is_none());
+            assert!(!stored
+                .result_data
+                .to_string()
+                .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
             // By design the contract block is response-only, never stored.
             assert!(!stored.result_data.to_string().contains("\"runtime_kind\""));
         }
