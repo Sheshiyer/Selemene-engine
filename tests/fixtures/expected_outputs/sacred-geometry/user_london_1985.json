@@ -2,19 +2,18 @@
   "engine_id": "sacred-geometry",
   "result": {
     "form": {
-      "id": "flower-of-life",
-      "name": "Flower of Life",
-      "description": "An ancient symbol composed of multiple evenly-spaced, overlapping circles arranged in a flower-like pattern with six-fold symmetry. It is considered to contain the patterns of creation.",
-      "symbolism": "Unity, creation, and the interconnectedness of all life. Contains the blueprint for all existence - from the structure of atoms to galaxies.",
+      "id": "tetrahedron",
+      "name": "Tetrahedron",
+      "description": "The simplest Platonic solid, consisting of four equilateral triangular faces. Associated with the element of Fire.",
+      "symbolism": "Fire, transformation, and the spark of life. Represents the first physical form, the most stable structure, and the foundation of all geometry.",
       "elements": [
-        "circle",
-        "hexagon",
-        "vesica piscis"
+        "triangle",
+        "point"
       ],
-      "numerology": 6
+      "numerology": 4
     },
     "meditation": {
-      "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe.",
+      "prompt": "Feel the stability of three points resting on a surface while one point reaches upward. Where does the fire element move within you?",
       "duration_suggestion": "5-15 minutes"
     },
     "intention": null,
@@ -32,189 +31,127 @@
         "radius": 1,
         "y_axis": "up"
       },
-      "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
-      "circles": [
-        {
-          "cx": 0,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.333333,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.166667,
-          "cy": 0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.166667,
-          "cy": 0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.333333,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.166667,
-          "cy": -0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.166667,
-          "cy": -0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.666667,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.5,
-          "cy": 0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.333333,
-          "cy": 0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0,
-          "cy": 0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.333333,
-          "cy": 0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.5,
-          "cy": 0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.666667,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.5,
-          "cy": -0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.333333,
-          "cy": -0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0,
-          "cy": -0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.333333,
-          "cy": -0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.5,
-          "cy": -0.288675,
-          "r": 0.333333
-        }
-      ],
+      "construction": "Tetrahedron: the 4 vertices from their canonical coordinates, scaled to circumradius 1, with edges joining vertex pairs at the minimum distance (6 edges); drawn as an orthographic wireframe projection along a vertex (3-fold axis), turned so an outermost vertex points up and scaled to touch the unit circle.",
+      "circles": [],
       "polygons": [],
       "polylines": [],
-      "lines": [],
+      "lines": [
+        {
+          "x1": 0,
+          "y1": 0,
+          "x2": 0,
+          "y2": 1
+        },
+        {
+          "x1": 0,
+          "y1": 0,
+          "x2": -0.866025,
+          "y2": -0.5
+        },
+        {
+          "x1": 0,
+          "y1": 0,
+          "x2": 0.866025,
+          "y2": -0.5
+        },
+        {
+          "x1": 0,
+          "y1": 1,
+          "x2": -0.866025,
+          "y2": -0.5
+        },
+        {
+          "x1": 0,
+          "y1": 1,
+          "x2": 0.866025,
+          "y2": -0.5
+        },
+        {
+          "x1": -0.866025,
+          "y1": -0.5,
+          "x2": 0.866025,
+          "y2": -0.5
+        }
+      ],
       "points": [
         [
           0,
           0
         ],
         [
-          0.333333,
-          0
-        ],
-        [
-          0.166667,
-          0.288675
-        ],
-        [
-          -0.166667,
-          0.288675
-        ],
-        [
-          -0.333333,
-          0
-        ],
-        [
-          -0.166667,
-          -0.288675
-        ],
-        [
-          0.166667,
-          -0.288675
-        ],
-        [
-          0.666667,
-          0
-        ],
-        [
-          0.5,
-          0.288675
-        ],
-        [
-          0.333333,
-          0.57735
-        ],
-        [
           0,
-          0.57735
+          1
         ],
         [
-          -0.333333,
-          0.57735
+          -0.866025,
+          -0.5
         ],
         [
-          -0.5,
-          0.288675
-        ],
-        [
-          -0.666667,
-          0
-        ],
-        [
-          -0.5,
-          -0.288675
-        ],
-        [
-          -0.333333,
-          -0.57735
-        ],
-        [
-          0,
-          -0.57735
-        ],
-        [
-          0.333333,
-          -0.57735
-        ],
-        [
-          0.5,
-          -0.288675
+          0.866025,
+          -0.5
         ]
       ],
       "measures": {
-        "circle_count": 19,
-        "circle_radius": 0.333333,
-        "lattice_spacing": 0.333333
+        "vertex_count": 4,
+        "edge_count": 6,
+        "edge_length": 1.632993,
+        "circumradius": 1,
+        "projection_scale": 1.06066
+      },
+      "solid": {
+        "vertices": [
+          [
+            0.57735,
+            0.57735,
+            0.57735
+          ],
+          [
+            0.57735,
+            -0.57735,
+            -0.57735
+          ],
+          [
+            -0.57735,
+            0.57735,
+            -0.57735
+          ],
+          [
+            -0.57735,
+            -0.57735,
+            0.57735
+          ]
+        ],
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "view_axis": [
+          0.57735,
+          0.57735,
+          0.57735
+        ]
       }
     },
     "provenance_detail": {
@@ -234,14 +171,14 @@
         "status": "calculated",
         "kind": "deterministic_construction",
         "source": "geometry.buildGeometry",
-        "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
+        "construction": "Tetrahedron: the 4 vertices from their canonical coordinates, scaled to circumradius 1, with edges joining vertex pairs at the minimum distance (6 edges); drawn as an orthographic wireframe projection along a vertex (3-fold axis), turned so an outermost vertex points up and scaled to touch the unit circle.",
         "computed": {
-          "circles": 19,
+          "circles": 0,
           "polygons": 0,
           "polylines": 0,
-          "lines": 0,
-          "points": 19,
-          "solid": false
+          "lines": 6,
+          "points": 4,
+          "solid": true
         }
       },
       "rendered_artifact": {
@@ -259,19 +196,18 @@
   },
   "witness_prompts": [
     {
-      "prompt": "As you visualize Flower of Life, what patterns do you notice in your own life?",
-      "context": "Contemplating Flower of Life",
+      "prompt": "What does the geometry of Tetrahedron evoke in your body?",
+      "context": "Contemplating Tetrahedron",
       "themes": [
         "geometry",
         "pattern",
         "awareness",
-        "circle",
-        "hexagon",
-        "vesica piscis"
+        "triangle",
+        "point"
       ]
     },
     {
-      "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe. Take three breaths and notice what arises.",
+      "prompt": "As you close your eyes: Feel the stability of three points resting on a surface while one point reaches upward. Where does the fire element move within you?",
       "context": "Meditation guidance",
       "themes": [
         "meditation",
@@ -280,7 +216,7 @@
       ]
     },
     {
-      "prompt": "The number 6 resonates through Flower of Life. Where does this number appear in your life?",
+      "prompt": "Tetrahedron carries the energy of 4. What significance does this number hold for you?",
       "context": "Numerological resonance",
       "themes": [
         "numerology",

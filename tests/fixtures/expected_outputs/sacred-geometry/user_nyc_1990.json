@@ -2,19 +2,18 @@
   "engine_id": "sacred-geometry",
   "result": {
     "form": {
-      "id": "flower-of-life",
-      "name": "Flower of Life",
-      "description": "An ancient symbol composed of multiple evenly-spaced, overlapping circles arranged in a flower-like pattern with six-fold symmetry. It is considered to contain the patterns of creation.",
-      "symbolism": "Unity, creation, and the interconnectedness of all life. Contains the blueprint for all existence - from the structure of atoms to galaxies.",
+      "id": "dodecahedron",
+      "name": "Dodecahedron",
+      "description": "A Platonic solid with twelve pentagonal faces. Associated with the element of Ether/Spirit and the cosmos.",
+      "symbolism": "Ether, universe, and divine expression. Plato associated it with the cosmos itself. Represents the heavens and transcendence.",
       "elements": [
-        "circle",
-        "hexagon",
-        "vesica piscis"
+        "pentagon",
+        "point"
       ],
-      "numerology": 6
+      "numerology": 12
     },
     "meditation": {
-      "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe.",
+      "prompt": "Each pentagon contains the golden ratio. Hold the dodecahedron in your mind as the shape of the universe itself. What does this perspective reveal?",
       "duration_suggestion": "5-15 minutes"
     },
     "intention": null,
@@ -32,189 +31,511 @@
         "radius": 1,
         "y_axis": "up"
       },
-      "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
-      "circles": [
-        {
-          "cx": 0,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.333333,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.166667,
-          "cy": 0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.166667,
-          "cy": 0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.333333,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.166667,
-          "cy": -0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.166667,
-          "cy": -0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.666667,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.5,
-          "cy": 0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.333333,
-          "cy": 0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0,
-          "cy": 0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.333333,
-          "cy": 0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.5,
-          "cy": 0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.666667,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.5,
-          "cy": -0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.333333,
-          "cy": -0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0,
-          "cy": -0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.333333,
-          "cy": -0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.5,
-          "cy": -0.288675,
-          "r": 0.333333
-        }
-      ],
+      "construction": "Dodecahedron: the 20 vertices from their canonical coordinates, scaled to circumradius 1, with edges joining vertex pairs at the minimum distance (30 edges); drawn as an orthographic wireframe projection along a face normal (5-fold axis), turned so an outermost vertex points up and scaled to touch the unit circle.",
+      "circles": [],
       "polygons": [],
       "polylines": [],
-      "lines": [],
+      "lines": [
+        {
+          "x1": 0.587785,
+          "y1": 0.190983,
+          "x2": 0.363271,
+          "y2": -0.5
+        },
+        {
+          "x1": 0.587785,
+          "y1": 0.190983,
+          "x2": 0,
+          "y2": 0.618034
+        },
+        {
+          "x1": 0.587785,
+          "y1": 0.190983,
+          "x2": 0.951057,
+          "y2": 0.309017
+        },
+        {
+          "x1": 0,
+          "y1": 1,
+          "x2": -0.587785,
+          "y2": 0.809017
+        },
+        {
+          "x1": 0,
+          "y1": 1,
+          "x2": 0,
+          "y2": 0.618034
+        },
+        {
+          "x1": 0,
+          "y1": 1,
+          "x2": 0.587785,
+          "y2": 0.809017
+        },
+        {
+          "x1": 0.951057,
+          "y1": -0.309017,
+          "x2": 0.587785,
+          "y2": -0.809017
+        },
+        {
+          "x1": 0.951057,
+          "y1": -0.309017,
+          "x2": 0.587785,
+          "y2": -0.190983
+        },
+        {
+          "x1": 0.951057,
+          "y1": -0.309017,
+          "x2": 0.951057,
+          "y2": 0.309017
+        },
+        {
+          "x1": 0.363271,
+          "y1": 0.5,
+          "x2": -0.363271,
+          "y2": 0.5
+        },
+        {
+          "x1": 0.363271,
+          "y1": 0.5,
+          "x2": 0.587785,
+          "y2": -0.190983
+        },
+        {
+          "x1": 0.363271,
+          "y1": 0.5,
+          "x2": 0.587785,
+          "y2": 0.809017
+        },
+        {
+          "x1": -0.363271,
+          "y1": -0.5,
+          "x2": 0.363271,
+          "y2": -0.5
+        },
+        {
+          "x1": -0.363271,
+          "y1": -0.5,
+          "x2": -0.587785,
+          "y2": 0.190983
+        },
+        {
+          "x1": -0.363271,
+          "y1": -0.5,
+          "x2": -0.587785,
+          "y2": -0.809017
+        },
+        {
+          "x1": -0.951057,
+          "y1": 0.309017,
+          "x2": -0.587785,
+          "y2": 0.809017
+        },
+        {
+          "x1": -0.951057,
+          "y1": 0.309017,
+          "x2": -0.587785,
+          "y2": 0.190983
+        },
+        {
+          "x1": -0.951057,
+          "y1": 0.309017,
+          "x2": -0.951057,
+          "y2": -0.309017
+        },
+        {
+          "x1": 0,
+          "y1": -1,
+          "x2": 0.587785,
+          "y2": -0.809017
+        },
+        {
+          "x1": 0,
+          "y1": -1,
+          "x2": 0,
+          "y2": -0.618034
+        },
+        {
+          "x1": 0,
+          "y1": -1,
+          "x2": -0.587785,
+          "y2": -0.809017
+        },
+        {
+          "x1": -0.587785,
+          "y1": -0.190983,
+          "x2": -0.363271,
+          "y2": 0.5
+        },
+        {
+          "x1": -0.587785,
+          "y1": -0.190983,
+          "x2": 0,
+          "y2": -0.618034
+        },
+        {
+          "x1": -0.587785,
+          "y1": -0.190983,
+          "x2": -0.951057,
+          "y2": -0.309017
+        },
+        {
+          "x1": 0.363271,
+          "y1": -0.5,
+          "x2": 0.587785,
+          "y2": -0.809017
+        },
+        {
+          "x1": -0.587785,
+          "y1": 0.809017,
+          "x2": -0.363271,
+          "y2": 0.5
+        },
+        {
+          "x1": 0,
+          "y1": 0.618034,
+          "x2": -0.587785,
+          "y2": 0.190983
+        },
+        {
+          "x1": 0.587785,
+          "y1": -0.190983,
+          "x2": 0,
+          "y2": -0.618034
+        },
+        {
+          "x1": 0.951057,
+          "y1": 0.309017,
+          "x2": 0.587785,
+          "y2": 0.809017
+        },
+        {
+          "x1": -0.587785,
+          "y1": -0.809017,
+          "x2": -0.951057,
+          "y2": -0.309017
+        }
+      ],
       "points": [
         [
-          0,
-          0
-        ],
-        [
-          0.333333,
-          0
-        ],
-        [
-          0.166667,
-          0.288675
-        ],
-        [
-          -0.166667,
-          0.288675
-        ],
-        [
-          -0.333333,
-          0
-        ],
-        [
-          -0.166667,
-          -0.288675
-        ],
-        [
-          0.166667,
-          -0.288675
-        ],
-        [
-          0.666667,
-          0
-        ],
-        [
-          0.5,
-          0.288675
-        ],
-        [
-          0.333333,
-          0.57735
+          0.587785,
+          0.190983
         ],
         [
           0,
-          0.57735
+          1
         ],
         [
-          -0.333333,
-          0.57735
+          0.951057,
+          -0.309017
         ],
         [
-          -0.5,
-          0.288675
+          0.363271,
+          0.5
         ],
         [
-          -0.666667,
-          0
+          -0.363271,
+          -0.5
         ],
         [
-          -0.5,
-          -0.288675
-        ],
-        [
-          -0.333333,
-          -0.57735
+          -0.951057,
+          0.309017
         ],
         [
           0,
-          -0.57735
+          -1
         ],
         [
-          0.333333,
-          -0.57735
+          -0.587785,
+          -0.190983
         ],
         [
-          0.5,
-          -0.288675
+          0.363271,
+          -0.5
+        ],
+        [
+          -0.587785,
+          0.809017
+        ],
+        [
+          0.587785,
+          -0.809017
+        ],
+        [
+          -0.363271,
+          0.5
+        ],
+        [
+          0,
+          0.618034
+        ],
+        [
+          0.587785,
+          -0.190983
+        ],
+        [
+          -0.587785,
+          0.190983
+        ],
+        [
+          0,
+          -0.618034
+        ],
+        [
+          0.951057,
+          0.309017
+        ],
+        [
+          0.587785,
+          0.809017
+        ],
+        [
+          -0.587785,
+          -0.809017
+        ],
+        [
+          -0.951057,
+          -0.309017
         ]
       ],
       "measures": {
-        "circle_count": 19,
-        "circle_radius": 0.333333,
-        "lattice_spacing": 0.333333
+        "vertex_count": 20,
+        "edge_count": 30,
+        "edge_length": 0.713644,
+        "circumradius": 1,
+        "projection_scale": 1.018074
+      },
+      "solid": {
+        "vertices": [
+          [
+            0.57735,
+            0.57735,
+            0.57735
+          ],
+          [
+            0.57735,
+            0.57735,
+            -0.57735
+          ],
+          [
+            0.57735,
+            -0.57735,
+            0.57735
+          ],
+          [
+            0.57735,
+            -0.57735,
+            -0.57735
+          ],
+          [
+            -0.57735,
+            0.57735,
+            0.57735
+          ],
+          [
+            -0.57735,
+            0.57735,
+            -0.57735
+          ],
+          [
+            -0.57735,
+            -0.57735,
+            0.57735
+          ],
+          [
+            -0.57735,
+            -0.57735,
+            -0.57735
+          ],
+          [
+            0,
+            0.356822,
+            0.934172
+          ],
+          [
+            0,
+            0.356822,
+            -0.934172
+          ],
+          [
+            0,
+            -0.356822,
+            0.934172
+          ],
+          [
+            0,
+            -0.356822,
+            -0.934172
+          ],
+          [
+            0.356822,
+            0.934172,
+            0
+          ],
+          [
+            0.356822,
+            -0.934172,
+            0
+          ],
+          [
+            -0.356822,
+            0.934172,
+            0
+          ],
+          [
+            -0.356822,
+            -0.934172,
+            0
+          ],
+          [
+            0.934172,
+            0,
+            0.356822
+          ],
+          [
+            0.934172,
+            0,
+            -0.356822
+          ],
+          [
+            -0.934172,
+            0,
+            0.356822
+          ],
+          [
+            -0.934172,
+            0,
+            -0.356822
+          ]
+        ],
+        "edges": [
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            12
+          ],
+          [
+            0,
+            16
+          ],
+          [
+            1,
+            9
+          ],
+          [
+            1,
+            12
+          ],
+          [
+            1,
+            17
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            2,
+            13
+          ],
+          [
+            2,
+            16
+          ],
+          [
+            3,
+            11
+          ],
+          [
+            3,
+            13
+          ],
+          [
+            3,
+            17
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            14
+          ],
+          [
+            4,
+            18
+          ],
+          [
+            5,
+            9
+          ],
+          [
+            5,
+            14
+          ],
+          [
+            5,
+            19
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            15
+          ],
+          [
+            6,
+            18
+          ],
+          [
+            7,
+            11
+          ],
+          [
+            7,
+            15
+          ],
+          [
+            7,
+            19
+          ],
+          [
+            8,
+            10
+          ],
+          [
+            9,
+            11
+          ],
+          [
+            12,
+            14
+          ],
+          [
+            13,
+            15
+          ],
+          [
+            16,
+            17
+          ],
+          [
+            18,
+            19
+          ]
+        ],
+        "view_axis": [
+          0,
+          0.850651,
+          0.525731
+        ]
       }
     },
     "provenance_detail": {
@@ -234,14 +555,14 @@
         "status": "calculated",
         "kind": "deterministic_construction",
         "source": "geometry.buildGeometry",
-        "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
+        "construction": "Dodecahedron: the 20 vertices from their canonical coordinates, scaled to circumradius 1, with edges joining vertex pairs at the minimum distance (30 edges); drawn as an orthographic wireframe projection along a face normal (5-fold axis), turned so an outermost vertex points up and scaled to touch the unit circle.",
         "computed": {
-          "circles": 19,
+          "circles": 0,
           "polygons": 0,
           "polylines": 0,
-          "lines": 0,
-          "points": 19,
-          "solid": false
+          "lines": 30,
+          "points": 20,
+          "solid": true
         }
       },
       "rendered_artifact": {
@@ -259,19 +580,18 @@
   },
   "witness_prompts": [
     {
-      "prompt": "As you visualize Flower of Life, what patterns do you notice in your own life?",
-      "context": "Contemplating Flower of Life",
+      "prompt": "If Dodecahedron were a teacher, what might it be showing you?",
+      "context": "Contemplating Dodecahedron",
       "themes": [
         "geometry",
         "pattern",
         "awareness",
-        "circle",
-        "hexagon",
-        "vesica piscis"
+        "pentagon",
+        "point"
       ]
     },
     {
-      "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe. Take three breaths and notice what arises.",
+      "prompt": "As you close your eyes: Each pentagon contains the golden ratio. Hold the dodecahedron in your mind as the shape of the universe itself. What does this perspective reveal?",
       "context": "Meditation guidance",
       "themes": [
         "meditation",
@@ -280,12 +600,12 @@
       ]
     },
     {
-      "prompt": "The number 6 resonates through Flower of Life. Where does this number appear in your life?",
-      "context": "Numerological resonance",
+      "prompt": "If Dodecahedron left you with a single insight, what would it be?",
+      "context": "Integration",
       "themes": [
-        "numerology",
-        "symbolism",
-        "synchronicity"
+        "integration",
+        "embodiment",
+        "practice"
       ]
     }
   ],

@@ -28,8 +28,8 @@
         "description": "Use physical exertion (dancing, exercise, breath work) to reach a peak state. At the moment of exhaustion or release, focus briefly on the sigil then let go."
       },
       {
-        "name": "Destruction Charging",
-        "description": "After creating the sigil, destroy it with intention \u2014 burn it, tear it up, bury it, or dissolve it in water. The act of destruction releases the energy."
+        "name": "Meditation Gnosis",
+        "description": "Enter a deep meditative state while focusing intently on the sigil. When the mind becomes still and focused, release the intention and forget the sigil."
       }
     ],
     "guidance": {
@@ -49,7 +49,7 @@
   },
   "witness_prompts": [
     {
-      "prompt": "What do you notice as you condense your intention into MLGNDWTHYSPR?",
+      "prompt": "Notice any resistance that arises. What is it protecting?",
       "context": "Intention exploration",
       "themes": [
         "intention",
@@ -58,7 +58,7 @@
       ]
     },
     {
-      "prompt": "As you engage with Word Elimination Method, what emerges?",
+      "prompt": "What intuitions arise as you work through these steps?",
       "context": "Working with Word Elimination Method",
       "themes": [
         "process",
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "prompt": "When you release this sigil, what are you truly letting go of?",
+      "prompt": "What attachment to outcome can you offer to the fire?",
       "context": "Charging and release",
       "themes": [
         "release",

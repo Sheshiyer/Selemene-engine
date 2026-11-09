@@ -22,16 +22,21 @@
           "name": "Past",
           "meaning": "What has led to this moment; influences from the past",
           "card": {
-            "id": "pentacles-13",
-            "name": "Queen of Pentacles",
+            "id": "cups-12",
+            "name": "Knight of Cups",
             "arcana": "minor",
-            "suit": "pentacles",
-            "number": 13,
-            "element": "earth",
+            "suit": "cups",
+            "number": 12,
+            "element": "water",
             "isReversed": false,
             "interpretation": {
-              "meaning": "Nurturing, practical, providing financially, working parent",
-              "keywords": ["nurturing", "practical", "abundance", "security"]
+              "meaning": "Creativity, romance, charm, imagination, beauty",
+              "keywords": [
+                "romance",
+                "charm",
+                "imagination",
+                "idealism"
+              ]
             }
           }
         },
@@ -40,16 +45,20 @@
           "name": "Present",
           "meaning": "The current situation; where you stand now",
           "card": {
-            "id": "pentacles-4",
-            "name": "Four of Pentacles",
-            "arcana": "minor",
-            "suit": "pentacles",
-            "number": 4,
-            "element": "earth",
+            "id": "major-7",
+            "name": "The Chariot",
+            "arcana": "major",
+            "number": 7,
+            "element": "water",
             "isReversed": false,
             "interpretation": {
-              "meaning": "Saving money, security, conservatism, scarcity, control",
-              "keywords": ["security", "conservation", "control", "stability"]
+              "meaning": "Control, willpower, success, action, determination",
+              "keywords": [
+                "determination",
+                "victory",
+                "willpower",
+                "control"
+              ]
             }
           }
         },
@@ -58,16 +67,20 @@
           "name": "Future",
           "meaning": "What may unfold; potential outcomes and energies ahead",
           "card": {
-            "id": "cups-10",
-            "name": "Ten of Cups",
-            "arcana": "minor",
-            "suit": "cups",
-            "number": 10,
+            "id": "major-12",
+            "name": "The Hanged Man",
+            "arcana": "major",
+            "number": 12,
             "element": "water",
             "isReversed": false,
             "interpretation": {
-              "meaning": "Divine love, blissful relationships, harmony, alignment",
-              "keywords": ["happiness", "fulfillment", "family", "harmony"]
+              "meaning": "Pause, surrender, letting go, new perspectives",
+              "keywords": [
+                "surrender",
+                "perspective",
+                "pause",
+                "sacrifice"
+              ]
             }
           }
         }
@@ -78,25 +91,34 @@
       {
         "prompt": "How do these cards speak to your question: \"fixture truth\"?",
         "context": "Question reflection",
-        "themes": ["inquiry", "meaning", "resonance"]
-      },
-      {
-        "prompt": "As you consider Queen of Pentacles in the position of Past, what stands out?",
-        "context": "Queen of Pentacles in Past position",
-        "themes": ["nurturing", "practical", "abundance", "security"]
-      },
-      {
-        "prompt": "Notice the interplay between Ten of Cups and Four of Pentacles—what patterns arise?",
-        "context": "Connection between Future and Present",
         "themes": [
-          "happiness",
-          "fulfillment",
-          "family",
-          "harmony",
-          "security",
-          "conservation",
+          "inquiry",
+          "meaning",
+          "resonance"
+        ]
+      },
+      {
+        "prompt": "How does The Hanged Man speak to what you are experiencing?",
+        "context": "The Hanged Man in Future position",
+        "themes": [
+          "surrender",
+          "perspective",
+          "pause",
+          "sacrifice"
+        ]
+      },
+      {
+        "prompt": "What story emerges between The Chariot and The Hanged Man?",
+        "context": "Connection between Present and Future",
+        "themes": [
+          "determination",
+          "victory",
+          "willpower",
           "control",
-          "stability"
+          "surrender",
+          "perspective",
+          "pause",
+          "sacrifice"
         ]
       }
     ],

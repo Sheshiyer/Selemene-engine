@@ -26,10 +26,10 @@
       "algorithm_version": "1.1.0",
       "line_order": "bottom_to_top",
       "line_values": [
-        7,
-        8,
-        8,
         6,
+        8,
+        7,
+        7,
         7,
         7
       ],
@@ -37,7 +37,7 @@
       "selection_mode": "seeded_coin_simulation"
     },
     "changing_lines": [
-      4
+      1
     ],
     "derivation": {
       "changing_line_texts": {
@@ -50,7 +50,7 @@
         ],
         "origin": "derived",
         "positions": [
-          4
+          1
         ]
       },
       "line_values": {
@@ -70,7 +70,7 @@
           "changing_lines"
         ],
         "flipped_positions": [
-          4
+          1
         ],
         "origin": "derived"
       }
@@ -85,19 +85,19 @@
         "meaning": "unavailable",
         "name": "generic_identifier"
       },
-      "image": "(The trigram representing) wind and that for thunder form Yi. The superior man, in accordance with this, when he sees what is good, moves towards it ; and when he sees his errors, he turns from them.",
-      "judgment": "Yi indicates that (in the state which it denotes) there will be advantage in every movement which shall be undertaken, that it will be advantageous (even) to cross the great stream.",
+      "image": "(The trigram representing) the sky and below it that for a mountain form Thun. The superior man, in accordance with this, keeps small men at a distance, not by showing that he hates them, but by his own dignified gravity.",
+      "judgment": "Thun indicates successful progress (in its circumstances). To a small extent it will (still) be advantageous to be firm and correct.",
       "lines": [
+        false,
+        false,
         true,
-        false,
-        false,
-        false,
+        true,
         true,
         true
       ],
       "meaning": null,
-      "name": "Hexagram 42",
-      "number": 42,
+      "name": "Hexagram 33",
+      "number": 33,
       "provenance": {
         "changing_line_texts": "unavailable",
         "legacy_labels_and_meanings": "Unavailable; the generic name is a display identifier only.",
@@ -143,40 +143,39 @@
             "year": 1882
           },
           "passages": {
-            "imagePage": 319,
+            "imagePage": 308,
             "imagePages": [
-              319
+              308
             ],
             "imageSources": [
               {
-                "archiveLeaf": 353,
+                "archiveLeaf": 342,
                 "lineEndExclusive": null,
                 "lineStart": null,
                 "paragraphIndex": 1,
-                "pdfPage": 353,
-                "printedPage": 319,
-                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n353/mode/1up"
+                "pdfPage": 342,
+                "printedPage": 308,
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n342/mode/1up"
               }
             ],
-            "judgmentPage": 149,
+            "judgmentPage": 127,
             "judgmentPages": [
-              149
+              127
             ],
             "judgmentSources": [
               {
-                "archiveLeaf": 183,
+                "archiveLeaf": 161,
                 "lineEndExclusive": null,
                 "lineStart": null,
                 "paragraphIndex": 2,
-                "pdfPage": 183,
-                "printedPage": 149,
-                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n183/mode/1up"
+                "pdfPage": 161,
+                "printedPage": 127,
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n161/mode/1up"
               }
             ]
           },
           "transcription_notes": [
-            "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
-            "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+            "Original scan wording reviewed; transliteration typography normalized as metadata documents."
           ],
           "transcription_status": "scan_reviewed_normalized_transcription"
         }
@@ -193,19 +192,19 @@
         "meaning": "unavailable",
         "name": "generic_identifier"
       },
-      "image": "The thunder rolls all under the sky, and to (every)thing there is given (its nature), free from all insincerity. The ancient kings, in accordance with this, (made their regulations) in complete accordance with the seasons, thereby nourishing all things.",
-      "judgment": "Wu Wang indicates great progress and success, while there will be advantage in being firm and correct. If (its subject and his action) be not correct, he will fall into errors, and it will not be advantageous for him to move in any direction.",
+      "image": "(The trigrams for) heaven and fire form Thung Zan. The superior man, in accordance with this), distinguishes things according to their kinds and classes.",
+      "judgment": "Thung Zan (or 'Union of men') appears here (as we find it) in the (remote districts of the) country, indicating progress and success. It will be advantageous to cross the great stream. It will be advantageous to maintain the firm correctness of the superior man.",
       "lines": [
         true,
         false,
-        false,
+        true,
         true,
         true,
         true
       ],
       "meaning": null,
-      "name": "Hexagram 25",
-      "number": 25,
+      "name": "Hexagram 13",
+      "number": 13,
       "provenance": {
         "changing_line_texts": "unavailable",
         "legacy_labels_and_meanings": "Unavailable; the generic name is a display identifier only.",
@@ -251,49 +250,41 @@
             "year": 1882
           },
           "passages": {
-            "imagePage": 299,
+            "imagePage": 284,
             "imagePages": [
-              299
+              284
             ],
             "imageSources": [
               {
-                "archiveLeaf": 333,
+                "archiveLeaf": 318,
                 "lineEndExclusive": null,
                 "lineStart": null,
                 "paragraphIndex": 1,
-                "pdfPage": 333,
-                "printedPage": 299,
-                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n333/mode/1up"
+                "pdfPage": 318,
+                "printedPage": 284,
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n318/mode/1up"
               }
             ],
-            "judgmentPage": 109,
+            "judgmentPage": 86,
             "judgmentPages": [
-              109,
-              110
+              86
             ],
             "judgmentSources": [
               {
-                "archiveLeaf": 143,
+                "archiveLeaf": 120,
                 "lineEndExclusive": null,
                 "lineStart": null,
                 "paragraphIndex": 2,
-                "pdfPage": 143,
-                "printedPage": 109,
-                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n143/mode/1up"
-              },
-              {
-                "archiveLeaf": 144,
-                "lineEndExclusive": null,
-                "lineStart": null,
-                "paragraphIndex": 1,
-                "pdfPage": 144,
-                "printedPage": 110,
-                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n144/mode/1up"
+                "pdfPage": 120,
+                "printedPage": 86,
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n120/mode/1up"
               }
             ]
           },
           "transcription_notes": [
-            "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+            "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+            "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+            "Great Symbolism retains the original printed unmatched ')' after 'this' on page284."
           ],
           "transcription_status": "scan_reviewed_normalized_transcription"
         }
@@ -302,10 +293,10 @@
     },
     "seed": 42
   },
-  "witness_prompt": "What aspects of your situation would you like to examine through this symbolic reading?",
+  "witness_prompt": "What assumptions about your situation could you hold more lightly while reflecting?",
   "witness_prompts": [
     {
-      "prompt": "What aspects of your situation would you like to examine through this symbolic reading?",
+      "prompt": "What assumptions about your situation could you hold more lightly while reflecting?",
       "themes": []
     }
   ]

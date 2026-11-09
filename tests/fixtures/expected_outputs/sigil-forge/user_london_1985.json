@@ -24,12 +24,12 @@
     },
     "charging_suggestions": [
       {
-        "name": "Physical Gnosis",
-        "description": "Use physical exertion (dancing, exercise, breath work) to reach a peak state. At the moment of exhaustion or release, focus briefly on the sigil then let go."
+        "name": "Passive Display",
+        "description": "Place the sigil somewhere it will be seen regularly but not consciously focused on. The symbol works on the subconscious over time."
       },
       {
-        "name": "Destruction Charging",
-        "description": "After creating the sigil, destroy it with intention \u2014 burn it, tear it up, bury it, or dissolve it in water. The act of destruction releases the energy."
+        "name": "Physical Gnosis",
+        "description": "Use physical exertion (dancing, exercise, breath work) to reach a peak state. At the moment of exhaustion or release, focus briefly on the sigil then let go."
       }
     ],
     "guidance": {
@@ -49,7 +49,7 @@
   },
   "witness_prompts": [
     {
-      "prompt": "What do you notice as you condense your intention into MLGNDWTHYSPR?",
+      "prompt": "As the words dissolve into symbol, what shifts in your relationship to this desire?",
       "context": "Intention exploration",
       "themes": [
         "intention",
@@ -58,7 +58,7 @@
       ]
     },
     {
-      "prompt": "As you engage with Word Elimination Method, what emerges?",
+      "prompt": "What wants to be expressed that the steps cannot capture?",
       "context": "Working with Word Elimination Method",
       "themes": [
         "process",
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "prompt": "When you release this sigil, what are you truly letting go of?",
+      "prompt": "Trust that the work is done. What does completion feel like?",
       "context": "Charging and release",
       "themes": [
         "release",

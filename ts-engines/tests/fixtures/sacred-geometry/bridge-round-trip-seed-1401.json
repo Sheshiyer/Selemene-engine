@@ -10,19 +10,19 @@
     "engine_id": "sacred-geometry",
     "result": {
       "form": {
-        "id": "flower-of-life",
-        "name": "Flower of Life",
-        "description": "An ancient symbol composed of multiple evenly-spaced, overlapping circles arranged in a flower-like pattern with six-fold symmetry. It is considered to contain the patterns of creation.",
-        "symbolism": "Unity, creation, and the interconnectedness of all life. Contains the blueprint for all existence - from the structure of atoms to galaxies.",
+        "id": "torus",
+        "name": "Torus",
+        "description": "A donut-shaped surface of revolution. Represents the fundamental shape of energy flow in the universe, from atoms to galaxies.",
+        "symbolism": "Energy flow, self-sustaining systems, and the cycle of creation. Represents how energy continuously flows, returns, and regenerates.",
         "elements": [
           "circle",
-          "hexagon",
-          "vesica piscis"
+          "sphere",
+          "vortex"
         ],
-        "numerology": 6
+        "numerology": 0
       },
       "meditation": {
-        "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe.",
+        "prompt": "Feel energy rising through your center, flowering outward, descending around you, and returning through your base. You are the torus.",
         "duration_suggestion": "5-15 minutes"
       },
       "intention": null,
@@ -41,189 +41,110 @@
           "radius": 1,
           "y_axis": "up"
         },
-        "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
+        "construction": "Torus: orthographic plan view, along the axis of revolution, of a ring torus with major radius 0.6 and tube radius 0.4: outer equator (R+r), inner equator (R-r) and tube centre circle (R), with 12 meridian circles at equal angles, which project to radial segments.",
         "circles": [
           {
             "cx": 0,
             "cy": 0,
-            "r": 0.333333
-          },
-          {
-            "cx": 0.333333,
-            "cy": 0,
-            "r": 0.333333
-          },
-          {
-            "cx": 0.166667,
-            "cy": 0.288675,
-            "r": 0.333333
-          },
-          {
-            "cx": -0.166667,
-            "cy": 0.288675,
-            "r": 0.333333
-          },
-          {
-            "cx": -0.333333,
-            "cy": 0,
-            "r": 0.333333
-          },
-          {
-            "cx": -0.166667,
-            "cy": -0.288675,
-            "r": 0.333333
-          },
-          {
-            "cx": 0.166667,
-            "cy": -0.288675,
-            "r": 0.333333
-          },
-          {
-            "cx": 0.666667,
-            "cy": 0,
-            "r": 0.333333
-          },
-          {
-            "cx": 0.5,
-            "cy": 0.288675,
-            "r": 0.333333
-          },
-          {
-            "cx": 0.333333,
-            "cy": 0.57735,
-            "r": 0.333333
+            "r": 1
           },
           {
             "cx": 0,
-            "cy": 0.57735,
-            "r": 0.333333
-          },
-          {
-            "cx": -0.333333,
-            "cy": 0.57735,
-            "r": 0.333333
-          },
-          {
-            "cx": -0.5,
-            "cy": 0.288675,
-            "r": 0.333333
-          },
-          {
-            "cx": -0.666667,
             "cy": 0,
-            "r": 0.333333
-          },
-          {
-            "cx": -0.5,
-            "cy": -0.288675,
-            "r": 0.333333
-          },
-          {
-            "cx": -0.333333,
-            "cy": -0.57735,
-            "r": 0.333333
+            "r": 0.2
           },
           {
             "cx": 0,
-            "cy": -0.57735,
-            "r": 0.333333
-          },
-          {
-            "cx": 0.333333,
-            "cy": -0.57735,
-            "r": 0.333333
-          },
-          {
-            "cx": 0.5,
-            "cy": -0.288675,
-            "r": 0.333333
+            "cy": 0,
+            "r": 0.6
           }
         ],
         "polygons": [],
         "polylines": [],
-        "lines": [],
+        "lines": [
+          {
+            "x1": 0,
+            "y1": 0.2,
+            "x2": 0,
+            "y2": 1
+          },
+          {
+            "x1": -0.1,
+            "y1": 0.173205,
+            "x2": -0.5,
+            "y2": 0.866025
+          },
+          {
+            "x1": -0.173205,
+            "y1": 0.1,
+            "x2": -0.866025,
+            "y2": 0.5
+          },
+          {
+            "x1": -0.2,
+            "y1": 0,
+            "x2": -1,
+            "y2": 0
+          },
+          {
+            "x1": -0.173205,
+            "y1": -0.1,
+            "x2": -0.866025,
+            "y2": -0.5
+          },
+          {
+            "x1": -0.1,
+            "y1": -0.173205,
+            "x2": -0.5,
+            "y2": -0.866025
+          },
+          {
+            "x1": 0,
+            "y1": -0.2,
+            "x2": 0,
+            "y2": -1
+          },
+          {
+            "x1": 0.1,
+            "y1": -0.173205,
+            "x2": 0.5,
+            "y2": -0.866025
+          },
+          {
+            "x1": 0.173205,
+            "y1": -0.1,
+            "x2": 0.866025,
+            "y2": -0.5
+          },
+          {
+            "x1": 0.2,
+            "y1": 0,
+            "x2": 1,
+            "y2": 0
+          },
+          {
+            "x1": 0.173205,
+            "y1": 0.1,
+            "x2": 0.866025,
+            "y2": 0.5
+          },
+          {
+            "x1": 0.1,
+            "y1": 0.173205,
+            "x2": 0.5,
+            "y2": 0.866025
+          }
+        ],
         "points": [
           [
             0,
             0
-          ],
-          [
-            0.333333,
-            0
-          ],
-          [
-            0.166667,
-            0.288675
-          ],
-          [
-            -0.166667,
-            0.288675
-          ],
-          [
-            -0.333333,
-            0
-          ],
-          [
-            -0.166667,
-            -0.288675
-          ],
-          [
-            0.166667,
-            -0.288675
-          ],
-          [
-            0.666667,
-            0
-          ],
-          [
-            0.5,
-            0.288675
-          ],
-          [
-            0.333333,
-            0.57735
-          ],
-          [
-            0,
-            0.57735
-          ],
-          [
-            -0.333333,
-            0.57735
-          ],
-          [
-            -0.5,
-            0.288675
-          ],
-          [
-            -0.666667,
-            0
-          ],
-          [
-            -0.5,
-            -0.288675
-          ],
-          [
-            -0.333333,
-            -0.57735
-          ],
-          [
-            0,
-            -0.57735
-          ],
-          [
-            0.333333,
-            -0.57735
-          ],
-          [
-            0.5,
-            -0.288675
           ]
         ],
         "measures": {
-          "circle_count": 19,
-          "circle_radius": 0.333333,
-          "lattice_spacing": 0.333333
+          "major_radius": 0.6,
+          "tube_radius": 0.4,
+          "meridian_count": 12
         }
       },
       "provenance_detail": {
@@ -243,13 +164,13 @@
           "status": "calculated",
           "kind": "deterministic_construction",
           "source": "geometry.buildGeometry",
-          "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
+          "construction": "Torus: orthographic plan view, along the axis of revolution, of a ring torus with major radius 0.6 and tube radius 0.4: outer equator (R+r), inner equator (R-r) and tube centre circle (R), with 12 meridian circles at equal angles, which project to radial segments.",
           "computed": {
-            "circles": 19,
+            "circles": 3,
             "polygons": 0,
             "polylines": 0,
-            "lines": 0,
-            "points": 19,
+            "lines": 12,
+            "points": 1,
             "solid": false
           }
         },
@@ -268,19 +189,19 @@
     },
     "witness_prompts": [
       {
-        "prompt": "As you visualize Flower of Life, what patterns do you notice in your own life?",
-        "context": "Contemplating Flower of Life",
+        "prompt": "Where in your life do the elements of Torus — circle, sphere, vortex — appear?",
+        "context": "Contemplating Torus",
         "themes": [
           "geometry",
           "pattern",
           "awareness",
           "circle",
-          "hexagon",
-          "vesica piscis"
+          "sphere",
+          "vortex"
         ]
       },
       {
-        "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe. Take three breaths and notice what arises.",
+        "prompt": "Before you begin: Feel energy rising through your center, flowering outward, descending around you, and returning through your base. You are the torus.",
         "context": "Meditation guidance",
         "themes": [
           "meditation",
@@ -289,7 +210,7 @@
         ]
       },
       {
-        "prompt": "The number 6 resonates through Flower of Life. Where does this number appear in your life?",
+        "prompt": "The number 0 resonates through Torus. Where does this number appear in your life?",
         "context": "Numerological resonance",
         "themes": [
           "numerology",

@@ -1,3 +1,10 @@
+# Seeded randomness for small seeds — 2026-11-09
+
+- `SeededRandom` (shared by every TypeScript engine) now mixes the seed with SplitMix64, so small seeds such as 0, 42 or 1401 no longer start from nearly identical states. Before, the first draw was below 0.5 for every seed from 0 to 99,999, which skewed tarot shuffles, I Ching casts, sacred-geometry selection and witness templates.
+- Keep the xorshift128+ state to 64-bit words (the shift was never masked, so the state grew without bound) and derive `next()` from the top 53 bits so it can never return 1.
+- I Ching no longer discards 16 draws to work around the bias, and its seed-bias test uses a chi-square bound instead of a fixed per-cell tolerance that an ideal generator fails about one block in five.
+- **Seeded output changes for every TypeScript engine:** the same seed now gives a different reading than before. Committed seeded fixtures are regenerated from the engines; saved readings are not rewritten.
+
 # I Ching provenance across SDK, TUI, workflows and readings — 2026-11-07
 
 - Rust SDK `workflow()` now keeps each engine's contract provenance from `engine_results` (it previously read only `engine_outputs`, which never carries it). Missing or malformed blocks are skipped, never invented.
