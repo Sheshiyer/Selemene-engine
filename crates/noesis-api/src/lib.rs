@@ -846,8 +846,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         )
         .route(
             "/account/email-links/begin",
-            get(handlers::shared_identity::email_begin_page)
-                .post(handlers::shared_identity::bind_email_browser),
+            get(handlers::shared_identity::email_begin_page).post(handlers::shared_identity::bind_email_browser),
         )
         .route(
             "/account/email-links/verify",
@@ -861,10 +860,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         ));
 
     let api_v1 = Router::new()
-        .route(
-            "/subjects/:id/witness",
-            get(handlers::witness_catalog::catalog).post(handlers::witness_catalog::publish),
-        )
+        .route("/subjects/:id/witness", get(handlers::witness_catalog::catalog).post(handlers::witness_catalog::publish))
         .route(
             "/auth/change-password",
             post(handlers::auth::change_password),
