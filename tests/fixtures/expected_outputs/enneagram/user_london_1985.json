@@ -2,6 +2,7 @@
   "engine_id": "enneagram",
   "result": {
     "mode": "lookup",
+    "typeSource": "user-supplied",
     "typeAnalysis": {
       "type": {
         "number": 6,
@@ -93,5 +94,12 @@
     }
   ],
   "calculated_at": "2024-01-15T14:30:00.000Z",
-  "processing_time_ms": 0
+  "processing_time_ms": 0,
+  "provenance": {
+    "runtime_kind": "typescript",
+    "implementation_version": "1.0.0",
+    "cached": false,
+    "fallback_used": false,
+    "backend_id": "enneagram-type-lookup"
+  }
 }
