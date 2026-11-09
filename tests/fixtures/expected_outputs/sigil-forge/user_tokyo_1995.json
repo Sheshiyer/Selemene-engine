@@ -3,40 +3,35 @@
   "result": {
     "intention": "I am aligned with my highest purpose",
     "method": {
-      "id": "word-elimination",
-      "name": "Word Elimination Method",
-      "description": "The classic chaos magick technique. Write your intention as a statement, remove all vowels and duplicate consonants, then arrange the remaining letters into a symbol.",
+      "id": "chaos-star",
+      "name": "Chaos Star Method",
+      "description": "Use the eight-pointed Chaos Star (Symbol of Chaos) as a framework. Place intention elements at each point or between points, creating a symbol with built-in magical structure.",
       "steps": [
-        "Write your intention as a present-tense statement of desire (e.g., \"I am confident and calm\")",
-        "Remove all vowels from the statement",
-        "Remove all duplicate consonants, keeping only the first occurrence of each",
-        "Take the remaining consonants and begin sketching them together",
-        "Let the letters flow, overlap, rotate, and merge into a single unified symbol",
-        "Refine until the original letters are no longer recognizable as letters",
-        "The resulting abstract symbol is your sigil"
+        "Draw an eight-pointed chaos star (eight arrows radiating from center)",
+        "Identify eight aspects or components of your intention",
+        "Assign each aspect to one of the eight points/directions",
+        "Draw small symbols or modified letters at each point",
+        "Connect the elements with additional lines as intuition guides",
+        "The center point represents the unified intention",
+        "Add a personal mark at the center to complete the binding"
       ]
     },
-    "processing": {
-      "type": "word_elimination",
-      "original": "I am aligned with my highest purpose",
-      "remaining_letters": "MLGNDWTHYSPR",
-      "letter_count": 12
-    },
+    "processing": null,
     "charging_suggestions": [
       {
         "name": "Physical Gnosis",
         "description": "Use physical exertion (dancing, exercise, breath work) to reach a peak state. At the moment of exhaustion or release, focus briefly on the sigil then let go."
       },
       {
-        "name": "Destruction Charging",
-        "description": "After creating the sigil, destroy it with intention \u2014 burn it, tear it up, bury it, or dissolve it in water. The act of destruction releases the energy."
+        "name": "Meditation Gnosis",
+        "description": "Enter a deep meditative state while focusing intently on the sigil. When the mind becomes still and focused, release the intention and forget the sigil."
       }
     ],
     "guidance": {
       "note": "This engine provides the process for sigil creation. The actual visual sigil must be created by you \u2014 this personal investment is essential to the magic.",
       "next_steps": [
         "Gather your materials (paper, pen, or digital canvas)",
-        "Follow the Word Elimination Method steps above",
+        "Follow the Chaos Star Method steps above",
         "Allow intuition to guide the final form",
         "Choose a charging method that resonates",
         "Release attachment to outcome"
@@ -52,7 +47,7 @@
   },
   "witness_prompts": [
     {
-      "prompt": "What do you notice as you condense your intention into MLGNDWTHYSPR?",
+      "prompt": "Notice any resistance that arises. What is it protecting?",
       "context": "Intention exploration",
       "themes": [
         "intention",
@@ -61,8 +56,8 @@
       ]
     },
     {
-      "prompt": "As you engage with Word Elimination Method, what emerges?",
-      "context": "Working with Word Elimination Method",
+      "prompt": "What intuitions arise as you work through these steps?",
+      "context": "Working with Chaos Star Method",
       "themes": [
         "process",
         "creation",
@@ -70,7 +65,7 @@
       ]
     },
     {
-      "prompt": "When you release this sigil, what are you truly letting go of?",
+      "prompt": "What attachment to outcome can you offer to the fire?",
       "context": "Charging and release",
       "themes": [
         "release",

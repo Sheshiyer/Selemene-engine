@@ -3,40 +3,35 @@
   "result": {
     "intention": "I am aligned with my highest purpose",
     "method": {
-      "id": "word-elimination",
-      "name": "Word Elimination Method",
-      "description": "The classic chaos magick technique. Write your intention as a statement, remove all vowels and duplicate consonants, then arrange the remaining letters into a symbol.",
+      "id": "rose-wheel",
+      "name": "Rose Wheel (Rosy Cross) Method",
+      "description": "Map letter positions onto a circular diagram and connect them with a continuous line. Creates flowing, elegant sigils with a mystical quality.",
       "steps": [
-        "Write your intention as a present-tense statement of desire (e.g., \"I am confident and calm\")",
-        "Remove all vowels from the statement",
-        "Remove all duplicate consonants, keeping only the first occurrence of each",
-        "Take the remaining consonants and begin sketching them together",
-        "Let the letters flow, overlap, rotate, and merge into a single unified symbol",
-        "Refine until the original letters are no longer recognizable as letters",
-        "The resulting abstract symbol is your sigil"
+        "Draw a circle and divide it into sections for each letter of the alphabet (like a clock face)",
+        "Write your intention statement",
+        "Locate the position of each letter on the wheel",
+        "Draw a continuous line connecting the letters in order",
+        "Mark the starting point with a small circle",
+        "Mark the ending point with a short perpendicular line",
+        "The path traced across the wheel forms your sigil"
       ]
     },
-    "processing": {
-      "type": "word_elimination",
-      "original": "I am aligned with my highest purpose",
-      "remaining_letters": "MLGNDWTHYSPR",
-      "letter_count": 12
-    },
+    "processing": null,
     "charging_suggestions": [
+      {
+        "name": "Passive Display",
+        "description": "Place the sigil somewhere it will be seen regularly but not consciously focused on. The symbol works on the subconscious over time."
+      },
       {
         "name": "Physical Gnosis",
         "description": "Use physical exertion (dancing, exercise, breath work) to reach a peak state. At the moment of exhaustion or release, focus briefly on the sigil then let go."
-      },
-      {
-        "name": "Destruction Charging",
-        "description": "After creating the sigil, destroy it with intention \u2014 burn it, tear it up, bury it, or dissolve it in water. The act of destruction releases the energy."
       }
     ],
     "guidance": {
       "note": "This engine provides the process for sigil creation. The actual visual sigil must be created by you \u2014 this personal investment is essential to the magic.",
       "next_steps": [
         "Gather your materials (paper, pen, or digital canvas)",
-        "Follow the Word Elimination Method steps above",
+        "Follow the Rose Wheel (Rosy Cross) Method steps above",
         "Allow intuition to guide the final form",
         "Choose a charging method that resonates",
         "Release attachment to outcome"
@@ -52,7 +47,7 @@
   },
   "witness_prompts": [
     {
-      "prompt": "What do you notice as you condense your intention into MLGNDWTHYSPR?",
+      "prompt": "As the words dissolve into symbol, what shifts in your relationship to this desire?",
       "context": "Intention exploration",
       "themes": [
         "intention",
@@ -61,8 +56,8 @@
       ]
     },
     {
-      "prompt": "As you engage with Word Elimination Method, what emerges?",
-      "context": "Working with Word Elimination Method",
+      "prompt": "What wants to be expressed that the steps cannot capture?",
+      "context": "Working with Rose Wheel (Rosy Cross) Method",
       "themes": [
         "process",
         "creation",
@@ -70,7 +65,7 @@
       ]
     },
     {
-      "prompt": "When you release this sigil, what are you truly letting go of?",
+      "prompt": "Trust that the work is done. What does completion feel like?",
       "context": "Charging and release",
       "themes": [
         "release",

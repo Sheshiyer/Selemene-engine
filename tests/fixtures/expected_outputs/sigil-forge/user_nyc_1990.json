@@ -3,40 +3,35 @@
   "result": {
     "intention": "I am aligned with my highest purpose",
     "method": {
-      "id": "word-elimination",
-      "name": "Word Elimination Method",
-      "description": "The classic chaos magick technique. Write your intention as a statement, remove all vowels and duplicate consonants, then arrange the remaining letters into a symbol.",
+      "id": "pictographic",
+      "name": "Pictographic Combination",
+      "description": "Create a symbol by combining simplified pictographs that represent key concepts from your intention. More intuitive and image-based than letter methods.",
       "steps": [
-        "Write your intention as a present-tense statement of desire (e.g., \"I am confident and calm\")",
-        "Remove all vowels from the statement",
-        "Remove all duplicate consonants, keeping only the first occurrence of each",
-        "Take the remaining consonants and begin sketching them together",
-        "Let the letters flow, overlap, rotate, and merge into a single unified symbol",
-        "Refine until the original letters are no longer recognizable as letters",
-        "The resulting abstract symbol is your sigil"
+        "Break your intention into 2-4 core concepts or keywords",
+        "For each concept, draw a simple symbolic representation (not letters)",
+        "Begin combining these symbols into a unified design",
+        "Allow overlap, nesting, and transformation as they merge",
+        "Simplify complex areas while maintaining the essential character",
+        "Continue refining until a single cohesive symbol emerges",
+        "The final image should feel complete and balanced"
       ]
     },
-    "processing": {
-      "type": "word_elimination",
-      "original": "I am aligned with my highest purpose",
-      "remaining_letters": "MLGNDWTHYSPR",
-      "letter_count": 12
-    },
+    "processing": null,
     "charging_suggestions": [
+      {
+        "name": "Passive Display",
+        "description": "Place the sigil somewhere it will be seen regularly but not consciously focused on. The symbol works on the subconscious over time."
+      },
       {
         "name": "Physical Gnosis",
         "description": "Use physical exertion (dancing, exercise, breath work) to reach a peak state. At the moment of exhaustion or release, focus briefly on the sigil then let go."
-      },
-      {
-        "name": "Destruction Charging",
-        "description": "After creating the sigil, destroy it with intention \u2014 burn it, tear it up, bury it, or dissolve it in water. The act of destruction releases the energy."
       }
     ],
     "guidance": {
       "note": "This engine provides the process for sigil creation. The actual visual sigil must be created by you \u2014 this personal investment is essential to the magic.",
       "next_steps": [
         "Gather your materials (paper, pen, or digital canvas)",
-        "Follow the Word Elimination Method steps above",
+        "Follow the Pictographic Combination steps above",
         "Allow intuition to guide the final form",
         "Choose a charging method that resonates",
         "Release attachment to outcome"
@@ -52,7 +47,7 @@
   },
   "witness_prompts": [
     {
-      "prompt": "What do you notice as you condense your intention into MLGNDWTHYSPR?",
+      "prompt": "What would it feel like to have already received what you're asking for?",
       "context": "Intention exploration",
       "themes": [
         "intention",
@@ -61,8 +56,8 @@
       ]
     },
     {
-      "prompt": "As you engage with Word Elimination Method, what emerges?",
-      "context": "Working with Word Elimination Method",
+      "prompt": "Where do you feel called to deviate from the process? Follow that.",
+      "context": "Working with Pictographic Combination",
       "themes": [
         "process",
         "creation",
@@ -70,12 +65,12 @@
       ]
     },
     {
-      "prompt": "When you release this sigil, what are you truly letting go of?",
-      "context": "Charging and release",
+      "prompt": "What is the smallest step that aligns with this intention?",
+      "context": "Embodiment",
       "themes": [
-        "release",
-        "trust",
-        "completion"
+        "action",
+        "embodiment",
+        "integration"
       ]
     }
   ],

@@ -130,11 +130,19 @@ describe('I Ching King Wen computation', () => {
     for (let seed = 0; seed < 8192; seed++) {
       castThreeCoinLines(seed).forEach((value, line) => counts[line][value - 6]++)
     }
+    // Chi-square over all 24 cells against the 1:3:3:1 binomial (df = 18).
+    // 42.31 is the p = 0.001 critical value: an unbiased generator stays under
+    // it, while the old seed bias (every seed casting old yin) scores in the
+    // thousands. A fixed per-cell tolerance of 100 is about 2.3 sigma for the
+    // 3/8 cells and fails ~20% of blocks even for an ideal generator.
+    const expected = [1024, 3072, 3072, 1024]
+    let chiSquare = 0
     for (const line of counts) {
-      for (let value = 0; value < 4; value++) {
-        expect(Math.abs(line[value] - [1024, 3072, 3072, 1024][value])).toBeLessThan(100)
-      }
+      line.forEach((count, value) => {
+        chiSquare += (count - expected[value]) ** 2 / expected[value]
+      })
     }
+    expect(chiSquare).toBeLessThan(42.31)
   })
 
   it('repairs the actual observed inconsistent cast without choosing random IDs', () => {

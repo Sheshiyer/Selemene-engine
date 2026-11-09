@@ -2,13 +2,30 @@
  * Seeded pseudo-random number generator
  * Uses xorshift128+ algorithm for reproducible randomness
  */
+const MASK_64 = (1n << 64n) - 1n
+
+/**
+ * One SplitMix64 step: the next state and its scrambled output. Used to spread
+ * a seed across both xorshift words, so nearby small seeds (0, 1, 42, ...)
+ * start from unrelated states instead of nearly identical ones.
+ */
+function splitMix64(state: bigint): [bigint, bigint] {
+  const next = (state + 0x9e3779b97f4a7c15n) & MASK_64
+  let z = next
+  z = ((z ^ (z >> 30n)) * 0xbf58476d1ce4e5b9n) & MASK_64
+  z = ((z ^ (z >> 27n)) * 0x94d049bb133111ebn) & MASK_64
+  return [next, z ^ (z >> 31n)]
+}
+
 export class SeededRandom {
   private state: [bigint, bigint]
 
   constructor(seed: number) {
-    // Initialize state from seed
-    const s = BigInt(seed)
-    this.state = [s ^ 0x5deece66dn, (s >> 32n) ^ 0xbb67ae85n]
+    // Initialize state from seed via SplitMix64 (two outputs, never both zero
+    // in practice; guarded anyway since an all-zero xorshift state is stuck).
+    const [mixed, s0] = splitMix64(BigInt.asUintN(64, BigInt(seed)))
+    const [, s1] = splitMix64(mixed)
+    this.state = s0 === 0n && s1 === 0n ? [1n, 0n] : [s0, s1]
   }
 
   /** Generate a random number in [0, 1) */
@@ -16,13 +33,14 @@ export class SeededRandom {
     let s1 = this.state[0]
     const s0 = this.state[1]
     this.state[0] = s0
-    s1 ^= s1 << 23n
+    s1 ^= (s1 << 23n) & MASK_64
     s1 ^= s1 >> 18n
     s1 ^= s0
     s1 ^= s0 >> 5n
     this.state[1] = s1
-    const result = (s0 + s1) & 0xffffffffffffffffn
-    return Number(result) / Number(0xffffffffffffffffn)
+    const result = (s0 + s1) & MASK_64
+    // Top 53 bits divided by 2^53: exactly representable, never reaches 1.
+    return Number(result >> 11n) / 2 ** 53
   }
 
   /** Generate a random integer in [min, max] inclusive */

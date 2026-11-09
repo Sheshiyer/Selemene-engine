@@ -26,11 +26,9 @@ export function threeCoinLineValue(coins: readonly number[]): LineValue {
 
 export function castThreeCoinLines(seed: number): LineValue[] {
   validateSeed(seed)
+  // SeededRandom mixes the seed with SplitMix64, so small seeds no longer start
+  // from correlated states and no initial draws need discarding.
   const rng = new SeededRandom(seed)
-  // The shared generator's initial draws are correlated with its small seed.
-  // Discard the initialization transient locally: without this, seeds 0..8191
-  // all produce old yin for the first line. Keep the same reproducible PRNG.
-  for (let draw = 0; draw < 16; draw++) rng.next()
   return Array.from({ length: 6 }, () =>
     threeCoinLineValue(Array.from({ length: 3 }, () => (rng.nextBool() ? 3 : 2))),
   )

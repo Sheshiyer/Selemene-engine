@@ -12,19 +12,19 @@
         "name": "Past",
         "meaning": "What has led to this moment; influences from the past",
         "card": {
-          "id": "major-4",
-          "name": "The Emperor",
+          "id": "major-6",
+          "name": "The Lovers",
           "arcana": "major",
-          "number": 4,
-          "element": "fire",
+          "number": 6,
+          "element": "air",
           "isReversed": true,
           "interpretation": {
-            "meaning": "Domination, excessive control, rigidity, lack of discipline",
+            "meaning": "Self-love, disharmony, imbalance, misalignment of values",
             "keywords": [
-              "authority",
-              "structure",
-              "leadership",
-              "stability"
+              "love",
+              "union",
+              "choice",
+              "harmony"
             ]
           }
         }
@@ -34,19 +34,19 @@
         "name": "Present",
         "meaning": "The current situation; where you stand now",
         "card": {
-          "id": "major-20",
-          "name": "Judgement",
+          "id": "major-14",
+          "name": "Temperance",
           "arcana": "major",
-          "number": 20,
+          "number": 14,
           "element": "fire",
           "isReversed": false,
           "interpretation": {
-            "meaning": "Reflection, reckoning, awakening, renewal, purpose",
+            "meaning": "Balance, moderation, patience, purpose, meaning",
             "keywords": [
-              "rebirth",
-              "calling",
-              "absolution",
-              "reflection"
+              "balance",
+              "patience",
+              "moderation",
+              "harmony"
             ]
           }
         }
@@ -56,20 +56,20 @@
         "name": "Future",
         "meaning": "What may unfold; potential outcomes and energies ahead",
         "card": {
-          "id": "cups-10",
-          "name": "Ten of Cups",
+          "id": "swords-14",
+          "name": "King of Swords",
           "arcana": "minor",
-          "suit": "cups",
-          "number": 10,
-          "element": "water",
+          "suit": "swords",
+          "number": 14,
+          "element": "air",
           "isReversed": false,
           "interpretation": {
-            "meaning": "Divine love, blissful relationships, harmony, alignment",
+            "meaning": "Mental clarity, intellectual power, authority, truth",
             "keywords": [
-              "happiness",
-              "fulfillment",
-              "family",
-              "harmony"
+              "authority",
+              "truth",
+              "intellect",
+              "ethical"
             ]
           }
         }
@@ -79,30 +79,27 @@
   },
   "witness_prompts": [
     {
-      "prompt": "With The Emperor appearing reversed, what inner landscape might it be reflecting?",
-      "context": "The Emperor in Past position (reversed)",
+      "prompt": "What arises when you sit with the image of King of Swords?",
+      "context": "King of Swords in Future position",
       "themes": [
-        "shadow",
-        "inversion",
-        "inner work",
         "authority",
-        "structure",
-        "leadership",
-        "stability"
+        "truth",
+        "intellect",
+        "ethical"
       ]
     },
     {
-      "prompt": "How do Judgement and Ten of Cups seem to speak to each other in this reading?",
-      "context": "Connection between Present and Future",
+      "prompt": "How do The Lovers and King of Swords seem to speak to each other in this reading?",
+      "context": "Connection between Past and Future",
       "themes": [
-        "rebirth",
-        "calling",
-        "absolution",
-        "reflection",
-        "happiness",
-        "fulfillment",
-        "family",
-        "harmony"
+        "love",
+        "union",
+        "choice",
+        "harmony",
+        "authority",
+        "truth",
+        "intellect",
+        "ethical"
       ]
     },
     {

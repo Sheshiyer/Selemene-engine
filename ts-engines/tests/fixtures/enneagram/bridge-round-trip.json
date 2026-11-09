@@ -184,16 +184,16 @@
             ]
           },
           {
-            "prompt": "What happens in your body when you feel trapped?",
-            "context": "Type 7 - Somatic awareness",
+            "prompt": "How might this pattern be an attempt to get something you need?",
+            "context": "Open inquiry",
             "themes": [
-              "body",
-              "sensation",
-              "embodiment"
+              "self-inquiry",
+              "curiosity",
+              "compassion"
             ]
           },
           {
-            "prompt": "What does the The Loyalist bring to how you navigate the world?",
+            "prompt": "How do you notice the influence of 6 patterns in your experience?",
             "context": "Wing influence - Type 6",
             "themes": [
               "wing",
@@ -202,7 +202,7 @@
             ]
           },
           {
-            "prompt": "Where do you notice the pattern of being deprived, in pain, or trapped arising in your life?",
+            "prompt": "What situations tend to activate the concern about being deprived, in pain, or trapped?",
             "context": "Type 7 - The Enthusiast core fear",
             "themes": [
               "fear",
@@ -302,16 +302,16 @@
         },
         "witness_prompts": [
           {
-            "prompt": "What happens in your body when others seem to have what you lack?",
-            "context": "Type 4 - Somatic awareness",
+            "prompt": "How might this pattern be an attempt to get something you need?",
+            "context": "Open inquiry",
             "themes": [
-              "body",
-              "sensation",
-              "embodiment"
+              "self-inquiry",
+              "curiosity",
+              "compassion"
             ]
           },
           {
-            "prompt": "What does the The Investigator bring to how you navigate the world?",
+            "prompt": "How do you notice the influence of 5 patterns in your experience?",
             "context": "Wing influence - Type 5",
             "themes": [
               "wing",
@@ -320,7 +320,7 @@
             ]
           },
           {
-            "prompt": "Where do you notice the pattern of having no identity or personal significance arising in your life?",
+            "prompt": "What situations tend to activate the concern about having no identity or personal significance?",
             "context": "Type 4 - The Individualist core fear",
             "themes": [
               "fear",
@@ -329,12 +329,12 @@
             ]
           },
           {
-            "prompt": "What becomes possible when you can simply observe this pattern?",
-            "context": "Open inquiry",
+            "prompt": "Where does the feeling misunderstood pattern serve you? Where does it limit you?",
+            "context": "Type 4 - Behavioral pattern",
             "themes": [
-              "self-inquiry",
-              "curiosity",
-              "compassion"
+              "observation",
+              "non-judgment",
+              "awareness"
             ]
           }
         ],
