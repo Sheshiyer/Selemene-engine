@@ -33,9 +33,23 @@ export CF_DEV_BYPASS_TOKEN="${CF_DEV_BYPASS_TOKEN:-local-e2e-dev-bypass-token}"
 
 pid_file() { echo "$run_dir/$1.pid"; }
 
+# Start time of a process as `ps` reports it, whitespace-normalized; empty if gone.
+proc_start() {
+  local started
+  started="$(ps -o lstart= -p "$1" 2>/dev/null)" || return 0
+  # shellcheck disable=SC2086  # unquoted on purpose: collapses ps column padding
+  echo $started
+}
+
+# A pid file holds "PID START_TIME". Matching the start time as well as the pid
+# means a pid file left over from an earlier container (a restart keeps the
+# file but not the process) never names an unrelated process that reused the pid.
 running() {
-  local f; f="$(pid_file "$1")"
-  [[ -f "$f" ]] && kill -0 "$(cat "$f")" 2>/dev/null
+  local f pid started
+  f="$(pid_file "$1")"
+  [[ -f "$f" ]] || return 1
+  read -r pid started <"$f" || true
+  [[ -n "$pid" && -n "$started" && "$(proc_start "$pid")" == "$started" ]]
 }
 
 wait_for() {
@@ -52,7 +66,8 @@ start_bg() {
   local name=$1; shift
   if running "$name"; then echo "already running: $name"; return 0; fi
   nohup "$@" >"$run_dir/$name.log" 2>&1 &
-  echo $! >"$(pid_file "$name")"
+  local pid=$!
+  echo "$pid $(proc_start "$pid")" >"$(pid_file "$name")"
 }
 
 start() {
@@ -100,7 +115,7 @@ EOF
 
 stop() {
   for name in api biofield-cv mediapipe ts-engines; do
-    if running "$name"; then kill "$(cat "$(pid_file "$name")")" && echo "stopped: $name"; fi
+    if running "$name"; then kill "$(cut -d' ' -f1 "$(pid_file "$name")")" && echo "stopped: $name"; fi
     rm -f "$(pid_file "$name")"
   done
 }
