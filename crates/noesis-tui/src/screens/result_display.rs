@@ -346,4 +346,51 @@ mod tests {
         assert_eq!(exported["provenance"], envelope["provenance"]);
         assert_eq!(exported["result"], envelope["result"]);
     }
+
+    #[test]
+    fn i_ching_derivation_and_provenance_reach_both_result_screens() {
+        // #1341: the TUI holds what the SDK returns; derivation renders, the
+        // contract block shows in the details and survives JSON export.
+        let envelope: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../ts-engines/tests/fixtures/i-ching/api-envelope-seed-42.json"
+        ))
+        .unwrap();
+        let output: EngineOutput = serde_json::from_value(envelope.clone()).unwrap();
+
+        let mut screen = ResultDisplay::new();
+        screen.set_engine_result("i-ching".into(), output.clone());
+        assert!(screen
+            .rendered_text
+            .contains("seeded_three_coin_simulation"));
+        assert!(screen.rendered_text.contains("**Implementation**: 1.1.0"));
+        assert!(!screen.rendered_text.contains("__contract_provenance"));
+
+        let workflow = WorkflowResult {
+            workflow_id: "decision-support".into(),
+            engine_outputs: std::collections::HashMap::from([("i-ching".to_string(), output)]),
+            synthesis: None,
+            total_time_ms: 0.0,
+            timestamp: chrono::Utc::now(),
+        };
+        screen.set_workflow_result("decision-support".into(), workflow);
+        assert!(screen
+            .rendered_text
+            .contains("seeded_three_coin_simulation"));
+        assert!(!screen.rendered_text.contains("__contract_provenance"));
+        let ResultKind::Workflow { result, .. } = &screen.result else {
+            panic!("screen should retain the workflow result");
+        };
+        let json = MarkdownRenderer::new()
+            .render_workflow(result, ReportFormat::Json)
+            .unwrap();
+        let exported: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(
+            exported["engine_outputs"]["i-ching"]["provenance"],
+            envelope["provenance"]
+        );
+        assert_eq!(
+            exported["engine_outputs"]["i-ching"]["result"],
+            envelope["result"]
+        );
+    }
 }

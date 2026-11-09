@@ -9,3 +9,8 @@ pub mod living_reading_invites;
 pub mod onboarding;
 pub mod users;
 pub mod witness;
+
+pub mod sessions;
+pub mod shared_identity;
+
+pub mod witness_catalog;

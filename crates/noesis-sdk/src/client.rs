@@ -53,6 +53,7 @@ pub struct NoesisClient {
     http: Client,
     base_url: String,
     api_key: Option<String>,
+    bearer_token: Option<String>,
     max_retries: u32,
     backoff_ms: u64,
 }
@@ -70,6 +71,7 @@ impl NoesisClient {
             http,
             base_url: config.api_url.clone(),
             api_key: config.api_key.clone(),
+            bearer_token: None,
             max_retries: config.max_retries,
             backoff_ms: config.backoff_ms,
         })
@@ -83,6 +85,7 @@ impl NoesisClient {
     /// Set the API key for authenticated requests.
     pub fn with_api_key(mut self, api_key: impl Into<String>) -> Self {
         self.api_key = Some(api_key.into());
+        self.bearer_token = None;
         self
     }
 
@@ -102,8 +105,10 @@ impl NoesisClient {
         let url = format!("{}/api/v1/workflows/{}/execute", self.base_url, workflow_id);
         debug!("Executing workflow: {}", workflow_id);
 
-        self.send_with_retry(|| self.authenticated(self.http.post(&url).json(&input)))
-            .await
+        let response: WorkflowResponse = self
+            .send_with_retry(|| self.authenticated(self.http.post(&url).json(&input)))
+            .await?;
+        Ok(response.into_workflow_result())
     }
 
     /// List all available engines.
@@ -165,7 +170,60 @@ impl NoesisClient {
             .await
     }
 
+    /// Human account sessions are separate from service API keys.
+    pub fn with_bearer_token(mut self, token: impl Into<String>) -> Self {
+        self.bearer_token = Some(token.into());
+        self.api_key = None;
+        self
+    }
+    pub async fn account_context(&self) -> Result<crate::shared_identity::AccountContext> {
+        let url = format!("{}/api/v1/users/me/context", self.base_url);
+        self.send_with_retry(|| self.authenticated(self.http.get(&url)))
+            .await
+    }
+    pub async fn subject_profile(
+        &self,
+        id: uuid::Uuid,
+    ) -> Result<crate::shared_identity::SubjectProfile> {
+        let url = format!("{}/api/v1/subjects/{id}/profile", self.base_url);
+        self.send_with_retry(|| self.authenticated(self.http.get(&url)))
+            .await
+    }
+    pub async fn update_subject_profile(
+        &self,
+        id: uuid::Uuid,
+        expected_revision: i64,
+        patch: &serde_json::Value,
+    ) -> Result<crate::shared_identity::SubjectProfile> {
+        let url = format!("{}/api/v1/subjects/{id}/profile", self.base_url);
+        let body = serde_json::json!({"expected_revision":expected_revision,"patch":patch});
+        self.handle_response(
+            self.authenticated(self.http.patch(&url).json(&body))
+                .send()
+                .await
+                .map_err(Error::Http)?,
+        )
+        .await
+    }
+    pub async fn set_default_subject(
+        &self,
+        id: Option<uuid::Uuid>,
+    ) -> Result<crate::shared_identity::AccountContext> {
+        let url = format!("{}/api/v1/users/me/context", self.base_url);
+        let body = serde_json::json!({"default_subject_id":id});
+        self.handle_response(
+            self.authenticated(self.http.patch(&url).json(&body))
+                .send()
+                .await
+                .map_err(Error::Http)?,
+        )
+        .await
+    }
     fn authenticated(&self, request: RequestBuilder) -> RequestBuilder {
+        if let Some(ref token) = self.bearer_token {
+            return request.bearer_auth(token);
+        }
+
         if let Some(ref key) = self.api_key {
             request.header("X-API-Key", key)
         } else {
@@ -248,6 +306,7 @@ impl NoesisClient {
 pub struct NoesisClientBuilder {
     base_url: Option<String>,
     api_key: Option<String>,
+    bearer_token: Option<String>,
     timeout_ms: u64,
     max_retries: Option<u32>,
     backoff_ms: Option<u64>,
@@ -317,6 +376,7 @@ impl NoesisClientBuilder {
             http,
             base_url,
             api_key: self.api_key,
+            bearer_token: self.bearer_token,
             max_retries,
             backoff_ms,
         })
@@ -437,6 +497,46 @@ pub struct ReadingsListResponse {
     pub limit: u32,
     #[serde(default)]
     pub offset: u32,
+}
+
+/// Workflow response as the API sends it. `engine_outputs` is the persisted
+/// shape without contract provenance; `engine_results` repeats each output
+/// with its `provenance` block.
+#[derive(Deserialize)]
+struct WorkflowResponse {
+    #[serde(flatten)]
+    workflow: WorkflowResult,
+    #[serde(default)]
+    engine_results: std::collections::HashMap<String, serde_json::Value>,
+}
+
+impl WorkflowResponse {
+    /// Attach each valid `engine_results[id].provenance` to `engine_outputs[id]`
+    /// so [`EngineOutput::contract_provenance`] sees it. Missing or malformed
+    /// blocks are skipped: provenance stays unknown rather than failing the call.
+    fn into_workflow_result(self) -> WorkflowResult {
+        let mut workflow = self.workflow;
+        for (engine_id, engine_result) in self.engine_results {
+            let Some(raw) = engine_result.get("provenance") else {
+                continue;
+            };
+            if serde_json::from_value::<noesis_core::contract::Provenance>(raw.clone()).is_err() {
+                warn!(engine_id = %engine_id, "ignoring malformed workflow provenance");
+                continue;
+            }
+            if let Some(result) = workflow
+                .engine_outputs
+                .get_mut(&engine_id)
+                .and_then(|output| output.result.as_object_mut())
+            {
+                result.insert(
+                    noesis_core::CONTRACT_PROVENANCE_KEY.to_string(),
+                    raw.clone(),
+                );
+            }
+        }
+        workflow
+    }
 }
 
 #[cfg(test)]
@@ -719,5 +819,134 @@ mod tests {
         for needle in ["swiss_ephemeris_moshier", "local_date", "23.857"] {
             assert!(md.contains(needle), "rendered report lacks {needle}:\n{md}");
         }
+    }
+
+    fn i_ching_input() -> EngineInput {
+        EngineInput {
+            birth_data: None,
+            current_time: chrono::Utc::now(),
+            location: None,
+            precision: noesis_core::Precision::Standard,
+            options: std::collections::HashMap::new(),
+        }
+    }
+
+    async fn serve(route: &str, body: serde_json::Value) -> (MockServer, NoesisClient) {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path(route))
+            .respond_with(ResponseTemplate::new(200).set_body_json(body))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let client = NoesisClient::builder()
+            .base_url(server.uri())
+            .api_key("test-key")
+            .build()
+            .unwrap();
+        (server, client)
+    }
+
+    #[tokio::test]
+    async fn i_ching_calculate_keeps_provenance_and_derivation() {
+        // #1341: the real noesis-api envelope, pinned by noesis-api
+        // `i_ching_api_envelope_and_persisted_reading_keep_derivation`.
+        let envelope: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/api-envelope-seed-42.json"
+        ))
+        .unwrap();
+        let (_server, client) = serve("/api/v1/engines/i-ching/calculate", envelope.clone()).await;
+
+        let output = client.calculate("i-ching", i_ching_input()).await.unwrap();
+
+        assert_eq!(
+            output.result["derivation"],
+            envelope["result"]["derivation"]
+        );
+        assert_eq!(output.result["casting"], envelope["result"]["casting"]);
+        let provenance = output
+            .contract_provenance()
+            .expect("API provenance retained");
+        assert!(!provenance.fallback_used);
+        assert_eq!(provenance.implementation_version, "1.1.0");
+        assert_eq!(
+            serde_json::to_value(&output).unwrap()["provenance"],
+            envelope["provenance"]
+        );
+    }
+
+    #[tokio::test]
+    async fn i_ching_workflow_keeps_per_engine_provenance() {
+        // #1341: the API puts each engine's contract provenance only on
+        // `engine_results`; `engine_outputs` is the persisted shape without it.
+        // Pinned by noesis-api `i_ching_workflow_response_and_persisted_reading_keep_derivation`.
+        let response: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/api-workflow-seed-42.json"
+        ))
+        .unwrap();
+        let (_server, client) = serve(
+            "/api/v1/workflows/decision-support/execute",
+            response.clone(),
+        )
+        .await;
+
+        let workflow = client
+            .workflow("decision-support", i_ching_input())
+            .await
+            .unwrap();
+
+        let output = &workflow.engine_outputs["i-ching"];
+        assert_eq!(
+            output.result["derivation"],
+            response["engine_outputs"]["i-ching"]["result"]["derivation"]
+        );
+        let provenance = output
+            .contract_provenance()
+            .expect("workflow provenance retained from engine_results");
+        assert!(!provenance.fallback_used);
+        assert_eq!(provenance.implementation_version, "1.1.0");
+        let wire = serde_json::to_value(&workflow).unwrap();
+        assert_eq!(
+            wire["engine_outputs"]["i-ching"]["provenance"],
+            response["engine_results"]["i-ching"]["provenance"]
+        );
+    }
+
+    #[tokio::test]
+    async fn workflow_without_engine_results_or_with_bad_provenance_still_loads() {
+        // Older servers send no `engine_results`; a malformed block is ignored
+        // rather than failing the whole workflow or inventing provenance.
+        let mut response: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/api-workflow-seed-42.json"
+        ))
+        .unwrap();
+        response["engine_results"]["i-ching"]["provenance"] =
+            serde_json::json!({"runtime_kind": "bogus"});
+        let (_server, client) = serve(
+            "/api/v1/workflows/decision-support/execute",
+            response.clone(),
+        )
+        .await;
+        let workflow = client
+            .workflow("decision-support", i_ching_input())
+            .await
+            .unwrap();
+        assert!(workflow.engine_outputs["i-ching"]
+            .contract_provenance()
+            .is_none());
+
+        response.as_object_mut().unwrap().remove("engine_results");
+        let (_server, client) = serve("/api/v1/workflows/decision-support/execute", response).await;
+        let workflow = client
+            .workflow("decision-support", i_ching_input())
+            .await
+            .unwrap();
+        assert!(workflow.engine_outputs["i-ching"]
+            .contract_provenance()
+            .is_none());
+        assert_eq!(
+            workflow.engine_outputs["i-ching"].result["derivation"]["line_values"]["origin"],
+            "cast"
+        );
     }
 }

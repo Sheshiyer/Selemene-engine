@@ -1,3 +1,8 @@
+# I Ching provenance across SDK, TUI, workflows and readings — 2026-11-07
+
+- Rust SDK `workflow()` now keeps each engine's contract provenance from `engine_results` (it previously read only `engine_outputs`, which never carries it). Missing or malformed blocks are skipped, never invented.
+- Pin real seed-42 I Ching sidecar, `/calculate` and workflow fixtures, and probe the bridge, API, persisted reading shape, Rust SDK, Markdown/text/JSON reports, TUI screens and TS SDK. Saved readings keep `result.derivation`; the contract block stays response-only, as before. Nothing is deployed.
+
 # Rust SDK/TUI contract provenance — 2026-11-04
 
 - Preserve valid API contract provenance through the shared Rust output type, SDK client, TUI result screen and JSON/Markdown/text reports, without adding required fields to public output constructors.
