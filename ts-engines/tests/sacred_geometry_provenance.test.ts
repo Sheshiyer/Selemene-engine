@@ -54,7 +54,12 @@ describe('SacredGeometryEngine provenance (GH #1401)', () => {
     const detail = result.provenance_detail
     expect(detail.form).toEqual({ kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' })
     expect(detail.form_selection).toEqual({ kind: 'requested' })
-    expect(detail.meditation).toEqual({ kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' })
+    expect(detail.meditation).toEqual({
+      kind: 'symbolic_lookup',
+      source: 'wisdom.SACRED_FORMS',
+      mode: 'guidance',
+      duration_suggestion: 'static_constant',
+    })
     expect(detail.calculated_geometry.status).toBe('calculated')
     expect(typeof detail.calculated_geometry.construction).toBe('string')
     expect(detail.rendered_artifact.status).toBe('not_implemented')

@@ -549,7 +549,9 @@
       },
       "meditation": {
         "kind": "symbolic_lookup",
-        "source": "wisdom.SACRED_FORMS"
+        "source": "wisdom.SACRED_FORMS",
+        "mode": "guidance",
+        "duration_suggestion": "static_constant"
       },
       "calculated_geometry": {
         "status": "calculated",
@@ -574,7 +576,32 @@
         "status": "absent"
       },
       "witness_prompts": {
-        "kind": "templated_narrative"
+        "kind": "templated_narrative",
+        "source": "witness.generateWitnessPrompts",
+        "seed": 42,
+        "prompts": [
+          {
+            "template": "form_contemplation",
+            "mode": "inquiry",
+            "inputs": [
+              "result.form.name"
+            ]
+          },
+          {
+            "template": "meditation",
+            "mode": "guidance",
+            "inputs": [
+              "result.meditation.prompt"
+            ]
+          },
+          {
+            "template": "integration",
+            "mode": "inquiry",
+            "inputs": [
+              "result.form.name"
+            ]
+          }
+        ]
       }
     }
   },

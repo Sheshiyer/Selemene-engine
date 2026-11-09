@@ -321,9 +321,11 @@ impl AmritKaal {
 pub mod utils {
     use super::*;
 
-    /// Check if current time falls within a Muhurta
+    /// Check if `current_time` (`HH:MM` or `HH:MM:SS`) falls within a
+    /// Muhurta. The period is half-open, `[start, end)`, and may cross
+    /// midnight.
     pub fn is_within_muhurta(current_time: &str, muhurta: &Muhurta) -> bool {
-        current_time >= muhurta.start.as_str() && current_time <= muhurta.end.as_str()
+        super::super::clock::in_period(current_time, &muhurta.start, &muhurta.end)
     }
 
     /// Get all inauspicious periods for the day
@@ -529,6 +531,33 @@ mod tests {
             Some(("12:25".to_string(), "13:09".to_string(), 44))
         );
         assert_eq!(abhijit_period("bad", "18:00"), None);
+    }
+
+    #[test]
+    fn is_within_muhurta_is_half_open_and_parses_times() {
+        let muhurta = |start: &str, end: &str| Muhurta {
+            name: "Test".to_string(),
+            start: start.to_string(),
+            end: end.to_string(),
+            duration_minutes: 0,
+            nature: MuhurtaNature::Inauspicious,
+            ruler: String::new(),
+            suitable_activities: vec![],
+            avoid_activities: vec![],
+        };
+        let rahu = muhurta("14:10", "15:34");
+        assert!(utils::is_within_muhurta("14:10", &rahu));
+        assert!(utils::is_within_muhurta("15:33:59", &rahu));
+        assert!(!utils::is_within_muhurta("15:34", &rahu));
+        assert!(!utils::is_within_muhurta("14:09:59", &rahu));
+        // "9:30" sorted after "09:00"–"10:30" as text.
+        assert!(utils::is_within_muhurta("9:30", &muhurta("09:00", "10:30")));
+        // Brahma Muhurta for a 01:00 sunrise crosses midnight.
+        let brahma = muhurta("23:24", "00:12");
+        assert!(utils::is_within_muhurta("23:59", &brahma));
+        assert!(utils::is_within_muhurta("00:05", &brahma));
+        assert!(!utils::is_within_muhurta("00:12", &brahma));
+        assert!(!utils::is_within_muhurta("late", &rahu));
     }
 
     #[test]

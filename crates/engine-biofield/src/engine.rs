@@ -615,12 +615,14 @@ impl ConsciousnessEngine for BiofieldEngine {
 
     fn cache_key(&self, input: &EngineInput) -> String {
         // Vedic analysis: cache by birth data + transit hour. The timezone is
-        // part of the key because it decides the birth instant.
+        // part of the key because it decides the birth instant. A missing time
+        // is keyed as "-", not "12:00": it computes the same chart as an
+        // explicit noon but reports `birth_time_assumed: true`.
         if let Some(birth_data) = &input.birth_data {
             let birth_str = format!(
                 "{}_{}_{}",
                 birth_data.date,
-                birth_data.time.as_deref().unwrap_or("12:00"),
+                birth_data.time.as_deref().unwrap_or("-"),
                 birth_data.timezone
             );
             let transit_hour = input.current_time.format("%Y-%m-%d-%H").to_string();
@@ -912,6 +914,19 @@ mod tests {
 
         let key = engine.cache_key(&input);
         assert!(key.starts_with("biofield:vedic:"));
+    }
+
+    /// A missing time and an explicit 12:00 compute the same chart but report
+    /// `birth_time_assumed` differently, so they must not share a cache entry.
+    #[tokio::test]
+    async fn test_cache_key_vedic_separates_missing_time_from_noon() {
+        let engine = BiofieldEngine::new();
+        let mut untimed = create_vedic_input();
+        untimed.birth_data.as_mut().unwrap().time = None;
+        let mut noon = create_vedic_input();
+        noon.birth_data.as_mut().unwrap().time = Some("12:00".to_string());
+        noon.current_time = untimed.current_time;
+        assert_ne!(engine.cache_key(&untimed), engine.cache_key(&noon));
     }
 
     #[tokio::test]

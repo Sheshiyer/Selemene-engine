@@ -203,3 +203,34 @@ describe('enneagram provenance: invalid input', () => {
     expect(error.code).toBe('INVALID_ENNEAGRAM_TYPE')
   })
 })
+
+describe('enneagram result fixture', () => {
+  it('committed result-modes fixture matches live engine output for every mode', async () => {
+    // crates/noesis-api/tests/openapi_schema_tests.rs checks EnneagramResultSchema
+    // against this file, so the OpenAPI schema can only pass against what this
+    // engine really emits.
+    const fixture = JSON.parse(
+      readFileSync(join(import.meta.dir, 'fixtures/enneagram/result-modes.json'), 'utf8'),
+    ) as {
+      seed: number
+      cases: Array<{ name: string; parameters: Record<string, unknown>; result: unknown }>
+    }
+    expect(fixture.cases.map((c) => c.name)).toEqual([
+      'assessment',
+      'assessment-partial-clamped',
+      'assessment-flat-no-tritype',
+      'lookup-with-wing',
+      'lookup-without-wing',
+      'questions',
+      'empty-request',
+    ])
+    for (const c of fixture.cases) {
+      const live = await new EnneagramEngine().calculate({
+        consciousness_level: 1,
+        parameters: c.parameters,
+        seed: fixture.seed,
+      })
+      expect(live.result).toEqual(c.result as Record<string, unknown>)
+    }
+  })
+})

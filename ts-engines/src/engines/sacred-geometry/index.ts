@@ -21,7 +21,8 @@ export type {
 export { buildGeometry, getConstructedFormIds, getUnsupportedFormIds } from './geometry'
 
 // Witness prompts
-export { generateWitnessPrompts } from './witness'
+export type { WitnessDerivation, WitnessTemplate } from './witness'
+export { generateWitnessNarrative, generateWitnessPrompts } from './witness'
 
 // Engine
 export { SacredGeometryEngine } from './engine'

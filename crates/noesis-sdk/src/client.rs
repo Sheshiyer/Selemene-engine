@@ -732,6 +732,19 @@ mod tests {
             serde_json::to_value(&output).unwrap()["provenance"],
             envelope["provenance"]
         );
+
+        // GH #1411: the full witness prompt list survives `calculate`, not just
+        // the first prompt's text.
+        let prompts = output
+            .contract_witness_prompts()
+            .expect("API witness prompts retained");
+        assert_eq!(prompts.len(), 3);
+        assert_eq!(prompts[0].prompt, output.witness_prompt);
+        assert_eq!(prompts[1].context.as_deref(), Some("Meditation guidance"));
+        assert_eq!(
+            serde_json::to_value(&output).unwrap()["witness_prompts"],
+            envelope["witness_prompts"]
+        );
     }
 
     #[tokio::test]

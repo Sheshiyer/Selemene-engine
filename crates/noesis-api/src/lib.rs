@@ -1690,6 +1690,29 @@ fn take_contract_provenance(
     }
 }
 
+/// Remove the bridge's reserved `witness_prompts` list from an engine
+/// output's `result` and parse it (GH #1411). Like the provenance block, an
+/// unparseable list is still removed so it never leaks, and `None` is returned.
+fn take_contract_witness_prompts(
+    output: &mut EngineOutput,
+) -> Option<Vec<noesis_core::contract::WitnessPrompt>> {
+    let raw = output
+        .result
+        .as_object_mut()
+        .and_then(|o| o.remove(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY))?;
+    match serde_json::from_value(raw) {
+        Ok(prompts) => Some(prompts),
+        Err(e) => {
+            tracing::warn!(
+                engine_id = %output.engine_id,
+                error = %e,
+                "sidecar witness_prompts failed contract-v1 parse; dropping them"
+            );
+            None
+        }
+    }
+}
+
 /// Contract-v1 provenance for a native engine, derived from the metadata the
 /// engine itself filled in (`fallback_used` and `provider_id` are set
 /// explicitly at every native construction site). `confidence` is omitted
@@ -1745,11 +1768,23 @@ impl ApiEngineOutputResponse {
         let provenance = envelope_contract_provenance(&mut output, is_native);
         let generated_image = output.result.get("generated_image").cloned();
         let generated_audio = output.result.get("generated_audio").cloned();
-        let witness_prompts = vec![ApiWitnessPrompt {
-            prompt: output.witness_prompt.clone(),
-            context: None,
-            themes: Vec::new(),
-        }];
+        // The full list (with context and themes) when the engine supplied one;
+        // otherwise the single `witness_prompt`, as before (GH #1411).
+        let witness_prompts = match take_contract_witness_prompts(&mut output) {
+            Some(prompts) if !prompts.is_empty() => prompts
+                .into_iter()
+                .map(|p| ApiWitnessPrompt {
+                    prompt: p.prompt,
+                    context: p.context,
+                    themes: p.themes.unwrap_or_default(),
+                })
+                .collect(),
+            _ => vec![ApiWitnessPrompt {
+                prompt: output.witness_prompt.clone(),
+                context: None,
+                themes: Vec::new(),
+            }],
+        };
         let calculated_at = output.metadata.timestamp.to_rfc3339();
         let processing_time_ms = output.metadata.calculation_time_ms;
 
@@ -4325,6 +4360,8 @@ struct LegacyPanchangaResponse {
     // Additive provenance fields (#1191).
     position_source: Option<String>,
     birth_time_assumed: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    assumed_birth_time: Option<String>,
     vara_basis: Option<String>,
     ayanamsa_degrees: Option<f64>,
 }
@@ -4414,6 +4451,9 @@ async fn legacy_panchanga_handler(
         birth_time_assumed: panchanga_result["birth_time_assumed"]
             .as_bool()
             .unwrap_or(false),
+        assumed_birth_time: panchanga_result["assumed_birth_time"]
+            .as_str()
+            .map(str::to_string),
         vara_basis: panchanga_result["vara_basis"].as_str().map(str::to_string),
         ayanamsa_degrees: panchanga_result["ayanamsa_degrees"].as_f64(),
     };
@@ -5267,6 +5307,18 @@ mod p4_contract_tests {
             wire["result"]["provenance_detail"]["calculated_geometry"]["status"],
             "calculated"
         );
+
+        // GH #1411: the envelope carries every witness prompt with its context
+        // and themes, matching what the engine emitted; nothing leaks into result.
+        assert_eq!(
+            wire["witness_prompts"],
+            sidecar["sidecar_response"]["witness_prompts"]
+        );
+        assert_eq!(wire["witness_prompts"].as_array().unwrap().len(), 3);
+        assert_eq!(wire["witness_prompt"], wire["witness_prompts"][0]["prompt"]);
+        assert!(wire["result"]
+            .get(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY)
+            .is_none());
     }
 
     /// The seed-42 i-ching sidecar fixture as the bridge hands it to the API.
@@ -5333,6 +5385,10 @@ mod p4_contract_tests {
         assert!(persisted["result"]
             .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
             .is_none());
+        // GH #1411: the witness scaffolding key is never stored either.
+        assert!(!persisted
+            .to_string()
+            .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
     }
 
     #[test]
@@ -5359,6 +5415,10 @@ mod p4_contract_tests {
         assert!(persisted["engine_outputs"]["i-ching"]
             .get("provenance")
             .is_none());
+        // GH #1411: the witness scaffolding key is never stored either.
+        assert!(!persisted
+            .to_string()
+            .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
 
         let wire =
             serde_json::to_value(ApiWorkflowResultResponse::new(workflow, provenance)).unwrap();
@@ -5463,6 +5523,10 @@ mod p4_contract_tests {
             assert_eq!(result, &sidecar["result"], "{path}");
             assert_eq!(result["derivation"]["line_values"]["origin"], "cast");
             assert!(result.get(noesis_bridge::CONTRACT_PROVENANCE_KEY).is_none());
+            assert!(!stored
+                .result_data
+                .to_string()
+                .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
             // By design the contract block is response-only, never stored.
             assert!(!stored.result_data.to_string().contains("\"runtime_kind\""));
         }

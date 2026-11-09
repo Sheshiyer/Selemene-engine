@@ -442,11 +442,14 @@ impl ConsciousnessEngine for VimshottariEngine {
     }
 
     fn cache_key(&self, input: &EngineInput) -> String {
+        // A missing birth time is keyed as "-", not "12:00": it computes the
+        // same timeline as an explicit noon but reports
+        // `birth_time_assumed: true`.
         if let Some(ref birth_data) = input.birth_data {
             format!(
                 "vim:lahiri-full-v1:{}:{}:{:.4}:{:.4}:{}:{}",
                 birth_data.date,
-                birth_data.time.as_ref().unwrap_or(&"12:00".to_string()),
+                birth_data.time.as_deref().unwrap_or("-"),
                 birth_data.latitude,
                 birth_data.longitude,
                 birth_data.timezone,
@@ -466,7 +469,7 @@ impl ConsciousnessEngine for VimshottariEngine {
                     .options
                     .get("birth_time")
                     .and_then(Value::as_str)
-                    .unwrap_or("12:00"),
+                    .unwrap_or("-"),
                 input
                     .options
                     .get("timezone")
@@ -503,6 +506,27 @@ mod tests {
             precision: Precision::Standard,
             options,
         }
+    }
+
+    /// A missing time and an explicit 12:00 compute the same timeline but
+    /// report `birth_time_assumed` differently, so they must not share a cache
+    /// entry, in either mode.
+    #[test]
+    fn cache_key_separates_missing_time_from_noon() {
+        let engine = VimshottariEngine::new();
+
+        let mut untimed = create_test_input_with_birth_data();
+        untimed.birth_data.as_mut().unwrap().time = None;
+        let mut noon = untimed.clone();
+        noon.birth_data.as_mut().unwrap().time = Some("12:00".to_string());
+        assert_ne!(engine.cache_key(&untimed), engine.cache_key(&noon));
+
+        let mut untimed = create_test_input_with_moon_longitude(125.0);
+        untimed.options.remove("birth_time");
+        let mut noon = untimed.clone();
+        noon.options
+            .insert("birth_time".to_string(), json!("12:00"));
+        assert_ne!(engine.cache_key(&untimed), engine.cache_key(&noon));
     }
 
     #[tokio::test]

@@ -54,6 +54,10 @@ pub struct EngineOutput {
 /// `result.provenance` remains separate from this contract-v1 block.
 pub const CONTRACT_PROVENANCE_KEY: &str = "__contract_provenance";
 
+/// Transport scaffolding for the contract-v1 `witness_prompts` list (prompt,
+/// context, themes), which `witness_prompt` alone cannot carry (GH #1411).
+pub const CONTRACT_WITNESS_PROMPTS_KEY: &str = "__contract_witness_prompts";
+
 #[derive(Deserialize)]
 struct EngineOutputWire {
     engine_id: String,
@@ -63,6 +67,8 @@ struct EngineOutputWire {
     metadata: CalculationMetadata,
     #[serde(default)]
     provenance: Option<Value>,
+    #[serde(default)]
+    witness_prompts: Option<Value>,
 }
 
 impl<'de> Deserialize<'de> for EngineOutput {
@@ -84,6 +90,25 @@ impl<'de> Deserialize<'de> for EngineOutput {
                 }
             }
             result.insert(CONTRACT_PROVENANCE_KEY.to_string(), raw);
+        }
+        if let Some(raw) = wire.witness_prompts {
+            let parsed: Vec<crate::contract::WitnessPrompt> =
+                serde_json::from_value(raw.clone()).map_err(serde::de::Error::custom)?;
+            // Every API envelope carries this list, so a non-object result keeps
+            // the single `witness_prompt` rather than failing the whole output.
+            if let Some(result) = wire.result.as_object_mut() {
+                if let Some(existing) = result.get(CONTRACT_WITNESS_PROMPTS_KEY) {
+                    let existing: Vec<crate::contract::WitnessPrompt> =
+                        serde_json::from_value(existing.clone())
+                            .map_err(serde::de::Error::custom)?;
+                    if existing != parsed {
+                        return Err(serde::de::Error::custom(
+                            "conflicting contract witness_prompts lists",
+                        ));
+                    }
+                }
+                result.insert(CONTRACT_WITNESS_PROMPTS_KEY.to_string(), raw);
+            }
         }
         Ok(Self {
             engine_id: wire.engine_id,
@@ -107,8 +132,15 @@ impl Serialize for EngineOutput {
             serde_json::from_value::<crate::contract::Provenance>(raw.clone())
                 .map_err(serde::ser::Error::custom)?;
         }
-        let mut wire =
-            serializer.serialize_struct("EngineOutput", 5 + usize::from(provenance.is_some()))?;
+        let witness_prompts = result
+            .as_object_mut()
+            .and_then(|object| object.remove(CONTRACT_WITNESS_PROMPTS_KEY));
+        if let Some(raw) = &witness_prompts {
+            serde_json::from_value::<Vec<crate::contract::WitnessPrompt>>(raw.clone())
+                .map_err(serde::ser::Error::custom)?;
+        }
+        let fields = 5 + usize::from(provenance.is_some()) + usize::from(witness_prompts.is_some());
+        let mut wire = serializer.serialize_struct("EngineOutput", fields)?;
         wire.serialize_field("engine_id", &self.engine_id)?;
         wire.serialize_field("result", &result)?;
         wire.serialize_field("witness_prompt", &self.witness_prompt)?;
@@ -116,6 +148,9 @@ impl Serialize for EngineOutput {
         wire.serialize_field("metadata", &self.metadata)?;
         if let Some(provenance) = provenance {
             wire.serialize_field("provenance", &provenance)?;
+        }
+        if let Some(witness_prompts) = witness_prompts {
+            wire.serialize_field("witness_prompts", &witness_prompts)?;
         }
         wire.end()
     }
@@ -127,6 +162,14 @@ impl EngineOutput {
     pub fn contract_provenance(&self) -> Option<crate::contract::Provenance> {
         self.result
             .get(CONTRACT_PROVENANCE_KEY)
+            .and_then(|raw| serde_json::from_value(raw.clone()).ok())
+    }
+
+    /// The full contract witness prompt list, if supplied and valid. Outputs
+    /// without one keep only `witness_prompt`; none is synthesized from it.
+    pub fn contract_witness_prompts(&self) -> Option<Vec<crate::contract::WitnessPrompt>> {
+        self.result
+            .get(CONTRACT_WITNESS_PROMPTS_KEY)
             .and_then(|raw| serde_json::from_value(raw.clone()).ok())
     }
 }
@@ -358,6 +401,11 @@ pub struct PanchangaResultSchema {
     /// defaulting, not a calculation fallback.
     #[schema(example = false)]
     pub birth_time_assumed: bool,
+    /// The local time assumed when `birth_time_assumed` is true (`"12:00"`);
+    /// absent otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schema(nullable = false, example = "12:00")]
+    pub assumed_birth_time: Option<String>,
     /// Weekday convention applied by the native engine; absent on old results.
     #[schema(nullable = true)]
     pub vara_basis: Option<PanchangaVaraBasisSchema>,
@@ -450,15 +498,61 @@ pub struct BiofieldResultSchema {
     pub recommended_practice: String,
 }
 
+/// Top level of the vedic-clock `result`, as `engine_vedic_clock`'s
+/// `build_result` serializes it; the `noesis-api` test
+/// `vedic_clock_result_schema_matches_engine_output` fails if the two drift.
+/// Nested shapes are documented in `docs/engines/vedic-clock.md`.
 #[cfg(feature = "openapi")]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct VedicClockResultSchema {
-    #[schema(example = "Brahma Muhurta")]
-    pub current_segment: String,
-    #[schema(example = "Sattva")]
-    pub guna_bias: String,
-    #[schema(example = "06:12")]
-    pub next_transition_local: String,
+    /// TCM organ for the local hour: organ, element, time_window,
+    /// peak_energy, associated_emotion, recommended_activities.
+    #[schema(value_type = Object)]
+    pub current_organ: Value,
+    /// Ayurvedic dosha period for the local hour: dosha, qualities.
+    #[schema(value_type = Object)]
+    pub current_dosha: Value,
+    /// time_window, organ, dosha, activities, panchanga_quality.
+    #[schema(value_type = Object)]
+    pub recommendation: Value,
+    #[schema(example = "Heart (Fire) time during Pitta period - harmonious energy.")]
+    pub synthesis: String,
+    /// The requested instant (RFC 3339).
+    #[schema(example = "2026-03-08T06:43:16+00:00")]
+    pub calculated_for: String,
+    /// offset_minutes, source (`options.timezone_offset`,
+    /// `birth_data.timezone` or `default_utc`), local_hour.
+    #[schema(value_type = Object)]
+    pub timezone: Value,
+    /// Organ and dosha changes in the next six local hours.
+    #[schema(value_type = Vec<Object>)]
+    pub upcoming_transitions: Vec<Value>,
+    /// Sunrise-bounded day: `status` `computed` (sunrise, sunset,
+    /// next_sunrise, weekday, location) or `not_computed` with
+    /// `not_computed_reason`.
+    #[schema(value_type = Object)]
+    pub vedic_day: Value,
+    /// Every input the result depends on (`inputs`), a `fingerprint` of
+    /// them, and the volatile fields `excluded` from replay.
+    #[schema(value_type = Object)]
+    pub replay: Value,
+    /// Origin of each part: table_lookup, calculated, not_computed,
+    /// caller-supplied, derived_interpretation or templated_narrative.
+    #[schema(value_type = Object)]
+    pub provenance_detail: Value,
+    /// Only when `options.activity` is set.
+    #[schema(value_type = Option<Object>)]
+    pub activity_timing: Option<Value>,
+    /// Only when `vedic_day.status` is `computed`.
+    #[schema(value_type = Option<Object>)]
+    pub hora: Option<Value>,
+    /// Only when `vedic_day.status` is `computed`.
+    #[schema(value_type = Option<Object>)]
+    pub choghadiya: Option<Value>,
+    /// Rahu Kalam, Yama Gandam and Gulika Kaal; only when
+    /// `vedic_day.status` is `computed`.
+    #[schema(value_type = Option<Object>)]
+    pub day_periods: Option<Value>,
 }
 
 #[cfg(feature = "openapi")]
@@ -494,15 +588,159 @@ pub struct TransitsResultSchema {
     pub next_peak_date: String,
 }
 
+/// Enneagram result as actually produced by the TypeScript engine
+/// (`ts-engines/src/engines/enneagram/engine.ts`). One shape covers three
+/// modes: `assessment` carries `assessment` + `typeAnalysis`, `lookup`
+/// carries `typeAnalysis` (+ `suppliedWing`), `questions` carries
+/// `questions`. The `noesis-api` test
+/// `enneagram_result_schema_matches_engine_output` checks this against
+/// `ts-engines/tests/fixtures/enneagram/result-modes.json`, which the TS
+/// suite keeps equal to live engine output.
 #[cfg(feature = "openapi")]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct EnneagramResultSchema {
+    pub mode: EnneagramModeSchema,
+    /// Where the named type came from: scored from the caller's answers,
+    /// asserted by the caller (direct lookup), or no type at all. Only an
+    /// assessment carries `provenance.confidence`.
+    pub type_source: EnneagramTypeSourceSchema,
+    /// Wing the caller supplied with a direct lookup (validated adjacent).
+    #[schema(example = 5)]
+    pub supplied_wing: Option<u8>,
+    pub assessment: Option<EnneagramAssessmentSchema>,
+    pub type_analysis: Option<EnneagramTypeAnalysisSchema>,
+    /// The 45 assessment questions (`includeAssessment: true`); empty when
+    /// the request named neither answers nor a type.
+    pub questions: Option<Vec<EnneagramQuestionSchema>>,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum EnneagramModeSchema {
+    Assessment,
+    Lookup,
+    Questions,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+pub enum EnneagramTypeSourceSchema {
+    Assessment,
+    UserSupplied,
+    None,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EnneagramAssessmentSchema {
+    /// Normalized 0-100 score per type, highest first.
+    pub scores: Vec<EnneagramScoreSchema>,
+    pub primary_type: EnneagramTypeSummarySchema,
+    pub wing: EnneagramTypeSummarySchema,
+    /// Score separation between the top two types, 0-1. The envelope's
+    /// `provenance.confidence` additionally scales this by answer coverage.
+    #[schema(example = 1.0)]
+    pub confidence: f64,
+    /// Present only when `confidence` is at least 0.3.
+    #[schema(example = json!([7, 1, 2]))]
+    pub tritype: Option<Vec<u8>>,
+    /// Answers that mapped onto a question; extras past the last are ignored.
+    #[schema(example = 45)]
+    pub answered_count: u8,
+    #[schema(example = 45)]
+    pub question_count: u8,
+    /// Answers outside the 1-5 scale that were clamped before scoring.
+    #[schema(example = 0)]
+    pub clamped_count: u8,
+    pub note: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EnneagramScoreSchema {
+    #[schema(example = 7)]
+    pub r#type: u8,
+    #[schema(example = 100)]
+    pub normalized_score: u8,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct EnneagramTypeSummarySchema {
+    #[schema(example = 7)]
+    pub number: u8,
+    #[schema(example = "The Enthusiast")]
+    pub name: String,
+    pub description: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EnneagramTypeAnalysisSchema {
+    pub r#type: EnneagramTypeDetailSchema,
+    /// Both adjacent types, regardless of which wing was scored or supplied.
+    pub wings: Vec<EnneagramWingSchema>,
+    pub integration: EnneagramConnectionSchema,
+    pub disintegration: EnneagramConnectionSchema,
+    #[schema(example = "head")]
+    pub center: String,
+    #[schema(example = "assertive")]
+    pub hornevian_group: String,
+    #[schema(example = "positive")]
+    pub harmonic_group: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EnneagramTypeDetailSchema {
     #[schema(example = 4)]
-    pub core_type: i32,
-    #[schema(example = "4w5")]
-    pub wing: String,
-    #[schema(example = "Individualist")]
-    pub archetype: String,
+    pub number: u8,
+    #[schema(example = "The Individualist")]
+    pub name: String,
+    pub core_fear: String,
+    pub core_desire: String,
+    pub core_weakness: String,
+    pub description: String,
+    pub key_motivations: Vec<String>,
+    pub healthy_traits: Vec<String>,
+    pub average_traits: Vec<String>,
+    pub unhealthy_traits: Vec<String>,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct EnneagramWingSchema {
+    #[schema(example = 5)]
+    pub number: u8,
+    #[schema(example = "The Investigator")]
+    pub name: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct EnneagramConnectionSchema {
+    #[schema(example = 5)]
+    pub r#type: u8,
+    #[schema(example = "The Investigator")]
+    pub name: String,
+    pub description: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct EnneagramQuestionSchema {
+    #[schema(example = 1)]
+    pub id: u8,
+    pub text: String,
+    #[schema(example = "1 (rarely) to 5 (almost always)")]
+    pub scale: String,
 }
 
 #[cfg(feature = "openapi")]
