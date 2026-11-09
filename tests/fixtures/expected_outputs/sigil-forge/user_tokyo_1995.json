@@ -45,6 +45,9 @@
     "svg_preview": {
       "status": "absent"
     },
+    "generated_image": null,
+    "image_gen_available": false,
+    "provider": "nvidia",
     "seed": 9999
   },
   "witness_prompts": [
@@ -77,5 +80,12 @@
     }
   ],
   "calculated_at": "2024-01-15T14:30:00.000Z",
-  "processing_time_ms": 0
+  "processing_time_ms": 0,
+  "provenance": {
+    "runtime_kind": "typescript",
+    "implementation_version": "2.0.0",
+    "cached": false,
+    "fallback_used": true,
+    "confidence": 0
+  }
 }
