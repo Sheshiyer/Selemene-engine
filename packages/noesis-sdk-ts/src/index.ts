@@ -157,8 +157,8 @@ export interface WorkflowResult {
   workflow_id: string;
   /**
    * Engine results keyed by engine_id.
-   * Both `engine_outputs` and `engine_results` carry the same data;
-   * prefer `engine_outputs` but fall back to `engine_results` for compatibility.
+   * Both carry the same engine data. Only `engine_results` carries each
+   * engine's contract `provenance`; `engine_outputs` is the persisted shape.
    */
   engine_outputs?: Record<string, EngineOutput>;
   engine_results?: Record<string, EngineOutput>;

@@ -14,8 +14,8 @@ A typology of nine interconnected personality patterns. Given an assessment (45 
 | Renderer | `apps/noesis-web/src/components/engines/Enneagram.tsx` |
 | Wisdom data (all 9 types) | `ts-engines/src/engines/enneagram/wisdom.ts:38` (`ENNEAGRAM_TYPES`), connections `wisdom.ts:419` (`ENNEAGRAM_CONNECTIONS`) |
 | Assessment (45 Q + scoring) | `ts-engines/src/engines/enneagram/assessment.ts:39` |
-| OpenAPI stub | `crates/noesis-core/src/types.rs:313` (`EnneagramResultSchema` — `core_type:i32` / `wing:String` / `archetype:String`) |
-| Fixture (real values) | **none found** — no JSON fixture; the wisdom data IS the source of truth |
+| OpenAPI schema | `crates/noesis-core/src/types.rs` `EnneagramResultSchema` (+ `Enneagram*Schema` sub-objects) — mirrors the runtime JSON below; drift-tested by `noesis-api` `enneagram_result_schema_matches_engine_output` (#1311) |
+| Fixture (real values) | `ts-engines/tests/fixtures/enneagram/result-modes.json` — live engine output for every mode (synthetic inputs, seed 7); kept current by `ts-engines/tests/enneagram_provenance.test.ts` |
 
 ## 2. Output schema
 
@@ -24,12 +24,15 @@ A typology of nine interconnected personality patterns. Given an assessment (45 
 ```jsonc
 {
   "mode": "assessment",                  // "assessment" | "lookup" | "questions"  (engine.ts:33)
+  "typeSource": "assessment",            // "assessment" | "user-supplied" | "none" (#1311)
+  // "suppliedWing": 5,                  // lookup mode only, when a wing was passed
   "assessment": {                        // present in assessment mode (answers provided)
     "scores": [ { "type": 4, "normalizedScore": 82 }, … ],   // 9 entries, sorted desc
     "primaryType": { "number": 4, "name": "The Individualist", "description": "…" },
     "wing":        { "number": 5, "name": "The Investigator",  "description": "…" },
     "confidence":  0.73,                 // 0–1  (renderer shows Math.round(c*100)%)
     "tritype":     [4, 8, 6],            // optional; one per center, only when confidence ≥ 0.3
+    "answeredCount": 45, "questionCount": 45, "clampedCount": 0,   // answer coverage (#1311)
     "note": "These results indicate pattern tendencies, not fixed identity…"
   },
   "typeAnalysis": {                      // present in BOTH assessment & lookup modes
@@ -53,7 +56,7 @@ In **lookup mode** (a `type` number was passed, no answers) only `typeAnalysis` 
 
 **Envelope.** The TS engine returns its own envelope `{ engine_id, result, witness_prompts[], calculated_at, processing_time_ms }` (`engine.ts:207-213`). The bridge maps it into the standard Rust `EngineOutput` (`crates/noesis-bridge/src/lib.rs:439-456`): `witness_prompts[0].prompt` → `witness_prompt`, `consciousness_level` ← `required_phase` (=**1**), `metadata.backend="typescript"`.
 
-**OpenAPI stub** (`types.rs:313`): `{ core_type: 4, wing: "4w5", archetype: "Individualist" }` — examples only. **None of these three field names exist in the runtime JSON** (it uses nested `assessment.primaryType.number` / `wing.number` / `primaryType.name`). The stub is a hand-written illustration, not the contract.
+**OpenAPI schema** (`types.rs` `EnneagramResultSchema`): describes exactly this runtime JSON for all three modes; `mode` and `typeSource` are closed enums. It replaced a hand-written stub (`core_type` / `wing` / `archetype`) that shared no field names with the engine output. **Provenance** (the envelope's top-level `provenance`, not part of `result`) is covered in `docs/ENGINES.md` §14.
 
 ## 3. Ranges, constraints & invariants
 | Field | Range / domain | Notes |
@@ -114,8 +117,8 @@ In **lookup mode** (a `type` number was passed, no answers) only `typeAnalysis` 
 
 ## 7. Open questions / assumptions
 - **⚠️ No Rust engine — but a real TS engine produces it (CALL-OUT).** Unlike the Vedic engines there is **no `engine-enneagram` crate**; the registry README (README.md:43,58) lists it as "stub only / runtime source unconfirmed." That is now **confirmed**: the producer is the **TypeScript `EnneagramEngine`** (`ts-engines/src/engines/enneagram/`), invoked over HTTP through `noesis-bridge` (`crates/noesis-bridge/src/lib.rs:267-273,368,439-456`). README.md row 58 should be updated `unconfirmed → ts-engines`. (Same pattern applies to Tarot, I-Ching, Sacred-Geometry, Sigil-Forge — all have `ts-engines/src/engines/*` implementations.)
-- **Stub ≠ contract.** `EnneagramResultSchema` (`types.rs:313`: `core_type`/`wing`/`archetype`) shares **no field names** with the runtime JSON. It is OpenAPI illustration only. Build Wave-2 against the renderer + `engine.ts` shape, not the stub.
+- **OpenAPI schema now matches the runtime JSON (#1311).** The old `core_type`/`wing`/`archetype` stub is gone; `EnneagramResultSchema` is checked against the committed fixture, so either side drifting fails a test.
 - **Renderer reads `triad`, engine emits `center` (confirmed defect).** `Enneagram.tsx:177,208` → `primary?.triad`; nothing in the result sets `triad`. The Triad cell never shows. Either rename the cell to use `typeAnalysis.center`, or have the engine also emit `triad`. Low-risk doc-flag, not fixed here.
 - **Lookup mode hides half the UI.** In `mode:"lookup"` there is no `assessment` block, so `primaryType`/`wing`/`confidence`/`coreDesire`/`coreFear` are undefined for the renderer (it reads them off `assessment` / `primaryType`, `Enneagram.tsx:167-180`) → only the figure + (empty) cells render. The renderer's `primary = assessment?.primaryType ?? typeAnalysis?.type` fallback (L169) recovers the type node + archetype + core fear/desire (those live on `typeAnalysis.type` too), but **Wing** and **Confidence** stay blank in lookup mode. Confirm which mode the reading pipeline actually uses.
 - **Instinctual variants (sp/so/sx) are absent.** The domain commonly adds a self-preservation/social/sexual subtype; the engine does **not** compute or emit it. Not a gap in this doc — just noting it's out of scope of the current data model. Health *levels* (1–9) are also not numerically emitted; instead the engine gives `healthy/average/unhealthyTraits` lists (`wisdom.ts`).
-- **No fixture.** Unlike the Vedic engines there's no reference JSON; correctness rests on the `wisdom.ts` tables + assessment math. The orchestrator's `mock_enneagram_output` (`crates/noesis-orchestrator/src/workflow/synthesis/self_inquiry.rs:648`) is a **test mock**, not a runtime producer — don't mistake it for the contract.
+- **Fixture is a shape fixture, not a truth fixture.** `ts-engines/tests/fixtures/enneagram/result-modes.json` pins the emitted shape and values for synthetic inputs; correctness of the typology still rests on the `wisdom.ts` tables + assessment math. The orchestrator's `mock_enneagram_output` (`crates/noesis-orchestrator/src/workflow/synthesis/self_inquiry.rs:648`) is a **test mock**, not a runtime producer — don't mistake it for the contract.

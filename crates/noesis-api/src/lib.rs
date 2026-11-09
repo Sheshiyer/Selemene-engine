@@ -5316,6 +5316,205 @@ mod p4_contract_tests {
             .is_none());
     }
 
+    /// The seed-42 i-ching sidecar fixture as the bridge hands it to the API.
+    fn i_ching_fixture_output() -> (Value, EngineOutput) {
+        let sidecar: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/bridge-round-trip-seed-42.json"
+        ))
+        .unwrap();
+        let response: noesis_bridge::ts_client::TsEngineResponse =
+            serde_json::from_value(sidecar["sidecar_response"].clone()).unwrap();
+        let mut output = noesis_bridge::ts_response_into_output(response, 0);
+        // The bridge stamps its own crate version; pin it so releases don't churn the fixture.
+        output.metadata.engine_version = "fixture".to_string();
+        (sidecar["sidecar_response"].clone(), output)
+    }
+
+    /// Compare `wire` with a committed fixture, rewriting it when `update_var` is set.
+    fn assert_matches_fixture(wire: &Value, path: &str, update_var: &str) {
+        if std::env::var_os(update_var).is_some() {
+            let mut text = serde_json::to_string_pretty(wire).unwrap();
+            text.push('\n');
+            std::fs::write(path, text).unwrap();
+        }
+        let committed: Value =
+            serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+        assert_eq!(
+            wire, &committed,
+            "{path} drifted from the committed fixture"
+        );
+    }
+
+    #[test]
+    fn i_ching_api_envelope_and_persisted_reading_keep_derivation() {
+        // #1341: pin the /calculate envelope the Rust SDK, TUI and TS SDK probes
+        // consume. Set UPDATE_I_CHING_FIXTURE=1 to rewrite it.
+        let (sidecar, output) = i_ching_fixture_output();
+        let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
+        let wire = serde_json::to_value(&envelope).unwrap();
+        assert_matches_fixture(
+            &wire,
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../ts-engines/tests/fixtures/i-ching/api-envelope-seed-42.json"
+            ),
+            "UPDATE_I_CHING_FIXTURE",
+        );
+        // Same JSON number either way: the sidecar sends `1`, the typed f64 `1.0`.
+        let parse = |v: &Value| -> noesis_core::contract::Provenance {
+            serde_json::from_value(v.clone()).unwrap()
+        };
+        assert_eq!(parse(&wire["provenance"]), parse(&sidecar["provenance"]));
+        assert_eq!(wire["result"], sidecar["result"]);
+
+        // calculate_handler persists `serde_json::to_value(&envelope.output)` as
+        // the reading's result_data: cast/derived origins survive, the contract
+        // block deliberately does not (it lives only on the response envelope).
+        let persisted = serde_json::to_value(&envelope.output).unwrap();
+        assert_eq!(persisted["result"], sidecar["result"]);
+        assert_eq!(
+            persisted["result"]["derivation"]["line_values"]["origin"],
+            "cast"
+        );
+        assert!(persisted.get("provenance").is_none());
+        assert!(persisted["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+    }
+
+    #[test]
+    fn i_ching_workflow_response_and_persisted_reading_keep_derivation() {
+        // #1341: decision-support runs i-ching. Pin the workflow response the SDK
+        // probes consume. Set UPDATE_I_CHING_FIXTURE=1 to rewrite it.
+        let (sidecar, output) = i_ching_fixture_output();
+        let mut workflow = WorkflowResult {
+            workflow_id: "decision-support".to_string(),
+            engine_outputs: HashMap::from([("i-ching".to_string(), output)]),
+            synthesis: None,
+            total_time_ms: 0.0,
+            timestamp: "2026-11-07T00:00:00Z".parse().unwrap(),
+        };
+        let provenance = strip_workflow_contract_provenance(&mut workflow, |_| false);
+
+        // workflow_handler persists `serde_json::to_value(&workflow_result)` after
+        // the strip: derivation stays, the contract block does not.
+        let persisted = serde_json::to_value(&workflow).unwrap();
+        assert_eq!(
+            persisted["engine_outputs"]["i-ching"]["result"],
+            sidecar["result"]
+        );
+        assert!(persisted["engine_outputs"]["i-ching"]
+            .get("provenance")
+            .is_none());
+
+        let wire =
+            serde_json::to_value(ApiWorkflowResultResponse::new(workflow, provenance)).unwrap();
+        assert_matches_fixture(
+            &wire,
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../ts-engines/tests/fixtures/i-ching/api-workflow-seed-42.json"
+            ),
+            "UPDATE_I_CHING_FIXTURE",
+        );
+        let engine_result = &wire["engine_results"]["i-ching"];
+        let parse = |v: &Value| -> noesis_core::contract::Provenance {
+            serde_json::from_value(v.clone()).unwrap()
+        };
+        assert_eq!(
+            parse(&engine_result["provenance"]),
+            parse(&sidecar["provenance"])
+        );
+        assert_eq!(engine_result["result"], sidecar["result"]);
+        assert!(wire["engine_outputs"]["i-ching"]
+            .get("provenance")
+            .is_none());
+    }
+
+    #[tokio::test]
+    #[ignore = "requires Postgres: scripts/cloud/test-db.sh, then DATABASE_URL"]
+    async fn i_ching_readings_round_trip_keeps_derivation() {
+        // #1341: store i-ching readings in `readings` exactly as calculate_handler
+        // and workflow_handler build them, then read them back.
+        let database_url = std::env::var("DATABASE_URL")
+            .unwrap_or_else(|_| "postgres://postgres@localhost/noesis_test".to_string());
+        let pool = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(2)
+            .connect(&database_url)
+            .await
+            .expect("connect to test database");
+        let user = UserRepository::new(pool.clone())
+            .create_user(
+                &format!("i-ching-{}@example.com", uuid::Uuid::new_v4()),
+                "test_password_hash",
+                "I Ching Readings Test User",
+            )
+            .await
+            .expect("create test user");
+        let readings = ReadingsRepository::new(pool);
+        let reading =
+            |engine_id: &str, workflow_id: Option<String>, result_data: Value| NewReading {
+                user_id: user.id,
+                engine_id: engine_id.to_string(),
+                workflow_id,
+                input_hash: "synthetic-seed-42".to_string(),
+                input_data: serde_json::json!({"seed": 42}),
+                result_data,
+                witness_prompt: None,
+                consciousness_level: 0,
+                calculation_time_ms: Some(0.0),
+                client_event_id: None,
+                client_device_id: None,
+                device_platform: None,
+                device_app_version: None,
+            };
+
+        let (sidecar, output) = i_ching_fixture_output();
+        let envelope = ApiEngineOutputResponse::from_engine_output(output.clone(), false);
+        let single = readings
+            .save_reading(&reading(
+                "i-ching",
+                None,
+                serde_json::to_value(&envelope.output).unwrap(),
+            ))
+            .await
+            .expect("save calculate reading");
+
+        let mut workflow = WorkflowResult {
+            workflow_id: "decision-support".to_string(),
+            engine_outputs: HashMap::from([("i-ching".to_string(), output)]),
+            synthesis: None,
+            total_time_ms: 0.0,
+            timestamp: "2026-11-07T00:00:00Z".parse().unwrap(),
+        };
+        strip_workflow_contract_provenance(&mut workflow, |_| false);
+        let flow = readings
+            .save_reading(&reading(
+                "workflow:decision-support",
+                Some("decision-support".to_string()),
+                serde_json::to_value(&workflow).unwrap(),
+            ))
+            .await
+            .expect("save workflow reading");
+
+        for (id, path) in [
+            (single, "/result"),
+            (flow, "/engine_outputs/i-ching/result"),
+        ] {
+            let stored = readings
+                .get_reading(id, user.id)
+                .await
+                .expect("load reading")
+                .expect("reading exists");
+            let result = stored.result_data.pointer(path).expect("stored result");
+            assert_eq!(result, &sidecar["result"], "{path}");
+            assert_eq!(result["derivation"]["line_values"]["origin"], "cast");
+            assert!(result.get(noesis_bridge::CONTRACT_PROVENANCE_KEY).is_none());
+            // By design the contract block is response-only, never stored.
+            assert!(!stored.result_data.to_string().contains("\"runtime_kind\""));
+        }
+    }
+
     #[test]
     fn invalid_contract_provenance_is_dropped_not_leaked() {
         let output = EngineOutput {

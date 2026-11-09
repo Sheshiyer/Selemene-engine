@@ -1238,6 +1238,43 @@ mod tests {
     }
 
     #[test]
+    fn i_ching_sidecar_fixture_round_trips_provenance_and_derivation() {
+        // #1341: replay the real seed-42 sidecar response (pinned to live engine
+        // output by ts-engines/tests/i-ching.test.ts). The bridge must only add
+        // the reserved provenance key; every engine field crosses untouched.
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/bridge-round-trip-seed-42.json"
+        ))
+        .expect("i-ching fixture is valid JSON");
+        let sidecar = fixture["sidecar_response"].clone();
+        let response: crate::ts_client::TsEngineResponse = serde_json::from_value(sidecar.clone())
+            .expect("i-ching sidecar response must deserialize");
+
+        let output = ts_response_into_output(response, 0);
+
+        // The bridge adds only its two reserved keys: provenance and, since
+        // GH #1411, the full witness prompt list.
+        let mut expected_result = sidecar["result"].clone();
+        let object = expected_result.as_object_mut().unwrap();
+        object.insert(
+            CONTRACT_PROVENANCE_KEY.to_string(),
+            sidecar["provenance"].clone(),
+        );
+        object.insert(
+            CONTRACT_WITNESS_PROMPTS_KEY.to_string(),
+            sidecar["witness_prompts"].clone(),
+        );
+        assert_eq!(output.result, expected_result);
+        let parsed = output
+            .contract_provenance()
+            .expect("i-ching block parses as contract provenance");
+        assert!(!parsed.fallback_used);
+        assert!(parsed.backend_id.is_none() && parsed.provider_id.is_none());
+        assert_eq!(output.result["derivation"]["line_values"]["origin"], "cast");
+        assert!(!output.metadata.fallback_used);
+    }
+
+    #[test]
     fn sacred_geometry_sidecar_fixture_round_trips_provenance_and_detail() {
         // GH #1401: replay a real sacred-geometry sidecar response (kept in sync
         // with the engine by ts-engines/tests/sacred_geometry_provenance.test.ts

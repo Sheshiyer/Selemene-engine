@@ -793,10 +793,10 @@ impl std::fmt::Display for StatusReport {
     }
 }
 
-/// Helper function to check if a time falls within a range
-/// Assumes times are in HH:MM format and within the same day
+/// Whether `time` falls in the half-open range `[start, end)`. Times are
+/// `HH:MM` or `HH:MM:SS`; the range may cross midnight.
 fn is_time_in_range(time: &str, start: &str, end: &str) -> bool {
-    time >= start && time <= end
+    crate::panchang::clock::in_period(time, start, end)
 }
 
 #[cfg(test)]
@@ -808,6 +808,14 @@ mod tests {
         assert!(is_time_in_range("12:00", "11:00", "13:00"));
         assert!(!is_time_in_range("10:00", "11:00", "13:00"));
         assert!(is_time_in_range("11:30", "11:30", "12:30"));
+        // The end belongs to the next period.
+        assert!(!is_time_in_range("12:30", "11:30", "12:30"));
+        // Times are parsed, not compared as text.
+        assert!(is_time_in_range("9:30", "09:00", "10:30"));
+        assert!(is_time_in_range("12:29:59", "11:30", "12:30"));
+        // A range may cross midnight.
+        assert!(is_time_in_range("00:05", "23:24", "00:12"));
+        assert!(!is_time_in_range("bad", "11:00", "13:00"));
     }
 
     #[test]
