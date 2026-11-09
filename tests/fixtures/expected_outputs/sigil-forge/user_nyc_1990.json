@@ -3,25 +3,20 @@
   "result": {
     "intention": "I am aligned with my highest purpose",
     "method": {
-      "id": "word-elimination",
-      "name": "Word Elimination Method",
-      "description": "The classic chaos magick technique. Write your intention as a statement, remove all vowels and duplicate consonants, then arrange the remaining letters into a symbol.",
+      "id": "pictographic",
+      "name": "Pictographic Combination",
+      "description": "Create a symbol by combining simplified pictographs that represent key concepts from your intention. More intuitive and image-based than letter methods.",
       "steps": [
-        "Write your intention as a present-tense statement of desire (e.g., \"I am confident and calm\")",
-        "Remove all vowels from the statement",
-        "Remove all duplicate consonants, keeping only the first occurrence of each",
-        "Take the remaining consonants and begin sketching them together",
-        "Let the letters flow, overlap, rotate, and merge into a single unified symbol",
-        "Refine until the original letters are no longer recognizable as letters",
-        "The resulting abstract symbol is your sigil"
+        "Break your intention into 2-4 core concepts or keywords",
+        "For each concept, draw a simple symbolic representation (not letters)",
+        "Begin combining these symbols into a unified design",
+        "Allow overlap, nesting, and transformation as they merge",
+        "Simplify complex areas while maintaining the essential character",
+        "Continue refining until a single cohesive symbol emerges",
+        "The final image should feel complete and balanced"
       ]
     },
-    "processing": {
-      "type": "word_elimination",
-      "original": "I am aligned with my highest purpose",
-      "remaining_letters": "MLGNDWTHYSPR",
-      "letter_count": 12
-    },
+    "processing": null,
     "charging_suggestions": [
       {
         "name": "Passive Display",
@@ -36,7 +31,7 @@
       "note": "This engine provides the process for sigil creation. The actual visual sigil must be created by you \u2014 this personal investment is essential to the magic.",
       "next_steps": [
         "Gather your materials (paper, pen, or digital canvas)",
-        "Follow the Word Elimination Method steps above",
+        "Follow the Pictographic Combination steps above",
         "Allow intuition to guide the final form",
         "Choose a charging method that resonates",
         "Release attachment to outcome"
@@ -62,7 +57,7 @@
     },
     {
       "prompt": "Where do you feel called to deviate from the process? Follow that.",
-      "context": "Working with Word Elimination Method",
+      "context": "Working with Pictographic Combination",
       "themes": [
         "process",
         "creation",

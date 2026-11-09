@@ -66,25 +66,25 @@
   },
   "witness_prompts": [
     {
-      "prompt": "What happens in your body when you feel trapped?",
-      "context": "Type 7 - Somatic awareness",
+      "prompt": "What situations tend to activate the concern about being deprived, in pain, or trapped?",
+      "context": "Type 7 - The Enthusiast core fear",
       "themes": [
-        "body",
-        "sensation",
-        "embodiment"
+        "fear",
+        "pattern recognition",
+        "the enthusiast"
       ]
     },
     {
-      "prompt": "How might this pattern be an attempt to get something you need?",
-      "context": "Open inquiry",
+      "prompt": "How might inner stillness already be available to you?",
+      "context": "Integration to Type 5",
       "themes": [
-        "self-inquiry",
-        "curiosity",
-        "compassion"
+        "growth",
+        "integration",
+        "potential"
       ]
     },
     {
-      "prompt": "Can you observe the reframing pattern without trying to change it?",
+      "prompt": "Where does the staying positive pattern serve you? Where does it limit you?",
       "context": "Type 7 - Behavioral pattern",
       "themes": [
         "observation",

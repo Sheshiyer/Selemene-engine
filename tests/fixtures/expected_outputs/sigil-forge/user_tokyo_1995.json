@@ -3,25 +3,20 @@
   "result": {
     "intention": "I am aligned with my highest purpose",
     "method": {
-      "id": "word-elimination",
-      "name": "Word Elimination Method",
-      "description": "The classic chaos magick technique. Write your intention as a statement, remove all vowels and duplicate consonants, then arrange the remaining letters into a symbol.",
+      "id": "chaos-star",
+      "name": "Chaos Star Method",
+      "description": "Use the eight-pointed Chaos Star (Symbol of Chaos) as a framework. Place intention elements at each point or between points, creating a symbol with built-in magical structure.",
       "steps": [
-        "Write your intention as a present-tense statement of desire (e.g., \"I am confident and calm\")",
-        "Remove all vowels from the statement",
-        "Remove all duplicate consonants, keeping only the first occurrence of each",
-        "Take the remaining consonants and begin sketching them together",
-        "Let the letters flow, overlap, rotate, and merge into a single unified symbol",
-        "Refine until the original letters are no longer recognizable as letters",
-        "The resulting abstract symbol is your sigil"
+        "Draw an eight-pointed chaos star (eight arrows radiating from center)",
+        "Identify eight aspects or components of your intention",
+        "Assign each aspect to one of the eight points/directions",
+        "Draw small symbols or modified letters at each point",
+        "Connect the elements with additional lines as intuition guides",
+        "The center point represents the unified intention",
+        "Add a personal mark at the center to complete the binding"
       ]
     },
-    "processing": {
-      "type": "word_elimination",
-      "original": "I am aligned with my highest purpose",
-      "remaining_letters": "MLGNDWTHYSPR",
-      "letter_count": 12
-    },
+    "processing": null,
     "charging_suggestions": [
       {
         "name": "Physical Gnosis",
@@ -36,7 +31,7 @@
       "note": "This engine provides the process for sigil creation. The actual visual sigil must be created by you \u2014 this personal investment is essential to the magic.",
       "next_steps": [
         "Gather your materials (paper, pen, or digital canvas)",
-        "Follow the Word Elimination Method steps above",
+        "Follow the Chaos Star Method steps above",
         "Allow intuition to guide the final form",
         "Choose a charging method that resonates",
         "Release attachment to outcome"
@@ -62,7 +57,7 @@
     },
     {
       "prompt": "What intuitions arise as you work through these steps?",
-      "context": "Working with Word Elimination Method",
+      "context": "Working with Chaos Star Method",
       "themes": [
         "process",
         "creation",

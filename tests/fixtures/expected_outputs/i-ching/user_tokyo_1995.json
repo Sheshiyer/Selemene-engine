@@ -2,19 +2,19 @@
   "engine_id": "i-ching",
   "result": {
     "primary_hexagram": {
-      "number": 41,
-      "name": "Hexagram 41",
+      "number": 47,
+      "name": "Hexagram 47",
       "chinese_name": null,
       "meaning": null,
-      "judgment": "In (what is denoted by) Sun, if there be sincerity (in him who employs it), there will be great good fortune : \u2014 freedom from error ; firmness and correctness that can be maintained ; and advantage in every movement that shall be made. In what shall this (sincerity in the exercise of Sun) be employed? (Even) in sacrifice two baskets of grain, (though there be nothing else), may be presented.",
-      "image": "(The trigram representing) a mountain and beneath it that for the waters of a marsh form Sun. The superior man, in accordance with this, restrains his wrath and represses his desires.",
+      "judgment": "In (the condition denoted by) Khwan there may (yet be) progress and success. For the firm and correct, the (really) great man, there will be good fortune. He will fall into no error. If he make speeches, his words cannot be made good.",
+      "image": "(The trigram representing) a marsh, and (below it that for a defile, which has drained the other dry so that there is) no water in it, form Khwan. The superior man, in accordance with this, will sacrifice his life in order to carry out his purpose.",
       "lines": [
+        false,
+        true,
+        false,
         true,
         true,
-        false,
-        false,
-        false,
-        true
+        false
       ],
       "wisdom_status": "source_transcribed",
       "field_status": {
@@ -69,44 +69,44 @@
             }
           },
           "passages": {
-            "judgmentPage": 146,
+            "judgmentPage": 161,
             "judgmentPages": [
-              146,
-              147
+              161,
+              162
             ],
             "judgmentSources": [
               {
-                "printedPage": 146,
-                "pdfPage": 180,
-                "archiveLeaf": 180,
+                "printedPage": 161,
+                "pdfPage": 195,
+                "archiveLeaf": 195,
                 "paragraphIndex": 2,
                 "lineStart": null,
                 "lineEndExclusive": null,
-                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n180/mode/1up"
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n195/mode/1up"
               },
               {
-                "printedPage": 147,
-                "pdfPage": 181,
-                "archiveLeaf": 181,
-                "paragraphIndex": 1,
+                "printedPage": 162,
+                "pdfPage": 196,
+                "archiveLeaf": 196,
+                "paragraphIndex": 2,
                 "lineStart": null,
                 "lineEndExclusive": null,
-                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n181/mode/1up"
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n196/mode/1up"
               }
             ],
-            "imagePage": 317,
+            "imagePage": 325,
             "imagePages": [
-              317
+              325
             ],
             "imageSources": [
               {
-                "printedPage": 317,
-                "pdfPage": 351,
-                "archiveLeaf": 351,
-                "paragraphIndex": 4,
+                "printedPage": 325,
+                "pdfPage": 359,
+                "archiveLeaf": 359,
+                "paragraphIndex": 3,
                 "lineStart": null,
                 "lineEndExclusive": null,
-                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n351/mode/1up"
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n359/mode/1up"
               }
             ]
           },
@@ -119,10 +119,8 @@
       }
     },
     "changing_lines": [
-      1,
       3,
-      4,
-      5
+      6
     ],
     "relating_hexagram": {
       "number": 44,
@@ -237,12 +235,12 @@
       "selection_mode": "seeded_coin_simulation",
       "line_order": "bottom_to_top",
       "line_values": [
-        9,
+        8,
         7,
         6,
-        6,
-        6,
-        7
+        7,
+        7,
+        6
       ]
     },
     "derivation": {
@@ -263,10 +261,8 @@
           "line_values"
         ],
         "positions": [
-          1,
           3,
-          4,
-          5
+          6
         ]
       },
       "relating_hexagram": {
@@ -276,10 +272,8 @@
           "changing_lines"
         ],
         "flipped_positions": [
-          1,
           3,
-          4,
-          5
+          6
         ]
       },
       "changing_line_texts": {
@@ -291,8 +285,8 @@
   },
   "witness_prompts": [
     {
-      "prompt": "What aspects of your situation would you like to examine through this symbolic reading?",
-      "context": "Primary King Wen hexagram 41. Text status: source_transcribed.",
+      "prompt": "What assumptions about your situation could you hold more lightly while reflecting?",
+      "context": "Primary King Wen hexagram 47. Text status: source_transcribed.",
       "themes": [
         "inquiry",
         "situation",
@@ -301,7 +295,7 @@
     },
     {
       "prompt": "What changes are you already noticing, and what remains uncertain about them?",
-      "context": "Changing lines 1, 3, 4, 5 (bottom to top) produce relating hexagram 44.",
+      "context": "Changing lines 3, 6 (bottom to top) produce relating hexagram 44.",
       "themes": [
         "change",
         "uncertainty",
