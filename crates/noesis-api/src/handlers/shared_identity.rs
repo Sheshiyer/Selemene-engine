@@ -832,11 +832,42 @@ pub async fn preview_enrollment(
     identity: Option<Extension<CfIdentity>>,
     Json(p): Json<EnrollmentPreview>,
 ) -> Result<Response, HandlerError> {
-    verified_identity(&s, &u, identity).await?;
+    let identity = verified_identity(&s, &u, identity).await?;
     let pool = db(&s)?;
     active(pool, &u).await?;
-    let preview:Value=sqlx::query_scalar("SELECT jsonb_build_object('id',e.id,'subject_id',s.id,'display_name',s.canonical_name,'sharing_reader_id',e.sharing_reader_id,'sharing_reader_name',r.full_name,'relationships',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',r.id,'label',r.label) ORDER BY r.id) FROM subject_enrollment_relationships er JOIN corpus_relationships r ON r.id=er.relationship_id AND r.owner_user_id=er.owner_user_id WHERE er.enrollment_id=e.id),'[]'::jsonb),'requires_owner_confirmation',e.intended_email IS NULL,'expires_at',e.expires_at) FROM subject_enrollments e JOIN corpus_subjects s ON s.id=e.subject_id AND s.owner_user_id=e.owner_user_id LEFT JOIN users r ON r.id=e.sharing_reader_id WHERE e.token_hash=$1 AND e.claimed_at IS NULL AND e.revoked_at IS NULL AND e.expires_at>now()")
-        .bind(hash_secret(&p.token)).fetch_optional(pool).await.map_err(storage)?.ok_or_else(||fail(StatusCode::NOT_FOUND,"ENROLLMENT_NOT_FOUND"))?;
+    // A targeted invitation discloses its terms only to the intended verified identity.
+    // Use the same missing response for a wrong address, invalid token or expired invitation.
+    let preview: Value = sqlx::query_scalar(
+        r#"SELECT jsonb_build_object(
+          'id',e.id,'subject_id',s.id,'display_name',s.canonical_name,
+          'sharing_reader_id',e.sharing_reader_id,'sharing_reader_name',r.full_name,
+          'owner_reader',CASE WHEN o.id IS NOT NULL THEN jsonb_build_object('id',o.id,'name',o.full_name) END,
+          'relationships',COALESCE((
+            SELECT jsonb_agg(jsonb_build_object('id',r.id,'label',r.label) ORDER BY r.id)
+            FROM subject_enrollment_relationships er
+            JOIN corpus_relationships r ON r.id=er.relationship_id AND r.owner_user_id=er.owner_user_id
+            WHERE er.enrollment_id=e.id
+          ),'[]'::jsonb),
+          'requires_owner_confirmation',e.intended_email IS NULL,'expires_at',e.expires_at
+        )
+        FROM subject_enrollments e
+        JOIN corpus_subjects s ON s.id=e.subject_id AND s.owner_user_id=e.owner_user_id
+        LEFT JOIN users r ON r.id=e.sharing_reader_id
+        LEFT JOIN users o ON o.id=e.owner_user_id AND EXISTS(
+          SELECT 1 FROM subject_grants g
+          JOIN user_account_state a ON a.user_id=g.grantee_user_id AND a.state='active'
+          WHERE g.subject_id=e.subject_id AND g.owner_user_id=e.owner_user_id
+            AND g.grantee_user_id=e.owner_user_id AND g.revoked_at IS NULL
+        )
+        WHERE e.token_hash=$1 AND (e.intended_email IS NULL OR e.intended_email=$2)
+          AND e.claimed_at IS NULL AND e.revoked_at IS NULL AND e.expires_at>now()"#,
+    )
+    .bind(hash_secret(&p.token))
+    .bind(&identity.email)
+    .fetch_optional(pool)
+    .await
+    .map_err(storage)?
+    .ok_or_else(|| fail(StatusCode::NOT_FOUND, "ENROLLMENT_NOT_FOUND"))?;
     Ok(private(Json(preview).into_response()))
 }
 pub async fn pending_enrollments(

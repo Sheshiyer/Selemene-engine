@@ -1023,6 +1023,130 @@ async fn bounded_runtime_role_enforces_rls_and_resets_pooled_context() {
 }
 #[tokio::test]
 #[serial]
+async fn intended_email_gates_preview_and_claim_without_changing_the_owner_grant() {
+    let (app, pool) = app().await;
+    let owner = user(&pool).await;
+    let recipient = user(&pool).await;
+    let outsider = user(&pool).await;
+    let owner_token = registered_jwt(&pool, owner).await;
+    let recipient_token = registered_jwt(&pool, recipient).await;
+    let outsider_token = registered_jwt(&pool, outsider).await;
+    let subject: Uuid = sqlx::query_scalar(
+        "INSERT INTO corpus_subjects(owner_user_id,subject_key,canonical_name) VALUES($1,$2,'Private enrollment subject') RETURNING id",
+    )
+    .bind(owner)
+    .bind(Uuid::new_v4().to_string())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    sqlx::query("INSERT INTO subject_grants(subject_id,owner_user_id,grantee_user_id,grantor_user_id) VALUES($1,$2,$2,$2)")
+        .bind(subject).bind(owner).execute(&pool).await.unwrap();
+    let (status, invite) = call(
+        &app,
+        "POST",
+        "/api/v1/account/enrollments",
+        Some(&owner_token),
+        json!({"subject_id":subject,"intended_email":format!("{recipient}@example.test")}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let token = json!({"token":invite["token"]});
+    let preview_path = "/api/v1/account/enrollments/preview";
+    let mut denied = call(
+        &app,
+        "POST",
+        preview_path,
+        Some(&outsider_token),
+        token.clone(),
+    )
+    .await;
+    let mut absent = call(
+        &app,
+        "POST",
+        preview_path,
+        Some(&outsider_token),
+        json!({"token":new_secret()}),
+    )
+    .await;
+    assert_eq!(denied.0, StatusCode::NOT_FOUND);
+    denied.1.as_object_mut().unwrap().remove("trace_id");
+    absent.1.as_object_mut().unwrap().remove("trace_id");
+    assert_eq!(denied, absent);
+    let (status, preview) = call(&app, "POST", preview_path, Some(&recipient_token), token).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(preview["display_name"], "Private enrollment subject");
+    assert_eq!(
+        preview["owner_reader"],
+        json!({"id":owner,"name":"Synthetic"})
+    );
+    assert!(preview["sharing_reader_id"].is_null());
+    assert_eq!(preview["relationships"], json!([]));
+    assert_eq!(preview["requires_owner_confirmation"], false);
+
+    let claim_path = "/api/v1/account/enrollments/claim";
+    for (token, accepts, expected) in [
+        (&outsider_token, true, StatusCode::FORBIDDEN),
+        (&recipient_token, false, StatusCode::BAD_REQUEST),
+    ] {
+        assert_eq!(
+            call(
+                &app,
+                "POST",
+                claim_path,
+                Some(token),
+                json!({"token":invite["token"],"accept_sharing":accepts})
+            )
+            .await
+            .0,
+            expected
+        );
+    }
+    let ctx = "/api/v1/users/me/context";
+    assert_eq!(
+        call(&app, "GET", ctx, Some(&recipient_token), Value::Null)
+            .await
+            .1["subjects"],
+        json!([])
+    );
+    let claim = json!({"token":invite["token"],"accept_sharing":true});
+    let (status, active) = call(
+        &app,
+        "POST",
+        claim_path,
+        Some(&recipient_token),
+        claim.clone(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(active["status"], "active");
+    assert_eq!(
+        call(&app, "POST", claim_path, Some(&recipient_token), claim)
+            .await
+            .0,
+        StatusCode::BAD_REQUEST
+    );
+
+    let (status, _) = call(
+        &app,
+        "PATCH",
+        ctx,
+        Some(&recipient_token),
+        json!({"default_subject_id":subject}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let (_, persisted) = call(&app, "GET", ctx, Some(&recipient_token), Value::Null).await;
+    assert_eq!(persisted["default_subject_id"], subject.to_string());
+    assert_eq!(persisted["subjects"].as_array().unwrap().len(), 1);
+    assert_eq!(persisted["subjects"][0]["id"], subject.to_string());
+    assert_eq!(persisted["subjects"][0]["can_edit"], true);
+    assert_eq!(persisted["relationships"], json!([]));
+    let (_, owner_context) = call(&app, "GET", ctx, Some(&owner_token), Value::Null).await;
+    assert_eq!(owner_context["subjects"][0]["can_edit"], false);
+    assert_eq!(owner_context["subjects"][0]["can_calculate"], false);
+}
+#[tokio::test]
+#[serial]
 async fn enrollment_pins_only_owned_member_relationships_and_grants_after_confirmation() {
     let (app, pool) = app().await;
     let owner = user(&pool).await;
