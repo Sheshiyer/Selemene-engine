@@ -62,6 +62,7 @@ The schema mirrors the full flat result (§2) and a drift test keeps them in ste
 | Tests | `crates/engine-panchanga/src/lib.rs` (`probe_*`), `crates/engine-panchanga/tests/` |
 | OpenAPI schema | `noesis-core/src/types.rs` `PanchangaResultSchema`: mirrors `PanchangaResult`; drift test `noesis-api/tests/openapi_schema_tests.rs::panchanga_result_schema_matches_engine_output` |
 | SDK round-trip tests | `crates/noesis-sdk/src/client.rs::panchanga_calculate_keeps_provenance_fields`, `packages/noesis-sdk-ts/src/index.test.ts` ("panchanga provenance") |
+| Persistence test | `crates/noesis-api/tests/panchanga_reading_persistence_tests.rs` (Postgres via `scripts/cloud/test-db.sh`): a saved reading keeps the provenance fields; older readings are returned as stored |
 
 ## 2. Output schema
 
