@@ -416,30 +416,24 @@ async fn test_fallback_chain_api_success_path() {
     assert_eq!(fallback_result.attempts, 2);
 }
 
+// Panchang has been computed natively since PR2: the chain's "API" step
+// calls `VedicApiClient::get_panchang`, which makes no HTTP request and so
+// cannot fail on the network. These tests check what the chain still does:
+// serve a repeat request from cache, and answer with no reachable vendor.
+
 #[tokio::test]
-async fn test_fallback_chain_uses_cache_when_api_fails() {
-    let server = MockServer::start().await;
-    let sample = sample_panchang();
-
-    // First request succeeds (populates cache)
-    Mock::given(method("POST"))
-        .and(path("/panchang"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(&sample))
-        .expect(1)
-        .mount(&server)
-        .await;
-
-    let config = Config::new("test_key").with_base_url(server.uri());
+async fn test_fallback_chain_serves_repeat_request_from_cache() {
+    let config = Config::new("test_key").with_base_url("http://127.0.0.1:1");
     let chain = FallbackChain::new(config);
 
-    // First call - populates cache
-    let _ = chain
+    // First call - computed, then cached
+    let first = chain
         .get_panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5)
         .await
         .unwrap();
+    assert!(matches!(first.source, FallbackSource::Api));
 
-    // Now the mock is exhausted, API will fail
-    // Second call should hit cache
+    // Second call - same day and place, served from cache
     let result = chain
         .get_panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5)
         .await;
@@ -447,11 +441,13 @@ async fn test_fallback_chain_uses_cache_when_api_fails() {
     assert!(result.is_ok());
     let fallback_result = result.unwrap();
     assert!(matches!(fallback_result.source, FallbackSource::Cache));
+    assert_eq!(fallback_result.attempts, 1);
+    assert_eq!(chain.metrics().cache_hits(), 1);
 }
 
 #[tokio::test]
-async fn test_fallback_chain_api_unreachable_falls_to_native() {
-    // No mock server = connection refused
+async fn test_fallback_chain_api_unreachable_still_answers() {
+    // Unreachable vendor: panchang does not depend on it any more.
     let config = Config::new("test_key")
         .with_base_url("http://127.0.0.1:1") // Unreachable port
         .with_timeout(1);
@@ -460,17 +456,19 @@ async fn test_fallback_chain_api_unreachable_falls_to_native() {
 
     let result = chain
         .get_panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5)
-        .await;
+        .await
+        .expect("native panchang needs no vendor");
 
-    // Should either succeed with native calculation or return FallbackFailed
-    // The chain should have attempted all three sources
-    match result {
-        Ok(r) => assert!(matches!(r.source, FallbackSource::NativeCalculation)),
-        Err(VedicApiError::FallbackFailed { .. }) => {
-            // This is acceptable - native fallback may not be fully implemented yet
-        }
-        Err(e) => panic!("Unexpected error type: {:?}", e),
-    }
+    assert!(matches!(result.source, FallbackSource::Api));
+    assert_eq!(chain.metrics().api_failures(), 0);
+    assert_eq!(
+        (
+            result.value.date.year,
+            result.value.date.month,
+            result.value.date.day
+        ),
+        (2024, 1, 1)
+    );
 }
 
 // ====================== FAPI-106: BATCH REQUEST TESTS ======================
@@ -573,20 +571,12 @@ async fn test_batch_scheduler_respects_max_batch_size() {
 
 #[tokio::test]
 async fn test_batch_scheduler_uses_cache() {
-    let server = MockServer::start().await;
-    let sample = sample_panchang();
-
-    Mock::given(method("POST"))
-        .and(path("/panchang"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(&sample))
-        .expect(1) // Should only be called once
-        .mount(&server)
-        .await;
-
-    let config = Config::new("test_key").with_base_url(server.uri());
+    // Panchang is native since PR2, so check the scheduler's cache counters
+    // rather than requests to a mock vendor.
+    let config = Config::new("test_key").with_base_url("http://127.0.0.1:1");
     let scheduler = BatchScheduler::new(config, BatchConfig::default());
 
-    // First batch - hits API
+    // First batch - computed, then cached
     let req1 = vec![BatchRequest::panchang(
         2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5,
     )];
@@ -601,6 +591,10 @@ async fn test_batch_scheduler_uses_cache() {
     let results2 = scheduler.execute_batch(req2).await;
     assert_eq!(results2.len(), 1);
     assert!(results2[0].is_ok());
+
+    let stats = scheduler.cache_stats().await;
+    assert_eq!(stats.panchang_entries, 1);
+    assert_eq!(stats.hits, 1);
 }
 
 // ====================== INTEGRATION: COMBINED RESILIENCE TESTS ======================

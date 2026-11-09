@@ -5321,6 +5321,69 @@ mod p4_contract_tests {
             .is_none());
     }
 
+    #[test]
+    fn enneagram_api_envelope_lifts_provenance_for_both_paths() {
+        // GH #1311: real enneagram sidecar responses (assessment and direct
+        // lookup) go through the bridge and into the /calculate envelope. The
+        // envelope must carry each block verbatim at the top level, strip it
+        // from result, keep typeSource, and never give a lookup a confidence.
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/enneagram/bridge-round-trip.json"
+        ))
+        .unwrap();
+        let cases = fixture["cases"].as_array().unwrap();
+        assert_eq!(cases.len(), 2);
+
+        let mut backends = Vec::new();
+        for case in cases {
+            let sidecar = &case["sidecar_response"];
+            let response: noesis_bridge::ts_client::TsEngineResponse =
+                serde_json::from_value(sidecar.clone()).unwrap();
+            let output = noesis_bridge::ts_response_into_output(response, 1);
+            let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
+            let wire = serde_json::to_value(&envelope).unwrap();
+
+            assert_eq!(
+                wire["provenance"], sidecar["provenance"],
+                "{}",
+                case["name"]
+            );
+            assert!(wire["result"]
+                .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+                .is_none());
+            assert_eq!(
+                wire["result"]["typeSource"],
+                sidecar["result"]["typeSource"]
+            );
+            assert_eq!(wire["provenance"]["fallback_used"], false);
+            assert!(wire["provenance"].get("provider_id").is_none());
+            backends.push(wire["provenance"]["backend_id"].clone());
+
+            match sidecar["result"]["typeSource"].as_str().unwrap() {
+                "assessment" => {
+                    assert_eq!(wire["provenance"]["confidence"], 0.78);
+                    assert_eq!(wire["result"]["assessment"]["answeredCount"], 35);
+                }
+                "user-supplied" => {
+                    assert!(
+                        wire["provenance"].get("confidence").is_none(),
+                        "a direct lookup must not carry a confidence"
+                    );
+                    assert_eq!(wire["result"]["suppliedWing"], 5);
+                    assert!(wire["result"].get("assessment").is_none());
+                }
+                other => panic!("unexpected typeSource {other}"),
+            }
+        }
+        assert_eq!(
+            backends,
+            vec![
+                serde_json::json!("enneagram-assessment"),
+                serde_json::json!("enneagram-type-lookup")
+            ]
+        );
+    }
+
     /// The seed-42 i-ching sidecar fixture as the bridge hands it to the API.
     fn i_ching_fixture_output() -> (Value, EngineOutput) {
         let sidecar: Value = serde_json::from_str(include_str!(

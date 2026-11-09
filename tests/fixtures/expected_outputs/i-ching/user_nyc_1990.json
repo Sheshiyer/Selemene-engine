@@ -2,71 +2,321 @@
   "engine_id": "i-ching",
   "result": {
     "primary_hexagram": {
-      "number": 1,
-      "name": "The Creative",
-      "chinese_name": "\u4e7e (Qi\u00e1n)",
-      "meaning": "Pure yang energy, heaven, creative power, strong action",
-      "judgment": "The Creative works sublime success, furthering through perseverance.",
-      "image": "The movement of heaven is full of power. Thus the superior person makes themselves strong and untiring."
+      "number": 42,
+      "name": "Hexagram 42",
+      "chinese_name": null,
+      "meaning": null,
+      "judgment": "Yi indicates that (in the state which it denotes) there will be advantage in every movement which shall be undertaken, that it will be advantageous (even) to cross the great stream.",
+      "image": "(The trigram representing) wind and that for thunder form Yi. The superior man, in accordance with this, when he sees what is good, moves towards it ; and when he sees his errors, he turns from them.",
+      "lines": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "wisdom_status": "source_transcribed",
+      "field_status": {
+        "name": "generic_identifier",
+        "chinese_name": "unavailable",
+        "meaning": "unavailable",
+        "judgment": "source_transcribed",
+        "image": "source_transcribed",
+        "lines": "verified_mapping"
+      },
+      "provenance": {
+        "line_mapping": {
+          "sequence": "King Wen",
+          "line_order": "bottom_to_top",
+          "source": "https://www.unicode.org/charts/PDF/U4DC0.pdf"
+        },
+        "legacy_labels_and_meanings": "Unavailable; the generic name is a display identifier only.",
+        "text": {
+          "edition": {
+            "title": "The Sacred Books of China, Part II: The Yi King",
+            "translator": "James Legge",
+            "year": 1882,
+            "edition": "Oxford, Clarendon Press; Sacred Books of the East, volume XVI",
+            "url": "https://archive.org/details/sacredbooksofchi16conf",
+            "scanContributor": "Princeton Theological Seminary Library",
+            "transcriptionStatus": "scan_reviewed_normalized_transcription",
+            "schemaVersion": 1,
+            "retrievedOn": "2026-10-07",
+            "totalHexagrams": 64,
+            "coverage": [
+              "64 primary judgments",
+              "64 Great Symbolism images"
+            ],
+            "exclusions": [
+              "six line texts",
+              "small Symbolism/line commentary",
+              "modern meanings",
+              "translator footnotes"
+            ],
+            "normalizations": [
+              "Whitespace collapsed; print end-line word splits joined.",
+              "Roman section markers and editorial headings excluded.",
+              "Historical transliteration tone marks/italic consonant typography normalized to ASCII; the z-shaped consonant is rendered Z.",
+              "English wording, archaic grammar and source punctuation retained; no modern paraphrases added."
+            ],
+            "uncertainty": "OCR is not authoritative. All selected passages were visually checked against the pinned original PDF; this normalized transcription is not a character-perfect diplomatic edition or an independent second proofread.",
+            "rightsEvidence": {
+              "archiveStatus": "NOT_IN_COPYRIGHT",
+              "region": "US",
+              "sourcePublication": 1882,
+              "scope": "Original historical text; source/publication facts, not a publisher licensing attestation."
+            }
+          },
+          "passages": {
+            "judgmentPage": 149,
+            "judgmentPages": [
+              149
+            ],
+            "judgmentSources": [
+              {
+                "printedPage": 149,
+                "pdfPage": 183,
+                "archiveLeaf": 183,
+                "paragraphIndex": 2,
+                "lineStart": null,
+                "lineEndExclusive": null,
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n183/mode/1up"
+              }
+            ],
+            "imagePage": 319,
+            "imagePages": [
+              319
+            ],
+            "imageSources": [
+              {
+                "printedPage": 319,
+                "pdfPage": 353,
+                "archiveLeaf": 353,
+                "paragraphIndex": 1,
+                "lineStart": null,
+                "lineEndExclusive": null,
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n353/mode/1up"
+              }
+            ]
+          },
+          "transcription_status": "scan_reviewed_normalized_transcription",
+          "transcription_notes": [
+            "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+            "image: 1 explicit OCR/transliteration corrections recorded in source provenance."
+          ]
+        },
+        "changing_line_texts": "unavailable"
+      }
     },
     "changing_lines": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6
+      4
     ],
     "relating_hexagram": {
-      "number": 48,
-      "name": "Hexagram 48",
-      "chinese_name": "\u536648",
-      "meaning": "Meaning for hexagram 48 (stub data)",
-      "judgment": "The judgment for hexagram 48.",
-      "image": "The image for hexagram 48."
+      "number": 25,
+      "name": "Hexagram 25",
+      "chinese_name": null,
+      "meaning": null,
+      "judgment": "Wu Wang indicates great progress and success, while there will be advantage in being firm and correct. If (its subject and his action) be not correct, he will fall into errors, and it will not be advantageous for him to move in any direction.",
+      "image": "The thunder rolls all under the sky, and to (every)thing there is given (its nature), free from all insincerity. The ancient kings, in accordance with this, (made their regulations) in complete accordance with the seasons, thereby nourishing all things.",
+      "lines": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        true
+      ],
+      "wisdom_status": "source_transcribed",
+      "field_status": {
+        "name": "generic_identifier",
+        "chinese_name": "unavailable",
+        "meaning": "unavailable",
+        "judgment": "source_transcribed",
+        "image": "source_transcribed",
+        "lines": "verified_mapping"
+      },
+      "provenance": {
+        "line_mapping": {
+          "sequence": "King Wen",
+          "line_order": "bottom_to_top",
+          "source": "https://www.unicode.org/charts/PDF/U4DC0.pdf"
+        },
+        "legacy_labels_and_meanings": "Unavailable; the generic name is a display identifier only.",
+        "text": {
+          "edition": {
+            "title": "The Sacred Books of China, Part II: The Yi King",
+            "translator": "James Legge",
+            "year": 1882,
+            "edition": "Oxford, Clarendon Press; Sacred Books of the East, volume XVI",
+            "url": "https://archive.org/details/sacredbooksofchi16conf",
+            "scanContributor": "Princeton Theological Seminary Library",
+            "transcriptionStatus": "scan_reviewed_normalized_transcription",
+            "schemaVersion": 1,
+            "retrievedOn": "2026-10-07",
+            "totalHexagrams": 64,
+            "coverage": [
+              "64 primary judgments",
+              "64 Great Symbolism images"
+            ],
+            "exclusions": [
+              "six line texts",
+              "small Symbolism/line commentary",
+              "modern meanings",
+              "translator footnotes"
+            ],
+            "normalizations": [
+              "Whitespace collapsed; print end-line word splits joined.",
+              "Roman section markers and editorial headings excluded.",
+              "Historical transliteration tone marks/italic consonant typography normalized to ASCII; the z-shaped consonant is rendered Z.",
+              "English wording, archaic grammar and source punctuation retained; no modern paraphrases added."
+            ],
+            "uncertainty": "OCR is not authoritative. All selected passages were visually checked against the pinned original PDF; this normalized transcription is not a character-perfect diplomatic edition or an independent second proofread.",
+            "rightsEvidence": {
+              "archiveStatus": "NOT_IN_COPYRIGHT",
+              "region": "US",
+              "sourcePublication": 1882,
+              "scope": "Original historical text; source/publication facts, not a publisher licensing attestation."
+            }
+          },
+          "passages": {
+            "judgmentPage": 109,
+            "judgmentPages": [
+              109,
+              110
+            ],
+            "judgmentSources": [
+              {
+                "printedPage": 109,
+                "pdfPage": 143,
+                "archiveLeaf": 143,
+                "paragraphIndex": 2,
+                "lineStart": null,
+                "lineEndExclusive": null,
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n143/mode/1up"
+              },
+              {
+                "printedPage": 110,
+                "pdfPage": 144,
+                "archiveLeaf": 144,
+                "paragraphIndex": 1,
+                "lineStart": null,
+                "lineEndExclusive": null,
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n144/mode/1up"
+              }
+            ],
+            "imagePage": 299,
+            "imagePages": [
+              299
+            ],
+            "imageSources": [
+              {
+                "printedPage": 299,
+                "pdfPage": 333,
+                "archiveLeaf": 333,
+                "paragraphIndex": 1,
+                "lineStart": null,
+                "lineEndExclusive": null,
+                "url": "https://archive.org/details/sacredbooksofchi16conf/page/n333/mode/1up"
+              }
+            ]
+          },
+          "transcription_status": "scan_reviewed_normalized_transcription",
+          "transcription_notes": [
+            "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+          ]
+        },
+        "changing_line_texts": "unavailable"
+      }
     },
     "casting": {
+      "algorithm_version": "1.1.0",
       "method": "three_coins",
+      "selection_mode": "seeded_coin_simulation",
+      "line_order": "bottom_to_top",
       "line_values": [
+        7,
+        8,
+        8,
         6,
-        6,
-        6,
-        6,
-        9,
-        9
+        7,
+        7
       ]
+    },
+    "derivation": {
+      "line_values": {
+        "origin": "cast",
+        "method": "seeded_three_coin_simulation",
+        "seed_source": "request"
+      },
+      "primary_hexagram": {
+        "origin": "derived",
+        "derived_from": [
+          "line_values"
+        ]
+      },
+      "changing_lines": {
+        "origin": "derived",
+        "derived_from": [
+          "line_values"
+        ],
+        "positions": [
+          4
+        ]
+      },
+      "relating_hexagram": {
+        "origin": "derived",
+        "derived_from": [
+          "primary_hexagram",
+          "changing_lines"
+        ],
+        "flipped_positions": [
+          4
+        ]
+      },
+      "changing_line_texts": {
+        "origin": "unavailable",
+        "reason": "Changing-line texts are not bundled; none are returned or generated."
+      }
     },
     "seed": 42
   },
   "witness_prompts": [
     {
-      "prompt": "What does The Creative illuminate about your current situation?",
-      "context": "Primary hexagram: 1. The Creative",
-      "themes": [
-        "change",
-        "wisdom",
-        "situation"
-      ]
-    },
-    {
-      "prompt": "As the situation transforms from The Creative to Hexagram 48, what transition do you sense in your own life?",
-      "context": "Transformation: The Creative \u2192 Hexagram 48",
-      "themes": [
-        "transformation",
-        "change",
-        "movement"
-      ]
-    },
-    {
-      "prompt": "What question does this oracle seem to be asking you in return?",
-      "context": "Reflection",
+      "prompt": "What aspects of your situation would you like to examine through this symbolic reading?",
+      "context": "Primary King Wen hexagram 42. Text status: source_transcribed.",
       "themes": [
         "inquiry",
-        "self-reflection",
-        "wisdom"
+        "situation",
+        "reflection"
+      ]
+    },
+    {
+      "prompt": "What changes are you already noticing, and what remains uncertain about them?",
+      "context": "Changing lines 4 (bottom to top) produce relating hexagram 25.",
+      "themes": [
+        "change",
+        "uncertainty",
+        "reflection"
+      ]
+    },
+    {
+      "prompt": "What question would help you explore this situation with more agency?",
+      "context": "Symbolic reflection, not a prediction or instruction.",
+      "themes": [
+        "inquiry",
+        "agency",
+        "reflection"
       ]
     }
   ],
   "calculated_at": "2024-01-15T14:30:00.000Z",
-  "processing_time_ms": 0
+  "processing_time_ms": 0,
+  "provenance": {
+    "runtime_kind": "typescript",
+    "implementation_version": "1.1.0",
+    "cached": false,
+    "fallback_used": false,
+    "confidence": 1
+  }
 }
