@@ -494,15 +494,159 @@ pub struct TransitsResultSchema {
     pub next_peak_date: String,
 }
 
+/// Enneagram result as actually produced by the TypeScript engine
+/// (`ts-engines/src/engines/enneagram/engine.ts`). One shape covers three
+/// modes: `assessment` carries `assessment` + `typeAnalysis`, `lookup`
+/// carries `typeAnalysis` (+ `suppliedWing`), `questions` carries
+/// `questions`. The `noesis-api` test
+/// `enneagram_result_schema_matches_engine_output` checks this against
+/// `ts-engines/tests/fixtures/enneagram/result-modes.json`, which the TS
+/// suite keeps equal to live engine output.
 #[cfg(feature = "openapi")]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct EnneagramResultSchema {
+    pub mode: EnneagramModeSchema,
+    /// Where the named type came from: scored from the caller's answers,
+    /// asserted by the caller (direct lookup), or no type at all. Only an
+    /// assessment carries `provenance.confidence`.
+    pub type_source: EnneagramTypeSourceSchema,
+    /// Wing the caller supplied with a direct lookup (validated adjacent).
+    #[schema(example = 5)]
+    pub supplied_wing: Option<u8>,
+    pub assessment: Option<EnneagramAssessmentSchema>,
+    pub type_analysis: Option<EnneagramTypeAnalysisSchema>,
+    /// The 45 assessment questions (`includeAssessment: true`); empty when
+    /// the request named neither answers nor a type.
+    pub questions: Option<Vec<EnneagramQuestionSchema>>,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum EnneagramModeSchema {
+    Assessment,
+    Lookup,
+    Questions,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+pub enum EnneagramTypeSourceSchema {
+    Assessment,
+    UserSupplied,
+    None,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EnneagramAssessmentSchema {
+    /// Normalized 0-100 score per type, highest first.
+    pub scores: Vec<EnneagramScoreSchema>,
+    pub primary_type: EnneagramTypeSummarySchema,
+    pub wing: EnneagramTypeSummarySchema,
+    /// Score separation between the top two types, 0-1. The envelope's
+    /// `provenance.confidence` additionally scales this by answer coverage.
+    #[schema(example = 1.0)]
+    pub confidence: f64,
+    /// Present only when `confidence` is at least 0.3.
+    #[schema(example = json!([7, 1, 2]))]
+    pub tritype: Option<Vec<u8>>,
+    /// Answers that mapped onto a question; extras past the last are ignored.
+    #[schema(example = 45)]
+    pub answered_count: u8,
+    #[schema(example = 45)]
+    pub question_count: u8,
+    /// Answers outside the 1-5 scale that were clamped before scoring.
+    #[schema(example = 0)]
+    pub clamped_count: u8,
+    pub note: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EnneagramScoreSchema {
+    #[schema(example = 7)]
+    pub r#type: u8,
+    #[schema(example = 100)]
+    pub normalized_score: u8,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct EnneagramTypeSummarySchema {
+    #[schema(example = 7)]
+    pub number: u8,
+    #[schema(example = "The Enthusiast")]
+    pub name: String,
+    pub description: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EnneagramTypeAnalysisSchema {
+    pub r#type: EnneagramTypeDetailSchema,
+    /// Both adjacent types, regardless of which wing was scored or supplied.
+    pub wings: Vec<EnneagramWingSchema>,
+    pub integration: EnneagramConnectionSchema,
+    pub disintegration: EnneagramConnectionSchema,
+    #[schema(example = "head")]
+    pub center: String,
+    #[schema(example = "assertive")]
+    pub hornevian_group: String,
+    #[schema(example = "positive")]
+    pub harmonic_group: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct EnneagramTypeDetailSchema {
     #[schema(example = 4)]
-    pub core_type: i32,
-    #[schema(example = "4w5")]
-    pub wing: String,
-    #[schema(example = "Individualist")]
-    pub archetype: String,
+    pub number: u8,
+    #[schema(example = "The Individualist")]
+    pub name: String,
+    pub core_fear: String,
+    pub core_desire: String,
+    pub core_weakness: String,
+    pub description: String,
+    pub key_motivations: Vec<String>,
+    pub healthy_traits: Vec<String>,
+    pub average_traits: Vec<String>,
+    pub unhealthy_traits: Vec<String>,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct EnneagramWingSchema {
+    #[schema(example = 5)]
+    pub number: u8,
+    #[schema(example = "The Investigator")]
+    pub name: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct EnneagramConnectionSchema {
+    #[schema(example = 5)]
+    pub r#type: u8,
+    #[schema(example = "The Investigator")]
+    pub name: String,
+    pub description: String,
+}
+
+#[cfg(feature = "openapi")]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct EnneagramQuestionSchema {
+    #[schema(example = 1)]
+    pub id: u8,
+    pub text: String,
+    #[schema(example = "1 (rarely) to 5 (almost always)")]
+    pub scale: String,
 }
 
 #[cfg(feature = "openapi")]
