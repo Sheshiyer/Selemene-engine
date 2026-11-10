@@ -13,8 +13,8 @@
 
 use crate::billing::{effective_billing_mode, release_billing_mode};
 use crate::handlers::admin::{
-    effective_permissions, forbidden_response, has_permission, json_error_response,
-    normalize_limit_offset, service_unavailable_response,
+    json_error_response, normalize_limit_offset, require_admin_permission,
+    service_unavailable_response,
 };
 use crate::{AppState, BillingMode};
 use axum::{
@@ -301,21 +301,10 @@ async fn require_billing_perm(
     auth_user: &AuthUser,
     required: &str,
 ) -> Result<(), Response> {
-    let permissions = match effective_permissions(state, auth_user).await {
-        Ok(p) => p,
-        Err(_) => {
-            return Err(json_error_response(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Failed to resolve permissions",
-                "PERMISSION_RESOLVE_FAILED",
-                None,
-            ));
-        }
-    };
-    if !has_permission(&permissions, required) {
-        return Err(forbidden_response(required));
+    match require_admin_permission(state, auth_user, required).await {
+        Some(forbidden) => Err(forbidden),
+        None => Ok(()),
     }
-    Ok(())
 }
 
 fn billing_control_response(
