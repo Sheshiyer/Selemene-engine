@@ -130,7 +130,7 @@ pub(crate) async fn subject_access(
 }
 /// A live registered family establishes trusted account identity without granting
 /// interactive/browser authority. Never infer this from a password JWT or API key.
-async fn verified_identity(
+pub(crate) async fn verified_identity(
     s: &AppState,
     u: &AuthUser,
     interactive: Option<Extension<CfIdentity>>,
@@ -209,12 +209,16 @@ fn profile_resource(id: Uuid, revision: i64, profile: Value) -> Value {
 pub async fn profile(
     State(s): State<AppState>,
     Extension(u): Extension<AuthUser>,
+    worker: Option<Extension<super::witness_requests::WorkerAccess>>,
     Path(id): Path<Uuid>,
 ) -> Result<Response, HandlerError> {
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
     let mut tx = transaction(pool, uid).await?;
     subject_access(&mut tx, uid, id, false).await?;
+    if let Some(Extension(scope)) = worker {
+        scope.recheck(&mut tx, uid, id).await?;
+    }
     let (revision,profile)=sqlx::query_as::<_,(i64,Value)>("SELECT revision,profile FROM subject_profile_revisions WHERE subject_id=$1 ORDER BY revision DESC LIMIT 1").bind(id).fetch_optional(&mut *tx).await.map_err(storage)?.ok_or_else(||fail(StatusCode::NOT_FOUND,"PROFILE_NOT_ADMITTED"))?;
     tx.commit().await.map_err(storage)?;
     Ok(private(
@@ -773,6 +777,7 @@ pub async fn calculate(
     State(s): State<AppState>,
     Extension(u): Extension<AuthUser>,
     key: Option<Extension<crate::middleware::ApiKeyPrincipal>>,
+    worker: Option<Extension<super::witness_requests::WorkerAccess>>,
     Path((id, engine)): Path<(Uuid, String)>,
     Json(p): Json<Calculate>,
 ) -> Result<Response, HandlerError> {
@@ -780,6 +785,14 @@ pub async fn calculate(
     let uid = active(pool, &u).await?;
     let mut tx = transaction(pool, uid).await?;
     let owner = subject_access(&mut tx, uid, id, false).await?;
+    if let Some(Extension(scope)) = &worker {
+        let (revision, effective_at) = scope.recheck(&mut tx, uid, id).await?;
+        if revision != p.expected_revision || p.current_time != Some(effective_at)
+            || !super::witness_requests::capture_options(&engine, &p.options)
+        {
+            return Err(fail(StatusCode::BAD_REQUEST, "WITNESS_CAPTURE_SCOPE_MISMATCH"));
+        }
+    }
     let allowed:bool=sqlx::query_scalar("SELECT can_calculate FROM subject_grants WHERE subject_id=$1 AND grantee_user_id=$2 AND revoked_at IS NULL FOR SHARE").bind(id).bind(uid).fetch_one(&mut *tx).await.map_err(storage)?;
     if !allowed {
         return Err(fail(StatusCode::FORBIDDEN, "SUBJECT_CALCULATION_DENIED"));
@@ -844,6 +857,9 @@ pub async fn calculate(
     .map_err(|_| fail(StatusCode::INTERNAL_SERVER_ERROR, "INVALID_OUTPUT"))?;
     let mut tx = transaction(pool, uid).await?;
     subject_access(&mut tx, uid, id, false).await?;
+    if let Some(Extension(scope)) = &worker {
+        scope.recheck(&mut tx, uid, id).await?;
+    }
     let still_allowed:bool=sqlx::query_scalar("SELECT can_calculate FROM subject_grants WHERE subject_id=$1 AND grantee_user_id=$2 AND revoked_at IS NULL FOR SHARE").bind(id).bind(uid).fetch_one(&mut *tx).await.map_err(storage)?;
     if !still_allowed {
         return Err(fail(StatusCode::FORBIDDEN, "SUBJECT_CALCULATION_DENIED"));
