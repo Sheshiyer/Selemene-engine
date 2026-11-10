@@ -4,7 +4,7 @@
 
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
 import { EngineValidationError } from '../../utils'
-import { SeededRandom, getDefaultSeed } from '../../utils/random'
+import { SeededRandom, assertIntegerSeed, getDefaultSeed } from '../../utils/random'
 import { buildGeometry } from './geometry'
 import { SACRED_FORMS, getFormById, getFormIds } from './wisdom'
 import { generateWitnessNarrative } from './witness'
@@ -61,6 +61,7 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
     const formParam = input.parameters.form as string | undefined
     const intention = input.question ?? (input.parameters.intention as string | undefined)
     const svgTemplate = input.parameters.svg_template as string | undefined
+    assertIntegerSeed(input.seed)
     const seed = input.seed ?? getDefaultSeed()
 
     // Select form

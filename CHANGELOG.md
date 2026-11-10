@@ -1,3 +1,7 @@
+# Seed validation for TypeScript engines — 2026-11-10
+
+- A non-integer or non-finite `seed` (such as `1.5`) no longer crashes tarot, enneagram, sacred-geometry or sigil-forge with a `RangeError` (a sidecar 500 `CALCULATION_ERROR`). They now reject it as a 422 `INVALID_SEED` validation error with `details.field: "seed"`, the code I Ching already used. Integer and omitted seeds behave as before; I Ching keeps its stricter nonnegative-safe-integer rule.
+
 # Seeded randomness for small seeds — 2026-11-09
 
 - `SeededRandom` (shared by every TypeScript engine) now mixes the seed with SplitMix64, so small seeds such as 0, 42 or 1401 no longer start from nearly identical states. Before, the first draw was below 0.5 for every seed from 0 to 99,999, which skewed tarot shuffles, I Ching casts, sacred-geometry selection and witness templates.

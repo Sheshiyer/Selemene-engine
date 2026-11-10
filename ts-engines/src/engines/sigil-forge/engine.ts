@@ -44,7 +44,7 @@ import type {
   EngineOutput,
 } from '../../types'
 import { EngineValidationError } from '../../utils'
-import { SeededRandom, getDefaultSeed } from '../../utils/random'
+import { SeededRandom, assertIntegerSeed, getDefaultSeed } from '../../utils/random'
 import { type SigilStyle, buildSigilEditPrompt, buildSigilPrompt } from './prompt-builder'
 import {
   CHARGING_METHODS,
@@ -230,6 +230,7 @@ export class SigilForgeEngine implements ConsciousnessEngine {
 
     const methodParam = input.parameters.method as string | undefined
     const svgTemplate = input.parameters.svg_template as string | undefined
+    assertIntegerSeed(input.seed)
     const seed = input.seed ?? getDefaultSeed()
     const generateImageFlag = Boolean(input.parameters.generate_image)
     const imageStyle = input.parameters.image_style as SigilStyle | undefined

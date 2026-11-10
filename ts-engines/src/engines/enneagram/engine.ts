@@ -11,7 +11,7 @@ import type {
   EngineOutput,
   WitnessPrompt,
 } from '../../types'
-import { EngineValidationError } from '../../utils'
+import { EngineValidationError, assertIntegerSeed } from '../../utils'
 import {
   type AssessmentResult,
   calculateFromAnswerArray,
@@ -156,6 +156,7 @@ export class EnneagramEngine implements ConsciousnessEngine {
     const wingParam = input.parameters.wing as number | undefined
     const includeAssessment = input.parameters.includeAssessment as boolean | undefined
     const includeMovementPrompts = input.parameters.includeMovementPrompts as boolean | undefined
+    assertIntegerSeed(input.seed)
     const seed = input.seed
 
     let result: EnneagramResult
