@@ -346,4 +346,79 @@ mod tests {
         assert_eq!(exported["provenance"], envelope["provenance"]);
         assert_eq!(exported["result"], envelope["result"]);
     }
+
+    #[test]
+    fn every_witness_prompt_reaches_the_result_screen_and_json_export() {
+        // GH #1411: the screen shows all of the engine's prompts, not only the first.
+        let envelope: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../ts-engines/tests/fixtures/sacred-geometry/api-envelope-seed-1401.json"
+        ))
+        .unwrap();
+        let output: EngineOutput = serde_json::from_value(envelope.clone()).unwrap();
+        let mut screen = ResultDisplay::new();
+        screen.set_engine_result("sacred-geometry".into(), output);
+        let prompts = envelope["witness_prompts"].as_array().unwrap();
+        assert_eq!(prompts.len(), 3);
+        for prompt in prompts {
+            assert!(screen
+                .rendered_text
+                .contains(prompt["prompt"].as_str().unwrap()));
+        }
+        assert!(!screen.rendered_text.contains("__contract_witness_prompts"));
+        let ResultKind::Engine { output, .. } = &screen.result else {
+            panic!("screen should retain the engine result");
+        };
+        let json = MarkdownRenderer::new()
+            .render(output, ReportFormat::Json)
+            .unwrap();
+        let exported: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(exported["witness_prompts"], envelope["witness_prompts"]);
+    }
+
+    #[test]
+    fn i_ching_derivation_and_provenance_reach_both_result_screens() {
+        // #1341: the TUI holds what the SDK returns; derivation renders, the
+        // contract block shows in the details and survives JSON export.
+        let envelope: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../ts-engines/tests/fixtures/i-ching/api-envelope-seed-42.json"
+        ))
+        .unwrap();
+        let output: EngineOutput = serde_json::from_value(envelope.clone()).unwrap();
+
+        let mut screen = ResultDisplay::new();
+        screen.set_engine_result("i-ching".into(), output.clone());
+        assert!(screen
+            .rendered_text
+            .contains("seeded_three_coin_simulation"));
+        assert!(screen.rendered_text.contains("**Implementation**: 1.1.0"));
+        assert!(!screen.rendered_text.contains("__contract_provenance"));
+
+        let workflow = WorkflowResult {
+            workflow_id: "decision-support".into(),
+            engine_outputs: std::collections::HashMap::from([("i-ching".to_string(), output)]),
+            synthesis: None,
+            total_time_ms: 0.0,
+            timestamp: chrono::Utc::now(),
+        };
+        screen.set_workflow_result("decision-support".into(), workflow);
+        assert!(screen
+            .rendered_text
+            .contains("seeded_three_coin_simulation"));
+        assert!(!screen.rendered_text.contains("__contract_provenance"));
+        let ResultKind::Workflow { result, .. } = &screen.result else {
+            panic!("screen should retain the workflow result");
+        };
+        let json = MarkdownRenderer::new()
+            .render_workflow(result, ReportFormat::Json)
+            .unwrap();
+        let exported: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(
+            exported["engine_outputs"]["i-ching"]["provenance"],
+            envelope["provenance"]
+        );
+        assert_eq!(
+            exported["engine_outputs"]["i-ching"]["result"],
+            envelope["result"]
+        );
+    }
 }

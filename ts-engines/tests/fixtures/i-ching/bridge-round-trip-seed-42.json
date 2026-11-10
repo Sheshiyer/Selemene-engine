@@ -1,0 +1,320 @@
+{
+  "input": {
+    "consciousness_level": 0,
+    "parameters": {},
+    "seed": 42
+  },
+  "sidecar_response": {
+    "engine_id": "i-ching",
+    "result": {
+      "primary_hexagram": {
+        "number": 33,
+        "name": "Hexagram 33",
+        "chinese_name": null,
+        "meaning": null,
+        "judgment": "Thun indicates successful progress (in its circumstances). To a small extent it will (still) be advantageous to be firm and correct.",
+        "image": "(The trigram representing) the sky and below it that for a mountain form Thun. The superior man, in accordance with this, keeps small men at a distance, not by showing that he hates them, but by his own dignified gravity.",
+        "lines": [
+          false,
+          false,
+          true,
+          true,
+          true,
+          true
+        ],
+        "wisdom_status": "source_transcribed",
+        "field_status": {
+          "name": "generic_identifier",
+          "chinese_name": "unavailable",
+          "meaning": "unavailable",
+          "judgment": "source_transcribed",
+          "image": "source_transcribed",
+          "lines": "verified_mapping"
+        },
+        "provenance": {
+          "line_mapping": {
+            "sequence": "King Wen",
+            "line_order": "bottom_to_top",
+            "source": "https://www.unicode.org/charts/PDF/U4DC0.pdf"
+          },
+          "legacy_labels_and_meanings": "Unavailable; the generic name is a display identifier only.",
+          "text": {
+            "edition": {
+              "title": "The Sacred Books of China, Part II: The Yi King",
+              "translator": "James Legge",
+              "year": 1882,
+              "edition": "Oxford, Clarendon Press; Sacred Books of the East, volume XVI",
+              "url": "https://archive.org/details/sacredbooksofchi16conf",
+              "scanContributor": "Princeton Theological Seminary Library",
+              "transcriptionStatus": "scan_reviewed_normalized_transcription",
+              "schemaVersion": 1,
+              "retrievedOn": "2026-10-07",
+              "totalHexagrams": 64,
+              "coverage": [
+                "64 primary judgments",
+                "64 Great Symbolism images"
+              ],
+              "exclusions": [
+                "six line texts",
+                "small Symbolism/line commentary",
+                "modern meanings",
+                "translator footnotes"
+              ],
+              "normalizations": [
+                "Whitespace collapsed; print end-line word splits joined.",
+                "Roman section markers and editorial headings excluded.",
+                "Historical transliteration tone marks/italic consonant typography normalized to ASCII; the z-shaped consonant is rendered Z.",
+                "English wording, archaic grammar and source punctuation retained; no modern paraphrases added."
+              ],
+              "uncertainty": "OCR is not authoritative. All selected passages were visually checked against the pinned original PDF; this normalized transcription is not a character-perfect diplomatic edition or an independent second proofread.",
+              "rightsEvidence": {
+                "archiveStatus": "NOT_IN_COPYRIGHT",
+                "region": "US",
+                "sourcePublication": 1882,
+                "scope": "Original historical text; source/publication facts, not a publisher licensing attestation."
+              }
+            },
+            "passages": {
+              "judgmentPage": 127,
+              "judgmentPages": [
+                127
+              ],
+              "judgmentSources": [
+                {
+                  "printedPage": 127,
+                  "pdfPage": 161,
+                  "archiveLeaf": 161,
+                  "paragraphIndex": 2,
+                  "lineStart": null,
+                  "lineEndExclusive": null,
+                  "url": "https://archive.org/details/sacredbooksofchi16conf/page/n161/mode/1up"
+                }
+              ],
+              "imagePage": 308,
+              "imagePages": [
+                308
+              ],
+              "imageSources": [
+                {
+                  "printedPage": 308,
+                  "pdfPage": 342,
+                  "archiveLeaf": 342,
+                  "paragraphIndex": 1,
+                  "lineStart": null,
+                  "lineEndExclusive": null,
+                  "url": "https://archive.org/details/sacredbooksofchi16conf/page/n342/mode/1up"
+                }
+              ]
+            },
+            "transcription_status": "scan_reviewed_normalized_transcription",
+            "transcription_notes": [
+              "Original scan wording reviewed; transliteration typography normalized as metadata documents."
+            ]
+          },
+          "changing_line_texts": "unavailable"
+        }
+      },
+      "changing_lines": [
+        1
+      ],
+      "relating_hexagram": {
+        "number": 13,
+        "name": "Hexagram 13",
+        "chinese_name": null,
+        "meaning": null,
+        "judgment": "Thung Zan (or 'Union of men') appears here (as we find it) in the (remote districts of the) country, indicating progress and success. It will be advantageous to cross the great stream. It will be advantageous to maintain the firm correctness of the superior man.",
+        "image": "(The trigrams for) heaven and fire form Thung Zan. The superior man, in accordance with this), distinguishes things according to their kinds and classes.",
+        "lines": [
+          true,
+          false,
+          true,
+          true,
+          true,
+          true
+        ],
+        "wisdom_status": "source_transcribed",
+        "field_status": {
+          "name": "generic_identifier",
+          "chinese_name": "unavailable",
+          "meaning": "unavailable",
+          "judgment": "source_transcribed",
+          "image": "source_transcribed",
+          "lines": "verified_mapping"
+        },
+        "provenance": {
+          "line_mapping": {
+            "sequence": "King Wen",
+            "line_order": "bottom_to_top",
+            "source": "https://www.unicode.org/charts/PDF/U4DC0.pdf"
+          },
+          "legacy_labels_and_meanings": "Unavailable; the generic name is a display identifier only.",
+          "text": {
+            "edition": {
+              "title": "The Sacred Books of China, Part II: The Yi King",
+              "translator": "James Legge",
+              "year": 1882,
+              "edition": "Oxford, Clarendon Press; Sacred Books of the East, volume XVI",
+              "url": "https://archive.org/details/sacredbooksofchi16conf",
+              "scanContributor": "Princeton Theological Seminary Library",
+              "transcriptionStatus": "scan_reviewed_normalized_transcription",
+              "schemaVersion": 1,
+              "retrievedOn": "2026-10-07",
+              "totalHexagrams": 64,
+              "coverage": [
+                "64 primary judgments",
+                "64 Great Symbolism images"
+              ],
+              "exclusions": [
+                "six line texts",
+                "small Symbolism/line commentary",
+                "modern meanings",
+                "translator footnotes"
+              ],
+              "normalizations": [
+                "Whitespace collapsed; print end-line word splits joined.",
+                "Roman section markers and editorial headings excluded.",
+                "Historical transliteration tone marks/italic consonant typography normalized to ASCII; the z-shaped consonant is rendered Z.",
+                "English wording, archaic grammar and source punctuation retained; no modern paraphrases added."
+              ],
+              "uncertainty": "OCR is not authoritative. All selected passages were visually checked against the pinned original PDF; this normalized transcription is not a character-perfect diplomatic edition or an independent second proofread.",
+              "rightsEvidence": {
+                "archiveStatus": "NOT_IN_COPYRIGHT",
+                "region": "US",
+                "sourcePublication": 1882,
+                "scope": "Original historical text; source/publication facts, not a publisher licensing attestation."
+              }
+            },
+            "passages": {
+              "judgmentPage": 86,
+              "judgmentPages": [
+                86
+              ],
+              "judgmentSources": [
+                {
+                  "printedPage": 86,
+                  "pdfPage": 120,
+                  "archiveLeaf": 120,
+                  "paragraphIndex": 2,
+                  "lineStart": null,
+                  "lineEndExclusive": null,
+                  "url": "https://archive.org/details/sacredbooksofchi16conf/page/n120/mode/1up"
+                }
+              ],
+              "imagePage": 284,
+              "imagePages": [
+                284
+              ],
+              "imageSources": [
+                {
+                  "printedPage": 284,
+                  "pdfPage": 318,
+                  "archiveLeaf": 318,
+                  "paragraphIndex": 1,
+                  "lineStart": null,
+                  "lineEndExclusive": null,
+                  "url": "https://archive.org/details/sacredbooksofchi16conf/page/n318/mode/1up"
+                }
+              ]
+            },
+            "transcription_status": "scan_reviewed_normalized_transcription",
+            "transcription_notes": [
+              "Original scan wording reviewed; transliteration typography normalized as metadata documents.",
+              "judgment: 1 explicit OCR/transliteration corrections recorded in source provenance.",
+              "Great Symbolism retains the original printed unmatched ')' after 'this' on page284."
+            ]
+          },
+          "changing_line_texts": "unavailable"
+        }
+      },
+      "casting": {
+        "algorithm_version": "1.1.0",
+        "method": "three_coins",
+        "selection_mode": "seeded_coin_simulation",
+        "line_order": "bottom_to_top",
+        "line_values": [
+          6,
+          8,
+          7,
+          7,
+          7,
+          7
+        ]
+      },
+      "derivation": {
+        "line_values": {
+          "origin": "cast",
+          "method": "seeded_three_coin_simulation",
+          "seed_source": "request"
+        },
+        "primary_hexagram": {
+          "origin": "derived",
+          "derived_from": [
+            "line_values"
+          ]
+        },
+        "changing_lines": {
+          "origin": "derived",
+          "derived_from": [
+            "line_values"
+          ],
+          "positions": [
+            1
+          ]
+        },
+        "relating_hexagram": {
+          "origin": "derived",
+          "derived_from": [
+            "primary_hexagram",
+            "changing_lines"
+          ],
+          "flipped_positions": [
+            1
+          ]
+        },
+        "changing_line_texts": {
+          "origin": "unavailable",
+          "reason": "Changing-line texts are not bundled; none are returned or generated."
+        }
+      },
+      "seed": 42
+    },
+    "witness_prompts": [
+      {
+        "prompt": "What assumptions about your situation could you hold more lightly while reflecting?",
+        "context": "Primary King Wen hexagram 33. Text status: source_transcribed.",
+        "themes": [
+          "inquiry",
+          "situation",
+          "reflection"
+        ]
+      },
+      {
+        "prompt": "What changes are you already noticing, and what remains uncertain about them?",
+        "context": "Changing lines 1 (bottom to top) produce relating hexagram 13.",
+        "themes": [
+          "change",
+          "uncertainty",
+          "reflection"
+        ]
+      },
+      {
+        "prompt": "What question would help you explore this situation with more agency?",
+        "context": "Symbolic reflection, not a prediction or instruction.",
+        "themes": [
+          "inquiry",
+          "agency",
+          "reflection"
+        ]
+      }
+    ],
+    "calculated_at": "2026-11-07T00:00:00.000Z",
+    "processing_time_ms": 0,
+    "provenance": {
+      "runtime_kind": "typescript",
+      "implementation_version": "1.1.0",
+      "cached": false,
+      "fallback_used": false,
+      "confidence": 1
+    }
+  }
+}

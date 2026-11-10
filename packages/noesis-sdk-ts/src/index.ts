@@ -65,7 +65,8 @@ export interface EngineOutput {
   engine_id: string;
   result: Record<string, unknown>;
   witness_prompt?: string;
-  witness_prompts?: string[];
+  /** Contract-v1 prompt objects, as the API sends them (GH #1411). */
+  witness_prompts?: ContractWitnessPrompt[];
   metadata?: Record<string, unknown>;
   consciousness_level?: number;
   calculated_at?: string;
@@ -156,8 +157,8 @@ export interface WorkflowResult {
   workflow_id: string;
   /**
    * Engine results keyed by engine_id.
-   * Both `engine_outputs` and `engine_results` carry the same data;
-   * prefer `engine_outputs` but fall back to `engine_results` for compatibility.
+   * Both carry the same engine data. Only `engine_results` carries each
+   * engine's contract `provenance`; `engine_outputs` is the persisted shape.
    */
   engine_outputs?: Record<string, EngineOutput>;
   engine_results?: Record<string, EngineOutput>;

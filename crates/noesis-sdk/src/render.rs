@@ -73,11 +73,20 @@ impl MarkdownRenderer {
         self.render_result_value(&mut md, &output.result, 0);
         writeln!(md).unwrap();
 
-        // Witness prompt
-        writeln!(md, "## ✦ Witness Prompt").unwrap();
+        // Witness prompts: the full contract list when the engine supplied one
+        // (GH #1411), otherwise the single prompt.
+        let prompts = witness_prompt_texts(output);
+        let heading = if prompts.len() > 1 {
+            "Witness Prompts"
+        } else {
+            "Witness Prompt"
+        };
+        writeln!(md, "## ✦ {}", heading).unwrap();
         writeln!(md).unwrap();
-        writeln!(md, "> {}", output.witness_prompt).unwrap();
-        writeln!(md).unwrap();
+        for prompt in &prompts {
+            writeln!(md, "> {}", prompt).unwrap();
+            writeln!(md).unwrap();
+        }
 
         // Consciousness level
         if self.include_consciousness_level {
@@ -203,7 +212,10 @@ impl MarkdownRenderer {
         match value {
             Value::Object(obj) => {
                 for (key, val) in obj {
-                    if depth == 0 && key == noesis_core::CONTRACT_PROVENANCE_KEY {
+                    if depth == 0
+                        && (key == noesis_core::CONTRACT_PROVENANCE_KEY
+                            || key == noesis_core::CONTRACT_WITNESS_PROMPTS_KEY)
+                    {
                         continue;
                     }
                     let formatted_key = format_key(key);
@@ -290,8 +302,16 @@ impl MarkdownRenderer {
         }
 
         writeln!(text).unwrap();
-        writeln!(text, "WITNESS PROMPT:").unwrap();
-        writeln!(text, "  {}", output.witness_prompt).unwrap();
+        let prompts = witness_prompt_texts(output);
+        let heading = if prompts.len() > 1 {
+            "WITNESS PROMPTS:"
+        } else {
+            "WITNESS PROMPT:"
+        };
+        writeln!(text, "{}", heading).unwrap();
+        for prompt in &prompts {
+            writeln!(text, "  {}", prompt).unwrap();
+        }
 
         text
     }
@@ -323,7 +343,10 @@ impl MarkdownRenderer {
         match value {
             Value::Object(obj) => {
                 for (key, val) in obj {
-                    if depth == 0 && key == noesis_core::CONTRACT_PROVENANCE_KEY {
+                    if depth == 0
+                        && (key == noesis_core::CONTRACT_PROVENANCE_KEY
+                            || key == noesis_core::CONTRACT_WITNESS_PROMPTS_KEY)
+                    {
                         continue;
                     }
                     match val {
@@ -359,6 +382,15 @@ impl MarkdownRenderer {
 impl Default for MarkdownRenderer {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// Witness prompt texts to show: the contract list when present, else the
+/// single `witness_prompt`.
+fn witness_prompt_texts(output: &EngineOutput) -> Vec<String> {
+    match output.contract_witness_prompts() {
+        Some(prompts) if !prompts.is_empty() => prompts.into_iter().map(|p| p.prompt).collect(),
+        _ => vec![output.witness_prompt.clone()],
     }
 }
 
@@ -601,5 +633,87 @@ mod tests {
         assert!(markdown.contains("**Implementation**: 1.0.0"));
         assert!(text.contains("implementation_version"));
         assert!(!markdown.contains(noesis_core::CONTRACT_PROVENANCE_KEY));
+
+        // GH #1411: every witness prompt reaches the screen and the exports,
+        // the derivation labels stay visible, and the scaffolding key does not.
+        let prompts = envelope["witness_prompts"].as_array().unwrap();
+        assert_eq!(prompts.len(), 3);
+        assert!(markdown.contains("## ✦ Witness Prompts"));
+        for prompt in prompts {
+            let prompt = prompt["prompt"].as_str().unwrap();
+            assert!(
+                markdown.contains(&format!("> {prompt}")),
+                "markdown lost {prompt}"
+            );
+            assert!(text.contains(prompt), "text export lost {prompt}");
+        }
+        assert!(text.contains("WITNESS PROMPTS:"));
+        for label in ["templated_narrative", "guidance", "static_constant"] {
+            assert!(markdown.contains(label), "markdown lost {label}");
+        }
+        assert_eq!(json["witness_prompts"], envelope["witness_prompts"]);
+        assert!(!markdown.contains(noesis_core::CONTRACT_WITNESS_PROMPTS_KEY));
+        assert!(!text.contains(noesis_core::CONTRACT_WITNESS_PROMPTS_KEY));
+    }
+
+    fn i_ching_output() -> (Value, EngineOutput) {
+        // #1341: the real API envelope (pinned by noesis-api), deserialized as the
+        // SDK does, so the contract block is held under the reserved key.
+        let envelope: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/api-envelope-seed-42.json"
+        ))
+        .unwrap();
+        let output: EngineOutput = serde_json::from_value(envelope.clone()).unwrap();
+        (envelope, output)
+    }
+
+    #[test]
+    fn i_ching_reports_keep_cast_and_derived_labels() {
+        let (envelope, output) = i_ching_output();
+        let renderer = MarkdownRenderer::new();
+
+        let markdown = renderer.render(&output, ReportFormat::Markdown).unwrap();
+        let text = renderer.render(&output, ReportFormat::Text).unwrap();
+        for label in ["seeded_three_coin_simulation", "derived", "unavailable"] {
+            assert!(markdown.contains(label), "markdown lost {label}");
+            assert!(text.contains(label), "text lost {label}");
+        }
+        assert!(markdown.contains("**Implementation**: 1.1.0"));
+        assert!(markdown.contains("**Fallback used**: false"));
+        assert!(!markdown.contains(noesis_core::CONTRACT_PROVENANCE_KEY));
+        assert!(!text.contains(noesis_core::CONTRACT_PROVENANCE_KEY));
+
+        let json: Value =
+            serde_json::from_str(&renderer.render(&output, ReportFormat::Json).unwrap()).unwrap();
+        assert_eq!(json["result"], envelope["result"]);
+        assert_eq!(json["provenance"], envelope["provenance"]);
+    }
+
+    #[test]
+    fn i_ching_workflow_reports_keep_derivation_and_provenance() {
+        let (envelope, output) = i_ching_output();
+        let workflow = WorkflowResult {
+            workflow_id: "decision-support".into(),
+            engine_outputs: std::collections::HashMap::from([("i-ching".to_string(), output)]),
+            synthesis: None,
+            total_time_ms: 0.0,
+            timestamp: Utc::now(),
+        };
+        let renderer = MarkdownRenderer::new();
+
+        for format in [ReportFormat::Markdown, ReportFormat::Text] {
+            let report = renderer.render_workflow(&workflow, format).unwrap();
+            assert!(report.contains("seeded_three_coin_simulation"));
+            assert!(!report.contains(noesis_core::CONTRACT_PROVENANCE_KEY));
+        }
+        let json: Value = serde_json::from_str(
+            &renderer
+                .render_workflow(&workflow, ReportFormat::Json)
+                .unwrap(),
+        )
+        .unwrap();
+        let exported = &json["engine_outputs"]["i-ching"];
+        assert_eq!(exported["result"], envelope["result"]);
+        assert_eq!(exported["provenance"], envelope["provenance"]);
     }
 }

@@ -2,6 +2,7 @@
   "engine_id": "enneagram",
   "result": {
     "mode": "lookup",
+    "typeSource": "user-supplied",
     "typeAnalysis": {
       "type": {
         "number": 1,
@@ -65,16 +66,16 @@
   },
   "witness_prompts": [
     {
-      "prompt": "Where do you notice the pattern of being corrupt, evil, or defective arising in your life?",
-      "context": "Type 1 - The Reformer core fear",
+      "prompt": "How might this pattern be an attempt to get something you need?",
+      "context": "Open inquiry",
       "themes": [
-        "fear",
-        "pattern recognition",
-        "the reformer"
+        "self-inquiry",
+        "curiosity",
+        "compassion"
       ]
     },
     {
-      "prompt": "Can you observe the improving pattern without trying to change it?",
+      "prompt": "What happens when you simply witness the improving tendency?",
       "context": "Type 1 - Behavioral pattern",
       "themes": [
         "observation",
@@ -83,15 +84,22 @@
       ]
     },
     {
-      "prompt": "What does this pattern protect you from?",
-      "context": "Open inquiry",
+      "prompt": "How does your body respond when the fear of being corrupt, evil, or defective surfaces?",
+      "context": "Type 1 - The Reformer core fear",
       "themes": [
-        "self-inquiry",
-        "curiosity",
-        "compassion"
+        "fear",
+        "pattern recognition",
+        "the reformer"
       ]
     }
   ],
   "calculated_at": "2024-01-15T14:30:00.000Z",
-  "processing_time_ms": 0
+  "processing_time_ms": 0,
+  "provenance": {
+    "runtime_kind": "typescript",
+    "implementation_version": "1.0.0",
+    "cached": false,
+    "fallback_used": false,
+    "backend_id": "enneagram-type-lookup"
+  }
 }

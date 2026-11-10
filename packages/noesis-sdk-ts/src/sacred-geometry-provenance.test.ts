@@ -56,5 +56,14 @@ describe("NoesisClient sacred-geometry provenance (GH #1401)", () => {
     expect(detail.rendered_artifact.status).toBe("not_implemented");
     expect(detail.svg_preview.status).toBe("rejected");
     expect(output.result).not.toHaveProperty("__contract_provenance");
+
+    // GH #1411: every witness prompt arrives as a contract object, labelled
+    // beneath the deterministic result by its derivation.
+    expect(output.witness_prompts).toHaveLength(3);
+    expect(output.witness_prompts?.[0]?.prompt).toBe(output.witness_prompt);
+    expect(output.witness_prompts?.[1]?.context).toBe("Meditation guidance");
+    const narrative = detail.witness_prompts as { prompts: { mode: string }[] };
+    expect(narrative.prompts.map((p) => p.mode)).toEqual(["inquiry", "guidance", "inquiry"]);
+    expect(output.result).not.toHaveProperty("__contract_witness_prompts");
   });
 });

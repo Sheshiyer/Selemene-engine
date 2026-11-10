@@ -105,8 +105,10 @@ impl NoesisClient {
         let url = format!("{}/api/v1/workflows/{}/execute", self.base_url, workflow_id);
         debug!("Executing workflow: {}", workflow_id);
 
-        self.send_with_retry(|| self.authenticated(self.http.post(&url).json(&input)))
-            .await
+        let response: WorkflowResponse = self
+            .send_with_retry(|| self.authenticated(self.http.post(&url).json(&input)))
+            .await?;
+        Ok(response.into_workflow_result())
     }
 
     /// List all available engines.
@@ -497,6 +499,46 @@ pub struct ReadingsListResponse {
     pub offset: u32,
 }
 
+/// Workflow response as the API sends it. `engine_outputs` is the persisted
+/// shape without contract provenance; `engine_results` repeats each output
+/// with its `provenance` block.
+#[derive(Deserialize)]
+struct WorkflowResponse {
+    #[serde(flatten)]
+    workflow: WorkflowResult,
+    #[serde(default)]
+    engine_results: std::collections::HashMap<String, serde_json::Value>,
+}
+
+impl WorkflowResponse {
+    /// Attach each valid `engine_results[id].provenance` to `engine_outputs[id]`
+    /// so [`EngineOutput::contract_provenance`] sees it. Missing or malformed
+    /// blocks are skipped: provenance stays unknown rather than failing the call.
+    fn into_workflow_result(self) -> WorkflowResult {
+        let mut workflow = self.workflow;
+        for (engine_id, engine_result) in self.engine_results {
+            let Some(raw) = engine_result.get("provenance") else {
+                continue;
+            };
+            if serde_json::from_value::<noesis_core::contract::Provenance>(raw.clone()).is_err() {
+                warn!(engine_id = %engine_id, "ignoring malformed workflow provenance");
+                continue;
+            }
+            if let Some(result) = workflow
+                .engine_outputs
+                .get_mut(&engine_id)
+                .and_then(|output| output.result.as_object_mut())
+            {
+                result.insert(
+                    noesis_core::CONTRACT_PROVENANCE_KEY.to_string(),
+                    raw.clone(),
+                );
+            }
+        }
+        workflow
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -690,6 +732,19 @@ mod tests {
             serde_json::to_value(&output).unwrap()["provenance"],
             envelope["provenance"]
         );
+
+        // GH #1411: the full witness prompt list survives `calculate`, not just
+        // the first prompt's text.
+        let prompts = output
+            .contract_witness_prompts()
+            .expect("API witness prompts retained");
+        assert_eq!(prompts.len(), 3);
+        assert_eq!(prompts[0].prompt, output.witness_prompt);
+        assert_eq!(prompts[1].context.as_deref(), Some("Meditation guidance"));
+        assert_eq!(
+            serde_json::to_value(&output).unwrap()["witness_prompts"],
+            envelope["witness_prompts"]
+        );
     }
 
     #[tokio::test]
@@ -777,5 +832,134 @@ mod tests {
         for needle in ["swiss_ephemeris_moshier", "local_date", "23.857"] {
             assert!(md.contains(needle), "rendered report lacks {needle}:\n{md}");
         }
+    }
+
+    fn i_ching_input() -> EngineInput {
+        EngineInput {
+            birth_data: None,
+            current_time: chrono::Utc::now(),
+            location: None,
+            precision: noesis_core::Precision::Standard,
+            options: std::collections::HashMap::new(),
+        }
+    }
+
+    async fn serve(route: &str, body: serde_json::Value) -> (MockServer, NoesisClient) {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path(route))
+            .respond_with(ResponseTemplate::new(200).set_body_json(body))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let client = NoesisClient::builder()
+            .base_url(server.uri())
+            .api_key("test-key")
+            .build()
+            .unwrap();
+        (server, client)
+    }
+
+    #[tokio::test]
+    async fn i_ching_calculate_keeps_provenance_and_derivation() {
+        // #1341: the real noesis-api envelope, pinned by noesis-api
+        // `i_ching_api_envelope_and_persisted_reading_keep_derivation`.
+        let envelope: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/api-envelope-seed-42.json"
+        ))
+        .unwrap();
+        let (_server, client) = serve("/api/v1/engines/i-ching/calculate", envelope.clone()).await;
+
+        let output = client.calculate("i-ching", i_ching_input()).await.unwrap();
+
+        assert_eq!(
+            output.result["derivation"],
+            envelope["result"]["derivation"]
+        );
+        assert_eq!(output.result["casting"], envelope["result"]["casting"]);
+        let provenance = output
+            .contract_provenance()
+            .expect("API provenance retained");
+        assert!(!provenance.fallback_used);
+        assert_eq!(provenance.implementation_version, "1.1.0");
+        assert_eq!(
+            serde_json::to_value(&output).unwrap()["provenance"],
+            envelope["provenance"]
+        );
+    }
+
+    #[tokio::test]
+    async fn i_ching_workflow_keeps_per_engine_provenance() {
+        // #1341: the API puts each engine's contract provenance only on
+        // `engine_results`; `engine_outputs` is the persisted shape without it.
+        // Pinned by noesis-api `i_ching_workflow_response_and_persisted_reading_keep_derivation`.
+        let response: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/api-workflow-seed-42.json"
+        ))
+        .unwrap();
+        let (_server, client) = serve(
+            "/api/v1/workflows/decision-support/execute",
+            response.clone(),
+        )
+        .await;
+
+        let workflow = client
+            .workflow("decision-support", i_ching_input())
+            .await
+            .unwrap();
+
+        let output = &workflow.engine_outputs["i-ching"];
+        assert_eq!(
+            output.result["derivation"],
+            response["engine_outputs"]["i-ching"]["result"]["derivation"]
+        );
+        let provenance = output
+            .contract_provenance()
+            .expect("workflow provenance retained from engine_results");
+        assert!(!provenance.fallback_used);
+        assert_eq!(provenance.implementation_version, "1.1.0");
+        let wire = serde_json::to_value(&workflow).unwrap();
+        assert_eq!(
+            wire["engine_outputs"]["i-ching"]["provenance"],
+            response["engine_results"]["i-ching"]["provenance"]
+        );
+    }
+
+    #[tokio::test]
+    async fn workflow_without_engine_results_or_with_bad_provenance_still_loads() {
+        // Older servers send no `engine_results`; a malformed block is ignored
+        // rather than failing the whole workflow or inventing provenance.
+        let mut response: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/api-workflow-seed-42.json"
+        ))
+        .unwrap();
+        response["engine_results"]["i-ching"]["provenance"] =
+            serde_json::json!({"runtime_kind": "bogus"});
+        let (_server, client) = serve(
+            "/api/v1/workflows/decision-support/execute",
+            response.clone(),
+        )
+        .await;
+        let workflow = client
+            .workflow("decision-support", i_ching_input())
+            .await
+            .unwrap();
+        assert!(workflow.engine_outputs["i-ching"]
+            .contract_provenance()
+            .is_none());
+
+        response.as_object_mut().unwrap().remove("engine_results");
+        let (_server, client) = serve("/api/v1/workflows/decision-support/execute", response).await;
+        let workflow = client
+            .workflow("decision-support", i_ching_input())
+            .await
+            .unwrap();
+        assert!(workflow.engine_outputs["i-ching"]
+            .contract_provenance()
+            .is_none());
+        assert_eq!(
+            workflow.engine_outputs["i-ching"].result["derivation"]["line_values"]["origin"],
+            "cast"
+        );
     }
 }

@@ -1,3 +1,26 @@
+# Seed validation for TypeScript engines — 2026-11-10
+
+- A non-integer or non-finite `seed` (such as `1.5`) no longer crashes tarot, enneagram, sacred-geometry or sigil-forge with a `RangeError` (a sidecar 500 `CALCULATION_ERROR`). They now reject it as a 422 `INVALID_SEED` validation error with `details.field: "seed"`, the code I Ching already used. Integer and omitted seeds behave as before; I Ching keeps its stricter nonnegative-safe-integer rule.
+
+# Seeded randomness for small seeds — 2026-11-09
+
+- `SeededRandom` (shared by every TypeScript engine) now mixes the seed with SplitMix64, so small seeds such as 0, 42 or 1401 no longer start from nearly identical states. Before, the first draw was below 0.5 for every seed from 0 to 99,999, which skewed tarot shuffles, I Ching casts, sacred-geometry selection and witness templates.
+- Keep the xorshift128+ state to 64-bit words (the shift was never masked, so the state grew without bound) and derive `next()` from the top 53 bits so it can never return 1.
+- I Ching no longer discards 16 draws to work around the bias, and its seed-bias test uses a chi-square bound instead of a fixed per-cell tolerance that an ideal generator fails about one block in five.
+- **Seeded output changes for every TypeScript engine:** the same seed now gives a different reading than before. Committed seeded fixtures are regenerated from the engines; saved readings are not rewritten.
+
+# Witness prompts across the bridge and API — 2026-11-07
+
+- Carry every TypeScript engine's `witness_prompts` (prompt, context, themes) through the bridge, the API envelope, the Rust SDK and the TUI instead of collapsing them to the first prompt's text. `witness_prompt` is still the first prompt, and engines that supply no list keep the single-prompt envelope.
+- Sacred geometry labels each witness prompt beneath the deterministic result: its template family, inquiry versus guidance, and the `result.*` fields it was filled from. The meditation text and its fixed duration suggestion are marked as guidance; prompt wording is unchanged.
+- Fix the TypeScript SDK's `EngineOutput.witness_prompts` type (the API sends objects, not strings) and the premium-asset pipeline's fallback, which took the whole prompt object instead of its text.
+- Saved readings still store only the first prompt; this change does not publish packages or deploy services.
+
+# I Ching provenance across SDK, TUI, workflows and readings — 2026-11-07
+
+- Rust SDK `workflow()` now keeps each engine's contract provenance from `engine_results` (it previously read only `engine_outputs`, which never carries it). Missing or malformed blocks are skipped, never invented.
+- Pin real seed-42 I Ching sidecar, `/calculate` and workflow fixtures, and probe the bridge, API, persisted reading shape, Rust SDK, Markdown/text/JSON reports, TUI screens and TS SDK. Saved readings keep `result.derivation`; the contract block stays response-only, as before. Nothing is deployed.
+
 # Rust SDK/TUI contract provenance — 2026-11-04
 
 - Preserve valid API contract provenance through the shared Rust output type, SDK client, TUI result screen and JSON/Markdown/text reports, without adding required fields to public output constructors.

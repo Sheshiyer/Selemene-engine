@@ -1693,6 +1693,29 @@ fn take_contract_provenance(
     }
 }
 
+/// Remove the bridge's reserved `witness_prompts` list from an engine
+/// output's `result` and parse it (GH #1411). Like the provenance block, an
+/// unparseable list is still removed so it never leaks, and `None` is returned.
+fn take_contract_witness_prompts(
+    output: &mut EngineOutput,
+) -> Option<Vec<noesis_core::contract::WitnessPrompt>> {
+    let raw = output
+        .result
+        .as_object_mut()
+        .and_then(|o| o.remove(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY))?;
+    match serde_json::from_value(raw) {
+        Ok(prompts) => Some(prompts),
+        Err(e) => {
+            tracing::warn!(
+                engine_id = %output.engine_id,
+                error = %e,
+                "sidecar witness_prompts failed contract-v1 parse; dropping them"
+            );
+            None
+        }
+    }
+}
+
 /// Contract-v1 provenance for a native engine, derived from the metadata the
 /// engine itself filled in (`fallback_used` and `provider_id` are set
 /// explicitly at every native construction site). `confidence` is omitted
@@ -1748,11 +1771,23 @@ impl ApiEngineOutputResponse {
         let provenance = envelope_contract_provenance(&mut output, is_native);
         let generated_image = output.result.get("generated_image").cloned();
         let generated_audio = output.result.get("generated_audio").cloned();
-        let witness_prompts = vec![ApiWitnessPrompt {
-            prompt: output.witness_prompt.clone(),
-            context: None,
-            themes: Vec::new(),
-        }];
+        // The full list (with context and themes) when the engine supplied one;
+        // otherwise the single `witness_prompt`, as before (GH #1411).
+        let witness_prompts = match take_contract_witness_prompts(&mut output) {
+            Some(prompts) if !prompts.is_empty() => prompts
+                .into_iter()
+                .map(|p| ApiWitnessPrompt {
+                    prompt: p.prompt,
+                    context: p.context,
+                    themes: p.themes.unwrap_or_default(),
+                })
+                .collect(),
+            _ => vec![ApiWitnessPrompt {
+                prompt: output.witness_prompt.clone(),
+                context: None,
+                themes: Vec::new(),
+            }],
+        };
         let calculated_at = output.metadata.timestamp.to_rfc3339();
         let processing_time_ms = output.metadata.calculation_time_ms;
 
@@ -1768,6 +1803,51 @@ impl ApiEngineOutputResponse {
             generated_audio,
         }
     }
+}
+
+impl ApiEngineOutputResponse {
+    /// The `result_data` stored for this reading: the engine output with the
+    /// envelope's contract-v1 `provenance` block (when it has one) as a
+    /// top-level sibling of `result`, as on the wire, so the reading can be
+    /// audited later; bridge fields such as `confidence` exist nowhere else.
+    /// The reserved scaffolding keys were already lifted out of `result` by
+    /// [`Self::from_engine_output`]. Older readings carry no block and are
+    /// never given one.
+    fn reading_result_data(&self) -> Value {
+        let mut data = serde_json::to_value(&self.output).unwrap_or_default();
+        if let (Some(object), Some(provenance)) = (data.as_object_mut(), &self.provenance) {
+            object.insert(
+                "provenance".to_string(),
+                serde_json::to_value(provenance).unwrap_or_default(),
+            );
+        }
+        data
+    }
+}
+
+/// The `result_data` stored for a workflow reading: each entry of
+/// `engine_outputs` carries its engine's envelope provenance beside `result`,
+/// as [`ApiEngineOutputResponse::reading_result_data`] does. `provenance` comes from
+/// [`strip_workflow_contract_provenance`].
+fn workflow_reading_result_data(
+    workflow: &WorkflowResult,
+    provenance: &HashMap<String, noesis_core::contract::Provenance>,
+) -> Value {
+    let mut data = serde_json::to_value(workflow).unwrap_or_default();
+    if let Some(outputs) = data
+        .get_mut("engine_outputs")
+        .and_then(Value::as_object_mut)
+    {
+        for (engine_id, block) in provenance {
+            if let Some(output) = outputs.get_mut(engine_id).and_then(Value::as_object_mut) {
+                output.insert(
+                    "provenance".to_string(),
+                    serde_json::to_value(block).unwrap_or_default(),
+                );
+            }
+        }
+    }
+    data
 }
 
 #[derive(Serialize, ToSchema)]
@@ -3252,7 +3332,7 @@ async fn calculate_handler(
                     workflow_id: None,
                     input_hash,
                     input_data: input_json,
-                    result_data: serde_json::to_value(output).unwrap_or_default(),
+                    result_data: envelope.reading_result_data(),
                     witness_prompt: Some(output.witness_prompt.clone()),
                     consciousness_level: output.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
@@ -3731,7 +3811,7 @@ async fn execute_workflow_by_id(
                     workflow_id: Some(workflow_id.clone()),
                     input_hash,
                     input_data: input_json,
-                    result_data: serde_json::to_value(&workflow_result).unwrap_or_default(),
+                    result_data: workflow_reading_result_data(&workflow_result, &provenance),
                     witness_prompt: None,
                     consciousness_level: user.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
@@ -4328,6 +4408,8 @@ struct LegacyPanchangaResponse {
     // Additive provenance fields (#1191).
     position_source: Option<String>,
     birth_time_assumed: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    assumed_birth_time: Option<String>,
     vara_basis: Option<String>,
     ayanamsa_degrees: Option<f64>,
 }
@@ -4417,6 +4499,9 @@ async fn legacy_panchanga_handler(
         birth_time_assumed: panchanga_result["birth_time_assumed"]
             .as_bool()
             .unwrap_or(false),
+        assumed_birth_time: panchanga_result["assumed_birth_time"]
+            .as_str()
+            .map(str::to_string),
         vara_basis: panchanga_result["vara_basis"].as_str().map(str::to_string),
         ayanamsa_degrees: panchanga_result["ayanamsa_degrees"].as_f64(),
     };
@@ -5171,7 +5256,7 @@ mod p4_contract_tests {
     fn sigil_contract_provenance_is_lifted_into_envelope_and_stripped_from_result() {
         // Lane S4: a seven-field sigil provenance block stashed by the bridge
         // under the reserved key becomes the envelope's top-level `provenance`
-        // and never appears inside `result` (which is what gets persisted).
+        // and never appears inside `result`.
         let output = EngineOutput {
             engine_id: "sigil-forge".to_string(),
             result: serde_json::json!({
@@ -5275,6 +5360,317 @@ mod p4_contract_tests {
             wire["result"]["provenance_detail"]["calculated_geometry"]["status"],
             "calculated"
         );
+
+        // GH #1411: the envelope carries every witness prompt with its context
+        // and themes, matching what the engine emitted; nothing leaks into result.
+        assert_eq!(
+            wire["witness_prompts"],
+            sidecar["sidecar_response"]["witness_prompts"]
+        );
+        assert_eq!(wire["witness_prompts"].as_array().unwrap().len(), 3);
+        assert_eq!(wire["witness_prompt"], wire["witness_prompts"][0]["prompt"]);
+        assert!(wire["result"]
+            .get(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY)
+            .is_none());
+
+        // The stored reading keeps the same block beside `result`, and neither
+        // reserved scaffolding key.
+        let persisted = envelope.reading_result_data();
+        assert_eq!(persisted["provenance"], wire["provenance"]);
+        assert_eq!(persisted["result"], wire["result"]);
+        let stored = persisted.to_string();
+        assert!(!stored.contains(noesis_bridge::CONTRACT_PROVENANCE_KEY));
+        assert!(!stored.contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
+    }
+
+    #[test]
+    fn enneagram_api_envelope_lifts_provenance_for_both_paths() {
+        // GH #1311: real enneagram sidecar responses (assessment and direct
+        // lookup) go through the bridge and into the /calculate envelope. The
+        // envelope must carry each block verbatim at the top level, strip it
+        // from result, keep typeSource, and never give a lookup a confidence.
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/enneagram/bridge-round-trip.json"
+        ))
+        .unwrap();
+        let cases = fixture["cases"].as_array().unwrap();
+        assert_eq!(cases.len(), 2);
+
+        let mut backends = Vec::new();
+        for case in cases {
+            let sidecar = &case["sidecar_response"];
+            let response: noesis_bridge::ts_client::TsEngineResponse =
+                serde_json::from_value(sidecar.clone()).unwrap();
+            let output = noesis_bridge::ts_response_into_output(response, 1);
+            let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
+            let wire = serde_json::to_value(&envelope).unwrap();
+
+            assert_eq!(
+                wire["provenance"], sidecar["provenance"],
+                "{}",
+                case["name"]
+            );
+            assert!(wire["result"]
+                .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+                .is_none());
+            assert_eq!(
+                wire["result"]["typeSource"],
+                sidecar["result"]["typeSource"]
+            );
+            assert_eq!(wire["provenance"]["fallback_used"], false);
+            assert!(wire["provenance"].get("provider_id").is_none());
+            backends.push(wire["provenance"]["backend_id"].clone());
+
+            match sidecar["result"]["typeSource"].as_str().unwrap() {
+                "assessment" => {
+                    assert_eq!(wire["provenance"]["confidence"], 0.78);
+                    assert_eq!(wire["result"]["assessment"]["answeredCount"], 35);
+                }
+                "user-supplied" => {
+                    assert!(
+                        wire["provenance"].get("confidence").is_none(),
+                        "a direct lookup must not carry a confidence"
+                    );
+                    assert_eq!(wire["result"]["suppliedWing"], 5);
+                    assert!(wire["result"].get("assessment").is_none());
+                }
+                other => panic!("unexpected typeSource {other}"),
+            }
+        }
+        assert_eq!(
+            backends,
+            vec![
+                serde_json::json!("enneagram-assessment"),
+                serde_json::json!("enneagram-type-lookup")
+            ]
+        );
+    }
+
+    /// The seed-42 i-ching sidecar fixture as the bridge hands it to the API.
+    fn i_ching_fixture_output() -> (Value, EngineOutput) {
+        let sidecar: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/bridge-round-trip-seed-42.json"
+        ))
+        .unwrap();
+        let response: noesis_bridge::ts_client::TsEngineResponse =
+            serde_json::from_value(sidecar["sidecar_response"].clone()).unwrap();
+        let mut output = noesis_bridge::ts_response_into_output(response, 0);
+        // The bridge stamps its own crate version; pin it so releases don't churn the fixture.
+        output.metadata.engine_version = "fixture".to_string();
+        (sidecar["sidecar_response"].clone(), output)
+    }
+
+    /// Compare `wire` with a committed fixture, rewriting it when `update_var` is set.
+    fn assert_matches_fixture(wire: &Value, path: &str, update_var: &str) {
+        if std::env::var_os(update_var).is_some() {
+            let mut text = serde_json::to_string_pretty(wire).unwrap();
+            text.push('\n');
+            std::fs::write(path, text).unwrap();
+        }
+        let committed: Value =
+            serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+        assert_eq!(
+            wire, &committed,
+            "{path} drifted from the committed fixture"
+        );
+    }
+
+    #[test]
+    fn i_ching_api_envelope_and_persisted_reading_keep_derivation() {
+        // #1341: pin the /calculate envelope the Rust SDK, TUI and TS SDK probes
+        // consume. Set UPDATE_I_CHING_FIXTURE=1 to rewrite it.
+        let (sidecar, output) = i_ching_fixture_output();
+        let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
+        let wire = serde_json::to_value(&envelope).unwrap();
+        assert_matches_fixture(
+            &wire,
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../ts-engines/tests/fixtures/i-ching/api-envelope-seed-42.json"
+            ),
+            "UPDATE_I_CHING_FIXTURE",
+        );
+        // Same JSON number either way: the sidecar sends `1`, the typed f64 `1.0`.
+        let parse = |v: &Value| -> noesis_core::contract::Provenance {
+            serde_json::from_value(v.clone()).unwrap()
+        };
+        assert_eq!(parse(&wire["provenance"]), parse(&sidecar["provenance"]));
+        assert_eq!(wire["result"], sidecar["result"]);
+
+        // calculate_handler persists `envelope.reading_result_data()`: cast/derived
+        // origins survive, and so does the whole contract block, beside `result`.
+        let persisted = envelope.reading_result_data();
+        assert_eq!(persisted["result"], sidecar["result"]);
+        assert_eq!(
+            persisted["result"]["derivation"]["line_values"]["origin"],
+            "cast"
+        );
+        assert_eq!(persisted["provenance"], wire["provenance"]);
+        assert_eq!(persisted["provenance"]["confidence"], 1.0);
+        assert!(persisted["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+        // GH #1411: the witness scaffolding key is never stored either.
+        assert!(!persisted
+            .to_string()
+            .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
+    }
+
+    #[test]
+    fn i_ching_workflow_response_and_persisted_reading_keep_derivation() {
+        // #1341: decision-support runs i-ching. Pin the workflow response the SDK
+        // probes consume. Set UPDATE_I_CHING_FIXTURE=1 to rewrite it.
+        let (sidecar, output) = i_ching_fixture_output();
+        let mut workflow = WorkflowResult {
+            workflow_id: "decision-support".to_string(),
+            engine_outputs: HashMap::from([("i-ching".to_string(), output)]),
+            synthesis: None,
+            total_time_ms: 0.0,
+            timestamp: "2026-11-07T00:00:00Z".parse().unwrap(),
+        };
+        let provenance = strip_workflow_contract_provenance(&mut workflow, |_| false);
+        let parse = |v: &Value| -> noesis_core::contract::Provenance {
+            serde_json::from_value(v.clone()).unwrap()
+        };
+
+        // workflow_handler persists `workflow_reading_result_data` after the
+        // strip: derivation stays, and the engine's contract block sits beside
+        // its `result`.
+        let persisted = workflow_reading_result_data(&workflow, &provenance);
+        assert_eq!(
+            persisted["engine_outputs"]["i-ching"]["result"],
+            sidecar["result"]
+        );
+        assert_eq!(
+            parse(&persisted["engine_outputs"]["i-ching"]["provenance"]),
+            parse(&sidecar["provenance"])
+        );
+        assert!(persisted["engine_outputs"]["i-ching"]["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+        // GH #1411: the witness scaffolding key is never stored either.
+        assert!(!persisted
+            .to_string()
+            .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
+
+        let wire =
+            serde_json::to_value(ApiWorkflowResultResponse::new(workflow, provenance)).unwrap();
+        assert_matches_fixture(
+            &wire,
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../ts-engines/tests/fixtures/i-ching/api-workflow-seed-42.json"
+            ),
+            "UPDATE_I_CHING_FIXTURE",
+        );
+        let engine_result = &wire["engine_results"]["i-ching"];
+        assert_eq!(
+            parse(&engine_result["provenance"]),
+            parse(&sidecar["provenance"])
+        );
+        assert_eq!(engine_result["result"], sidecar["result"]);
+        assert!(wire["engine_outputs"]["i-ching"]
+            .get("provenance")
+            .is_none());
+    }
+
+    #[tokio::test]
+    #[ignore = "requires Postgres: scripts/cloud/test-db.sh, then DATABASE_URL"]
+    async fn i_ching_readings_round_trip_keeps_derivation() {
+        // #1341: store i-ching readings in `readings` exactly as calculate_handler
+        // and workflow_handler build them, then read them back.
+        let database_url = std::env::var("DATABASE_URL")
+            .unwrap_or_else(|_| "postgres://postgres@localhost/noesis_test".to_string());
+        let pool = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(2)
+            .connect(&database_url)
+            .await
+            .expect("connect to test database");
+        let user = UserRepository::new(pool.clone())
+            .create_user(
+                &format!("i-ching-{}@example.com", uuid::Uuid::new_v4()),
+                "test_password_hash",
+                "I Ching Readings Test User",
+            )
+            .await
+            .expect("create test user");
+        let readings = ReadingsRepository::new(pool);
+        let reading =
+            |engine_id: &str, workflow_id: Option<String>, result_data: Value| NewReading {
+                user_id: user.id,
+                engine_id: engine_id.to_string(),
+                workflow_id,
+                input_hash: "synthetic-seed-42".to_string(),
+                input_data: serde_json::json!({"seed": 42}),
+                result_data,
+                witness_prompt: None,
+                consciousness_level: 0,
+                calculation_time_ms: Some(0.0),
+                client_event_id: None,
+                client_device_id: None,
+                device_platform: None,
+                device_app_version: None,
+            };
+
+        let (sidecar, output) = i_ching_fixture_output();
+        let envelope = ApiEngineOutputResponse::from_engine_output(output.clone(), false);
+        let single = readings
+            .save_reading(&reading("i-ching", None, envelope.reading_result_data()))
+            .await
+            .expect("save calculate reading");
+
+        let mut workflow = WorkflowResult {
+            workflow_id: "decision-support".to_string(),
+            engine_outputs: HashMap::from([("i-ching".to_string(), output)]),
+            synthesis: None,
+            total_time_ms: 0.0,
+            timestamp: "2026-11-07T00:00:00Z".parse().unwrap(),
+        };
+        let provenance = strip_workflow_contract_provenance(&mut workflow, |_| false);
+        let flow = readings
+            .save_reading(&reading(
+                "workflow:decision-support",
+                Some("decision-support".to_string()),
+                workflow_reading_result_data(&workflow, &provenance),
+            ))
+            .await
+            .expect("save workflow reading");
+
+        let sidecar_block: noesis_core::contract::Provenance =
+            serde_json::from_value(sidecar["provenance"].clone()).unwrap();
+        for (id, path, block_path) in [
+            (single, "/result", "/provenance"),
+            (
+                flow,
+                "/engine_outputs/i-ching/result",
+                "/engine_outputs/i-ching/provenance",
+            ),
+        ] {
+            let stored = readings
+                .get_reading(id, user.id)
+                .await
+                .expect("load reading")
+                .expect("reading exists");
+            let result = stored.result_data.pointer(path).expect("stored result");
+            assert_eq!(result, &sidecar["result"], "{path}");
+            assert_eq!(result["derivation"]["line_values"]["origin"], "cast");
+            assert!(result.get(noesis_bridge::CONTRACT_PROVENANCE_KEY).is_none());
+            assert!(!stored
+                .result_data
+                .to_string()
+                .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
+            // The contract block is stored beside `result` and reloads intact.
+            let block: noesis_core::contract::Provenance = serde_json::from_value(
+                stored
+                    .result_data
+                    .pointer(block_path)
+                    .expect("stored block")
+                    .clone(),
+            )
+            .unwrap();
+            assert_eq!(block, sidecar_block, "{block_path}");
+            assert_eq!(block.confidence, Some(1.0));
+        }
     }
 
     #[test]

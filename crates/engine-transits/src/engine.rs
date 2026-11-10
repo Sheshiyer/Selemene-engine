@@ -313,10 +313,20 @@ impl ConsciousnessEngine for TransitsEngine {
     }
 
     fn cache_key(&self, input: &EngineInput) -> String {
+        // The timezone is part of the key because it decides the birth
+        // instant. A missing time is keyed as "-", not "12:00": it computes the
+        // same chart as an explicit noon but reports `birth_time_assumed: true`.
         let birth_str = input
             .birth_data
             .as_ref()
-            .map(|b| format!("{}_{}", b.date, b.time.as_deref().unwrap_or("12:00")))
+            .map(|b| {
+                format!(
+                    "{}_{}_{}",
+                    b.date,
+                    b.time.as_deref().unwrap_or("-"),
+                    b.timezone
+                )
+            })
             .unwrap_or_default();
 
         // Cache with hour granularity for transits
@@ -387,6 +397,54 @@ mod tests {
             longitude: 77.6214,
             timezone: "Asia/Kolkata".to_string(),
         }
+    }
+
+    /// A missing time and an explicit 12:00 compute the same chart but report
+    /// `birth_time_assumed` differently, so they must not share a cache entry.
+    #[test]
+    fn cache_key_separates_missing_time_from_noon() {
+        let engine = TransitsEngine::new();
+        let current_time = Utc.with_ymd_and_hms(2026, 10, 24, 4, 43, 21).unwrap();
+        let input = |time: Option<&str>| EngineInput {
+            birth_data: Some(BirthData {
+                time: time.map(str::to_string),
+                ..canonical_birth_data()
+            }),
+            current_time,
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
+        assert_ne!(
+            engine.cache_key(&input(None)),
+            engine.cache_key(&input(Some("12:00")))
+        );
+    }
+
+    /// The timezone decides the birth instant, so the same local date and time
+    /// in two zones are different natal charts and must not share an entry.
+    #[test]
+    fn cache_key_depends_on_birth_timezone() {
+        let engine = TransitsEngine::new();
+        let current_time = Utc.with_ymd_and_hms(2026, 10, 24, 4, 43, 21).unwrap();
+        let input = |timezone: &str| EngineInput {
+            birth_data: Some(BirthData {
+                timezone: timezone.to_string(),
+                ..canonical_birth_data()
+            }),
+            current_time,
+            location: None,
+            precision: Precision::Standard,
+            options: HashMap::new(),
+        };
+        assert_ne!(
+            engine.cache_key(&input("Asia/Kolkata")),
+            engine.cache_key(&input("America/New_York"))
+        );
+        assert_eq!(
+            engine.cache_key(&input("Asia/Kolkata")),
+            engine.cache_key(&input("Asia/Kolkata"))
+        );
     }
 
     #[tokio::test]

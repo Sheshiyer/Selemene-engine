@@ -2,6 +2,7 @@
   "engine_id": "enneagram",
   "result": {
     "mode": "lookup",
+    "typeSource": "user-supplied",
     "typeAnalysis": {
       "type": {
         "number": 6,
@@ -65,21 +66,12 @@
   },
   "witness_prompts": [
     {
-      "prompt": "How might calm presence already be available to you?",
-      "context": "Integration to Type 9",
+      "prompt": "What physical sensations accompany the scanning for threats pattern?",
+      "context": "Type 6 - Somatic awareness",
       "themes": [
-        "growth",
-        "integration",
-        "potential"
-      ]
-    },
-    {
-      "prompt": "Where do you notice the pattern of being without support or guidance arising in your life?",
-      "context": "Type 6 - The Loyalist core fear",
-      "themes": [
-        "fear",
-        "pattern recognition",
-        "the loyalist"
+        "body",
+        "sensation",
+        "embodiment"
       ]
     },
     {
@@ -90,8 +82,24 @@
         "curiosity",
         "compassion"
       ]
+    },
+    {
+      "prompt": "What supports you in moving toward acceptance?",
+      "context": "Integration to Type 9",
+      "themes": [
+        "growth",
+        "integration",
+        "potential"
+      ]
     }
   ],
   "calculated_at": "2024-01-15T14:30:00.000Z",
-  "processing_time_ms": 0
+  "processing_time_ms": 0,
+  "provenance": {
+    "runtime_kind": "typescript",
+    "implementation_version": "1.0.0",
+    "cached": false,
+    "fallback_used": false,
+    "backend_id": "enneagram-type-lookup"
+  }
 }

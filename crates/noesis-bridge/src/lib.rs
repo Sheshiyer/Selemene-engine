@@ -32,7 +32,9 @@ pub mod python_client;
 pub mod ts_client;
 pub use error::BridgeError;
 pub use python_client::PythonServiceClient;
-pub use ts_client::{TsHealthResponse, WitnessPrompt, CONTRACT_PROVENANCE_KEY};
+pub use ts_client::{
+    TsHealthResponse, WitnessPrompt, CONTRACT_PROVENANCE_KEY, CONTRACT_WITNESS_PROMPTS_KEY,
+};
 
 pub use noesis_core::{
     CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
@@ -795,6 +797,22 @@ pub fn ts_response_into_output(ts_response: TsEngineResponse, required_phase: u8
         if let Some(provenance) = ts_response.provenance {
             object.insert(CONTRACT_PROVENANCE_KEY.to_string(), provenance);
         }
+        // `witness_prompt` keeps only the first prompt's text; carry the whole
+        // list with its context and themes for the envelope (GH #1411).
+        if !ts_response.witness_prompts.is_empty() {
+            let prompts: Vec<noesis_core::contract::WitnessPrompt> = ts_response
+                .witness_prompts
+                .iter()
+                .map(|p| noesis_core::contract::WitnessPrompt {
+                    prompt: p.prompt.clone(),
+                    context: Some(p.context.clone()),
+                    themes: Some(p.themes.clone()),
+                })
+                .collect();
+            if let Ok(value) = serde_json::to_value(prompts) {
+                object.insert(CONTRACT_WITNESS_PROMPTS_KEY.to_string(), value);
+            }
+        }
     }
 
     EngineOutput {
@@ -1220,6 +1238,43 @@ mod tests {
     }
 
     #[test]
+    fn i_ching_sidecar_fixture_round_trips_provenance_and_derivation() {
+        // #1341: replay the real seed-42 sidecar response (pinned to live engine
+        // output by ts-engines/tests/i-ching.test.ts). The bridge must only add
+        // the reserved provenance key; every engine field crosses untouched.
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/bridge-round-trip-seed-42.json"
+        ))
+        .expect("i-ching fixture is valid JSON");
+        let sidecar = fixture["sidecar_response"].clone();
+        let response: crate::ts_client::TsEngineResponse = serde_json::from_value(sidecar.clone())
+            .expect("i-ching sidecar response must deserialize");
+
+        let output = ts_response_into_output(response, 0);
+
+        // The bridge adds only its two reserved keys: provenance and, since
+        // GH #1411, the full witness prompt list.
+        let mut expected_result = sidecar["result"].clone();
+        let object = expected_result.as_object_mut().unwrap();
+        object.insert(
+            CONTRACT_PROVENANCE_KEY.to_string(),
+            sidecar["provenance"].clone(),
+        );
+        object.insert(
+            CONTRACT_WITNESS_PROMPTS_KEY.to_string(),
+            sidecar["witness_prompts"].clone(),
+        );
+        assert_eq!(output.result, expected_result);
+        let parsed = output
+            .contract_provenance()
+            .expect("i-ching block parses as contract provenance");
+        assert!(!parsed.fallback_used);
+        assert!(parsed.backend_id.is_none() && parsed.provider_id.is_none());
+        assert_eq!(output.result["derivation"]["line_values"]["origin"], "cast");
+        assert!(!output.metadata.fallback_used);
+    }
+
+    #[test]
     fn sacred_geometry_sidecar_fixture_round_trips_provenance_and_detail() {
         // GH #1401: replay a real sacred-geometry sidecar response (kept in sync
         // with the engine by ts-engines/tests/sacred_geometry_provenance.test.ts
@@ -1267,12 +1322,27 @@ mod tests {
         assert_eq!(detail["rendered_artifact"]["status"], "not_implemented");
         assert_eq!(detail["svg_preview"]["status"], "rejected");
 
+        // GH #1411: every witness prompt crosses with its context and themes,
+        // not just the first prompt's text.
+        assert_eq!(
+            output.result[CONTRACT_WITNESS_PROMPTS_KEY],
+            sidecar["witness_prompts"]
+        );
+        let prompts = output.contract_witness_prompts().expect("prompts carried");
+        assert_eq!(prompts.len(), 3);
+        assert_eq!(output.witness_prompt, prompts[0].prompt);
+
         // Every other engine field crosses untouched; the bridge only adds the
-        // reserved provenance key (sacred-geometry emits no media).
+        // two reserved keys (sacred-geometry emits no media).
         let mut expected_result = sidecar["result"].clone();
-        expected_result.as_object_mut().unwrap().insert(
+        let object = expected_result.as_object_mut().unwrap();
+        object.insert(
             CONTRACT_PROVENANCE_KEY.to_string(),
             sidecar["provenance"].clone(),
+        );
+        object.insert(
+            CONTRACT_WITNESS_PROMPTS_KEY.to_string(),
+            sidecar["witness_prompts"].clone(),
         );
         assert_eq!(output.result, expected_result);
 

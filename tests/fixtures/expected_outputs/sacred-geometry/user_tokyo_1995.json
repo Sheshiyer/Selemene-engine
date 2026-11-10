@@ -2,19 +2,19 @@
   "engine_id": "sacred-geometry",
   "result": {
     "form": {
-      "id": "flower-of-life",
-      "name": "Flower of Life",
-      "description": "An ancient symbol composed of multiple evenly-spaced, overlapping circles arranged in a flower-like pattern with six-fold symmetry. It is considered to contain the patterns of creation.",
-      "symbolism": "Unity, creation, and the interconnectedness of all life. Contains the blueprint for all existence - from the structure of atoms to galaxies.",
+      "id": "golden-spiral",
+      "name": "Golden Spiral",
+      "description": "A logarithmic spiral whose growth factor is the golden ratio (φ ≈ 1.618). Found throughout nature in shells, galaxies, and plant growth.",
+      "symbolism": "Growth, evolution, and natural harmony. Represents the pattern by which nature expands while maintaining proportion.",
       "elements": [
-        "circle",
-        "hexagon",
-        "vesica piscis"
+        "spiral",
+        "golden ratio",
+        "curve"
       ],
-      "numerology": 6
+      "numerology": 1
     },
     "meditation": {
-      "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe.",
+      "prompt": "Trace the spiral from center outward, or from infinite inward. Notice: both directions exist simultaneously. Where are you in your own spiral of growth?",
       "duration_suggestion": "5-15 minutes"
     },
     "intention": null,
@@ -32,189 +32,760 @@
         "radius": 1,
         "y_axis": "up"
       },
-      "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
-      "circles": [
+      "construction": "Golden spiral: a golden rectangle (φ:1) divided into 8 whirling squares, each cut leaving a rectangle similar to the last; the logarithmic spiral r ∝ φ^(-2θ/π) about the similarity's fixed point passes exactly through the squares' corners and is sampled 16 times per quarter turn.",
+      "circles": [],
+      "polygons": [
         {
-          "cx": 0,
-          "cy": 0,
-          "r": 0.333333
+          "points": [
+            [
+              -0.850651,
+              -0.525731
+            ],
+            [
+              0.850651,
+              -0.525731
+            ],
+            [
+              0.850651,
+              0.525731
+            ],
+            [
+              -0.850651,
+              0.525731
+            ]
+          ]
         },
         {
-          "cx": 0.333333,
-          "cy": 0,
-          "r": 0.333333
+          "points": [
+            [
+              -0.850651,
+              -0.525731
+            ],
+            [
+              0.200811,
+              -0.525731
+            ],
+            [
+              0.200811,
+              0.525731
+            ],
+            [
+              -0.850651,
+              0.525731
+            ]
+          ]
         },
         {
-          "cx": 0.166667,
-          "cy": 0.288675,
-          "r": 0.333333
+          "points": [
+            [
+              0.200811,
+              0.525731
+            ],
+            [
+              0.200811,
+              -0.124108
+            ],
+            [
+              0.850651,
+              -0.124108
+            ],
+            [
+              0.850651,
+              0.525731
+            ]
+          ]
         },
         {
-          "cx": -0.166667,
-          "cy": 0.288675,
-          "r": 0.333333
+          "points": [
+            [
+              0.850651,
+              -0.124108
+            ],
+            [
+              0.449028,
+              -0.124108
+            ],
+            [
+              0.449028,
+              -0.525731
+            ],
+            [
+              0.850651,
+              -0.525731
+            ]
+          ]
         },
         {
-          "cx": -0.333333,
-          "cy": 0,
-          "r": 0.333333
+          "points": [
+            [
+              0.449028,
+              -0.525731
+            ],
+            [
+              0.449028,
+              -0.277515
+            ],
+            [
+              0.200811,
+              -0.277515
+            ],
+            [
+              0.200811,
+              -0.525731
+            ]
+          ]
         },
         {
-          "cx": -0.166667,
-          "cy": -0.288675,
-          "r": 0.333333
+          "points": [
+            [
+              0.200811,
+              -0.277515
+            ],
+            [
+              0.354218,
+              -0.277515
+            ],
+            [
+              0.354218,
+              -0.124108
+            ],
+            [
+              0.200811,
+              -0.124108
+            ]
+          ]
         },
         {
-          "cx": 0.166667,
-          "cy": -0.288675,
-          "r": 0.333333
+          "points": [
+            [
+              0.354218,
+              -0.124108
+            ],
+            [
+              0.354218,
+              -0.218919
+            ],
+            [
+              0.449028,
+              -0.218919
+            ],
+            [
+              0.449028,
+              -0.124108
+            ]
+          ]
         },
         {
-          "cx": 0.666667,
-          "cy": 0,
-          "r": 0.333333
+          "points": [
+            [
+              0.449028,
+              -0.218919
+            ],
+            [
+              0.390432,
+              -0.218919
+            ],
+            [
+              0.390432,
+              -0.277515
+            ],
+            [
+              0.449028,
+              -0.277515
+            ]
+          ]
         },
         {
-          "cx": 0.5,
-          "cy": 0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.333333,
-          "cy": 0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0,
-          "cy": 0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.333333,
-          "cy": 0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.5,
-          "cy": 0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.666667,
-          "cy": 0,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.5,
-          "cy": -0.288675,
-          "r": 0.333333
-        },
-        {
-          "cx": -0.333333,
-          "cy": -0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0,
-          "cy": -0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.333333,
-          "cy": -0.57735,
-          "r": 0.333333
-        },
-        {
-          "cx": 0.5,
-          "cy": -0.288675,
-          "r": 0.333333
+          "points": [
+            [
+              0.390432,
+              -0.277515
+            ],
+            [
+              0.390432,
+              -0.2413
+            ],
+            [
+              0.354218,
+              -0.2413
+            ],
+            [
+              0.354218,
+              -0.277515
+            ]
+          ]
         }
       ],
-      "polygons": [],
-      "polylines": [],
+      "polylines": [
+        {
+          "points": [
+            [
+              -0.850651,
+              -0.525731
+            ],
+            [
+              -0.836066,
+              -0.398672
+            ],
+            [
+              -0.809896,
+              -0.277357
+            ],
+            [
+              -0.773085,
+              -0.162694
+            ],
+            [
+              -0.726631,
+              -0.055464
+            ],
+            [
+              -0.671572,
+              0.043669
+            ],
+            [
+              -0.608972,
+              0.134165
+            ],
+            [
+              -0.539911,
+              0.215603
+            ],
+            [
+              -0.465474,
+              0.287679
+            ],
+            [
+              -0.386735,
+              0.350203
+            ],
+            [
+              -0.30475,
+              0.403093
+            ],
+            [
+              -0.220546,
+              0.446371
+            ],
+            [
+              -0.135115,
+              0.480156
+            ],
+            [
+              -0.0494,
+              0.504656
+            ],
+            [
+              0.035705,
+              0.520163
+            ],
+            [
+              0.119366,
+              0.527044
+            ],
+            [
+              0.200811,
+              0.525731
+            ],
+            [
+              0.279339,
+              0.516717
+            ],
+            [
+              0.354315,
+              0.500543
+            ],
+            [
+              0.425181,
+              0.477793
+            ],
+            [
+              0.491452,
+              0.449083
+            ],
+            [
+              0.55272,
+              0.415054
+            ],
+            [
+              0.60865,
+              0.376365
+            ],
+            [
+              0.658981,
+              0.333684
+            ],
+            [
+              0.703527,
+              0.287679
+            ],
+            [
+              0.742168,
+              0.239015
+            ],
+            [
+              0.774856,
+              0.188346
+            ],
+            [
+              0.801603,
+              0.136305
+            ],
+            [
+              0.822484,
+              0.083505
+            ],
+            [
+              0.837625,
+              0.030531
+            ],
+            [
+              0.847209,
+              -0.022067
+            ],
+            [
+              0.851462,
+              -0.073772
+            ],
+            [
+              0.850651,
+              -0.124108
+            ],
+            [
+              0.84508,
+              -0.172641
+            ],
+            [
+              0.835084,
+              -0.218979
+            ],
+            [
+              0.821023,
+              -0.262776
+            ],
+            [
+              0.80328,
+              -0.303734
+            ],
+            [
+              0.782249,
+              -0.3416
+            ],
+            [
+              0.758338,
+              -0.376166
+            ],
+            [
+              0.731959,
+              -0.407273
+            ],
+            [
+              0.703527,
+              -0.434803
+            ],
+            [
+              0.673451,
+              -0.458685
+            ],
+            [
+              0.642135,
+              -0.478887
+            ],
+            [
+              0.609972,
+              -0.495418
+            ],
+            [
+              0.57734,
+              -0.508323
+            ],
+            [
+              0.5446,
+              -0.517681
+            ],
+            [
+              0.512093,
+              -0.523604
+            ],
+            [
+              0.480137,
+              -0.526232
+            ],
+            [
+              0.449028,
+              -0.525731
+            ],
+            [
+              0.419033,
+              -0.522288
+            ],
+            [
+              0.390395,
+              -0.51611
+            ],
+            [
+              0.363326,
+              -0.50742
+            ],
+            [
+              0.338013,
+              -0.496454
+            ],
+            [
+              0.314611,
+              -0.483456
+            ],
+            [
+              0.293248,
+              -0.468678
+            ],
+            [
+              0.274023,
+              -0.452376
+            ],
+            [
+              0.257008,
+              -0.434803
+            ],
+            [
+              0.242248,
+              -0.416215
+            ],
+            [
+              0.229762,
+              -0.396861
+            ],
+            [
+              0.219546,
+              -0.376984
+            ],
+            [
+              0.21157,
+              -0.356816
+            ],
+            [
+              0.205787,
+              -0.336581
+            ],
+            [
+              0.202126,
+              -0.316491
+            ],
+            [
+              0.200502,
+              -0.296741
+            ],
+            [
+              0.200811,
+              -0.277515
+            ],
+            [
+              0.202939,
+              -0.258977
+            ],
+            [
+              0.206757,
+              -0.241277
+            ],
+            [
+              0.212128,
+              -0.224548
+            ],
+            [
+              0.218906,
+              -0.208904
+            ],
+            [
+              0.226939,
+              -0.19444
+            ],
+            [
+              0.236072,
+              -0.181237
+            ],
+            [
+              0.246148,
+              -0.169355
+            ],
+            [
+              0.257008,
+              -0.15884
+            ],
+            [
+              0.268496,
+              -0.149718
+            ],
+            [
+              0.280457,
+              -0.142001
+            ],
+            [
+              0.292742,
+              -0.135687
+            ],
+            [
+              0.305207,
+              -0.130758
+            ],
+            [
+              0.317712,
+              -0.127183
+            ],
+            [
+              0.330129,
+              -0.124921
+            ],
+            [
+              0.342335,
+              -0.123917
+            ],
+            [
+              0.354218,
+              -0.124108
+            ],
+            [
+              0.365675,
+              -0.125423
+            ],
+            [
+              0.376614,
+              -0.127783
+            ],
+            [
+              0.386953,
+              -0.131102
+            ],
+            [
+              0.396622,
+              -0.135291
+            ],
+            [
+              0.40556,
+              -0.140256
+            ],
+            [
+              0.41372,
+              -0.1459
+            ],
+            [
+              0.421064,
+              -0.152128
+            ],
+            [
+              0.427563,
+              -0.15884
+            ],
+            [
+              0.433201,
+              -0.16594
+            ],
+            [
+              0.43797,
+              -0.173332
+            ],
+            [
+              0.441872,
+              -0.180925
+            ],
+            [
+              0.444918,
+              -0.188628
+            ],
+            [
+              0.447128,
+              -0.196357
+            ],
+            [
+              0.448526,
+              -0.204031
+            ],
+            [
+              0.449146,
+              -0.211575
+            ],
+            [
+              0.449028,
+              -0.218919
+            ],
+            [
+              0.448215,
+              -0.225999
+            ],
+            [
+              0.446757,
+              -0.23276
+            ],
+            [
+              0.444705,
+              -0.23915
+            ],
+            [
+              0.442117,
+              -0.245126
+            ],
+            [
+              0.439048,
+              -0.25065
+            ],
+            [
+              0.43556,
+              -0.255693
+            ],
+            [
+              0.431711,
+              -0.260232
+            ],
+            [
+              0.427563,
+              -0.264248
+            ],
+            [
+              0.423175,
+              -0.267733
+            ],
+            [
+              0.418606,
+              -0.27068
+            ],
+            [
+              0.413913,
+              -0.273092
+            ],
+            [
+              0.409153,
+              -0.274975
+            ],
+            [
+              0.404376,
+              -0.27634
+            ],
+            [
+              0.399633,
+              -0.277204
+            ],
+            [
+              0.394971,
+              -0.277588
+            ],
+            [
+              0.390432,
+              -0.277515
+            ],
+            [
+              0.386056,
+              -0.277012
+            ],
+            [
+              0.381878,
+              -0.276111
+            ],
+            [
+              0.377928,
+              -0.274843
+            ],
+            [
+              0.374235,
+              -0.273243
+            ],
+            [
+              0.370821,
+              -0.271347
+            ],
+            [
+              0.367704,
+              -0.269191
+            ],
+            [
+              0.364899,
+              -0.266812
+            ],
+            [
+              0.362417,
+              -0.264248
+            ],
+            [
+              0.360263,
+              -0.261536
+            ],
+            [
+              0.358442,
+              -0.258713
+            ],
+            [
+              0.356951,
+              -0.255813
+            ],
+            [
+              0.355787,
+              -0.25287
+            ],
+            [
+              0.354944,
+              -0.249918
+            ],
+            [
+              0.354409,
+              -0.246987
+            ],
+            [
+              0.354172,
+              -0.244105
+            ],
+            [
+              0.354218,
+              -0.2413
+            ]
+          ]
+        }
+      ],
       "lines": [],
       "points": [
         [
-          0,
-          0
+          0.380423,
+          -0.235114
         ],
         [
-          0.333333,
-          0
+          -0.850651,
+          -0.525731
         ],
         [
-          0.166667,
-          0.288675
+          0.200811,
+          0.525731
         ],
         [
-          -0.166667,
-          0.288675
+          0.850651,
+          -0.124108
         ],
         [
-          -0.333333,
-          0
+          0.449028,
+          -0.525731
         ],
         [
-          -0.166667,
-          -0.288675
+          0.200811,
+          -0.277515
         ],
         [
-          0.166667,
-          -0.288675
+          0.354218,
+          -0.124108
         ],
         [
-          0.666667,
-          0
+          0.449028,
+          -0.218919
         ],
         [
-          0.5,
-          0.288675
+          0.390432,
+          -0.277515
         ],
         [
-          0.333333,
-          0.57735
-        ],
-        [
-          0,
-          0.57735
-        ],
-        [
-          -0.333333,
-          0.57735
-        ],
-        [
-          -0.5,
-          0.288675
-        ],
-        [
-          -0.666667,
-          0
-        ],
-        [
-          -0.5,
-          -0.288675
-        ],
-        [
-          -0.333333,
-          -0.57735
-        ],
-        [
-          0,
-          -0.57735
-        ],
-        [
-          0.333333,
-          -0.57735
-        ],
-        [
-          0.5,
-          -0.288675
+          0.354218,
+          -0.2413
         ]
       ],
       "measures": {
-        "circle_count": 19,
-        "circle_radius": 0.333333,
-        "lattice_spacing": 0.333333
+        "phi": 1.618034,
+        "growth_per_quarter_turn": 1.618034,
+        "square_count": 8,
+        "samples_per_quarter_turn": 16
       }
     },
     "provenance_detail": {
@@ -228,19 +799,21 @@
       },
       "meditation": {
         "kind": "symbolic_lookup",
-        "source": "wisdom.SACRED_FORMS"
+        "source": "wisdom.SACRED_FORMS",
+        "mode": "guidance",
+        "duration_suggestion": "static_constant"
       },
       "calculated_geometry": {
         "status": "calculated",
         "kind": "deterministic_construction",
         "source": "geometry.buildGeometry",
-        "construction": "Flower of Life: 19 equal circles centred on the hexagonal lattice points within two steps of the centre; lattice spacing equals the radius, so each circle passes through its neighbours’ centres.",
+        "construction": "Golden spiral: a golden rectangle (φ:1) divided into 8 whirling squares, each cut leaving a rectangle similar to the last; the logarithmic spiral r ∝ φ^(-2θ/π) about the similarity's fixed point passes exactly through the squares' corners and is sampled 16 times per quarter turn.",
         "computed": {
-          "circles": 19,
-          "polygons": 0,
-          "polylines": 0,
+          "circles": 0,
+          "polygons": 9,
+          "polylines": 1,
           "lines": 0,
-          "points": 19,
+          "points": 10,
           "solid": false
         }
       },
@@ -253,25 +826,52 @@
         "status": "absent"
       },
       "witness_prompts": {
-        "kind": "templated_narrative"
+        "kind": "templated_narrative",
+        "source": "witness.generateWitnessPrompts",
+        "seed": 9999,
+        "prompts": [
+          {
+            "template": "form_contemplation",
+            "mode": "inquiry",
+            "inputs": [
+              "result.form.name",
+              "result.form.elements"
+            ]
+          },
+          {
+            "template": "meditation",
+            "mode": "guidance",
+            "inputs": [
+              "result.meditation.prompt"
+            ]
+          },
+          {
+            "template": "numerology",
+            "mode": "inquiry",
+            "inputs": [
+              "result.form.name",
+              "result.form.numerology"
+            ]
+          }
+        ]
       }
     }
   },
   "witness_prompts": [
     {
-      "prompt": "As you visualize Flower of Life, what patterns do you notice in your own life?",
-      "context": "Contemplating Flower of Life",
+      "prompt": "Where in your life do the elements of Golden Spiral — spiral, golden ratio, curve — appear?",
+      "context": "Contemplating Golden Spiral",
       "themes": [
         "geometry",
         "pattern",
         "awareness",
-        "circle",
-        "hexagon",
-        "vesica piscis"
+        "spiral",
+        "golden ratio",
+        "curve"
       ]
     },
     {
-      "prompt": "Allow your awareness to rest on the center of the Flower of Life. Notice how each circle supports and is supported by others. Let the pattern breathe. Take three breaths and notice what arises.",
+      "prompt": "Trace the spiral from center outward, or from infinite inward. Notice: both directions exist simultaneously. Where are you in your own spiral of growth? Take three breaths and notice what arises.",
       "context": "Meditation guidance",
       "themes": [
         "meditation",
@@ -280,7 +880,7 @@
       ]
     },
     {
-      "prompt": "The number 6 resonates through Flower of Life. Where does this number appear in your life?",
+      "prompt": "Golden Spiral carries the energy of 1. What significance does this number hold for you?",
       "context": "Numerological resonance",
       "themes": [
         "numerology",

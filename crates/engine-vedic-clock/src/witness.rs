@@ -4,9 +4,12 @@
 //! of energy patterns throughout the day.
 
 use crate::models::{Dosha, Organ};
-use rand::prelude::IndexedRandom;
 
 /// Generate a witness prompt based on current organ and dosha
+///
+/// Deterministic: always picks the first template of each list. The engine
+/// uses [`generate_witness_prompt_seeded`] so the prompt varies with the
+/// request while staying replayable.
 ///
 /// # Arguments
 /// * `organ` - Currently active organ
@@ -16,81 +19,45 @@ use rand::prelude::IndexedRandom;
 /// # Returns
 /// A non-prescriptive inquiry prompt
 pub fn generate_witness_prompt(organ: &Organ, dosha: &Dosha, consciousness_level: u8) -> String {
-    match consciousness_level {
-        0..=2 => generate_awareness_prompt(organ, dosha),
-        3..=4 => generate_observation_prompt(organ, dosha),
-        5..=6 => generate_integration_prompt(organ, dosha),
-        _ => generate_observation_prompt(organ, dosha),
-    }
+    generate_witness_prompt_seeded(organ, dosha, consciousness_level, 0)
 }
 
-/// Level 0-2: Basic awareness prompts
-/// Focus on noticing bodily sensations and energy patterns
-fn generate_awareness_prompt(organ: &Organ, dosha: &Dosha) -> String {
-    let prompts = get_awareness_prompts(organ);
-    let dosha_prompts = get_dosha_awareness_prompts(dosha);
+/// Like [`generate_witness_prompt`], with templates chosen by `seed`.
+///
+/// The same `seed` always gives the same prompt, so a replayed request
+/// reproduces its witness prompt exactly.
+pub fn generate_witness_prompt_seeded(
+    organ: &Organ,
+    dosha: &Dosha,
+    consciousness_level: u8,
+    seed: u64,
+) -> String {
+    let (organ_prompts, dosha_prompts, default) = match consciousness_level {
+        0..=2 => (
+            get_awareness_prompts(organ),
+            get_dosha_awareness_prompts(dosha),
+            "What do you notice about your energy right now?",
+        ),
+        5..=6 => (
+            get_integration_prompts(organ),
+            get_dosha_integration_prompts(dosha),
+            "What remains constant as the cycles of time move through you?",
+        ),
+        _ => (
+            get_observation_prompts(organ),
+            get_dosha_observation_prompts(dosha),
+            "What patterns do you notice in your energy at this time of day?",
+        ),
+    };
 
-    // Select one from each category
-    let organ_prompt = prompts
-        .choose(&mut rand::rng())
-        .copied()
-        .unwrap_or("What do you notice about your energy right now?");
-
-    let dosha_prompt = dosha_prompts
-        .choose(&mut rand::rng())
-        .copied()
-        .unwrap_or("");
-
-    if dosha_prompt.is_empty() {
-        organ_prompt.to_string()
-    } else {
-        format!("{} {}", organ_prompt, dosha_prompt)
-    }
-}
-
-/// Level 3-4: Deeper observation prompts
-/// Explore the relationship between time, body, and activity
-fn generate_observation_prompt(organ: &Organ, dosha: &Dosha) -> String {
-    let prompts = get_observation_prompts(organ);
-    let dosha_prompts = get_dosha_observation_prompts(dosha);
-
-    let organ_prompt = prompts
-        .choose(&mut rand::rng())
-        .copied()
-        .unwrap_or("What patterns do you notice in your energy at this time of day?");
-
-    let dosha_prompt = dosha_prompts
-        .choose(&mut rand::rng())
-        .copied()
-        .unwrap_or("");
-
-    if dosha_prompt.is_empty() {
-        organ_prompt.to_string()
-    } else {
-        format!("{} {}", organ_prompt, dosha_prompt)
-    }
-}
-
-/// Level 5-6: Integration prompts
-/// Transcendent awareness of the interconnection of all cycles
-fn generate_integration_prompt(organ: &Organ, dosha: &Dosha) -> String {
-    let prompts = get_integration_prompts(organ);
-    let dosha_prompts = get_dosha_integration_prompts(dosha);
-
-    let organ_prompt = prompts
-        .choose(&mut rand::rng())
-        .copied()
-        .unwrap_or("What remains constant as the cycles of time move through you?");
-
-    let dosha_prompt = dosha_prompts
-        .choose(&mut rand::rng())
-        .copied()
-        .unwrap_or("");
-
-    if dosha_prompt.is_empty() {
-        organ_prompt.to_string()
-    } else {
-        format!("{} {}", organ_prompt, dosha_prompt)
+    // Independent picks from the low and high halves of the seed.
+    let pick = |list: &[&'static str], bits: u64| -> Option<&'static str> {
+        (!list.is_empty()).then(|| list[(bits % list.len() as u64) as usize])
+    };
+    let organ_prompt = pick(&organ_prompts, seed & 0xffff_ffff).unwrap_or(default);
+    match pick(&dosha_prompts, seed >> 32) {
+        Some(dosha_prompt) => format!("{} {}", organ_prompt, dosha_prompt),
+        None => organ_prompt.to_string(),
     }
 }
 

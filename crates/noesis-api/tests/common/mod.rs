@@ -60,10 +60,25 @@ pub async fn get_router() -> &'static Router {
 // JWT helpers
 // ---------------------------------------------------------------------------
 
-/// Generate a valid JWT token for testing with a specific consciousness level.
+/// The JWT secret the shared router (`get_router`) validates against.
+///
+/// `get_router` builds its config with `ApiConfig::from_env`, which reads
+/// `JWT_SECRET` and falls back to the development default. Tokens for the
+/// shared router must be signed with this same value, or an ambient
+/// `JWT_SECRET` in the test environment makes every authenticated request 401.
+pub fn shared_router_jwt_secret() -> String {
+    std::env::var("JWT_SECRET").unwrap_or_else(|_| TEST_JWT_SECRET.to_string())
+}
+
+/// Generate a valid JWT token for the shared router with a specific consciousness level.
 pub fn generate_test_token(consciousness_level: u8) -> String {
-    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| TEST_JWT_SECRET.to_string());
-    let auth = AuthService::new(jwt_secret);
+    generate_test_token_with_secret(&shared_router_jwt_secret(), consciousness_level)
+}
+
+/// Generate a valid JWT token signed with an explicit secret, for tests that
+/// build their own router from a hard-coded `ApiConfig::jwt_secret`.
+pub fn generate_test_token_with_secret(jwt_secret: &str, consciousness_level: u8) -> String {
+    let auth = AuthService::new(jwt_secret.to_string());
 
     auth.generate_jwt_token(
         "shared-test-user",

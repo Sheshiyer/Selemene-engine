@@ -12,19 +12,20 @@
         "name": "Past",
         "meaning": "What has led to this moment; influences from the past",
         "card": {
-          "id": "major-2",
-          "name": "The High Priestess",
-          "arcana": "major",
-          "number": 2,
-          "element": "water",
+          "id": "pentacles-5",
+          "name": "Five of Pentacles",
+          "arcana": "minor",
+          "suit": "pentacles",
+          "number": 5,
+          "element": "earth",
           "isReversed": false,
           "interpretation": {
-            "meaning": "Intuition, sacred knowledge, divine feminine, the subconscious mind",
+            "meaning": "Financial loss, poverty, lack mindset, isolation, worry",
             "keywords": [
-              "intuition",
-              "mystery",
-              "inner voice",
-              "wisdom"
+              "hardship",
+              "loss",
+              "poverty",
+              "worry"
             ]
           }
         }
@@ -34,20 +35,19 @@
         "name": "Present",
         "meaning": "The current situation; where you stand now",
         "card": {
-          "id": "swords-5",
-          "name": "Five of Swords",
-          "arcana": "minor",
-          "suit": "swords",
-          "number": 5,
+          "id": "major-0",
+          "name": "The Fool",
+          "arcana": "major",
+          "number": 0,
           "element": "air",
-          "isReversed": true,
+          "isReversed": false,
           "interpretation": {
-            "meaning": "Reconciliation, making amends, past resentment",
+            "meaning": "New beginnings, innocence, spontaneity, free spirit, potential",
             "keywords": [
-              "conflict",
-              "defeat",
-              "tension",
-              "hostility"
+              "beginnings",
+              "innocence",
+              "leap of faith",
+              "spontaneity"
             ]
           }
         }
@@ -57,20 +57,19 @@
         "name": "Future",
         "meaning": "What may unfold; potential outcomes and energies ahead",
         "card": {
-          "id": "swords-14",
-          "name": "King of Swords",
-          "arcana": "minor",
-          "suit": "swords",
-          "number": 14,
-          "element": "air",
+          "id": "major-5",
+          "name": "The Hierophant",
+          "arcana": "major",
+          "number": 5,
+          "element": "earth",
           "isReversed": true,
           "interpretation": {
-            "meaning": "Quiet power, inner truth, misuse of power, manipulation",
+            "meaning": "Personal beliefs, freedom, challenging the status quo",
             "keywords": [
-              "authority",
-              "truth",
-              "intellect",
-              "ethical"
+              "tradition",
+              "spirituality",
+              "guidance",
+              "education"
             ]
           }
         }
@@ -80,27 +79,27 @@
   },
   "witness_prompts": [
     {
-      "prompt": "As you consider The High Priestess in the position of Past, what stands out?",
-      "context": "The High Priestess in Past position",
+      "prompt": "Where do you notice the themes of Five of Pentacles appearing in your life?",
+      "context": "Five of Pentacles in Past position",
       "themes": [
-        "intuition",
-        "mystery",
-        "inner voice",
-        "wisdom"
+        "hardship",
+        "loss",
+        "poverty",
+        "worry"
       ]
     },
     {
-      "prompt": "Notice the interplay between Five of Swords and King of Swords\u2014what patterns arise?",
-      "context": "Connection between Present and Future",
+      "prompt": "What story emerges between The Fool and Five of Pentacles?",
+      "context": "Connection between Present and Past",
       "themes": [
-        "conflict",
-        "defeat",
-        "tension",
-        "hostility",
-        "authority",
-        "truth",
-        "intellect",
-        "ethical"
+        "beginnings",
+        "innocence",
+        "leap of faith",
+        "spontaneity",
+        "hardship",
+        "loss",
+        "poverty",
+        "worry"
       ]
     },
     {
@@ -114,5 +113,12 @@
     }
   ],
   "calculated_at": "2024-01-15T14:30:00.000Z",
-  "processing_time_ms": 3
+  "processing_time_ms": 0,
+  "provenance": {
+    "runtime_kind": "typescript",
+    "implementation_version": "1.0.0",
+    "cached": false,
+    "fallback_used": false,
+    "confidence": 1
+  }
 }

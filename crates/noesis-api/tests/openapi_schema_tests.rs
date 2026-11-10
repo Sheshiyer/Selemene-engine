@@ -285,11 +285,20 @@ async fn panchanga_result_schema_documents_provenance_fields() {
     let properties = schema_properties(panchanga, schemas);
     assert!(properties.contains("position_source"));
     assert!(properties.contains("birth_time_assumed"));
+    assert!(properties.contains("assumed_birth_time"));
     assert!(properties.contains("vara_basis"));
     assert!(properties.contains("ayanamsa_degrees"));
     assert_eq!(
         panchanga["properties"]["birth_time_assumed"]["type"],
         "boolean"
+    );
+    let assumed_type = &panchanga["properties"]["assumed_birth_time"]["type"];
+    assert!(
+        assumed_type == "string"
+            || assumed_type
+                .as_array()
+                .is_some_and(|types| types.contains(&serde_json::json!("string"))),
+        "assumed_birth_time type: {assumed_type}"
     );
 
     let source = &schemas["PanchangaPositionSourceSchema"];
@@ -335,9 +344,14 @@ async fn panchanga_result_schema_matches_engine_output() {
         .expect("components.schemas object");
     let panchanga = &schemas["PanchangaResultSchema"];
     let documented = schema_properties(panchanga, schemas);
+    // `assumed_birth_time` is emitted only when the birth time was assumed,
+    // which this supplied-time result is not.
+    let conditional = BTreeSet::from(["assumed_birth_time".to_string()]);
     let emitted: BTreeSet<String> = actual.keys().cloned().collect();
+    assert!(emitted.is_disjoint(&conditional), "{emitted:?}");
+    let emitted_or_conditional: BTreeSet<String> = emitted.union(&conditional).cloned().collect();
     assert_eq!(
-        documented, emitted,
+        documented, emitted_or_conditional,
         "schema properties vs engine output keys"
     );
 
@@ -376,6 +390,244 @@ async fn panchanga_result_schema_matches_engine_output() {
             || (emitted_type == "integer" && declared.contains(&"number"));
         assert!(
             ok,
+            "{key}: emitted {emitted_type}, schema declares {declared:?}"
+        );
+    }
+}
+
+/// Resolve a property schema to the object/array/scalar schema it describes,
+/// following a `$ref` and the nullable `oneOf`/`allOf` wrappers utoipa emits.
+fn resolve<'a>(schema: &'a Value, schemas: &'a serde_json::Map<String, Value>) -> &'a Value {
+    if let Some(name) = schema
+        .get("$ref")
+        .and_then(Value::as_str)
+        .and_then(|r| r.rsplit('/').next())
+    {
+        return resolve(&schemas[name], schemas);
+    }
+    for wrapper in ["oneOf", "allOf", "anyOf"] {
+        if let Some(parts) = schema.get(wrapper).and_then(Value::as_array) {
+            if let Some(part) = parts
+                .iter()
+                .find(|p| p.get("type").and_then(Value::as_str) != Some("null"))
+            {
+                return resolve(part, schemas);
+            }
+        }
+    }
+    schema
+}
+
+fn json_type(value: &Value) -> &'static str {
+    match value {
+        Value::Bool(_) => "boolean",
+        Value::String(_) => "string",
+        Value::Number(n) if n.is_u64() || n.is_i64() => "integer",
+        Value::Number(_) => "number",
+        Value::Array(_) => "array",
+        Value::Object(_) => "object",
+        Value::Null => "null",
+    }
+}
+
+/// Walk an emitted value against its schema: every object key is documented,
+/// every required property is present, scalar types and enum values match.
+/// Records each documented object path whose properties were all observed.
+fn assert_value_matches(
+    path: &str,
+    value: &Value,
+    schema: &Value,
+    schemas: &serde_json::Map<String, Value>,
+    seen: &mut std::collections::BTreeMap<String, BTreeSet<String>>,
+) {
+    let schema = resolve(schema, schemas);
+    if let Some(values) = schema.get("enum").and_then(Value::as_array) {
+        assert!(
+            values.contains(value),
+            "{path}: {value} not in enum {values:?}"
+        );
+        return;
+    }
+    let declared: Vec<&str> = match &schema["type"] {
+        Value::String(t) => vec![t.as_str()],
+        Value::Array(ts) => ts.iter().filter_map(Value::as_str).collect(),
+        _ => panic!("{path}: schema declares no type: {schema}"),
+    };
+    let emitted = json_type(value);
+    assert!(
+        declared.contains(&emitted) || (emitted == "integer" && declared.contains(&"number")),
+        "{path}: emitted {emitted}, schema declares {declared:?}"
+    );
+    match value {
+        Value::Object(object) => {
+            let properties = schema["properties"]
+                .as_object()
+                .unwrap_or_else(|| panic!("{path}: object schema has no properties"));
+            for key in object.keys() {
+                assert!(
+                    properties.contains_key(key),
+                    "{path}.{key} is emitted but not documented"
+                );
+            }
+            for required in schema["required"].as_array().into_iter().flatten() {
+                let required = required.as_str().unwrap();
+                assert!(
+                    object.contains_key(required),
+                    "{path}.{required} is required by the schema but not emitted"
+                );
+            }
+            seen.entry(path.to_string())
+                .or_default()
+                .extend(object.keys().cloned());
+            for (key, child) in object {
+                assert_value_matches(
+                    &format!("{path}.{key}"),
+                    child,
+                    &properties[key],
+                    schemas,
+                    seen,
+                );
+            }
+        }
+        Value::Array(items) => {
+            for item in items {
+                assert_value_matches(&format!("{path}[]"), item, &schema["items"], schemas, seen);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// #1311: `EnneagramResultSchema` must describe what the TypeScript engine
+/// actually emits in every mode. The fixture is generated from the live engine
+/// and `ts-engines/tests/enneagram_provenance.test.ts` fails if it goes stale,
+/// so this fails whenever the schema and the engine drift apart.
+#[tokio::test]
+async fn enneagram_result_schema_matches_engine_output() {
+    let fixture: Value = serde_json::from_str(include_str!(
+        "../../../ts-engines/tests/fixtures/enneagram/result-modes.json"
+    ))
+    .expect("enneagram fixture JSON");
+    let spec = openapi_spec().await;
+    let schemas = spec["components"]["schemas"]
+        .as_object()
+        .expect("components.schemas object");
+    let schema = &schemas["EnneagramResultSchema"];
+
+    let mut seen = std::collections::BTreeMap::new();
+    let cases = fixture["cases"].as_array().expect("fixture cases");
+    assert_eq!(cases.len(), 7);
+    for case in cases {
+        let name = case["name"].as_str().unwrap();
+        assert_value_matches(name, &case["result"], schema, schemas, &mut seen);
+    }
+
+    // Nothing documented that the engine never emits: across all modes, every
+    // documented property of the top-level result and of `assessment` is seen.
+    let observed = |suffix: &str| -> BTreeSet<String> {
+        seen.iter()
+            .filter(|(path, _)| {
+                let rest = path.split_once('.').map(|(_, r)| r).unwrap_or("");
+                rest == suffix
+            })
+            .flat_map(|(_, keys)| keys.iter().cloned())
+            .collect()
+    };
+    assert_eq!(schema_properties(schema, schemas), observed(""));
+    let assessment = resolve(&schema["properties"]["assessment"], schemas);
+    assert_eq!(
+        schema_properties(assessment, schemas),
+        observed("assessment")
+    );
+
+    // The two discriminators are closed enums.
+    let enum_of = |property: &str| -> BTreeSet<String> {
+        resolve(&schema["properties"][property], schemas)["enum"]
+            .as_array()
+            .unwrap_or_else(|| panic!("{property} is not an enum"))
+            .iter()
+            .filter_map(Value::as_str)
+            .map(str::to_string)
+            .collect()
+    };
+    assert_eq!(
+        enum_of("mode"),
+        BTreeSet::from(["assessment".into(), "lookup".into(), "questions".into()])
+    );
+    assert_eq!(
+        enum_of("typeSource"),
+        BTreeSet::from(["assessment".into(), "user-supplied".into(), "none".into()])
+    );
+}
+
+/// The documented vedic-clock schema must name exactly the top-level fields
+/// the engine emits, with the same JSON types; only the conditional blocks
+/// are optional. Fails when either side drifts.
+#[tokio::test]
+async fn vedic_clock_result_schema_matches_engine_output() {
+    use engine_vedic_clock::{ConsciousnessEngine, VedicClockEngine};
+
+    // A located request with an activity emits every optional block too.
+    let input: noesis_core::EngineInput = serde_json::from_value(serde_json::json!({
+        "current_time": "2026-03-08T06:43:16Z",
+        "options": {
+            "timezone_offset": 330,
+            "latitude": 12.9716,
+            "longitude": 77.5946,
+            "activity": "work",
+        },
+    }))
+    .expect("engine input");
+    let output = VedicClockEngine::new()
+        .calculate(input)
+        .await
+        .expect("vedic-clock calculates");
+    let actual = output.result.as_object().expect("result object");
+
+    let spec = openapi_spec().await;
+    let schemas = spec["components"]["schemas"]
+        .as_object()
+        .expect("components.schemas object");
+    let schema = &schemas["VedicClockResultSchema"];
+    let documented = schema_properties(schema, schemas);
+    let emitted: BTreeSet<String> = actual.keys().cloned().collect();
+    assert_eq!(
+        documented, emitted,
+        "schema properties vs engine output keys"
+    );
+
+    let optional = BTreeSet::from(["activity_timing", "hora", "choghadiya", "day_periods"]);
+    let required: BTreeSet<&str> = schema["required"]
+        .as_array()
+        .expect("required list")
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    let expected_required: BTreeSet<&str> = emitted
+        .iter()
+        .map(String::as_str)
+        .filter(|key| !optional.contains(key))
+        .collect();
+    assert_eq!(required, expected_required);
+
+    for (key, value) in actual {
+        let property = &schema["properties"][key];
+        let declared: Vec<&str> = match &property["type"] {
+            Value::String(t) => vec![t.as_str()],
+            Value::Array(ts) => ts.iter().filter_map(Value::as_str).collect(),
+            other => panic!("{key}: schema declares no type: {other}"),
+        };
+        let emitted_type = match value {
+            Value::Bool(_) => "boolean",
+            Value::String(_) => "string",
+            Value::Number(n) if n.is_u64() || n.is_i64() => "integer",
+            Value::Number(_) => "number",
+            Value::Null => "null",
+            Value::Array(_) => "array",
+            Value::Object(_) => "object",
+        };
+        assert!(
+            declared.contains(&emitted_type),
             "{key}: emitted {emitted_type}, schema declares {declared:?}"
         );
     }

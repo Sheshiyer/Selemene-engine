@@ -121,7 +121,9 @@ async fn make_authenticated_request(
     uri: &str,
     body: Option<Value>,
 ) -> (StatusCode, Value) {
-    let token = common::generate_test_token(5);
+    // `build_router` hard-codes `TEST_JWT_SECRET` in its config, so sign with
+    // that secret rather than whatever `JWT_SECRET` the environment carries.
+    let token = common::generate_test_token_with_secret(common::TEST_JWT_SECRET, 5);
     let request_builder = Request::builder()
         .method(method_name)
         .uri(uri)

@@ -4,7 +4,7 @@
 //! based on TCM organ clock and Vedic time cycles.
 
 use async_trait::async_trait;
-use chrono::{DateTime, FixedOffset, SecondsFormat, Utc};
+use chrono::{DateTime, FixedOffset, Offset, SecondsFormat, TimeZone, Utc};
 use noesis_core::{
     CalculationMetadata, ConsciousnessEngine, EngineError, EngineInput, EngineOutput,
     ValidationResult,
@@ -24,7 +24,7 @@ use crate::vedic_time::{
     choghadiya_at, hora_at, hora_is_favorable, vedic_day_for, ChoghadiyaPeriod, HoraPeriod,
     VedicDay,
 };
-use crate::witness::generate_witness_prompt;
+use crate::witness::generate_witness_prompt_seeded;
 use noesis_vedic_api::panchang::{
     get_activities_to_avoid, get_suitable_activities, GulikaKaal, RahuKalam, YamaGandam,
 };
@@ -39,6 +39,85 @@ pub struct VedicClockEngine {
 struct TimezoneResolution {
     offset_minutes: i32,
     source: &'static str,
+    /// IANA zone name when the offset came from one (resolved at the instant,
+    /// so it follows daylight saving).
+    zone: Option<String>,
+}
+
+/// Valid UTC offsets in minutes: UTC−12:00 to UTC+14:00.
+const OFFSET_RANGE_MINUTES: std::ops::RangeInclusive<i64> = -720..=840;
+
+/// Caller-supplied Panchanga indices. Tithi 15–29 (Krishna paksha) fold onto
+/// the same 15 tithi qualities as 0–14; nakshatra 0–26.
+const TITHI_RANGE: std::ops::RangeInclusive<u64> = 0..=29;
+const NAKSHATRA_RANGE: std::ops::RangeInclusive<u64> = 0..=26;
+
+/// Every input that determines `result` and `witness_prompt`. Two requests
+/// with equal `ReplayInputs` produce identical results.
+struct ReplayInputs {
+    current_time: DateTime<Utc>,
+    timezone: TimezoneResolution,
+    location: Option<LocationResolution>,
+    activity: Option<Activity>,
+    tithi: Option<u8>,
+    nakshatra: Option<u8>,
+    consciousness_level: u8,
+}
+
+impl ReplayInputs {
+    /// Canonical text of the inputs, with the engine version, used for the
+    /// cache key, the replay fingerprint and the witness-prompt seed.
+    fn canonical(&self) -> String {
+        let location = self
+            .location
+            .as_ref()
+            .map(|l| format!("{:.6},{:.6},{}", l.latitude, l.longitude, l.source))
+            .unwrap_or_else(|| "none".to_string());
+        format!(
+            "vedic-clock:v{}:t{}:tz{},{},{}:loc{}:a{:?}:ti{:?}:nk{:?}:cl{}",
+            env!("CARGO_PKG_VERSION"),
+            self.current_time
+                .to_rfc3339_opts(SecondsFormat::AutoSi, true),
+            self.timezone.offset_minutes,
+            self.timezone.source,
+            self.timezone.zone.as_deref().unwrap_or("-"),
+            location,
+            self.activity,
+            self.tithi,
+            self.nakshatra,
+            self.consciousness_level,
+        )
+    }
+
+    /// 64-bit FNV-1a of [`Self::canonical`]: stable across platforms and
+    /// releases of the Rust toolchain, unlike `std::hash`.
+    fn fingerprint(&self) -> u64 {
+        self.canonical()
+            .bytes()
+            .fold(0xcbf2_9ce4_8422_2325, |hash, byte| {
+                (hash ^ u64::from(byte)).wrapping_mul(0x0000_0100_0000_01b3)
+            })
+    }
+
+    fn to_json(&self) -> Value {
+        json!({
+            "current_time": self.current_time.to_rfc3339_opts(SecondsFormat::AutoSi, true),
+            "timezone": {
+                "offset_minutes": self.timezone.offset_minutes,
+                "source": self.timezone.source,
+                "zone": self.timezone.zone,
+            },
+            "location": self.location.as_ref().map(|l| json!({
+                "latitude": l.latitude,
+                "longitude": l.longitude,
+                "source": l.source,
+            })),
+            "activity": self.activity.map(|a| a.display_name()),
+            "tithi_index": self.tithi,
+            "nakshatra_index": self.nakshatra,
+            "consciousness_level": self.consciousness_level,
+        })
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -72,54 +151,100 @@ impl VedicClockEngine {
         }
     }
 
-    /// Parse timezone string into offset minutes.
-    fn timezone_minutes_from_string(tz: &str) -> Option<i32> {
-        if tz.starts_with('+') || tz.starts_with('-') {
-            let parts: Vec<&str> = tz[1..].split(':').collect();
-            let sign: i32 = if tz.starts_with('-') { -1 } else { 1 };
-            let hours: i32 = parts.first()?.parse().ok()?;
-            let minutes: i32 = parts.get(1).and_then(|m| m.parse().ok()).unwrap_or(0);
-            return Some(sign * (hours * 60 + minutes));
+    /// UTC offset (minutes) in force at `instant` for a timezone string: an
+    /// IANA zone (with its daylight-saving rules), a `±HH:MM` / `±HH` offset,
+    /// or one of `PST`, `CST`, `AEST` (accepted as panchanga accepts them).
+    /// Returns the IANA name alongside when one was used. Anything else is a
+    /// `ValidationError`, never UTC.
+    fn offset_for_timezone(
+        tz: &str,
+        instant: DateTime<Utc>,
+    ) -> Result<(i32, Option<String>), EngineError> {
+        let unknown = || {
+            EngineError::ValidationError(format!(
+                "unknown timezone {tz:?}: expected an IANA zone name such as \"Asia/Kolkata\" \
+                 or a UTC offset such as \"+05:30\""
+            ))
+        };
+
+        if let Some(rest) = tz.strip_prefix('+').or_else(|| tz.strip_prefix('-')) {
+            let (hours, minutes) = rest.split_once(':').unwrap_or((rest, "00"));
+            let digits = |s: &str, len: std::ops::RangeInclusive<usize>| {
+                len.contains(&s.len()) && s.bytes().all(|b| b.is_ascii_digit())
+            };
+            if !digits(hours, 1..=2) || !digits(minutes, 2..=2) {
+                return Err(unknown());
+            }
+            let (hours, minutes): (i64, i64) = (hours.parse().unwrap(), minutes.parse().unwrap());
+            let sign = if tz.starts_with('-') { -1 } else { 1 };
+            let offset = sign * (hours * 60 + minutes);
+            if minutes >= 60 || !OFFSET_RANGE_MINUTES.contains(&offset) {
+                return Err(unknown());
+            }
+            return Ok((offset as i32, None));
         }
 
         match tz {
-            "Asia/Kolkata" | "Asia/Calcutta" => Some(330),
-            "UTC" | "GMT" => Some(0),
-            _ => None,
+            "PST" => Ok((-480, None)),
+            "CST" => Ok((-360, None)),
+            "AEST" => Ok((600, None)),
+            _ => {
+                let zone: chrono_tz::Tz = tz.parse().map_err(|_| unknown())?;
+                let offset = zone
+                    .offset_from_utc_datetime(&instant.naive_utc())
+                    .fix()
+                    .local_minus_utc()
+                    / 60;
+                Ok((offset, Some(zone.name().to_string())))
+            }
         }
     }
 
-    /// Resolve timezone offset in minutes from options or birth_data fallback.
+    /// Resolve the timezone offset in force at the requested instant.
     /// Priority:
-    /// 1) options.timezone_offset (minutes)
-    /// 2) birth_data.timezone (IANA or +HH:MM)
-    /// 3) UTC (0)
-    fn resolve_timezone(input: &EngineInput) -> TimezoneResolution {
-        if let Some(offset) = input
-            .options
-            .get("timezone_offset")
-            .and_then(|v| v.as_i64())
-            .map(|v| v as i32)
-        {
-            return TimezoneResolution {
-                offset_minutes: offset,
-                source: "options.timezone_offset",
-            };
-        }
-
-        if let Some(birth) = input.birth_data.as_ref() {
-            if let Some(offset) = Self::timezone_minutes_from_string(&birth.timezone) {
-                return TimezoneResolution {
-                    offset_minutes: offset,
-                    source: "birth_data.timezone",
-                };
+    /// 1) options.timezone_offset (integer minutes, −720..=840)
+    /// 2) birth_data.timezone (IANA name, resolved with daylight saving at
+    ///    the instant, or ±HH:MM)
+    /// 3) UTC (0), reported as `default_utc`
+    ///
+    /// A malformed or out-of-range value is a `ValidationError`; it never
+    /// falls through to the next source or to UTC.
+    fn resolve_timezone(input: &EngineInput) -> Result<TimezoneResolution, EngineError> {
+        match input.options.get("timezone_offset") {
+            None | Some(Value::Null) => {}
+            Some(value) => {
+                let offset = value
+                    .as_i64()
+                    .filter(|offset| OFFSET_RANGE_MINUTES.contains(offset))
+                    .ok_or_else(|| {
+                        EngineError::ValidationError(format!(
+                            "options.timezone_offset must be an integer number of minutes \
+                             from -720 to 840, got {value}"
+                        ))
+                    })?;
+                return Ok(TimezoneResolution {
+                    offset_minutes: offset as i32,
+                    source: "options.timezone_offset",
+                    zone: None,
+                });
             }
         }
 
-        TimezoneResolution {
+        if let Some(birth) = input.birth_data.as_ref() {
+            let (offset_minutes, zone) =
+                Self::offset_for_timezone(&birth.timezone, input.current_time)?;
+            return Ok(TimezoneResolution {
+                offset_minutes,
+                source: "birth_data.timezone",
+                zone,
+            });
+        }
+
+        Ok(TimezoneResolution {
             offset_minutes: 0,
             source: "default_utc",
-        }
+            zone: None,
+        })
     }
 
     /// Resolve the observer location used for sunrise/sunset.
@@ -317,19 +442,52 @@ impl VedicClockEngine {
             })
     }
 
-    /// Extract optional Panchanga indices from options
+    /// Extract optional Panchanga indices from options. A value that is not
+    /// an integer in range is a `ValidationError` rather than being wrapped
+    /// onto another tithi or nakshatra.
     fn get_panchanga_indices(
         options: &std::collections::HashMap<String, Value>,
-    ) -> (Option<u8>, Option<u8>) {
-        let tithi = options
-            .get("tithi_index")
+    ) -> Result<(Option<u8>, Option<u8>), EngineError> {
+        let index = |key: &str, range: std::ops::RangeInclusive<u64>| match options.get(key) {
+            None | Some(Value::Null) => Ok(None),
+            Some(value) => value
+                .as_u64()
+                .filter(|v| range.contains(v))
+                .map(|v| Some(v as u8))
+                .ok_or_else(|| {
+                    EngineError::ValidationError(format!(
+                        "options.{key} must be an integer from {} to {}, got {value}",
+                        range.start(),
+                        range.end()
+                    ))
+                }),
+        };
+        Ok((
+            index("tithi_index", TITHI_RANGE)?,
+            index("nakshatra_index", NAKSHATRA_RANGE)?,
+        ))
+    }
+
+    fn get_consciousness_level(options: &std::collections::HashMap<String, Value>) -> u8 {
+        options
+            .get("consciousness_level")
             .and_then(|v| v.as_u64())
-            .map(|v| v as u8);
-        let nakshatra = options
-            .get("nakshatra_index")
-            .and_then(|v| v.as_u64())
-            .map(|v| v as u8);
-        (tithi, nakshatra)
+            .map(|v| v as u8)
+            .unwrap_or(2)
+    }
+
+    /// Resolve and validate every input that determines the result.
+    fn replay_inputs(input: &EngineInput) -> Result<ReplayInputs, EngineError> {
+        let (tithi, nakshatra) = Self::get_panchanga_indices(&input.options)?;
+        Ok(ReplayInputs {
+            current_time: input.current_time,
+            timezone: Self::resolve_timezone(input)?,
+            location: Self::resolve_location(input)?,
+            activity: Self::get_activity(&input.options),
+            tithi,
+            nakshatra,
+            consciousness_level: Self::get_consciousness_level(&input.options),
+        })
     }
 
     /// Build the result JSON
@@ -487,6 +645,59 @@ fn day_periods(day: &VedicDay, offset_minutes: i32) -> Value {
     })
 }
 
+/// Where each part of the result comes from, so calculated values, table
+/// lookups, caller-supplied inputs and templated narrative are told apart.
+fn provenance_detail(vedic_time: &VedicTime, replay: &ReplayInputs) -> Value {
+    let sun_derived = |what: &str| match vedic_time {
+        VedicTime::Computed { .. } => json!({
+            "origin": "calculated",
+            "method": what,
+        }),
+        VedicTime::NotComputed { reason, .. } => json!({
+            "origin": "not_computed",
+            "reason": reason,
+        }),
+    };
+    let panchanga_quality = if replay.tithi.is_some() || replay.nakshatra.is_some() {
+        json!({
+            "origin": "table_lookup",
+            "inputs": "caller_supplied",
+            "note": "tithi_index/nakshatra_index come from options; the engine does not compute them",
+        })
+    } else {
+        json!({ "origin": "not_supplied" })
+    };
+    json!({
+        "current_organ": { "origin": "table_lookup", "keyed_by": "local_hour" },
+        "current_dosha": { "origin": "table_lookup", "keyed_by": "local_hour" },
+        "upcoming_transitions": { "origin": "table_lookup", "keyed_by": "local_hour" },
+        "sunrise_sunset": sun_derived(SUN_EVENT_METHOD),
+        "hora": sun_derived("sunrise_to_sunset_in_12"),
+        "choghadiya": sun_derived("sunrise_to_sunset_in_8"),
+        "day_periods": sun_derived("eighth_of_daytime"),
+        "panchanga_quality": panchanga_quality,
+        "recommendation": { "origin": "derived_interpretation" },
+        "synthesis": { "origin": "derived_interpretation" },
+        "activity_timing": match replay.activity {
+            Some(_) => json!({ "origin": "derived_interpretation" }),
+            None => json!({ "origin": "not_requested" }),
+        },
+        "witness_prompt": {
+            "origin": "templated_narrative",
+            "selection": "seeded_by_replay_fingerprint",
+        },
+        "fallback": {
+            "used": false,
+            "reason": "calculate has no remote provider or fallback branch; sunrise/sunset are computed offline",
+        },
+        "mock": { "used": false },
+        "generated_artifacts": {
+            "status": "not_applicable",
+            "reason": "the engine renders no media",
+        },
+    })
+}
+
 fn weekday_name(weekday: chrono::Weekday) -> &'static str {
     match weekday {
         chrono::Weekday::Sun => "Sunday",
@@ -522,17 +733,14 @@ impl ConsciousnessEngine for VedicClockEngine {
     async fn calculate(&self, input: EngineInput) -> Result<EngineOutput, EngineError> {
         let start = Instant::now();
 
-        // Get parameters
-        let timezone = Self::resolve_timezone(&input);
-        let location = Self::resolve_location(&input)?;
-        let activity = Self::get_activity(&input.options);
-        let (tithi, nakshatra) = Self::get_panchanga_indices(&input.options);
-
-        // Use current_time from input
-        let datetime = input.current_time;
+        // Every input that determines the result, validated once
+        let replay = Self::replay_inputs(&input)?;
+        let timezone = &replay.timezone;
+        let activity = replay.activity;
+        let datetime = replay.current_time;
 
         // Hora and choghadiya, bounded by local sunrise/sunset
-        let vedic_time = Self::compute_vedic_time(datetime, &timezone, location);
+        let vedic_time = Self::compute_vedic_time(datetime, timezone, replay.location.clone());
 
         // Calculate current organ and dosha
         let current_organ = get_current_organ(datetime, timezone.offset_minutes);
@@ -540,8 +748,12 @@ impl ConsciousnessEngine for VedicClockEngine {
         let current_dosha = get_dosha_for_hour(local_hour);
 
         // Get temporal recommendation
-        let recommendation =
-            get_temporal_recommendation(datetime, timezone.offset_minutes, tithi, nakshatra);
+        let recommendation = get_temporal_recommendation(
+            datetime,
+            timezone.offset_minutes,
+            replay.tithi,
+            replay.nakshatra,
+        );
 
         // Get upcoming transitions
         let upcoming = Some(Self::get_upcoming_transitions(
@@ -558,18 +770,14 @@ impl ConsciousnessEngine for VedicClockEngine {
             calculated_for: datetime.to_rfc3339(),
         };
 
-        // Generate witness prompt
-        let consciousness_level = input
-            .options
-            .get("consciousness_level")
-            .and_then(|v| v.as_u64())
-            .map(|v| v as u8)
-            .unwrap_or(2);
-
-        let witness_prompt = generate_witness_prompt(
+        // Witness prompt: templates chosen by the replay fingerprint, so the
+        // same request always gets the same prompt.
+        let consciousness_level = replay.consciousness_level;
+        let witness_prompt = generate_witness_prompt_seeded(
             &result.current_organ.organ,
             &result.current_dosha.dosha,
             consciousness_level,
+            replay.fingerprint(),
         );
 
         // Ensure witness prompt is non-empty
@@ -579,11 +787,24 @@ impl ConsciousnessEngine for VedicClockEngine {
             ));
         }
 
+        let mut output = self.build_result(&result, activity, datetime, timezone, &vedic_time);
+        output["replay"] = json!({
+            "deterministic": true,
+            "fingerprint": format!("{:016x}", replay.fingerprint()),
+            "inputs": replay.to_json(),
+            "excluded": [
+                "metadata.timestamp",
+                "metadata.calculation_time_ms",
+                "metadata.cached",
+            ],
+        });
+        output["provenance_detail"] = provenance_detail(&vedic_time, &replay);
+
         let elapsed = start.elapsed();
 
         Ok(EngineOutput {
             engine_id: self.engine_id.clone(),
-            result: self.build_result(&result, activity, datetime, &timezone, &vedic_time),
+            result: output,
             witness_prompt,
             consciousness_level,
             metadata: CalculationMetadata {
@@ -647,29 +868,13 @@ impl ConsciousnessEngine for VedicClockEngine {
     }
 
     fn cache_key(&self, input: &EngineInput) -> String {
-        let timezone = Self::resolve_timezone(input);
-        let activity = Self::get_activity(&input.options);
-        let (tithi, nakshatra) = Self::get_panchanga_indices(&input.options);
-
-        // Cache key based on hour (organ windows are 2-hour), timezone, and optional parameters
-        let local_hour = get_local_hour(input.current_time, timezone.offset_minutes);
-        let hour_bucket = local_hour / 2; // Group by 2-hour windows
-
-        let key = format!(
-            "vedic-clock:h{}:tz{}:a{:?}:t{:?}:n{:?}",
-            hour_bucket, timezone.offset_minutes, activity, tithi, nakshatra
-        );
-
-        // Hora and choghadiya boundaries fall at arbitrary instants and depend
-        // on location, so a located request is keyed to its exact instant.
-        match Self::resolve_location(input) {
-            Ok(Some(location)) => format!(
-                "{key}:lat{:.6}:lon{:.6}:s{}",
-                location.latitude,
-                location.longitude,
-                input.current_time.timestamp()
-            ),
-            _ => key,
+        // Keyed on every replay input: organ windows change on odd hours and
+        // hora/choghadiya at arbitrary instants, and the result echoes the
+        // exact instant, so no coarser bucket is safe to share.
+        match Self::replay_inputs(input) {
+            Ok(replay) => replay.canonical(),
+            // `calculate` rejects these inputs; nothing is cached under this.
+            Err(_) => "vedic-clock:invalid-input".to_string(),
         }
     }
     fn as_any(&self) -> &dyn std::any::Any {
@@ -823,11 +1028,13 @@ mod tests {
             options: HashMap::new(),
         };
 
+        let resolve = |input: &EngineInput| VedicClockEngine::resolve_timezone(input).unwrap();
         assert_eq!(
-            VedicClockEngine::resolve_timezone(&input),
+            resolve(&input),
             TimezoneResolution {
                 offset_minutes: 0,
                 source: "default_utc",
+                zone: None,
             }
         );
 
@@ -835,10 +1042,11 @@ mod tests {
             .options
             .insert("timezone_offset".to_string(), json!(330));
         assert_eq!(
-            VedicClockEngine::resolve_timezone(&input),
+            resolve(&input),
             TimezoneResolution {
                 offset_minutes: 330,
                 source: "options.timezone_offset",
+                zone: None,
             }
         );
 
@@ -852,10 +1060,11 @@ mod tests {
             timezone: "Asia/Kolkata".to_string(),
         });
         assert_eq!(
-            VedicClockEngine::resolve_timezone(&input),
+            resolve(&input),
             TimezoneResolution {
                 offset_minutes: 330,
                 source: "birth_data.timezone",
+                zone: Some("Asia/Kolkata".to_string()),
             }
         );
     }
