@@ -326,7 +326,11 @@ impl VedicApiService {
             .await
     }
 
-    /// Get Vimshottari Dasha with automatic fallback to native calculation.
+    /// Get Vimshottari Dasha. Kept for callers of the fallback-aware API.
+    ///
+    /// The dasha is computed natively and never calls the vendor, so there is
+    /// no API failure to fall back from; this is the same as
+    /// [`Self::vimshottari_dasha`].
     pub async fn vimshottari_dasha_with_fallback(
         &self,
         year: i32,
@@ -340,49 +344,10 @@ impl VedicApiService {
         tzone: f64,
         level: DashaLevel,
     ) -> Result<VimshottariDasha> {
-        let start = Instant::now();
-        self.metrics.record_api_call("vimshottari_dasha").await;
-
-        let result = self
-            .client
-            .get_vimshottari_dasha(
-                year, month, day, hour, minute, second, lat, lng, tzone, level,
-            )
-            .await;
-
-        match result {
-            Ok(data) => {
-                self.record_result(
-                    "vimshottari_dasha",
-                    &Ok::<_, crate::VedicApiError>(()),
-                    start,
-                )
-                .await;
-                Ok(data)
-            }
-            Err(ref e) if e.should_fallback() && self.fallback.is_enabled() => {
-                let reason = fallback_reason_label(e);
-                warn!(
-                    endpoint = "vimshottari_dasha",
-                    error = %e,
-                    fallback_reason = reason,
-                    "API failed, using native fallback"
-                );
-                self.metrics
-                    .record_fallback_trigger("vimshottari_dasha")
-                    .await;
-                self.metrics.record_fallback_reason(reason).await;
-                self.resilience_metrics.record_native_fallback();
-                self.fallback.calculate_vimshottari(
-                    year, month, day, hour, minute, second, lat, lng, tzone, level,
-                )
-            }
-            Err(e) => {
-                self.record_result::<()>("vimshottari_dasha", &Err(e.clone()), start)
-                    .await;
-                Err(e)
-            }
-        }
+        self.vimshottari_dasha(
+            year, month, day, hour, minute, second, lat, lng, tzone, level,
+        )
+        .await
     }
 
     /// Get Birth Chart with automatic fallback to native calculation.

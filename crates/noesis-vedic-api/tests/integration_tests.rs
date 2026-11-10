@@ -1190,6 +1190,32 @@ mod fallback_service_tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_vimshottari_with_fallback_invalid_date_is_an_error() {
+        // The dasha is native: invalid input is returned, not replaced by an
+        // approximate fallback calculation.
+        let service = test_service_with_fallback("http://localhost:0");
+        let result = service
+            .vimshottari_dasha_with_fallback(
+                1991,
+                13,
+                14,
+                9,
+                30,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
+            .await;
+        assert!(
+            matches!(result, Err(VedicApiError::InvalidInput { .. })),
+            "unexpected: {:?}",
+            result.map(|d| d.mahadashas.len())
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_vimshottari_with_fallback_success_native() {
         // PR2: vimshottari is native; "API path" never fails over HTTP.
         let service = test_service_with_fallback("http://localhost:0");

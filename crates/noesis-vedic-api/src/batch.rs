@@ -348,64 +348,51 @@ impl BatchScheduler {
         results
     }
 
-    /// Execute a single request with backoff and cache population.
+    /// Execute a single request and populate the cache on success.
     ///
-    /// Panchang is computed natively, so it skips the API retry wrapper.
+    /// Panchang and Vimshottari Dasha are computed natively, so only the birth
+    /// chart, which calls the vendor, goes through the API retry wrapper.
     async fn execute_single(&self, req: &BatchRequest) -> BatchResult {
-        if let RequestType::Panchang = req.request_type {
-            let result = crate::panchang::api::compute_panchang_native(
+        let result = match req.request_type {
+            RequestType::Panchang => crate::panchang::api::compute_panchang_native(
                 req.year, req.month, req.day, req.hour, req.minute, req.second, req.lat, req.lng,
                 req.tzone,
             )
-            .map(BatchResultValue::Panchang);
-            if let Ok(ref value) = result {
-                self.populate_cache(req, value).await;
+            .map(BatchResultValue::Panchang),
+            RequestType::Dasha(level) => self
+                .client
+                .get_vimshottari_dasha(
+                    req.year, req.month, req.day, req.hour, req.minute, req.second, req.lat,
+                    req.lng, req.tzone, level,
+                )
+                .await
+                .map(BatchResultValue::Dasha),
+            RequestType::BirthChart => {
+                let client = self.client.clone();
+                let r = req.clone();
+                self.backoff
+                    .execute(|| {
+                        let c = client.clone();
+                        let r = r.clone();
+                        async move {
+                            c.get_birth_chart(
+                                r.year, r.month, r.day, r.hour, r.minute, r.second, r.lat, r.lng,
+                                r.tzone,
+                            )
+                            .await
+                            .map(BatchResultValue::BirthChart)
+                        }
+                    })
+                    .await
             }
-            return result;
-        }
-
-        let client = self.client.clone();
-        let req_clone = req.clone();
-
-        let api_result = self
-            .backoff
-            .execute(|| {
-                let c = client.clone();
-                let r = req_clone.clone();
-                async move {
-                    match r.request_type {
-                        RequestType::Panchang => c
-                            .get_panchang(
-                                r.year, r.month, r.day, r.hour, r.minute, r.second, r.lat, r.lng,
-                                r.tzone,
-                            )
-                            .await
-                            .map(BatchResultValue::Panchang),
-                        RequestType::BirthChart => c
-                            .get_birth_chart(
-                                r.year, r.month, r.day, r.hour, r.minute, r.second, r.lat, r.lng,
-                                r.tzone,
-                            )
-                            .await
-                            .map(BatchResultValue::BirthChart),
-                        RequestType::Dasha(level) => c
-                            .get_vimshottari_dasha(
-                                r.year, r.month, r.day, r.hour, r.minute, r.second, r.lat, r.lng,
-                                r.tzone, level,
-                            )
-                            .await
-                            .map(BatchResultValue::Dasha),
-                    }
-                }
-            })
-            .await;
+        };
 
         // Populate cache on success
-        if let Ok(ref value) = api_result {
+        if let Ok(ref value) = result {
             self.populate_cache(req, value).await;
         }
 
-        api_result
+        result
     }
 
     /// Check the cache for a request
