@@ -605,6 +605,52 @@ async fn test_batch_scheduler_computes_panchang_without_vendor() {
     assert!(received.is_empty(), "panchang must not call the vendor");
 }
 
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn test_batch_scheduler_computes_dasha_without_vendor() {
+    use noesis_vedic_api::dasha::DashaLevel;
+
+    let server = MockServer::start().await;
+    let config = Config::new("test_key").with_base_url(server.uri());
+    let scheduler = BatchScheduler::new(config, BatchConfig::default());
+
+    let results = scheduler
+        .execute_batch(vec![
+            BatchRequest::dasha(
+                1991,
+                9,
+                14,
+                9,
+                30,
+                0,
+                12.97,
+                77.59,
+                5.5,
+                DashaLevel::Mahadasha,
+            ),
+            BatchRequest::dasha(
+                1991,
+                13,
+                14,
+                9,
+                30,
+                0,
+                12.97,
+                77.59,
+                5.5,
+                DashaLevel::Mahadasha,
+            ),
+        ])
+        .await;
+
+    assert!(results[0].is_ok(), "{:?}", results[0].as_ref().err());
+    assert!(matches!(
+        results[1],
+        Err(VedicApiError::InvalidInput { .. })
+    ));
+    let received = server.received_requests().await.expect("requests");
+    assert!(received.is_empty(), "dasha must not call the vendor");
+}
+
 #[tokio::test]
 async fn test_batch_scheduler_uses_cache() {
     // Panchang is native since PR2, so check the scheduler's cache counters
