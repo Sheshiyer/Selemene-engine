@@ -1,8 +1,8 @@
 //! Admin authorization must be decided before (and independently of) the
 //! database.
 //!
-//! The router here is built with a lazy pool pointed at a port nothing listens
-//! on, so every database call fails. A caller whose JWT lacks the permission
+//! The router here is built with a lazy pool pointed at a local socket that
+//! does not speak the Postgres protocol, so every database call fails. A caller whose JWT lacks the permission
 //! must still get 403 `FORBIDDEN` (never 500), and a caller whose JWT already
 //! carries the permission must not need the database to pass the gate.
 
@@ -14,19 +14,33 @@ use axum::{
 use noesis_api::{build_app_state_lazy_db, create_router, ApiConfig};
 use noesis_auth::AuthService;
 use serde_json::Value;
+use tokio::io::AsyncWriteExt;
 use tower::ServiceExt;
 
 const JWT_SECRET: &str = "admin-authz-db-unreachable-test-secret";
-/// Port 1 on loopback: connections are refused, so every query fails fast.
-const UNREACHABLE_DATABASE_URL: &str =
-    "postgres://noesis_unreachable_role@127.0.0.1:1/noesis_unreachable";
 /// A UUID subject, so the permission resolver would consult the database.
 const USER_ID: &str = "550e8400-e29b-41d4-a716-446655440000";
+
+/// Start a TCP endpoint that answers every connection with non-Postgres bytes
+/// and hangs up. Unlike a refused port (which sqlx retries until its acquire
+/// timeout), this fails each connection attempt immediately.
+async fn broken_database_url() -> String {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind fake database");
+    let port = listener.local_addr().unwrap().port();
+    tokio::spawn(async move {
+        while let Ok((mut socket, _)) = listener.accept().await {
+            let _ = socket.write_all(b"not a postgres server\n").await;
+        }
+    });
+    format!("postgres://noesis_unreachable_role@127.0.0.1:{port}/noesis_unreachable")
+}
 
 async fn unreachable_db_router() -> Router {
     let mut config = ApiConfig::from_env().expect("test config");
     config.jwt_secret = JWT_SECRET.to_string();
-    config.database_url = Some(UNREACHABLE_DATABASE_URL.to_string());
+    config.database_url = Some(broken_database_url().await);
     let state = build_app_state_lazy_db(&config).await;
     assert!(
         state.admin_repository.is_some(),
@@ -106,8 +120,16 @@ async fn viewer_gets_403_not_500_when_database_is_unreachable() {
         ),
         ("GET", "/api/v1/admin/users".into(), "admin:users:list"),
         ("GET", "/api/v1/admin/api-keys".into(), "admin:keys:list"),
-        ("GET", "/api/v1/admin/api-key-tiers".into(), "admin:keys:list"),
-        ("GET", "/api/v1/admin/audit-events".into(), "admin:audit:list"),
+        (
+            "GET",
+            "/api/v1/admin/api-key-tiers".into(),
+            "admin:keys:list",
+        ),
+        (
+            "GET",
+            "/api/v1/admin/audit-events".into(),
+            "admin:audit:list",
+        ),
         (
             "GET",
             format!("/api/v1/admin/audit-events/{READING}"),
