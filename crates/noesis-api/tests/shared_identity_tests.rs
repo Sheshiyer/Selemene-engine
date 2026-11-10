@@ -31,6 +31,30 @@ const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 #[allow(dead_code)]
 const DEV_USER: &str = "00000000-0000-0000-0000-000000000001";
 
+/// Sets an environment variable for the guard's lifetime and restores the
+/// prior value on drop, so a failing assertion cannot leak it into later tests.
+struct EnvVarGuard {
+    key: &'static str,
+    prior: Option<String>,
+}
+
+impl EnvVarGuard {
+    fn set(key: &'static str, value: &str) -> Self {
+        let prior = std::env::var(key).ok();
+        std::env::set_var(key, value);
+        Self { key, prior }
+    }
+}
+
+impl Drop for EnvVarGuard {
+    fn drop(&mut self) {
+        match self.prior.take() {
+            Some(value) => std::env::set_var(self.key, value),
+            None => std::env::remove_var(self.key),
+        }
+    }
+}
+
 fn database_url() -> String {
     std::env::var("DATABASE_URL")
         .unwrap_or_else(|_| "postgres://postgres@localhost/noesis_test".to_string())
@@ -916,8 +940,10 @@ async fn email_link_verifies_signature_audience_and_single_use_without_merging_a
 #[tokio::test]
 #[serial]
 async fn bounded_runtime_role_enforces_rls_and_resets_pooled_context() {
-    let runtime = std::env::var("TEST_SHARED_RUNTIME_URL")
-        .expect("bounded runtime URL required for role verification");
+    let runtime = std::env::var("TEST_SHARED_RUNTIME_URL").expect(
+        "bounded runtime URL required for role verification \
+         (scripts/cloud/test-db.sh provisions one and prints it)",
+    );
     let runtime = PgPoolOptions::new()
         .max_connections(1)
         .connect(&runtime)
@@ -978,6 +1004,10 @@ async fn bounded_runtime_role_enforces_rls_and_resets_pooled_context() {
     std::env::remove_var("TEST_SHARED_RUNTIME_URL");
     let (unbounded, _) = app().await;
     std::env::set_var("TEST_SHARED_RUNTIME_URL", configured);
+    // `app()` runs with RUST_ENV=development, where the privileged-connection
+    // guard is opt-in (docs/shared-identity/ROLLOUT.md). Turn it on explicitly
+    // so this proves a superuser/BYPASSRLS pool is refused when enforced.
+    let _enforce = EnvVarGuard::set("NOESIS_REQUIRE_BOUNDED_DB_ROLE", "true");
     assert_eq!(
         call(
             &unbounded,

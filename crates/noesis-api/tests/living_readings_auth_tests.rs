@@ -6,7 +6,10 @@ use noesis_auth::AuthService;
 mod common;
 
 fn viewer_token() -> String {
-    AuthService::new(common::TEST_JWT_SECRET.to_string())
+    // Requests go through the shared router, which validates with the
+    // environment's JWT secret; sign with that same secret so the request
+    // reaches the permission check instead of failing authentication.
+    AuthService::new(common::shared_router_jwt_secret())
         .generate_jwt_token(
             "550e8400-e29b-41d4-a716-446655440000",
             "free",
