@@ -2,6 +2,10 @@
 //! route and read back through `/api/v1/readings/:id` keeps its provenance
 //! and method fields, and an older stored reading is returned as stored.
 //!
+//! The contract-v1 `provenance` block is stored beside `result` in
+//! `result_data` for native and bridge engines alike; the bridge case runs the
+//! real TypeScript bridge against a mock sidecar serving a committed fixture.
+//!
 //! Requires Postgres at $DATABASE_URL with migrations applied
 //! (`bash scripts/cloud/test-db.sh`). Synthetic data only.
 
@@ -37,6 +41,12 @@ fn database_url() -> String {
 }
 
 async fn app() -> (Router, PgPool) {
+    app_with_bridge(None).await
+}
+
+/// The test app; with `sidecar_url`, the TypeScript bridge engines are
+/// registered against that sidecar, as `build_orchestrator` does in production.
+async fn app_with_bridge(sidecar_url: Option<&str>) -> (Router, PgPool) {
     std::env::set_var("RUST_ENV", "development");
     let pool = PgPoolOptions::new()
         .max_connections(4)
@@ -69,9 +79,18 @@ async fn app() -> (Router, PgPool) {
     };
     let mut orchestrator = WorkflowOrchestrator::new();
     orchestrator.register_native_runtime_engines();
+    let bridge_manager = match sidecar_url {
+        Some(url) => noesis_bridge::BridgeManager::new(url),
+        None => noesis_bridge::BridgeManager::from_env(),
+    };
+    if sidecar_url.is_some() {
+        for engine in bridge_manager.engines() {
+            orchestrator.register_engine(engine);
+        }
+    }
     let state = AppState {
         orchestrator: Arc::new(orchestrator),
-        bridge_manager: Arc::new(noesis_bridge::BridgeManager::from_env()),
+        bridge_manager: Arc::new(bridge_manager),
         workflow_registry: None,
         cache: Arc::new(CacheManager::new(
             String::new(),
@@ -138,21 +157,25 @@ fn get_reading(id: Uuid) -> Request<Body> {
 
 /// The calculate route persists fire-and-forget, so wait for the row.
 async fn wait_for_reading(pool: &PgPool, uid: Uuid) -> Uuid {
+    wait_for_engine_reading(pool, uid, "panchanga").await
+}
+
+async fn wait_for_engine_reading(pool: &PgPool, uid: Uuid, engine_id: &str) -> Uuid {
     let deadline = Instant::now() + Duration::from_secs(10);
     loop {
-        let id: Option<Uuid> = sqlx::query_scalar(
-            "SELECT id FROM readings WHERE user_id = $1 AND engine_id = 'panchanga'",
-        )
-        .bind(uid)
-        .fetch_optional(pool)
-        .await
-        .unwrap();
+        let id: Option<Uuid> =
+            sqlx::query_scalar("SELECT id FROM readings WHERE user_id = $1 AND engine_id = $2")
+                .bind(uid)
+                .bind(engine_id)
+                .fetch_optional(pool)
+                .await
+                .unwrap();
         if let Some(id) = id {
             return id;
         }
         assert!(
             Instant::now() < deadline,
-            "panchanga reading was never persisted"
+            "{engine_id} reading was never persisted"
         );
         tokio::time::sleep(Duration::from_millis(50)).await;
     }
@@ -209,12 +232,12 @@ async fn calculated_panchanga_reading_persists_provenance_fields() {
             "stored result.{field} differs from the calculate response"
         );
     }
-    // The reading stores the engine output, not the API envelope, so the
-    // envelope's `provenance` block is not stored. For a native engine that
-    // block is derived from `metadata` alone (`native_contract_provenance`),
-    // and the stored metadata carries every field it is built from.
+    // The envelope's contract-v1 `provenance` block is stored beside `result`
+    // and served back unchanged; it still agrees with the stored metadata it
+    // is derived from for a native engine.
     let provenance = &calculated["provenance"];
     assert_eq!(provenance["runtime_kind"], "native");
+    assert_eq!(&stored["provenance"], provenance);
     assert_eq!(
         stored["metadata"]["fallback_used"],
         provenance["fallback_used"]
@@ -266,7 +289,69 @@ async fn pre_provenance_panchanga_reading_is_returned_as_stored() {
     assert_eq!(status, StatusCode::OK, "get reading: {reading}");
     // Returned exactly as stored: nothing is relabelled as newly calculated.
     assert_eq!(reading["result_data"], old_result);
+    // No provenance block is invented for a reading stored without one.
+    assert!(reading["result_data"].get("provenance").is_none());
     for field in ["position_source", "vara_basis", "ayanamsa_degrees"] {
         assert!(reading["result_data"]["result"].get(field).is_none());
     }
+}
+
+#[tokio::test]
+#[serial]
+async fn bridge_reading_keeps_contract_provenance_confidence() {
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    // The committed enneagram sidecar fixture (synthetic answers, seed 7): its
+    // assessment case declares `confidence`, which only the contract block carries.
+    let fixture: Value = serde_json::from_str(include_str!(
+        "../../../ts-engines/tests/fixtures/enneagram/bridge-round-trip.json"
+    ))
+    .unwrap();
+    let case = fixture["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["name"] == "assessment-partial")
+        .expect("assessment-partial case");
+    let sidecar_response = case["sidecar_response"].clone();
+    let confidence = sidecar_response["provenance"]["confidence"].clone();
+    assert!(confidence.is_number(), "fixture must declare confidence");
+
+    let sidecar = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/engines/enneagram/calculate"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(&sidecar_response))
+        .mount(&sidecar)
+        .await;
+
+    let (router, pool) = app_with_bridge(Some(&sidecar.uri())).await;
+    let uid = fresh_dev_user(&pool).await;
+
+    let body = json!({ "options": case["input"]["parameters"] });
+    let (status, calculated) = send(
+        &router,
+        Request::post("/api/v1/engines/enneagram/calculate")
+            .header("x-noesis-dev-auth", DEV_TOKEN)
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(body.to_string()))
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "calculate: {calculated}");
+    assert_eq!(calculated["provenance"]["confidence"], confidence);
+
+    let id = wait_for_engine_reading(&pool, uid, "enneagram").await;
+    let (status, reading) = send(&router, get_reading(id)).await;
+    assert_eq!(status, StatusCode::OK, "get reading: {reading}");
+    let stored = &reading["result_data"];
+
+    // The whole envelope block survives the save and reload, beside `result`.
+    assert_eq!(stored["provenance"], calculated["provenance"]);
+    assert_eq!(stored["provenance"]["confidence"], confidence);
+    assert_eq!(stored["provenance"]["runtime_kind"], "typescript");
+    assert_eq!(stored["result"], calculated["result"]);
+    // The reserved scaffolding keys never reach the stored result.
+    assert!(stored["result"].get("__contract_provenance").is_none());
+    assert!(stored["result"].get("__contract_witness_prompts").is_none());
 }

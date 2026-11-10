@@ -1802,6 +1802,51 @@ impl ApiEngineOutputResponse {
     }
 }
 
+impl ApiEngineOutputResponse {
+    /// The `result_data` stored for this reading: the engine output with the
+    /// envelope's contract-v1 `provenance` block (when it has one) as a
+    /// top-level sibling of `result`, as on the wire, so the reading can be
+    /// audited later; bridge fields such as `confidence` exist nowhere else.
+    /// The reserved scaffolding keys were already lifted out of `result` by
+    /// [`Self::from_engine_output`]. Older readings carry no block and are
+    /// never given one.
+    fn reading_result_data(&self) -> Value {
+        let mut data = serde_json::to_value(&self.output).unwrap_or_default();
+        if let (Some(object), Some(provenance)) = (data.as_object_mut(), &self.provenance) {
+            object.insert(
+                "provenance".to_string(),
+                serde_json::to_value(provenance).unwrap_or_default(),
+            );
+        }
+        data
+    }
+}
+
+/// The `result_data` stored for a workflow reading: each entry of
+/// `engine_outputs` carries its engine's envelope provenance beside `result`,
+/// as [`ApiEngineOutputResponse::reading_result_data`] does. `provenance` comes from
+/// [`strip_workflow_contract_provenance`].
+fn workflow_reading_result_data(
+    workflow: &WorkflowResult,
+    provenance: &HashMap<String, noesis_core::contract::Provenance>,
+) -> Value {
+    let mut data = serde_json::to_value(workflow).unwrap_or_default();
+    if let Some(outputs) = data
+        .get_mut("engine_outputs")
+        .and_then(Value::as_object_mut)
+    {
+        for (engine_id, block) in provenance {
+            if let Some(output) = outputs.get_mut(engine_id).and_then(Value::as_object_mut) {
+                output.insert(
+                    "provenance".to_string(),
+                    serde_json::to_value(block).unwrap_or_default(),
+                );
+            }
+        }
+    }
+    data
+}
+
 #[derive(Serialize, ToSchema)]
 struct ApiWitnessPrompt {
     prompt: String,
@@ -3284,7 +3329,7 @@ async fn calculate_handler(
                     workflow_id: None,
                     input_hash,
                     input_data: input_json,
-                    result_data: serde_json::to_value(output).unwrap_or_default(),
+                    result_data: envelope.reading_result_data(),
                     witness_prompt: Some(output.witness_prompt.clone()),
                     consciousness_level: output.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
@@ -3763,7 +3808,7 @@ async fn execute_workflow_by_id(
                     workflow_id: Some(workflow_id.clone()),
                     input_hash,
                     input_data: input_json,
-                    result_data: serde_json::to_value(&workflow_result).unwrap_or_default(),
+                    result_data: workflow_reading_result_data(&workflow_result, &provenance),
                     witness_prompt: None,
                     consciousness_level: user.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
@@ -5203,7 +5248,7 @@ mod p4_contract_tests {
     fn sigil_contract_provenance_is_lifted_into_envelope_and_stripped_from_result() {
         // Lane S4: a seven-field sigil provenance block stashed by the bridge
         // under the reserved key becomes the envelope's top-level `provenance`
-        // and never appears inside `result` (which is what gets persisted).
+        // and never appears inside `result`.
         let output = EngineOutput {
             engine_id: "sigil-forge".to_string(),
             result: serde_json::json!({
@@ -5319,6 +5364,15 @@ mod p4_contract_tests {
         assert!(wire["result"]
             .get(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY)
             .is_none());
+
+        // The stored reading keeps the same block beside `result`, and neither
+        // reserved scaffolding key.
+        let persisted = envelope.reading_result_data();
+        assert_eq!(persisted["provenance"], wire["provenance"]);
+        assert_eq!(persisted["result"], wire["result"]);
+        let stored = persisted.to_string();
+        assert!(!stored.contains(noesis_bridge::CONTRACT_PROVENANCE_KEY));
+        assert!(!stored.contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
     }
 
     #[test]
@@ -5435,16 +5489,16 @@ mod p4_contract_tests {
         assert_eq!(parse(&wire["provenance"]), parse(&sidecar["provenance"]));
         assert_eq!(wire["result"], sidecar["result"]);
 
-        // calculate_handler persists `serde_json::to_value(&envelope.output)` as
-        // the reading's result_data: cast/derived origins survive, the contract
-        // block deliberately does not (it lives only on the response envelope).
-        let persisted = serde_json::to_value(&envelope.output).unwrap();
+        // calculate_handler persists `envelope.reading_result_data()`: cast/derived
+        // origins survive, and so does the whole contract block, beside `result`.
+        let persisted = envelope.reading_result_data();
         assert_eq!(persisted["result"], sidecar["result"]);
         assert_eq!(
             persisted["result"]["derivation"]["line_values"]["origin"],
             "cast"
         );
-        assert!(persisted.get("provenance").is_none());
+        assert_eq!(persisted["provenance"], wire["provenance"]);
+        assert_eq!(persisted["provenance"]["confidence"], 1.0);
         assert!(persisted["result"]
             .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
             .is_none());
@@ -5467,16 +5521,24 @@ mod p4_contract_tests {
             timestamp: "2026-11-07T00:00:00Z".parse().unwrap(),
         };
         let provenance = strip_workflow_contract_provenance(&mut workflow, |_| false);
+        let parse = |v: &Value| -> noesis_core::contract::Provenance {
+            serde_json::from_value(v.clone()).unwrap()
+        };
 
-        // workflow_handler persists `serde_json::to_value(&workflow_result)` after
-        // the strip: derivation stays, the contract block does not.
-        let persisted = serde_json::to_value(&workflow).unwrap();
+        // workflow_handler persists `workflow_reading_result_data` after the
+        // strip: derivation stays, and the engine's contract block sits beside
+        // its `result`.
+        let persisted = workflow_reading_result_data(&workflow, &provenance);
         assert_eq!(
             persisted["engine_outputs"]["i-ching"]["result"],
             sidecar["result"]
         );
-        assert!(persisted["engine_outputs"]["i-ching"]
-            .get("provenance")
+        assert_eq!(
+            parse(&persisted["engine_outputs"]["i-ching"]["provenance"]),
+            parse(&sidecar["provenance"])
+        );
+        assert!(persisted["engine_outputs"]["i-ching"]["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
             .is_none());
         // GH #1411: the witness scaffolding key is never stored either.
         assert!(!persisted
@@ -5494,9 +5556,6 @@ mod p4_contract_tests {
             "UPDATE_I_CHING_FIXTURE",
         );
         let engine_result = &wire["engine_results"]["i-ching"];
-        let parse = |v: &Value| -> noesis_core::contract::Provenance {
-            serde_json::from_value(v.clone()).unwrap()
-        };
         assert_eq!(
             parse(&engine_result["provenance"]),
             parse(&sidecar["provenance"])
@@ -5548,11 +5607,7 @@ mod p4_contract_tests {
         let (sidecar, output) = i_ching_fixture_output();
         let envelope = ApiEngineOutputResponse::from_engine_output(output.clone(), false);
         let single = readings
-            .save_reading(&reading(
-                "i-ching",
-                None,
-                serde_json::to_value(&envelope.output).unwrap(),
-            ))
+            .save_reading(&reading("i-ching", None, envelope.reading_result_data()))
             .await
             .expect("save calculate reading");
 
@@ -5563,19 +5618,25 @@ mod p4_contract_tests {
             total_time_ms: 0.0,
             timestamp: "2026-11-07T00:00:00Z".parse().unwrap(),
         };
-        strip_workflow_contract_provenance(&mut workflow, |_| false);
+        let provenance = strip_workflow_contract_provenance(&mut workflow, |_| false);
         let flow = readings
             .save_reading(&reading(
                 "workflow:decision-support",
                 Some("decision-support".to_string()),
-                serde_json::to_value(&workflow).unwrap(),
+                workflow_reading_result_data(&workflow, &provenance),
             ))
             .await
             .expect("save workflow reading");
 
-        for (id, path) in [
-            (single, "/result"),
-            (flow, "/engine_outputs/i-ching/result"),
+        let sidecar_block: noesis_core::contract::Provenance =
+            serde_json::from_value(sidecar["provenance"].clone()).unwrap();
+        for (id, path, block_path) in [
+            (single, "/result", "/provenance"),
+            (
+                flow,
+                "/engine_outputs/i-ching/result",
+                "/engine_outputs/i-ching/provenance",
+            ),
         ] {
             let stored = readings
                 .get_reading(id, user.id)
@@ -5590,8 +5651,17 @@ mod p4_contract_tests {
                 .result_data
                 .to_string()
                 .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
-            // By design the contract block is response-only, never stored.
-            assert!(!stored.result_data.to_string().contains("\"runtime_kind\""));
+            // The contract block is stored beside `result` and reloads intact.
+            let block: noesis_core::contract::Provenance = serde_json::from_value(
+                stored
+                    .result_data
+                    .pointer(block_path)
+                    .expect("stored block")
+                    .clone(),
+            )
+            .unwrap();
+            assert_eq!(block, sidecar_block, "{block_path}");
+            assert_eq!(block.confidence, Some(1.0));
         }
     }
 
