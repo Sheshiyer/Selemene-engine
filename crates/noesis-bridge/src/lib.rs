@@ -825,7 +825,7 @@ pub fn ts_response_into_output(ts_response: TsEngineResponse, required_phase: u8
             .unwrap_or_else(|| "What does this reveal to you?".to_string()),
         consciousness_level: required_phase,
         metadata: CalculationMetadata {
-            calculation_time_ms: ts_response.processing_time_ms as f64,
+            calculation_time_ms: ts_response.processing_time_ms,
             backend: "typescript".to_string(),
             precision_achieved: "exact".to_string(),
             cached: false,
