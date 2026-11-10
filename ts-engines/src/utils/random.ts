@@ -2,6 +2,8 @@
  * Seeded pseudo-random number generator
  * Uses xorshift128+ algorithm for reproducible randomness
  */
+import { EngineValidationError } from './errors'
+
 const MASK_64 = (1n << 64n) - 1n
 
 /**
@@ -78,4 +80,17 @@ export class SeededRandom {
 /** Get current timestamp seed if no seed provided (always returns non-negative uint32) */
 export function getDefaultSeed(): number {
   return (Date.now() ^ Math.floor(Math.random() * 0x100000000)) >>> 0
+}
+
+/**
+ * Reject a caller-supplied seed SeededRandom cannot use. BigInt() throws a
+ * RangeError for non-integer and non-finite numbers, which would otherwise
+ * surface as a 500; this makes it the same INVALID_SEED validation error
+ * I Ching reports. An omitted seed is fine (callers fall back to
+ * getDefaultSeed()).
+ */
+export function assertIntegerSeed(seed: number | undefined): void {
+  if (seed !== undefined && !Number.isInteger(seed)) {
+    throw new EngineValidationError('Seed must be an integer.', 'INVALID_SEED', { field: 'seed' })
+  }
 }
