@@ -3,6 +3,8 @@
 # database with every migration applied, for the DB-backed cargo tests.
 # Cloud sessions have no running services, so run this once per session:
 #   bash scripts/cloud/test-db.sh && cargo test -p noesis-api --test billing_e2e_tests -- --test-threads=1
+# The shared-identity RLS tests also need the bounded runtime role it prints:
+#   TEST_SHARED_RUNTIME_URL=postgres://noesis_api_runtime@localhost/noesis_test
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
@@ -23,4 +25,9 @@ fi
 
 psql -q -h localhost -U postgres -c "DROP DATABASE IF EXISTS $db" -c "CREATE DATABASE $db"
 bash scripts/apply-migrations.sh --migrations-dir migrations -- -q -h localhost -U postgres -d "$db"
+# Bounded API runtime role (NOSUPERUSER, NOBYPASSRLS) for the shared-identity
+# RLS tests, provisioned with the same script operators run in production.
+# Local trust auth means it needs no password here.
+psql -q -h localhost -U postgres -d "$db" -v ON_ERROR_STOP=1 -f scripts/identity/provision-runtime-role.sql
 echo "ready: postgres://postgres@localhost/$db"
+echo "runtime: TEST_SHARED_RUNTIME_URL=postgres://noesis_api_runtime@localhost/$db"

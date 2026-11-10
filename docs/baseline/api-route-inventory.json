@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 101,
-  "route_count": 107,
+  "path_count": 120,
+  "route_count": 131,
   "routes": [
     {
       "path": "/auth/register",
@@ -61,6 +61,65 @@
       ]
     },
     {
+      "path": "/sessions/token",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::sessions::token"
+        }
+      ]
+    },
+    {
+      "path": "/sessions/revoke",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::sessions::revoke"
+        }
+      ]
+    },
+    {
+      "path": "/account/email-links/complete",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::shared_identity::complete_email_link"
+        }
+      ]
+    },
+    {
+      "path": "/account/email-links/begin",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::shared_identity::email_begin_page"
+        },
+        {
+          "method": "POST",
+          "handler": "handlers::shared_identity::bind_email_browser"
+        }
+      ]
+    },
+    {
+      "path": "/account/email-links/verify",
+      "auth_requirement": "public",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::shared_identity::verify_email_link"
+        }
+      ]
+    },
+    {
       "path": "/desktop/token",
       "auth_requirement": "public",
       "uses_orchestrator": false,
@@ -79,6 +138,21 @@
         {
           "method": "POST",
           "handler": "handlers::desktop_auth::revoke"
+        }
+      ]
+    },
+    {
+      "path": "/subjects/:id/witness",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::witness_catalog::catalog"
+        },
+        {
+          "method": "POST",
+          "handler": "handlers::witness_catalog::publish"
         }
       ]
     },
@@ -112,6 +186,150 @@
         {
           "method": "GET",
           "handler": "handlers::desktop_auth::authorize"
+        }
+      ]
+    },
+    {
+      "path": "/sessions/authorize",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::sessions::authorize"
+        }
+      ]
+    },
+    {
+      "path": "/users/me/context",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::shared_identity::context"
+        },
+        {
+          "method": "PATCH",
+          "handler": "handlers::shared_identity::update_context"
+        }
+      ]
+    },
+    {
+      "path": "/subjects/:id/profile",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::shared_identity::profile"
+        },
+        {
+          "method": "PATCH",
+          "handler": "handlers::shared_identity::update_profile"
+        }
+      ]
+    },
+    {
+      "path": "/subjects/:id/engines/:engine/calculate",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::shared_identity::calculate"
+        }
+      ]
+    },
+    {
+      "path": "/subjects/:id/readings",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::shared_identity::readings"
+        }
+      ]
+    },
+    {
+      "path": "/subjects/:id/readings/:reading",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::shared_identity::reading"
+        }
+      ]
+    },
+    {
+      "path": "/account/enrollments",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::shared_identity::create_enrollment"
+        },
+        {
+          "method": "GET",
+          "handler": "handlers::shared_identity::pending_enrollments"
+        }
+      ]
+    },
+    {
+      "path": "/account/enrollments/preview",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::shared_identity::preview_enrollment"
+        }
+      ]
+    },
+    {
+      "path": "/account/enrollments/claim",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::shared_identity::claim_enrollment"
+        }
+      ]
+    },
+    {
+      "path": "/account/enrollments/:id/confirm",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::shared_identity::confirm_enrollment"
+        }
+      ]
+    },
+    {
+      "path": "/account/enrollments/:id",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "DELETE",
+          "handler": "handlers::shared_identity::revoke_enrollment"
+        }
+      ]
+    },
+    {
+      "path": "/account/email-links",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::shared_identity::start_email_link"
         }
       ]
     },
@@ -329,6 +547,17 @@
         {
           "method": "PUT",
           "handler": "handlers::admin::update_user_roles"
+        }
+      ]
+    },
+    {
+      "path": "/admin/api-key-tiers",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::admin::api_key_tiers"
         }
       ]
     },
