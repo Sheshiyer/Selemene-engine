@@ -7,12 +7,12 @@ use std::future::Future;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
-use tracing::{debug, error, info, warn};
+use tracing::{debug, warn};
 
 use crate::{
     cache::{panchang_key, ApiCache},
     panchang::Panchang,
-    Config, VedicApiClient, VedicApiError,
+    Config, VedicApiError,
 };
 
 // ====================== EXPONENTIAL BACKOFF (FAPI-105) ======================
@@ -173,43 +173,26 @@ pub struct FallbackResult<T> {
     pub total_duration: Duration,
 }
 
-/// Orchestrates the fallback chain: API -> Cache -> Native Calculation
+/// Cache-first Panchang lookup with provenance metadata.
+///
+/// Panchang is computed natively (`panchang::api::compute_panchang_native`)
+/// and never calls the vendor API, so there is no API step to fall back
+/// from: a request is served from the cache, or computed locally and
+/// labelled [`FallbackSource::NativeCalculation`].
 #[derive(Debug)]
 pub struct FallbackChain {
-    client: VedicApiClient,
     cache: ApiCache,
-    backoff: ExponentialBackoff,
     metrics: ResilienceMetrics,
-    config: Config,
 }
 
 impl FallbackChain {
-    /// Create a new fallback chain with the given API configuration
-    pub fn new(config: Config) -> Self {
-        let client = VedicApiClient::new(config.clone());
-        let cache = ApiCache::new();
-        let backoff = ExponentialBackoff::new(BackoffConfig {
-            initial_delay_ms: 100,
-            max_delay_ms: 5000,
-            max_retries: 2,
-            multiplier: 2.0,
-            jitter: false,
-        });
-        let metrics = ResilienceMetrics::new();
-
+    /// Create a new chain. `config` is accepted for compatibility; Panchang
+    /// needs no API configuration.
+    pub fn new(_config: Config) -> Self {
         Self {
-            client,
-            cache,
-            backoff,
-            metrics,
-            config,
+            cache: ApiCache::new(),
+            metrics: ResilienceMetrics::new(),
         }
-    }
-
-    /// Create with custom backoff configuration
-    pub fn with_backoff(mut self, config: BackoffConfig) -> Self {
-        self.backoff = ExponentialBackoff::new(config);
-        self
     }
 
     /// Get a reference to the resilience metrics
@@ -217,10 +200,13 @@ impl FallbackChain {
         &self.metrics
     }
 
-    /// Execute the full fallback chain for a Panchang request:
-    /// 1. Try cache first (fast path)
-    /// 2. Try API with backoff
-    /// 3. Fall back to native calculation
+    /// Get a Panchang:
+    /// 1. from the cache, labelled [`FallbackSource::Cache`];
+    /// 2. otherwise computed natively and cached, labelled
+    ///    [`FallbackSource::NativeCalculation`].
+    ///
+    /// Invalid input (e.g. month 13) is returned as the native calculator's
+    /// error.
     pub async fn get_panchang(
         &self,
         year: i32,
@@ -235,225 +221,30 @@ impl FallbackChain {
     ) -> Result<FallbackResult<Panchang>, VedicApiError> {
         let start = Instant::now();
         let cache_key = panchang_key(year, month, day, lat, lng);
-        let mut attempts: u32 = 0;
 
         // ---- Step 1: Check cache ----
-        attempts += 1;
         if let Some(cached) = self.cache.get_panchang(&cache_key).await {
             debug!("Fallback chain: cache hit for {}", cache_key);
             self.metrics.record_cache_hit();
             return Ok(FallbackResult {
                 value: cached,
                 source: FallbackSource::Cache,
-                attempts,
+                attempts: 1,
                 total_duration: start.elapsed(),
             });
         }
 
-        // ---- Step 2: Try API with backoff ----
-        attempts += 1;
-        let client = self.client.clone();
-        let api_result = self
-            .backoff
-            .execute(|| {
-                let c = client.clone();
-                async move {
-                    c.get_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
-                        .await
-                }
-            })
-            .await;
-
-        match api_result {
-            Ok(panchang) => {
-                info!("Fallback chain: API success for {}", cache_key);
-                self.metrics.record_api_success();
-                // Populate cache for next time
-                self.cache.set_panchang(&cache_key, panchang.clone()).await;
-                Ok(FallbackResult {
-                    value: panchang,
-                    source: FallbackSource::Api,
-                    attempts,
-                    total_duration: start.elapsed(),
-                })
-            }
-            Err(api_err) => {
-                warn!("Fallback chain: API failed ({}), trying native", api_err);
-                self.metrics.record_api_failure();
-
-                // ---- Step 3: Native calculation fallback ----
-                if self.config.fallback_enabled {
-                    attempts += 1;
-                    match self
-                        .native_panchang(year, month, day, hour, minute, second, lat, lng, tzone)
-                    {
-                        Ok(panchang) => {
-                            info!("Fallback chain: native calculation success");
-                            self.metrics.record_native_fallback();
-                            // Cache the native result too
-                            self.cache.set_panchang(&cache_key, panchang.clone()).await;
-                            Ok(FallbackResult {
-                                value: panchang,
-                                source: FallbackSource::NativeCalculation,
-                                attempts,
-                                total_duration: start.elapsed(),
-                            })
-                        }
-                        Err(native_err) => {
-                            error!(
-                                "Fallback chain: all sources failed. API: {}, Native: {}",
-                                api_err, native_err
-                            );
-                            Err(VedicApiError::FallbackFailed {
-                                api_error: Box::new(api_err),
-                                native_error: native_err,
-                            })
-                        }
-                    }
-                } else {
-                    Err(api_err)
-                }
-            }
-        }
-    }
-
-    /// Native Panchang calculation fallback.
-    /// Returns a basic Panchang with approximate values computed locally.
-    fn native_panchang(
-        &self,
-        year: i32,
-        month: u32,
-        day: u32,
-        _hour: u32,
-        _minute: u32,
-        _second: u32,
-        lat: f64,
-        lng: f64,
-        tzone: f64,
-    ) -> std::result::Result<Panchang, String> {
-        use crate::panchang::*;
-
-        // Compute Julian Day Number for basic astronomical reference
-        let jdn = julian_day_number(year, month, day);
-
-        // Approximate tithi from lunar phase (synodic month ~ 29.53 days)
-        let lunar_age = (jdn - 2451550.1) % 29.530588; // Reference new moon
-        let tithi_num = ((lunar_age / 29.530588) * 30.0).floor() as u32 + 1;
-        let tithi_num = tithi_num.clamp(1, 30);
-        let tithi_name = TithiName::from_number(tithi_num);
-        let paksha = if tithi_num <= 15 {
-            Paksha::Shukla
-        } else {
-            Paksha::Krishna
-        };
-
-        // Approximate nakshatra from lunar longitude
-        // Moon moves ~13.2 degrees/day, 27 nakshatras span 360 degrees
-        let moon_lng = (lunar_age * 13.176) % 360.0;
-        let nakshatra_num = ((moon_lng / 13.333).floor() as u32 + 1).min(27);
-        let nakshatra_name = NakshatraName::from_number(nakshatra_num);
-        let pada = ((moon_lng % 13.333) / 3.333).floor() as u32 + 1;
-
-        // Yoga: sum of sun and moon longitudes / 13.333
-        let sun_lng = approximate_sun_longitude(jdn);
-        let yoga_value = (sun_lng + moon_lng) % 360.0;
-        let yoga_num = ((yoga_value / 13.333).floor() as u32 + 1).min(27);
-        let yoga_name = YogaName::from_number(yoga_num);
-
-        // Karana: half of tithi
-        let karana_num = ((tithi_num - 1) * 2 + 1).min(60);
-        let karana_name = KaranaName::from_number(karana_num);
-
-        // Vara (day of week) from JDN
-        let vara_num = (((jdn as i64 + 1) % 7) as u8).max(1);
-        let vara = Vara::from_number(vara_num).unwrap_or(Vara::Monday);
-
-        // Sunrise/sunset in local clock time. `next_sunrise` must be
-        // tomorrow's sunrise — feeding `sunrise` itself collapses the
-        // downstream night window in choghadiya/hora helpers to zero.
-        let (sunrise, sunset, next_sunrise) = day_boundary_times(year, month, day, lat, lng, tzone);
-
-        Ok(Panchang {
-            date: DateInfo {
-                year,
-                month,
-                day,
-                day_of_week: vara_num,
-                julian_day: jdn,
-                hindu_date: None,
-            },
-            location: Location {
-                latitude: lat,
-                longitude: lng,
-                timezone: tzone,
-                name: None,
-            },
-            tithi: Tithi {
-                number: tithi_num as u8,
-                name_tithi: tithi_name,
-                start_time: "00:00".to_string(),
-                end_time: "23:59".to_string(),
-                is_complete: true,
-            },
-            nakshatra: Nakshatra {
-                number: nakshatra_num as u8,
-                name_nakshatra: nakshatra_name,
-                pada: pada as u8,
-                start_time: "00:00".to_string(),
-                end_time: "23:59".to_string(),
-                longitude: moon_lng,
-            },
-            yoga: Yoga {
-                number: yoga_num as u8,
-                name_yoga: yoga_name,
-                start_time: "00:00".to_string(),
-                end_time: "23:59".to_string(),
-            },
-            karana: Karana {
-                name_karana: karana_name,
-                karana_type: KaranaType::Movable,
-                start_time: "00:00".to_string(),
-                end_time: "23:59".to_string(),
-            },
-            vara,
-            paksha,
-            planets: PlanetaryPositions {
-                sun: PlanetPosition {
-                    name: "Sun".to_string(),
-                    longitude: sun_lng,
-                    latitude: 0.0,
-                    speed: 1.0,
-                    sign: sign_from_longitude(sun_lng).to_string(),
-                    nakshatra: "Native".to_string(),
-                    pada: 1,
-                    is_retrograde: false,
-                },
-                moon: PlanetPosition {
-                    name: "Moon".to_string(),
-                    longitude: moon_lng,
-                    latitude: 0.0,
-                    speed: 13.2,
-                    sign: sign_from_longitude(moon_lng).to_string(),
-                    nakshatra: "Native".to_string(),
-                    pada: pada as u8,
-                    is_retrograde: false,
-                },
-                mars: None,
-                mercury: None,
-                jupiter: None,
-                venus: None,
-                saturn: None,
-                rahu: None,
-                ketu: None,
-            },
-            day_boundaries: DayBoundaries {
-                sunrise,
-                sunset,
-                next_sunrise,
-                day_duration: "12:00".to_string(),
-                night_duration: "12:00".to_string(),
-            },
-            ayanamsa: 24.17, // Approximate Lahiri ayanamsa for modern era
+        // ---- Step 2: Compute natively ----
+        let panchang = crate::panchang::api::compute_panchang_native(
+            year, month, day, hour, minute, second, lat, lng, tzone,
+        )?;
+        debug!("Fallback chain: computed natively for {}", cache_key);
+        self.cache.set_panchang(&cache_key, panchang.clone()).await;
+        Ok(FallbackResult {
+            value: panchang,
+            source: FallbackSource::NativeCalculation,
+            attempts: 2,
+            total_duration: start.elapsed(),
         })
     }
 }

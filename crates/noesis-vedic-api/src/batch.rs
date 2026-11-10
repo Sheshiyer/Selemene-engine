@@ -348,8 +348,22 @@ impl BatchScheduler {
         results
     }
 
-    /// Execute a single request with backoff and cache population
+    /// Execute a single request with backoff and cache population.
+    ///
+    /// Panchang is computed natively, so it skips the API retry wrapper.
     async fn execute_single(&self, req: &BatchRequest) -> BatchResult {
+        if let RequestType::Panchang = req.request_type {
+            let result = crate::panchang::api::compute_panchang_native(
+                req.year, req.month, req.day, req.hour, req.minute, req.second, req.lat, req.lng,
+                req.tzone,
+            )
+            .map(BatchResultValue::Panchang);
+            if let Ok(ref value) = result {
+                self.populate_cache(req, value).await;
+            }
+            return result;
+        }
+
         let client = self.client.clone();
         let req_clone = req.clone();
 

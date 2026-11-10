@@ -391,16 +391,13 @@ fn test_resilience_metrics_fallback_rate_no_requests() {
     assert_eq!(metrics.fallback_rate(), 0.0);
 }
 
-#[tokio::test]
-async fn test_fallback_chain_api_success_path() {
-    let server = MockServer::start().await;
-    let sample = sample_panchang();
+// Panchang is computed natively: the chain serves it from the cache or
+// computes it locally, labelled `NativeCalculation`. It never calls the
+// vendor, so there is no API step to succeed, fail or fall back from.
 
-    Mock::given(method("POST"))
-        .and(path("/panchang"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(&sample))
-        .mount(&server)
-        .await;
+#[tokio::test]
+async fn test_fallback_chain_computes_panchang_natively() {
+    let server = MockServer::start().await;
 
     let config = Config::new("test_key").with_base_url(server.uri());
     let chain = FallbackChain::new(config);
@@ -411,15 +408,32 @@ async fn test_fallback_chain_api_success_path() {
 
     assert!(result.is_ok());
     let fallback_result = result.unwrap();
-    assert!(matches!(fallback_result.source, FallbackSource::Api));
-    // Chain checks cache first (attempt 1), then API (attempt 2)
+    assert!(matches!(
+        fallback_result.source,
+        FallbackSource::NativeCalculation
+    ));
+    // Chain checks cache first (attempt 1), then computes (attempt 2)
     assert_eq!(fallback_result.attempts, 2);
+    let received = server.received_requests().await.expect("requests");
+    assert!(received.is_empty(), "panchang must not call the vendor");
+    let metrics = chain.metrics();
+    assert_eq!((metrics.api_successes(), metrics.api_failures()), (0, 0));
 }
 
-// Panchang has been computed natively since PR2: the chain's "API" step
-// calls `VedicApiClient::get_panchang`, which makes no HTTP request and so
-// cannot fail on the network. These tests check what the chain still does:
-// serve a repeat request from cache, and answer with no reachable vendor.
+#[tokio::test]
+async fn test_fallback_chain_returns_invalid_input_error() {
+    let config = Config::new("test_key").with_base_url("http://127.0.0.1:1");
+    let chain = FallbackChain::new(config);
+
+    let err = chain
+        .get_panchang(2024, 13, 1, 12, 0, 0, 12.97, 77.59, 5.5)
+        .await
+        .expect_err("month 13 must be rejected");
+    assert!(
+        matches!(err, VedicApiError::InvalidInput { .. }),
+        "unexpected error: {err:?}"
+    );
+}
 
 #[tokio::test]
 async fn test_fallback_chain_serves_repeat_request_from_cache() {
@@ -431,7 +445,7 @@ async fn test_fallback_chain_serves_repeat_request_from_cache() {
         .get_panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5)
         .await
         .unwrap();
-    assert!(matches!(first.source, FallbackSource::Api));
+    assert!(matches!(first.source, FallbackSource::NativeCalculation));
 
     // Second call - same day and place, served from cache
     let result = chain
@@ -459,7 +473,7 @@ async fn test_fallback_chain_api_unreachable_still_answers() {
         .await
         .expect("native panchang needs no vendor");
 
-    assert!(matches!(result.source, FallbackSource::Api));
+    assert!(matches!(result.source, FallbackSource::NativeCalculation));
     assert_eq!(chain.metrics().api_failures(), 0);
     assert_eq!(
         (
@@ -567,6 +581,28 @@ async fn test_batch_scheduler_respects_max_batch_size() {
 
     let results = scheduler.execute_batch(requests).await;
     assert_eq!(results.len(), 5);
+}
+
+#[tokio::test]
+async fn test_batch_scheduler_computes_panchang_without_vendor() {
+    let server = MockServer::start().await;
+    let config = Config::new("test_key").with_base_url(server.uri());
+    let scheduler = BatchScheduler::new(config, BatchConfig::default());
+
+    let results = scheduler
+        .execute_batch(vec![
+            BatchRequest::panchang(2024, 1, 1, 12, 0, 0, 12.97, 77.59, 5.5),
+            BatchRequest::panchang(2024, 13, 1, 12, 0, 0, 12.97, 77.59, 5.5),
+        ])
+        .await;
+
+    assert!(results[0].is_ok());
+    assert!(matches!(
+        results[1],
+        Err(VedicApiError::InvalidInput { .. })
+    ));
+    let received = server.received_requests().await.expect("requests");
+    assert!(received.is_empty(), "panchang must not call the vendor");
 }
 
 #[tokio::test]
