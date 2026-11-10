@@ -37,10 +37,42 @@ async fn broken_database_url() -> String {
     format!("postgres://noesis_unreachable_role@127.0.0.1:{port}/noesis_unreachable")
 }
 
+/// A database URL whose port refuses connections. sqlx treats a refused
+/// connect as transient and retries it until the pool's acquire timeout, so
+/// this is the case that used to hold a request for sqlx's 30 s default.
+async fn refused_database_url() -> String {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind probe port");
+    let port = listener.local_addr().unwrap().port();
+    drop(listener);
+    format!("postgres://noesis_unreachable_role@127.0.0.1:{port}/noesis_unreachable")
+}
+
+/// A database URL that accepts TCP connections and never answers, like a
+/// blackholed or wedged server: only the acquire timeout ends the wait.
+async fn silent_database_url() -> String {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind silent database");
+    let port = listener.local_addr().unwrap().port();
+    tokio::spawn(async move {
+        let mut held = Vec::new();
+        while let Ok((socket, _)) = listener.accept().await {
+            held.push(socket);
+        }
+    });
+    format!("postgres://noesis_unreachable_role@127.0.0.1:{port}/noesis_unreachable")
+}
+
 async fn unreachable_db_router() -> Router {
+    router_for(broken_database_url().await).await
+}
+
+async fn router_for(database_url: String) -> Router {
     let mut config = ApiConfig::from_env().expect("test config");
     config.jwt_secret = JWT_SECRET.to_string();
-    config.database_url = Some(broken_database_url().await);
+    config.database_url = Some(database_url);
     let state = build_app_state_lazy_db(&config).await;
     assert!(
         state.admin_repository.is_some(),
@@ -171,4 +203,46 @@ async fn jwt_holding_the_permission_does_not_need_the_database() {
         assert_eq!(status, StatusCode::OK, "{permission}: {body}");
         assert!(body.as_array().is_some_and(|tiers| !tiers.is_empty()));
     }
+}
+
+/// Generous ceiling for one request against an unreachable database. The
+/// default acquire timeout (`DATABASE_ACQUIRE_TIMEOUT_MS`, 3 s) sits well
+/// below it; sqlx's previous 30 s default sat well above it.
+const FAIL_FAST_CEILING: std::time::Duration = std::time::Duration::from_secs(15);
+
+/// A viewer request that consults the database must still be denied with 403
+/// when the database is unreachable, and must be denied promptly rather than
+/// holding the handler for the pool's old 30 s acquire timeout.
+async fn assert_viewer_denied_promptly(router: &Router, kind: &str) {
+    let viewer = token(&["basic:access"]);
+    for uri in [
+        "/api/v1/admin/living-readings".to_string(),
+        format!("/api/v1/admin/living-readings/{READING}"),
+    ] {
+        let started = std::time::Instant::now();
+        let (status, body) = send(router, "GET", &uri, &viewer).await;
+        let elapsed = started.elapsed();
+        assert_eq!(status, StatusCode::FORBIDDEN, "{kind} {uri}: {body}");
+        assert_eq!(body["error_code"], "FORBIDDEN", "{kind} {uri}: {body}");
+        assert_eq!(
+            body["details"]["required_permission"], "admin:analytics:read",
+            "{kind} {uri}: {body}"
+        );
+        assert!(
+            elapsed < FAIL_FAST_CEILING,
+            "{kind} {uri}: took {elapsed:?}, want < {FAIL_FAST_CEILING:?}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn refused_database_denies_viewer_fast() {
+    let router = router_for(refused_database_url().await).await;
+    assert_viewer_denied_promptly(&router, "refused").await;
+}
+
+#[tokio::test]
+async fn silent_database_denies_viewer_fast() {
+    let router = router_for(silent_database_url().await).await;
+    assert_viewer_denied_promptly(&router, "silent").await;
 }

@@ -4642,6 +4642,28 @@ async fn build_runtime_orchestrator_and_bridge(
     (orchestrator, bridge_manager)
 }
 
+/// Upper bound on each startup probe of the database (see `build_app_state`).
+/// Startup may wait longer than a request, so this is independent of
+/// `DATABASE_ACQUIRE_TIMEOUT_MS`.
+const STARTUP_DB_CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
+
+/// Request-path acquire timeout: how long a handler waits for a pooled
+/// connection (including opening one) before the database call fails.
+/// Configured by `DATABASE_ACQUIRE_TIMEOUT_MS` (default 3000).
+fn db_acquire_timeout() -> Duration {
+    noesis_data::database_acquire_timeout()
+}
+
+/// Pool options shared by every request-serving pool, so an unreachable
+/// database fails requests within `DATABASE_ACQUIRE_TIMEOUT_MS` instead of
+/// sqlx's 30 s default. Outcomes are unchanged: only how long a failing
+/// acquire waits.
+fn request_pool_options(max_connections: u32) -> PgPoolOptions {
+    PgPoolOptions::new()
+        .max_connections(max_connections)
+        .acquire_timeout(db_acquire_timeout())
+}
+
 /// Build the default `AppState` with all engines registered.
 ///
 /// # Arguments
@@ -4677,30 +4699,35 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
                 PgConnectOptions::new()
             });
 
-        // Retry startup DB connection to handle transient pooler unavailability.
+        // Retry the startup DB probe to handle transient pooler unavailability.
         // Uses 3 attempts with exponential back-off (2s -> 4s) before giving up.
+        //
+        // The probe is a standalone connection with its own startup bound, so
+        // a slow cold start is tolerated here without lengthening the pool's
+        // request-path acquire timeout (`DATABASE_ACQUIRE_TIMEOUT_MS`).
         const MAX_ATTEMPTS: u32 = 3;
         let mut pool_result: Option<sqlx::PgPool> = None;
         for attempt in 1..=MAX_ATTEMPTS {
-            let opts = connect_options.clone();
             match tokio::time::timeout(
-                Duration::from_secs(10),
-                PgPoolOptions::new()
-                    .max_connections(5)
-                    .idle_timeout(Duration::from_secs(300)) // drop idle conns after 5min
-                    .acquire_timeout(Duration::from_secs(5)) // fail fast on acquire
-                    .test_before_acquire(true) // health-check stale conns
-                    .connect_with(opts),
+                STARTUP_DB_CONNECT_TIMEOUT,
+                <sqlx::PgConnection as sqlx::Connection>::connect_with(&connect_options),
             )
             .await
             {
-                Ok(Ok(p)) => {
+                Ok(Ok(probe)) => {
+                    let _ = sqlx::Connection::close(probe).await;
                     tracing::info!(
+                        acquire_timeout_ms = db_acquire_timeout().as_millis() as u64,
                         "Database pool connected (attempt {}/{})",
                         attempt,
                         MAX_ATTEMPTS
                     );
-                    pool_result = Some(p);
+                    pool_result = Some(
+                        request_pool_options(5)
+                            .idle_timeout(Duration::from_secs(300)) // drop idle conns after 5min
+                            .test_before_acquire(true) // health-check stale conns
+                            .connect_lazy_with(connect_options.clone()),
+                    );
                     break;
                 }
                 Ok(Err(ref e)) if attempt < MAX_ATTEMPTS => {
@@ -4728,7 +4755,10 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
                     tokio::time::sleep(delay).await;
                 }
                 Err(_) => {
-                    tracing::warn!("Database connection timed out after 10s (running without DB)");
+                    tracing::warn!(
+                        "Database connection timed out after {}s (running without DB)",
+                        STARTUP_DB_CONNECT_TIMEOUT.as_secs()
+                    );
                 }
             }
         }
@@ -4809,8 +4839,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
         // Create a lazy pool with a dummy URL — queries will fail at runtime,
         // but the server can still boot and serve non-DB endpoints.
-        PgPoolOptions::new()
-            .max_connections(1)
+        request_pool_options(1)
             .connect_lazy("postgres://localhost/noesis_unavailable")
             .expect("Failed to create placeholder pool")
     })));
@@ -4877,8 +4906,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     // -- Database (lazy pool, optional) --
     let pool = config.database_url.as_ref().map(|db_url| {
-        PgPoolOptions::new()
-            .max_connections(5)
+        request_pool_options(5)
             .connect_lazy(db_url)
             .expect("Failed to create lazy database pool")
     });
@@ -4936,8 +4964,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         .map(|p| Arc::new(UsageRepository::new(p.clone())));
 
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
-        PgPoolOptions::new()
-            .max_connections(1)
+        request_pool_options(1)
             .connect_lazy("postgres://localhost/noesis_unavailable")
             .expect("Failed to create placeholder pool")
     })));
