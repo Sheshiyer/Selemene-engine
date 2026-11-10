@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 124,
-  "route_count": 135,
+  "path_count": 128,
+  "route_count": 140,
   "routes": [
     {
       "path": "/auth/register",
@@ -153,6 +153,54 @@
         {
           "method": "POST",
           "handler": "handlers::witness_catalog::publish"
+        }
+      ]
+    },
+    {
+      "path": "/subjects/:id/witness/requests",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::witness_requests::status"
+        },
+        {
+          "method": "POST",
+          "handler": "handlers::witness_requests::enqueue"
+        }
+      ]
+    },
+    {
+      "path": "/witness/requests/claim",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::witness_requests::claim"
+        }
+      ]
+    },
+    {
+      "path": "/witness/requests/:id/start",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::witness_requests::start"
+        }
+      ]
+    },
+    {
+      "path": "/witness/requests/:id/hold",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::witness_requests::hold"
         }
       ]
     },
