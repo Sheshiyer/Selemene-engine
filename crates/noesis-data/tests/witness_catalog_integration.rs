@@ -94,8 +94,10 @@ fn rejects_malformed_descriptors_and_missing_cas() {
 }
 #[tokio::test]
 async fn real_postgres_catalog_authorization_cas_rollback_and_rls() {
-    let url = std::env::var("WITNESS_TEST_DATABASE_URL")
-        .expect("explicit isolated WITNESS_TEST_DATABASE_URL required");
+    let url = std::env::var("WITNESS_TEST_DATABASE_URL").expect(
+        "explicit isolated WITNESS_TEST_DATABASE_URL required \
+         (bash scripts/cloud/test-db.sh provisions it and prints the URL)",
+    );
     assert!(
         url.contains("@127.0.0.1:") && url.ends_with("/noesis_identity_test"),
         "isolated local test database only"

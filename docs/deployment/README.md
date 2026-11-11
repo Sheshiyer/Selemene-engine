@@ -85,6 +85,7 @@ curl http://localhost:8002/health
 | `PORT` | Bind port | `8080` |
 | `JWT_SECRET` | JWT signing key (required) | — |
 | `DATABASE_URL` | PostgreSQL connection URL (optional — runs degraded without DB) | — |
+| `DATABASE_ACQUIRE_TIMEOUT_MS` | Max wait for a pooled DB connection on the request path before the call fails. Bounds how long handlers hang when Postgres is unreachable (it changes only how long a failing call waits, never its status). Startup probing keeps its own 5 s per-attempt bound. Raise only if a healthy pooler regularly needs longer. | `3000` |
 | `REDIS_URL` | Redis connection URL (optional — in-memory fallback) | — |
 | `SENTRY_DSN` | Sentry error tracking DSN (optional) | — |
 | `SWISS_EPHEMERIS_PATH` | Path to Swiss Ephemeris data | `/app/data/ephemeris` |
