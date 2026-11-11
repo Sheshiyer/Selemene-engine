@@ -15,3 +15,4 @@ pub mod sessions;
 pub mod shared_identity;
 
 pub mod witness_catalog;
+pub mod witness_requests;

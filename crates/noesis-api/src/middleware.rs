@@ -249,6 +249,15 @@ pub async fn auth_middleware(
         if let Ok(api_key) = api_key_header.to_str() {
             match state.auth.validate_api_key(api_key).await {
                 Ok(user) => {
+                    if crate::handlers::witness_requests::worker_permission(&user) {
+                        let path = req.extensions().get::<OriginalUri>()
+                            .map(|uri| uri.0.path()).unwrap_or_else(|| req.uri().path());
+                        if let Some(scope) = crate::handlers::witness_requests::restrict_worker(
+                            &user, req.method(), path, req.headers(),
+                        )? {
+                            req.extensions_mut().insert(scope);
+                        }
+                    }
                     // Insert authenticated user into request extensions, and mark
                     // the principal as API-key authenticated for scope checks.
                     req.extensions_mut().insert(user);

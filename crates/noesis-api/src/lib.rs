@@ -144,6 +144,8 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::auth::forgot_password,
         handlers::auth::reset_password,
         handlers::auth::change_password,
+        handlers::witness_requests::status,
+        handlers::witness_requests::enqueue,
         handlers::shared_identity::context,
         handlers::shared_identity::update_context,
         handlers::shared_identity::profile,
@@ -861,6 +863,10 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
 
     let api_v1 = Router::new()
         .route("/subjects/:id/witness", get(handlers::witness_catalog::catalog).post(handlers::witness_catalog::publish))
+        .route("/subjects/:id/witness/requests", get(handlers::witness_requests::status).post(handlers::witness_requests::enqueue))
+        .route("/witness/requests/claim", post(handlers::witness_requests::claim))
+        .route("/witness/requests/:id/start", post(handlers::witness_requests::start))
+        .route("/witness/requests/:id/hold", post(handlers::witness_requests::hold))
         .route(
             "/auth/change-password",
             post(handlers::auth::change_password),
