@@ -1,6 +1,6 @@
 # Shared identity API v1
 
-Root migrations 045 and 046 are additive. Apply with the existing journaled migration runner after comparing the deployed ledger. No personal seeds are included. Existing `/desktop/*` routes retain their original native loopback contract.
+Root migrations 045, 046 and 048 extend the shared identity contract. Apply with the existing journaled migration runner after comparing the deployed ledger. No personal seeds are included. Existing `/desktop/*` routes retain their original native loopback contract.
 
 ## Registered sessions
 
@@ -14,7 +14,7 @@ Configure `CF_END_USER_ISSUER` and `CF_END_USER_AUDIENCE` for a separate end-use
 
 ## Context and profiles
 
-`GET /api/v1/users/me/context` returns `noesis.account-context.v1`. Subject fields include the additive `can_calculate` permission. Read, edit and calculation are independent; explicit confirmed self enrollment grants all three. A resource owner or platform role alone grants no read/edit/calculation access. Relationship grants independently expose only relationship metadata, never an individual profile.
+`GET /api/v1/users/me/context` returns `noesis.account-context.v1`. The additive `self_subject_id` identifies the caller’s linked, readable profile. `can_invite_new_profile` reflects the current platform-admin role. Subject fields include the `can_calculate` permission. Read, edit and calculation are independent; explicit confirmed self enrollment grants all three. A resource owner or platform role alone grants no read/edit/calculation access. Relationship grants independently expose only relationship metadata, never an individual profile.
 
 `PATCH /api/v1/users/me/context` accepts `{default_subject_id:uuid|null}` and checks the current read grant. Preferred email is only returned if backed by a live verified identity.
 
@@ -28,12 +28,16 @@ Configure `CF_END_USER_ISSUER` and `CF_END_USER_AUDIENCE` for a separate end-use
 
 A fresh CF identity or a current registered human session is required to create, claim or confirm enrollment. Registered identity is recovered through the live access JTI, family and provider link; it never grants interactive/browser authority. Password JWTs and API keys do not qualify.
 
-- `POST /account/enrollments`: `{subject_id,intended_email?,sharing_reader_id?,expires_in_seconds?,relationship_ids?}`. Only that corpus resource owner can create; default TTL one day, maximum seven days. Returns `{id,token,subject_id,sharing_reader_id,expires_in}` once. Store the returned token privately; PostgreSQL stores only its digest.
+- `POST /account/enrollments` with `mode=claim` (the default): `{subject_id,intended_email?,sharing_reader_id?,expires_in_seconds?,relationship_ids?}`. Only that corpus resource owner can create; default TTL one day, maximum seven days. Returns `{id,token,subject_id,sharing_reader_id,expires_in}` once. Store the returned token privately; PostgreSQL stores only its digest.
+- `POST /account/enrollments` with `mode=sign_in`: send `{mode,subject_id,intended_email,sharing_reader_id?,relationship_ids?}`. The owner selects a saved subject. A platform admin can send `subject_id:null` to authorize a new recipient-owned profile. New private profiles take individual access only. The response is `{id,mode,subject_id,status:"pending_sign_in"}`. The authorization can be withdrawn and has a unique pending email and saved subject.
+- On a Daily authorization-code exchange, the server checks the Cloudflare email pinned to the code against the current verified identity after PKCE. A matching authorization is consumed in the transaction that creates the self-link, default, and missing profile defaults. A saved revision retains its ID and bytes. A new profile starts with an empty editable revision.
 - `POST /account/enrollments/preview`: `{token}` returns the selected subject name, disclosed sharing reader and pinned `relationships:[{id,label}]`. `owner_reader:{id,name}` identifies an owner who already has an active read grant, even when the invitation adds no sharing reader. The verified identity's email must match a pre-bound intended address before preview returns any terms. An address mismatch has the same 404 response as an unavailable token. The recipient must see the terms before acceptance.
 - `POST /account/enrollments/claim`: `{token,accept_sharing:true}`. A pre-bound intended email must match fresh verified proof. Unknown emails consume the claim and return `pending_owner_confirmation`, granting no profile access.
-- `GET /account/enrollments`: owner's pending claims and verified claim email, for explicit confirmation.
+- `GET /account/enrollments`: the owner’s pending token claims and `sign_in_invitations` awaiting sign-in or with outstanding sharing offers.
 - `POST /account/enrollments/:id/confirm`: owner confirms an unexpired live pending claim. Confirmation atomically grants read to only the pinned relationships after rechecking they are active. Creation requires each relationship to be owned by the invitation owner and contain the selected subject; composite references preserve that exact membership. Duplicate subject/self mappings fail; names and birth dates are never account selectors.
-- `DELETE /account/enrollments/:id`: owner revokes an unconfirmed enrollment. Accepted grants are separately revoked through the owner-managed grant records.
+- `DELETE /account/enrollments/:id`: the owner withdraws a pending claim, sign-in authorization, or unaccepted sharing offers. Accepted grants use the existing grant records.
+- `GET /account/sharing`: returns the recipient’s current readers as display names and outstanding offers as `{id,reader,relationships:[{id,label}]}`.
+- `POST /account/enrollments/:id/sharing`: the linked recipient sends `{reader?,relationship_ids?}` with the choices they want. The transaction grants only the selected offered access. Repeating an accepted choice returns success and preserves any later revocation.
 
 All account paths above have prefix `/api/v1`.
 

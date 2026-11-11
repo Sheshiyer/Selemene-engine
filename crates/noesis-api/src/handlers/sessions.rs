@@ -1,5 +1,7 @@
 //! Registered clients deliberately do not change the native desktop contract.
-use super::shared_identity::{active, db, fail, private, storage, HandlerError};
+use super::shared_identity::{
+    activate_sign_in_enrollment, active, db, fail, private, storage, HandlerError,
+};
 use crate::{cf_access::CfIdentity, desktop_auth::*, AppState};
 use axum::{
     extract::{Json, Query, State},
@@ -63,8 +65,8 @@ pub async fn authorize(
     let pool = db(&state)?;
     let uid = active(pool, &user).await?;
     let code = new_secret();
-    sqlx::query("INSERT INTO registered_auth_codes(code_hash,client_id,user_id,code_challenge,redirect_uri,expires_at,identity_issuer,identity_subject) VALUES($1,$2,$3,$4,$5,now()+interval '60 seconds',$6,$7)")
-        .bind(hash_secret(&code)).bind(&p.client_id).bind(uid).bind(&p.code_challenge).bind(&p.redirect_uri).bind(&identity.issuer).bind(&identity.sub).execute(pool).await.map_err(storage)?;
+    sqlx::query("INSERT INTO registered_auth_codes(code_hash,client_id,user_id,code_challenge,redirect_uri,expires_at,identity_issuer,identity_subject,enrollment_email) VALUES($1,$2,$3,$4,$5,now()+interval '60 seconds',$6,$7,$8)")
+        .bind(hash_secret(&code)).bind(&p.client_id).bind(uid).bind(&p.code_challenge).bind(&p.redirect_uri).bind(&identity.issuer).bind(&identity.sub).bind((p.client_id == "noesis-daily").then_some(&identity.email)).execute(pool).await.map_err(storage)?;
     let mut location = reqwest::Url::parse(&p.redirect_uri)
         .map_err(|_| fail(StatusCode::BAD_REQUEST, "INVALID_REQUEST"))?;
     location
@@ -100,11 +102,33 @@ pub async fn token(
             if !redirect_allowed(&p.client_id, &redirect) {
                 return Err(invalid());
             }
-            let row=sqlx::query_as::<_,(Uuid,String,String,String,String)>("UPDATE registered_auth_codes SET consumed_at=now() WHERE code_hash=$1 AND client_id=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING user_id,code_challenge,redirect_uri,identity_issuer,identity_subject")
+            let row=sqlx::query_as::<_,(Uuid,String,String,String,String,Option<String>)>("UPDATE registered_auth_codes SET consumed_at=now() WHERE code_hash=$1 AND client_id=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING user_id,code_challenge,redirect_uri,identity_issuer,identity_subject,enrollment_email")
                 .bind(hash_secret(&code)).bind(&p.client_id).fetch_optional(&mut *tx).await.map_err(storage)?.ok_or_else(invalid)?;
             if row.2 != redirect || !pkce_matches(&verifier, &row.1) {
                 tx.commit().await.map_err(storage)?;
                 return Err(invalid());
+            }
+            // Match the address asserted for this authorization to the current
+            // verified identity after the exact redirect and PKCE checks.
+            if p.client_id == "noesis-daily" {
+                if let Some(asserted_email) = row.5.as_deref() {
+                    let verified_email: Option<String> = sqlx::query_scalar(
+                        "SELECT i.verified_email FROM account_identities i
+                         JOIN user_account_state a ON a.user_id=i.user_id AND a.state='active'
+                         WHERE i.user_id=$1 AND i.issuer=$2 AND i.provider_subject=$3
+                           AND i.verified_email=$4 AND i.revoked_at IS NULL FOR SHARE OF i,a",
+                    )
+                    .bind(row.0)
+                    .bind(&row.3)
+                    .bind(&row.4)
+                    .bind(asserted_email)
+                    .fetch_optional(&mut *tx)
+                    .await
+                    .map_err(storage)?;
+                    if let Some(email) = verified_email {
+                        activate_sign_in_enrollment(&mut tx, row.0, &email).await?;
+                    }
+                }
             }
             let family = Uuid::new_v4();
             sqlx::query("INSERT INTO registered_session_families(id,client_id,user_id,identity_issuer,identity_subject,expires_at) VALUES($1,$2,$3,$4,$5,now()+interval '30 days')")

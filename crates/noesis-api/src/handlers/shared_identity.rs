@@ -16,6 +16,11 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use sqlx::{PgPool, Postgres, Transaction};
 use uuid::Uuid;
+
+mod sign_in_enrollment;
+pub(crate) use sign_in_enrollment::activate_sign_in_enrollment;
+pub use sign_in_enrollment::{accept_enrollment_sharing, sharing};
+
 pub type HandlerError = (StatusCode, Json<ErrorResponse>);
 pub fn fail(status: StatusCode, code: &str) -> HandlerError {
     ErrorMapper::response(status, code, code, None)
@@ -82,13 +87,38 @@ pub(crate) async fn transaction<'a>(
     uid: Uuid,
 ) -> Result<Transaction<'a, Postgres>, HandlerError> {
     let mut tx = pool.begin().await.map_err(storage)?;
-    sqlx::query("SELECT set_config('app.account_id',$1,true)")
-        .bind(uid.to_string())
-        .execute(&mut *tx)
-        .await
-        .map_err(storage)?;
+    set_account_context(&mut tx, uid).await?;
     Ok(tx)
 }
+
+async fn set_account_context(
+    tx: &mut Transaction<'_, Postgres>,
+    uid: Uuid,
+) -> Result<(), HandlerError> {
+    sqlx::query("SELECT set_config('app.account_id',$1,true)")
+        .bind(uid.to_string())
+        .execute(&mut **tx)
+        .await
+        .map_err(storage)?;
+    Ok(())
+}
+
+async fn self_profile(
+    tx: &mut Transaction<'_, Postgres>,
+    uid: Uuid,
+) -> Result<Option<(Uuid, Uuid)>, HandlerError> {
+    sqlx::query_as(
+        "SELECT l.subject_id,l.owner_user_id FROM subject_account_links l
+         JOIN corpus_subjects s ON s.id=l.subject_id AND s.owner_user_id=l.owner_user_id
+         WHERE l.user_id=$1 AND l.revoked_at IS NULL AND s.archived_at IS NULL
+           AND identity_subject_read(l.subject_id)",
+    )
+    .bind(uid)
+    .fetch_optional(&mut **tx)
+    .await
+    .map_err(storage)
+}
+
 pub(crate) async fn subject_access(
     tx: &mut Transaction<'_, Postgres>,
     uid: Uuid,
@@ -137,8 +167,19 @@ pub async fn context(
         .bind(uid).fetch_all(&mut *tx).await.map_err(storage)?;
     let default:Option<Uuid>=sqlx::query_scalar("SELECT p.default_subject_id FROM account_preferences p JOIN subject_grants g ON g.subject_id=p.default_subject_id AND g.grantee_user_id=p.user_id AND g.revoked_at IS NULL JOIN corpus_subjects s ON s.id=g.subject_id AND s.archived_at IS NULL WHERE p.user_id=$1")
         .bind(uid).fetch_optional(&mut *tx).await.map_err(storage)?.flatten();
+    let self_subject = self_profile(&mut tx, uid)
+        .await?
+        .map(|(subject, _)| subject);
+    let can_invite_new_profile = platform_admin(&mut tx, uid).await?;
     tx.commit().await.map_err(storage)?;
-    Ok(private(Json(json!({"schema":"noesis.account-context.v1","account":account,"default_subject_id":default,"subjects":subjects,"relationships":relationships})).into_response()))
+    Ok(private(
+        Json(json!({
+            "schema":"noesis.account-context.v1","account":account,"default_subject_id":default,
+            "self_subject_id":self_subject,"can_invite_new_profile":can_invite_new_profile,
+            "subjects":subjects,"relationships":relationships
+        }))
+        .into_response(),
+    ))
 }
 #[derive(Deserialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
@@ -283,7 +324,7 @@ pub async fn update_profile(
         .await
         .map_err(storage)?;
     let current=sqlx::query_as::<_,(i64,Value)>("SELECT revision,profile FROM subject_profile_revisions WHERE subject_id=$1 ORDER BY revision DESC LIMIT 1").bind(id).fetch_optional(&mut *tx).await.map_err(storage)?;
-    let (revision,mut profile)=current.unwrap_or((0,json!({"full_name":null,"birth_date":null,"birth_time":null,"birth_location":null,"timezone":"UTC","preferences":{},"birth_time_confidence":"unspecified","source_hashes":{}})));
+    let (revision, mut profile) = current.unwrap_or_else(|| (0, empty_profile(None)));
     if revision != p.expected_revision {
         return Err(fail(StatusCode::CONFLICT, "PROFILE_REVISION_CONFLICT"));
     }
@@ -295,18 +336,71 @@ pub async fn update_profile(
     let own: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM subject_account_links WHERE subject_id=$1 AND user_id=$2 AND revoked_at IS NULL)")
         .bind(id).bind(uid).fetch_one(&mut *tx).await.map_err(storage)?;
     if own {
-        sqlx::query("INSERT INTO user_profiles(user_id,birth_date,birth_time,birth_location_lat,birth_location_lng,birth_location_name,timezone,preferences) VALUES($1,($2->>'birth_date')::date,($2->>'birth_time')::time,($2->'birth_location'->>'lat')::numeric,($2->'birth_location'->>'lng')::numeric,$2->'birth_location'->>'name',$2->>'timezone',$2->'preferences') ON CONFLICT(user_id) DO UPDATE SET birth_date=excluded.birth_date,birth_time=excluded.birth_time,birth_location_lat=excluded.birth_location_lat,birth_location_lng=excluded.birth_location_lng,birth_location_name=excluded.birth_location_name,timezone=excluded.timezone,preferences=excluded.preferences")
-            .bind(uid).bind(&profile).execute(&mut *tx).await.map_err(storage)?;
+        project_profile(&mut tx, uid, &profile, true).await?;
     }
     tx.commit().await.map_err(storage)?;
     Ok(private(
         Json(profile_resource(id, revision + 1, profile)).into_response(),
     ))
 }
+fn empty_profile(name: Option<&str>) -> Value {
+    json!({
+        "full_name":name,"birth_date":null,"birth_time":null,"birth_location":null,
+        "timezone":"UTC","preferences":{},"birth_time_confidence":"unspecified","source_hashes":{}
+    })
+}
+
+async fn project_profile(
+    tx: &mut Transaction<'_, Postgres>,
+    user: Uuid,
+    profile: &Value,
+    replace: bool,
+) -> Result<(), HandlerError> {
+    sqlx::query(
+        "INSERT INTO user_profiles(user_id,birth_date,birth_time,birth_location_lat,birth_location_lng,birth_location_name,timezone,preferences)
+         VALUES($1,($2->>'birth_date')::date,($2->>'birth_time')::time,($2->'birth_location'->>'lat')::numeric,
+                ($2->'birth_location'->>'lng')::numeric,$2->'birth_location'->>'name',$2->>'timezone',$2->'preferences')
+         ON CONFLICT(user_id) DO UPDATE SET birth_date=excluded.birth_date,birth_time=excluded.birth_time,
+             birth_location_lat=excluded.birth_location_lat,birth_location_lng=excluded.birth_location_lng,
+             birth_location_name=excluded.birth_location_name,timezone=excluded.timezone,preferences=excluded.preferences
+         WHERE $3",
+    )
+    .bind(user)
+    .bind(profile)
+    .bind(replace)
+    .execute(&mut **tx)
+    .await
+    .map_err(storage)?;
+    Ok(())
+}
+
+async fn platform_admin(
+    tx: &mut Transaction<'_, Postgres>,
+    user: Uuid,
+) -> Result<bool, HandlerError> {
+    sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM user_roles WHERE user_id=$1 AND role='platform-admin')",
+    )
+    .bind(user)
+    .fetch_one(&mut **tx)
+    .await
+    .map_err(storage)
+}
+
+#[derive(Default, Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "snake_case")]
+enum EnrollmentMode {
+    #[default]
+    Claim,
+    SignIn,
+}
+
 #[derive(Deserialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct EnrollmentCreate {
-    subject_id: Uuid,
+    #[serde(default)]
+    mode: EnrollmentMode,
+    subject_id: Option<Uuid>,
     intended_email: Option<String>,
     sharing_reader_id: Option<Uuid>,
     expires_in_seconds: Option<i64>,
@@ -323,37 +417,95 @@ pub async fn create_enrollment(
     verified_identity(&s, &u, identity).await?;
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
-    let own:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM corpus_subjects WHERE id=$1 AND owner_user_id=$2 AND archived_at IS NULL)").bind(p.subject_id).bind(uid).fetch_one(pool).await.map_err(storage)?;
-    if !own {
-        return Err(fail(StatusCode::NOT_FOUND, "SUBJECT_NOT_FOUND"));
-    }
-    let ttl = p.expires_in_seconds.unwrap_or(86400);
-    if !(60..=604800).contains(&ttl) {
-        return Err(fail(StatusCode::BAD_REQUEST, "INVALID_EXPIRY"));
-    }
-    let token = new_secret();
-    let email = p.intended_email.map(|e| e.trim().to_ascii_lowercase());
-    if email.as_ref().is_some_and(|e| !valid_email(e)) {
+    let sign_in = matches!(p.mode, EnrollmentMode::SignIn);
+    let email = p
+        .intended_email
+        .map(|email| email.trim().to_ascii_lowercase());
+    if email.as_ref().is_some_and(|email| !valid_email(email)) || (sign_in && email.is_none()) {
         return Err(fail(StatusCode::BAD_REQUEST, "INVALID_EMAIL"));
     }
-    if p.relationship_ids.len() > 16
-        || p.relationship_ids
-            .iter()
-            .collect::<std::collections::HashSet<_>>()
-            .len()
-            != p.relationship_ids.len()
+    if p.subject_id.is_none()
+        && (!sign_in || p.sharing_reader_id.is_some() || !p.relationship_ids.is_empty())
     {
+        return Err(fail(StatusCode::BAD_REQUEST, "INVALID_ENROLLMENT_TARGET"));
+    }
+    let ttl = if sign_in {
+        if p.expires_in_seconds.is_some() {
+            return Err(fail(StatusCode::BAD_REQUEST, "INVALID_EXPIRY"));
+        }
+        None
+    } else {
+        let ttl = p.expires_in_seconds.unwrap_or(86400);
+        if !(60..=604800).contains(&ttl) {
+            return Err(fail(StatusCode::BAD_REQUEST, "INVALID_EXPIRY"));
+        }
+        Some(ttl)
+    };
+    if !valid_relationship_selection(&p.relationship_ids) {
         return Err(fail(StatusCode::BAD_REQUEST, "INVALID_RELATIONSHIPS"));
     }
     let mut tx = transaction(pool, uid).await?;
-    let id:Uuid=sqlx::query_scalar("INSERT INTO subject_enrollments(token_hash,subject_id,owner_user_id,intended_email,sharing_reader_id,expires_at) VALUES($1,$2,$3,$4,$5,now()+$6*interval '1 second') RETURNING id")
-        .bind(hash_secret(&token)).bind(p.subject_id).bind(uid).bind(email).bind(p.sharing_reader_id).bind(ttl as f64).fetch_one(&mut *tx).await.map_err(storage)?;
+    if let Some(subject) = p.subject_id {
+        let owned: Option<Uuid> = sqlx::query_scalar(
+            "SELECT id FROM corpus_subjects WHERE id=$1 AND owner_user_id=$2 AND archived_at IS NULL FOR SHARE",
+        )
+        .bind(subject)
+        .bind(uid)
+        .fetch_optional(&mut *tx)
+        .await
+        .map_err(storage)?;
+        if owned.is_none() {
+            return Err(fail(StatusCode::NOT_FOUND, "SUBJECT_NOT_FOUND"));
+        }
+        if sign_in {
+            let linked: bool = sqlx::query_scalar(
+                "SELECT EXISTS(SELECT 1 FROM subject_account_links WHERE subject_id=$1)",
+            )
+            .bind(subject)
+            .fetch_one(&mut *tx)
+            .await
+            .map_err(storage)?;
+            if linked {
+                return Err(fail(StatusCode::CONFLICT, "SUBJECT_BINDING_CONFLICT"));
+            }
+        }
+    } else if !platform_admin(&mut tx, uid).await? {
+        return Err(fail(StatusCode::FORBIDDEN, "PROFILE_INVITER_REQUIRED"));
+    }
+    let token = (!sign_in).then(new_secret);
+    let id: Uuid = sqlx::query_scalar(
+        "INSERT INTO subject_enrollments(token_hash,subject_id,owner_user_id,intended_email,sharing_reader_id,expires_at,mode)
+         VALUES($1,$2,$3,$4,$5,now()+$6*interval '1 second',$7) RETURNING id",
+    )
+    .bind(token.as_deref().map(hash_secret))
+    .bind(p.subject_id)
+    .bind(uid)
+    .bind(email)
+    .bind(p.sharing_reader_id)
+    .bind(ttl.map(|seconds| seconds as f64))
+    .bind(if sign_in { "sign_in" } else { "claim" })
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|error| {
+        match error.as_database_error().and_then(|error| error.constraint()) {
+            Some("subject_enrollments_pending_email" | "subject_enrollments_pending_subject") =>
+                fail(StatusCode::CONFLICT, "SIGN_IN_INVITATION_EXISTS"),
+            _ => storage(error),
+        }
+    })?;
     for relationship in &p.relationship_ids {
         let role:String=sqlx::query_scalar("SELECT m.member_role FROM corpus_relationships r JOIN corpus_relationship_members m ON m.relationship_id=r.id AND m.owner_user_id=r.owner_user_id WHERE r.id=$1 AND r.owner_user_id=$2 AND m.subject_id=$3 AND r.archived_at IS NULL ORDER BY m.member_role LIMIT 1 FOR SHARE OF r,m")
             .bind(relationship).bind(uid).bind(p.subject_id).fetch_optional(&mut *tx).await.map_err(storage)?.ok_or_else(||fail(StatusCode::BAD_REQUEST,"RELATIONSHIP_NOT_OWNED_ACTIVE_MEMBER"))?;
         sqlx::query("INSERT INTO subject_enrollment_relationships(enrollment_id,subject_id,owner_user_id,relationship_id,member_role) VALUES($1,$2,$3,$4,$5)").bind(id).bind(p.subject_id).bind(uid).bind(relationship).bind(role).execute(&mut *tx).await.map_err(storage)?;
     }
+    if sign_in {
+        sqlx::query("INSERT INTO identity_audit(actor_user_id,event,resource_id) VALUES($1,'enrollment.sign_in_authorized',$2)")
+            .bind(uid).bind(id).execute(&mut *tx).await.map_err(storage)?;
+    }
     tx.commit().await.map_err(storage)?;
+    if sign_in {
+        return Ok(private(Json(json!({"id":id,"mode":"sign_in","subject_id":p.subject_id,"status":"pending_sign_in"})).into_response()));
+    }
     Ok(private(Json(json!({"id":id,"token":token,"subject_id":p.subject_id,"sharing_reader_id":p.sharing_reader_id,"relationship_ids":p.relationship_ids,"expires_in":ttl})).into_response()))
 }
 #[derive(Deserialize, utoipa::ToSchema)]
@@ -362,6 +514,56 @@ pub struct EnrollmentClaim {
     token: String,
     accept_sharing: bool,
 }
+fn valid_relationship_selection(ids: &[Uuid]) -> bool {
+    ids.len() <= 16 && ids.iter().collect::<std::collections::HashSet<_>>().len() == ids.len()
+}
+
+async fn bind_self_profile(
+    tx: &mut Transaction<'_, Postgres>,
+    subject: Uuid,
+    owner: Uuid,
+    claimant: Uuid,
+) -> Result<Option<String>, HandlerError> {
+    let name: Option<String> = sqlx::query_scalar(
+        "SELECT canonical_name FROM corpus_subjects
+         WHERE id=$1 AND owner_user_id=$2 AND archived_at IS NULL FOR UPDATE",
+    )
+    .bind(subject)
+    .bind(owner)
+    .fetch_optional(&mut **tx)
+    .await
+    .map_err(storage)?;
+    let Some(name) = name else {
+        return Ok(None);
+    };
+    // Both the subject and the claimant's active self-link are unique.
+    let result = sqlx::query(
+        "INSERT INTO subject_account_links(subject_id,owner_user_id,user_id,approved_by)
+         VALUES($1,$2,$3,$2) ON CONFLICT DO NOTHING",
+    )
+    .bind(subject)
+    .bind(owner)
+    .bind(claimant)
+    .execute(&mut **tx)
+    .await
+    .map_err(storage)?;
+    if result.rows_affected() == 0 {
+        return Ok(None);
+    }
+    sqlx::query(
+        "INSERT INTO subject_grants(subject_id,owner_user_id,grantee_user_id,can_edit,can_calculate,grantor_user_id)
+         VALUES($1,$2,$3,true,true,$2)
+         ON CONFLICT(subject_id,grantee_user_id) DO UPDATE SET revoked_at=NULL,can_edit=true,can_calculate=true",
+    )
+    .bind(subject)
+    .bind(owner)
+    .bind(claimant)
+    .execute(&mut **tx)
+    .await
+    .map_err(storage)?;
+    Ok(Some(name))
+}
+
 async fn bind_enrollment(
     tx: &mut Transaction<'_, Postgres>,
     id: Uuid,
@@ -378,19 +580,12 @@ async fn bind_enrollment(
             "ENROLLMENT_RELATIONSHIP_UNAVAILABLE",
         ));
     }
-    // Subject lock plus unique active self account prevent racing/conflicting binds.
-    sqlx::query("SELECT id FROM corpus_subjects WHERE id=$1 FOR UPDATE")
-        .bind(subject)
-        .execute(&mut **tx)
-        .await
-        .map_err(storage)?;
-    let conflict:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM subject_account_links WHERE subject_id=$1 OR (user_id=$2 AND revoked_at IS NULL))").bind(subject).bind(claimant).fetch_one(&mut **tx).await.map_err(storage)?;
-    if conflict {
+    if bind_self_profile(tx, subject, owner, claimant)
+        .await?
+        .is_none()
+    {
         return Err(fail(StatusCode::CONFLICT, "SUBJECT_BINDING_CONFLICT"));
     }
-    sqlx::query("INSERT INTO subject_account_links(subject_id,owner_user_id,user_id,approved_by) VALUES($1,$2,$3,$2)").bind(subject).bind(owner).bind(claimant).execute(&mut **tx).await.map_err(storage)?;
-    sqlx::query("INSERT INTO subject_grants(subject_id,owner_user_id,grantee_user_id,can_edit,can_calculate,grantor_user_id) VALUES($1,$2,$3,true,true,$2) ON CONFLICT(subject_id,grantee_user_id) DO UPDATE SET revoked_at=NULL,can_edit=true,can_calculate=true")
-        .bind(subject).bind(owner).bind(claimant).execute(&mut **tx).await.map_err(storage)?;
     if let Some(reader) = reader {
         if reader != claimant {
             sqlx::query("INSERT INTO subject_grants(subject_id,owner_user_id,grantee_user_id,can_edit,grantor_user_id) VALUES($1,$2,$3,false,$2) ON CONFLICT(subject_id,grantee_user_id) DO UPDATE SET revoked_at=NULL,can_edit=false").bind(subject).bind(owner).bind(reader).execute(&mut **tx).await.map_err(storage)?;
@@ -422,7 +617,7 @@ pub async fn claim_enrollment(
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
     let mut tx = transaction(pool, uid).await?;
-    let row=sqlx::query_as::<_,(Uuid,Uuid,Uuid,Option<String>,Option<Uuid>)>("UPDATE subject_enrollments SET claimed_by=$2,claimed_email=$3,claimed_at=now() WHERE token_hash=$1 AND claimed_at IS NULL AND revoked_at IS NULL AND expires_at>now() RETURNING id,subject_id,owner_user_id,intended_email,sharing_reader_id")
+    let row=sqlx::query_as::<_,(Uuid,Uuid,Uuid,Option<String>,Option<Uuid>)>("UPDATE subject_enrollments SET claimed_by=$2,claimed_email=$3,claimed_at=now() WHERE token_hash=$1 AND mode='claim' AND claimed_at IS NULL AND revoked_at IS NULL AND expires_at>now() RETURNING id,subject_id,owner_user_id,intended_email,sharing_reader_id")
         .bind(hash_secret(&p.token)).bind(uid).bind(&identity.email).fetch_optional(&mut *tx).await.map_err(storage)?.ok_or_else(||fail(StatusCode::BAD_REQUEST,"INVALID_ENROLLMENT"))?;
     if row.3.as_ref().is_some_and(|e| e != &identity.email) {
         return Err(fail(StatusCode::FORBIDDEN, "ENROLLMENT_EMAIL_MISMATCH"));
@@ -445,7 +640,7 @@ pub async fn confirm_enrollment(
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
     let mut tx = transaction(pool, uid).await?;
-    let row=sqlx::query_as::<_,(Uuid,Uuid,Option<Uuid>)>("SELECT subject_id,claimed_by,sharing_reader_id FROM subject_enrollments WHERE id=$1 AND owner_user_id=$2 AND claimed_at IS NOT NULL AND confirmed_at IS NULL AND revoked_at IS NULL AND expires_at>now() FOR UPDATE")
+    let row=sqlx::query_as::<_,(Uuid,Uuid,Option<Uuid>)>("SELECT subject_id,claimed_by,sharing_reader_id FROM subject_enrollments WHERE id=$1 AND owner_user_id=$2 AND mode='claim' AND claimed_at IS NOT NULL AND confirmed_at IS NULL AND revoked_at IS NULL AND expires_at>now() FOR UPDATE")
         .bind(id).bind(uid).fetch_optional(&mut *tx).await.map_err(storage)?.ok_or_else(||fail(StatusCode::NOT_FOUND,"ENROLLMENT_NOT_FOUND"))?;
     let verified:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM account_identities i JOIN subject_enrollments e ON e.claimed_by=i.user_id AND e.claimed_email=i.verified_email JOIN user_account_state a ON a.user_id=i.user_id WHERE e.id=$1 AND i.revoked_at IS NULL AND a.state='active')").bind(id).fetch_one(&mut *tx).await.map_err(storage)?;
     if !verified {
@@ -466,7 +661,7 @@ pub async fn revoke_enrollment(
     verified_identity(&s, &u, identity).await?;
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
-    sqlx::query("UPDATE subject_enrollments SET revoked_at=now() WHERE id=$1 AND owner_user_id=$2 AND confirmed_at IS NULL").bind(id).bind(uid).execute(pool).await.map_err(storage)?;
+    sqlx::query("UPDATE subject_enrollments SET revoked_at=now() WHERE id=$1 AND owner_user_id=$2 AND revoked_at IS NULL AND (mode='sign_in' OR confirmed_at IS NULL)").bind(id).bind(uid).execute(pool).await.map_err(storage)?;
     Ok(private(StatusCode::NO_CONTENT.into_response()))
 }
 fn valid_email(e: &str) -> bool {
@@ -859,7 +1054,7 @@ pub async fn preview_enrollment(
           WHERE g.subject_id=e.subject_id AND g.owner_user_id=e.owner_user_id
             AND g.grantee_user_id=e.owner_user_id AND g.revoked_at IS NULL
         )
-        WHERE e.token_hash=$1 AND (e.intended_email IS NULL OR e.intended_email=$2)
+        WHERE e.token_hash=$1 AND e.mode='claim' AND (e.intended_email IS NULL OR e.intended_email=$2)
           AND e.claimed_at IS NULL AND e.revoked_at IS NULL AND e.expires_at>now()"#,
     )
     .bind(hash_secret(&p.token))
@@ -878,6 +1073,24 @@ pub async fn pending_enrollments(
     verified_identity(&s, &u, identity).await?;
     let pool = db(&s)?;
     let uid = active(pool, &u).await?;
-    let rows:Vec<Value>=sqlx::query_scalar("SELECT jsonb_build_object('id',id,'subject_id',subject_id,'claimed_by',claimed_by,'claimed_email',claimed_email,'claimed_at',claimed_at,'expires_at',expires_at) FROM subject_enrollments WHERE owner_user_id=$1 AND claimed_at IS NOT NULL AND confirmed_at IS NULL AND revoked_at IS NULL AND expires_at>now() ORDER BY claimed_at DESC LIMIT 100").bind(uid).fetch_all(pool).await.map_err(storage)?;
-    Ok(private(Json(json!({"enrollments":rows})).into_response()))
+    let rows:Vec<Value>=sqlx::query_scalar("SELECT jsonb_build_object('id',id,'subject_id',subject_id,'claimed_by',claimed_by,'claimed_email',claimed_email,'claimed_at',claimed_at,'expires_at',expires_at) FROM subject_enrollments WHERE owner_user_id=$1 AND mode='claim' AND claimed_at IS NOT NULL AND confirmed_at IS NULL AND revoked_at IS NULL AND expires_at>now() ORDER BY claimed_at DESC LIMIT 100").bind(uid).fetch_all(pool).await.map_err(storage)?;
+    let sign_in: Vec<Value> = sqlx::query_scalar(
+        "SELECT jsonb_build_object('id',e.id,'subject_id',e.subject_id,'intended_email',e.intended_email,
+             'status',CASE WHEN e.confirmed_at IS NULL THEN 'pending_sign_in' ELSE 'sharing_offered' END)
+         FROM subject_enrollments e
+         WHERE e.owner_user_id=$1 AND e.mode='sign_in' AND e.revoked_at IS NULL
+           AND (e.confirmed_at IS NULL
+             OR (e.sharing_reader_id IS NOT NULL AND e.sharing_reader_accepted_at IS NULL
+                 AND NOT EXISTS (SELECT 1 FROM subject_grants g WHERE g.subject_id=e.subject_id
+                                 AND g.grantee_user_id=e.sharing_reader_id AND g.revoked_at IS NULL))
+             OR EXISTS (SELECT 1 FROM subject_enrollment_relationships er WHERE er.enrollment_id=e.id AND er.accepted_at IS NULL))
+         ORDER BY e.created_at DESC LIMIT 100",
+    )
+    .bind(uid)
+    .fetch_all(pool)
+    .await
+    .map_err(storage)?;
+    Ok(private(
+        Json(json!({"enrollments":rows,"sign_in_invitations":sign_in})).into_response(),
+    ))
 }
