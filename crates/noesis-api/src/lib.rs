@@ -904,6 +904,11 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/account/enrollments/claim",
             post(handlers::shared_identity::claim_enrollment),
         )
+        .route("/account/sharing", get(handlers::shared_identity::sharing))
+        .route(
+            "/account/enrollments/:id/sharing",
+            post(handlers::shared_identity::accept_enrollment_sharing),
+        )
         .route(
             "/account/enrollments/:id/confirm",
             post(handlers::shared_identity::confirm_enrollment),

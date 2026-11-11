@@ -1023,6 +1023,130 @@ async fn bounded_runtime_role_enforces_rls_and_resets_pooled_context() {
 }
 #[tokio::test]
 #[serial]
+async fn intended_email_gates_preview_and_claim_without_changing_the_owner_grant() {
+    let (app, pool) = app().await;
+    let owner = user(&pool).await;
+    let recipient = user(&pool).await;
+    let outsider = user(&pool).await;
+    let owner_token = registered_jwt(&pool, owner).await;
+    let recipient_token = registered_jwt(&pool, recipient).await;
+    let outsider_token = registered_jwt(&pool, outsider).await;
+    let subject: Uuid = sqlx::query_scalar(
+        "INSERT INTO corpus_subjects(owner_user_id,subject_key,canonical_name) VALUES($1,$2,'Private enrollment subject') RETURNING id",
+    )
+    .bind(owner)
+    .bind(Uuid::new_v4().to_string())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    sqlx::query("INSERT INTO subject_grants(subject_id,owner_user_id,grantee_user_id,grantor_user_id) VALUES($1,$2,$2,$2)")
+        .bind(subject).bind(owner).execute(&pool).await.unwrap();
+    let (status, invite) = call(
+        &app,
+        "POST",
+        "/api/v1/account/enrollments",
+        Some(&owner_token),
+        json!({"subject_id":subject,"intended_email":format!("{recipient}@example.test")}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let token = json!({"token":invite["token"]});
+    let preview_path = "/api/v1/account/enrollments/preview";
+    let mut denied = call(
+        &app,
+        "POST",
+        preview_path,
+        Some(&outsider_token),
+        token.clone(),
+    )
+    .await;
+    let mut absent = call(
+        &app,
+        "POST",
+        preview_path,
+        Some(&outsider_token),
+        json!({"token":new_secret()}),
+    )
+    .await;
+    assert_eq!(denied.0, StatusCode::NOT_FOUND);
+    denied.1.as_object_mut().unwrap().remove("trace_id");
+    absent.1.as_object_mut().unwrap().remove("trace_id");
+    assert_eq!(denied, absent);
+    let (status, preview) = call(&app, "POST", preview_path, Some(&recipient_token), token).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(preview["display_name"], "Private enrollment subject");
+    assert_eq!(
+        preview["owner_reader"],
+        json!({"id":owner,"name":"Synthetic"})
+    );
+    assert!(preview["sharing_reader_id"].is_null());
+    assert_eq!(preview["relationships"], json!([]));
+    assert_eq!(preview["requires_owner_confirmation"], false);
+
+    let claim_path = "/api/v1/account/enrollments/claim";
+    for (token, accepts, expected) in [
+        (&outsider_token, true, StatusCode::FORBIDDEN),
+        (&recipient_token, false, StatusCode::BAD_REQUEST),
+    ] {
+        assert_eq!(
+            call(
+                &app,
+                "POST",
+                claim_path,
+                Some(token),
+                json!({"token":invite["token"],"accept_sharing":accepts})
+            )
+            .await
+            .0,
+            expected
+        );
+    }
+    let ctx = "/api/v1/users/me/context";
+    assert_eq!(
+        call(&app, "GET", ctx, Some(&recipient_token), Value::Null)
+            .await
+            .1["subjects"],
+        json!([])
+    );
+    let claim = json!({"token":invite["token"],"accept_sharing":true});
+    let (status, active) = call(
+        &app,
+        "POST",
+        claim_path,
+        Some(&recipient_token),
+        claim.clone(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(active["status"], "active");
+    assert_eq!(
+        call(&app, "POST", claim_path, Some(&recipient_token), claim)
+            .await
+            .0,
+        StatusCode::BAD_REQUEST
+    );
+
+    let (status, _) = call(
+        &app,
+        "PATCH",
+        ctx,
+        Some(&recipient_token),
+        json!({"default_subject_id":subject}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let (_, persisted) = call(&app, "GET", ctx, Some(&recipient_token), Value::Null).await;
+    assert_eq!(persisted["default_subject_id"], subject.to_string());
+    assert_eq!(persisted["subjects"].as_array().unwrap().len(), 1);
+    assert_eq!(persisted["subjects"][0]["id"], subject.to_string());
+    assert_eq!(persisted["subjects"][0]["can_edit"], true);
+    assert_eq!(persisted["relationships"], json!([]));
+    let (_, owner_context) = call(&app, "GET", ctx, Some(&owner_token), Value::Null).await;
+    assert_eq!(owner_context["subjects"][0]["can_edit"], false);
+    assert_eq!(owner_context["subjects"][0]["can_calculate"], false);
+}
+#[tokio::test]
+#[serial]
 async fn enrollment_pins_only_owned_member_relationships_and_grants_after_confirmation() {
     let (app, pool) = app().await;
     let owner = user(&pool).await;
@@ -1249,4 +1373,407 @@ async fn service_api_key_reads_owned_context_but_cannot_operate_enrollment_or_em
             "{method} {path}"
         );
     }
+}
+
+const DAILY_REDIRECT: &str = "https://daily.example.test/auth/callback";
+const ENROLLMENTS: &str = "/api/v1/account/enrollments";
+const ACCOUNT_CONTEXT: &str = "/api/v1/users/me/context";
+
+async fn daily_exchange(pool: &PgPool, uid: Uuid, asserted_email: &str) -> Value {
+    let code = new_secret();
+    sqlx::query(
+        "INSERT INTO registered_auth_codes(code_hash,client_id,user_id,code_challenge,redirect_uri,
+             expires_at,identity_issuer,identity_subject,enrollment_email)
+         SELECT $1,'noesis-daily',user_id,$3,$4,now()+interval '1 minute',issuer,provider_subject,$5
+         FROM account_identities WHERE user_id=$2 AND revoked_at IS NULL",
+    )
+    .bind(hash_secret(&code))
+    .bind(uid)
+    .bind(s256_challenge(VERIFIER))
+    .bind(DAILY_REDIRECT)
+    .bind(asserted_email)
+    .execute(pool)
+    .await
+    .unwrap();
+    json!({"grant_type":"authorization_code","client_id":"noesis-daily",
+           "code":code,"redirect_uri":DAILY_REDIRECT,"code_verifier":VERIFIER})
+}
+
+#[tokio::test]
+#[serial]
+async fn verified_daily_sign_in_reuses_prepared_profile_and_keeps_sharing_optional() {
+    let _redirect = EnvVarGuard::set("NOESIS_DAILY_REDIRECT_URIS", DAILY_REDIRECT);
+    let (app, pool) = app().await;
+    let owner = user(&pool).await;
+    let recipient = user(&pool).await;
+    let outsider = user(&pool).await;
+    let reader = user(&pool).await;
+    let owner_token = registered_jwt(&pool, owner).await;
+    let prior_token = registered_jwt(&pool, recipient).await;
+    let outsider_token = registered_jwt(&pool, outsider).await;
+    let recipient_email = format!("{recipient}@example.test");
+    let subject: Uuid = sqlx::query_scalar(
+        "INSERT INTO corpus_subjects(owner_user_id,subject_key,canonical_name)
+         VALUES($1,$2,'Prepared profile') RETURNING id",
+    )
+    .bind(owner)
+    .bind(Uuid::new_v4().to_string())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO subject_grants(subject_id,owner_user_id,grantee_user_id,grantor_user_id)
+         VALUES($1,$2,$2,$2),($1,$2,$3,$2)",
+    )
+    .bind(subject)
+    .bind(owner)
+    .bind(recipient)
+    .execute(&pool)
+    .await
+    .unwrap();
+    let prepared = json!({"full_name":"Prepared profile","birth_date":"1990-01-01",
+                          "timezone":"Asia/Kolkata","preferences":{}});
+    let prepared_hash = hash_secret(&prepared.to_string());
+    sqlx::query(
+        "INSERT INTO subject_profile_revisions(subject_id,owner_user_id,revision,profile,source_hash,changed_by)
+         VALUES($1,$2,1,$3,$4,$2)",
+    )
+    .bind(subject)
+    .bind(owner)
+    .bind(&prepared)
+    .bind(&prepared_hash)
+    .execute(&pool)
+    .await
+    .unwrap();
+    let pair: Uuid = sqlx::query_scalar(
+        "INSERT INTO corpus_relationships(owner_user_id,relationship_key,relationship_kind,label)
+         VALUES($1,$2,'pair','Approved joint view') RETURNING id",
+    )
+    .bind(owner)
+    .bind(Uuid::new_v4().to_string())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO corpus_relationship_members(relationship_id,subject_id,owner_user_id,member_role,position)
+         VALUES($1,$2,$3,'member',1)",
+    )
+    .bind(pair)
+    .bind(subject)
+    .bind(owner)
+    .execute(&pool)
+    .await
+    .unwrap();
+    let request = json!({"mode":"sign_in","subject_id":subject,
+        "intended_email":format!(" {} ", recipient_email.to_ascii_uppercase()),
+        "sharing_reader_id":reader,"relationship_ids":[pair]});
+    assert_eq!(
+        call(
+            &app,
+            "POST",
+            ENROLLMENTS,
+            Some(&prior_token),
+            request.clone()
+        )
+        .await
+        .0,
+        StatusCode::NOT_FOUND
+    );
+    let (status, invite) = call(
+        &app,
+        "POST",
+        ENROLLMENTS,
+        Some(&owner_token),
+        request.clone(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{invite}");
+    assert_eq!(invite["status"], "pending_sign_in");
+    assert!(invite.get("token").is_none());
+    assert_eq!(
+        call(&app, "POST", ENROLLMENTS, Some(&owner_token), request)
+            .await
+            .0,
+        StatusCode::CONFLICT
+    );
+    let (_, before) = call(
+        &app,
+        "GET",
+        ACCOUNT_CONTEXT,
+        Some(&prior_token),
+        Value::Null,
+    )
+    .await;
+    assert!(before["self_subject_id"].is_null());
+    assert_eq!(before["subjects"][0]["can_edit"], false);
+
+    let mut wrong_pkce = daily_exchange(&pool, recipient, &recipient_email).await;
+    wrong_pkce["code_verifier"] = json!(new_secret());
+    assert_eq!(
+        call(&app, "POST", "/api/v1/sessions/token", None, wrong_pkce)
+            .await
+            .0,
+        StatusCode::BAD_REQUEST
+    );
+    let (status, wrong_address) = call(
+        &app,
+        "POST",
+        "/api/v1/sessions/token",
+        None,
+        daily_exchange(&pool, outsider, &recipient_email).await,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let (_, denied) = call(
+        &app,
+        "GET",
+        ACCOUNT_CONTEXT,
+        wrong_address["access_token"].as_str(),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(denied["subjects"], json!([]));
+    assert!(denied["self_subject_id"].is_null());
+
+    let (status, tokens) = call(
+        &app,
+        "POST",
+        "/api/v1/sessions/token",
+        None,
+        daily_exchange(&pool, recipient, &recipient_email).await,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let access = tokens["access_token"].as_str();
+    let (_, opened) = call(&app, "GET", ACCOUNT_CONTEXT, access, Value::Null).await;
+    assert_eq!(opened["self_subject_id"], json!(subject));
+    assert_eq!(opened["default_subject_id"], json!(subject));
+    assert_eq!(opened["subjects"][0]["can_edit"], true);
+    assert_eq!(opened["subjects"][0]["profile_revision"], 1);
+    assert_eq!(opened["relationships"], json!([]));
+    let path = format!("/api/v1/subjects/{subject}/profile");
+    let (_, saved) = call(&app, "GET", &path, access, Value::Null).await;
+    assert_eq!(saved["profile"], prepared);
+    let stored: (String, String) = sqlx::query_as(
+        "SELECT p.source_hash,u.birth_date::text FROM subject_profile_revisions p
+         JOIN user_profiles u ON u.user_id=$2 WHERE p.subject_id=$1",
+    )
+    .bind(subject)
+    .bind(recipient)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored, (prepared_hash, "1990-01-01".into()));
+    let (_, sharing) = call(&app, "GET", "/api/v1/account/sharing", access, Value::Null).await;
+    assert_eq!(sharing["readers"], json!(["Synthetic"]));
+    assert_eq!(sharing["offers"][0]["id"], invite["id"]);
+    assert_eq!(sharing["offers"][0]["relationships"][0]["id"], json!(pair));
+    let accept = format!("{ENROLLMENTS}/{}/sharing", invite["id"].as_str().unwrap());
+    let joint = json!({"relationship_ids":[pair]});
+    assert_eq!(
+        call(&app, "POST", &accept, Some(&outsider_token), joint.clone())
+            .await
+            .0,
+        StatusCode::NOT_FOUND
+    );
+    assert_eq!(
+        call(
+            &app,
+            "POST",
+            &accept,
+            access,
+            json!({"reader":true,"relationship_ids":[Uuid::new_v4()]})
+        )
+        .await
+        .0,
+        StatusCode::NOT_FOUND
+    );
+    assert_eq!(
+        call(&app, "POST", &accept, access, joint.clone()).await.0,
+        StatusCode::OK
+    );
+    let (_, opened) = call(&app, "GET", ACCOUNT_CONTEXT, access, Value::Null).await;
+    assert_eq!(opened["relationships"][0]["id"], json!(pair));
+    let (_, offer) = call(&app, "GET", "/api/v1/account/sharing", access, Value::Null).await;
+    assert_eq!(offer["offers"][0]["reader"], "Synthetic");
+    assert_eq!(offer["offers"][0]["relationships"], json!([]));
+    assert_eq!(
+        call(&app, "POST", &accept, access, json!({"reader":true}))
+            .await
+            .0,
+        StatusCode::OK
+    );
+    let new_grant: (bool, bool) = sqlx::query_as(
+        "SELECT can_edit,can_calculate FROM subject_grants WHERE subject_id=$1 AND grantee_user_id=$2",
+    ).bind(subject).bind(reader).fetch_one(&pool).await.unwrap();
+    assert_eq!(new_grant, (false, false));
+    sqlx::query("UPDATE relationship_grants SET revoked_at=now() WHERE relationship_id=$1 AND grantee_user_id=$2")
+        .bind(pair).bind(recipient).execute(&pool).await.unwrap();
+    assert_eq!(
+        call(&app, "POST", &accept, access, joint).await.0,
+        StatusCode::OK
+    );
+    let (_, final_context) = call(&app, "GET", ACCOUNT_CONTEXT, access, Value::Null).await;
+    assert_eq!(final_context["relationships"], json!([]));
+}
+
+#[tokio::test]
+#[serial]
+async fn verified_daily_sign_in_creates_one_private_profile_after_owner_authorization() {
+    let _redirect = EnvVarGuard::set("NOESIS_DAILY_REDIRECT_URIS", DAILY_REDIRECT);
+    let (app, pool) = app().await;
+    let admin = user(&pool).await;
+    let invitee = user(&pool).await;
+    let admin_token = registered_jwt(&pool, admin).await;
+    let _invitee_token = registered_jwt(&pool, invitee).await;
+    let email = format!("{invitee}@example.test");
+    let request = json!({"mode":"sign_in","subject_id":null,"intended_email":email});
+    assert_eq!(
+        call(
+            &app,
+            "POST",
+            ENROLLMENTS,
+            Some(&admin_token),
+            request.clone()
+        )
+        .await
+        .0,
+        StatusCode::FORBIDDEN
+    );
+    sqlx::query("INSERT INTO user_roles(user_id,role) VALUES($1,'platform-admin')")
+        .bind(admin)
+        .execute(&pool)
+        .await
+        .unwrap();
+    let (status, first) = call(
+        &app,
+        "POST",
+        ENROLLMENTS,
+        Some(&admin_token),
+        request.clone(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let withdraw = format!("{ENROLLMENTS}/{}", first["id"].as_str().unwrap());
+    assert_eq!(
+        call(&app, "DELETE", &withdraw, Some(&admin_token), Value::Null)
+            .await
+            .0,
+        StatusCode::NO_CONTENT
+    );
+    let (status, unassigned) = call(
+        &app,
+        "POST",
+        "/api/v1/sessions/token",
+        None,
+        daily_exchange(&pool, invitee, &email).await,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let (_, unassigned) = call(
+        &app,
+        "GET",
+        ACCOUNT_CONTEXT,
+        unassigned["access_token"].as_str(),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(unassigned["subjects"], json!([]));
+    assert!(unassigned["self_subject_id"].is_null());
+
+    assert_eq!(
+        call(
+            &app,
+            "POST",
+            ENROLLMENTS,
+            Some(&admin_token),
+            request.clone()
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    let (one, two) = tokio::join!(
+        daily_exchange(&pool, invitee, &email),
+        daily_exchange(&pool, invitee, &email),
+    );
+    let ((status_one, tokens_one), (status_two, tokens_two)) = tokio::join!(
+        call(&app, "POST", "/api/v1/sessions/token", None, one),
+        call(&app, "POST", "/api/v1/sessions/token", None, two),
+    );
+    assert_eq!(status_one, StatusCode::OK);
+    assert_eq!(status_two, StatusCode::OK);
+    let access = tokens_one["access_token"].as_str();
+    let (_, first_context) = call(&app, "GET", ACCOUNT_CONTEXT, access, Value::Null).await;
+    let subject = first_context["self_subject_id"].as_str().unwrap();
+    assert_eq!(first_context["default_subject_id"], json!(subject));
+    let (_, second_context) = call(
+        &app,
+        "GET",
+        ACCOUNT_CONTEXT,
+        tokens_two["access_token"].as_str(),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(first_context, second_context);
+    let count: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM corpus_subjects WHERE owner_user_id=$1")
+            .bind(invitee)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(count, 1);
+    let path = format!("/api/v1/subjects/{subject}/profile");
+    let (_, profile) = call(&app, "GET", &path, access, Value::Null).await;
+    assert_eq!(profile["revision"], 1);
+    assert!(profile["profile"]["full_name"].is_null());
+    assert_eq!(
+        call(&app, "GET", &path, Some(&admin_token), Value::Null)
+            .await
+            .0,
+        StatusCode::NOT_FOUND
+    );
+    let (status, _) = call(
+        &app,
+        "PATCH",
+        &path,
+        access,
+        json!({"expected_revision":1,"patch":{"full_name":"Saved name"}}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+
+    // A second authorization for an already linked account cannot create another subject.
+    assert_eq!(
+        call(&app, "POST", ENROLLMENTS, Some(&admin_token), request)
+            .await
+            .0,
+        StatusCode::OK
+    );
+    let (status, fresh) = call(
+        &app,
+        "POST",
+        "/api/v1/sessions/token",
+        None,
+        daily_exchange(&pool, invitee, &email).await,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let (_, profile) = call(
+        &app,
+        "GET",
+        &path,
+        fresh["access_token"].as_str(),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(profile["revision"], 2);
+    assert_eq!(profile["profile"]["full_name"], "Saved name");
+    let count: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM corpus_subjects WHERE owner_user_id=$1")
+            .bind(invitee)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(count, 1);
 }
