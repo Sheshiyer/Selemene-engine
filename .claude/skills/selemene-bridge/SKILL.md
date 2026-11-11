@@ -54,7 +54,7 @@ tools:
 ## Production API
 
 - **Base URL**: `https://selemene.tryambakam.space`
-- **Auth Header**: `X-API-Key: nk_WSgs4eA9bhVa1GNrcOIUw6Vj9VqoxBxs`
+- **Auth Header**: `X-API-Key: $SELEMENE_API_KEY`
 - **All 16 engines and 6 workflows are live.**
 
 ## How to Call the API
@@ -78,7 +78,7 @@ Every engine and workflow takes the same `birth_data` object:
 
 ```bash
 curl -s -X POST https://selemene.tryambakam.space/api/v1/engines/{engine_id}/calculate \
-  -H "X-API-Key: nk_WSgs4eA9bhVa1GNrcOIUw6Vj9VqoxBxs" \
+  -H "X-API-Key: $SELEMENE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"birth_data":{"name":"Test","date":"1991-08-13","time":"13:31","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"}}'
 ```
@@ -89,7 +89,7 @@ Replace `{engine_id}` with any of the 16 engine IDs listed below.
 
 ```bash
 curl -s -X POST https://selemene.tryambakam.space/api/v1/workflows/{workflow_id}/execute \
-  -H "X-API-Key: nk_WSgs4eA9bhVa1GNrcOIUw6Vj9VqoxBxs" \
+  -H "X-API-Key: $SELEMENE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"birth_data":{"name":"Test","date":"1991-08-13","time":"13:31","latitude":12.9716,"longitude":77.5946,"timezone":"Asia/Kolkata"}}'
 ```
@@ -104,15 +104,15 @@ curl -s https://selemene.tryambakam.space/health/live
 
 # List all engines
 curl -s https://selemene.tryambakam.space/api/v1/engines \
-  -H "X-API-Key: nk_WSgs4eA9bhVa1GNrcOIUw6Vj9VqoxBxs"
+  -H "X-API-Key: $SELEMENE_API_KEY"
 
 # Get engine info
 curl -s https://selemene.tryambakam.space/api/v1/engines/{engine_id}/info \
-  -H "X-API-Key: nk_WSgs4eA9bhVa1GNrcOIUw6Vj9VqoxBxs"
+  -H "X-API-Key: $SELEMENE_API_KEY"
 
 # List all workflows
 curl -s https://selemene.tryambakam.space/api/v1/workflows \
-  -H "X-API-Key: nk_WSgs4eA9bhVa1GNrcOIUw6Vj9VqoxBxs"
+  -H "X-API-Key: $SELEMENE_API_KEY"
 ```
 
 ## Response Format
@@ -185,12 +185,30 @@ Workflow responses wrap multiple engine outputs:
 
 ## Using the Python Bridge Script
 
+## Daily field
+
+The engine computes and stores a person's day itself; agents read it rather than recompute it.
+
+- `GET /api/v1/daily?date=YYYY-MM-DD` returns the stored day: the five day-scoped engines
+  (panchanga in daily mode, transits, vimshottari, biorhythm, vedic-clock) at 06:00 IST, the
+  Witness Dyad for that moment, and `missing` with a reason for anything not stored.
+- `POST /api/v1/daily/refresh` with `{"date": "YYYY-MM-DD"}` (optional, default today IST)
+  computes only what is missing for that date and returns the same bundle. Idempotent.
+- Every part is a row in `readings` with `workflow_id = "daily-field"`; `GET /api/v1/readings`
+  lists them too.
+- Opt in to the 05:30 IST schedule with `PATCH /api/v1/users/me` and
+  `{"preferences": {"daily_field": true}}`. Optional `daily_field_location: {lat, lng}` sets
+  where the day is witnessed from; the default is the birth place.
+- `POST /api/v1/witness/interpret` no longer needs `live_scores`; without a capture the dyad is
+  grounded in engine results and never cites biofield. `current_time` dates the reading.
+
 The bridge script at `.claude/skills/selemene-bridge/scripts/bridge.py` wraps the API for CLI use:
 
 ```bash
 # Set the environment (production)
 export SELEMENE_URL="https://selemene.tryambakam.space"
-export SELEMENE_API_KEY="nk_WSgs4eA9bhVa1GNrcOIUw6Vj9VqoxBxs"
+# Load the key from your secrets file; never paste it into this skill or commit it.
+set -a; . /Volumes/madara/sec-key/.env; set +a   # provides SELEMENE_API_KEY
 
 # Health check
 python .claude/skills/selemene-bridge/scripts/bridge.py selemene_health

@@ -2,8 +2,8 @@
   "generated_at": "2026-03-13",
   "inventory_scope": "/api/v1",
   "source": "crates/noesis-api/src/lib.rs",
-  "path_count": 122,
-  "route_count": 133,
+  "path_count": 124,
+  "route_count": 135,
   "routes": [
     {
       "path": "/auth/register",
@@ -1289,6 +1289,28 @@
         {
           "method": "POST",
           "handler": "handlers::witness::interpret"
+        }
+      ]
+    },
+    {
+      "path": "/daily",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "GET",
+          "handler": "handlers::daily::get_daily"
+        }
+      ]
+    },
+    {
+      "path": "/daily/refresh",
+      "auth_requirement": "bearer_or_api_key",
+      "uses_orchestrator": false,
+      "methods": [
+        {
+          "method": "POST",
+          "handler": "handlers::daily::refresh_daily"
         }
       ]
     },

@@ -259,6 +259,30 @@ impl UserRepository {
         Ok(profile)
     }
 
+    /// Users who opted into the scheduled daily field (`preferences.daily_field = true`),
+    /// hold a birth date and location, and are not locked right now. A lock counts only
+    /// until its `locked_until` passes, read as the admin user filters read it (account
+    /// state first, then the legacy column): the stored state label stays `locked` after
+    /// a temporary lock expires. Returns (user_id, tier, level).
+    pub async fn list_daily_field_users(&self) -> Result<Vec<(Uuid, String, i32)>, Error> {
+        sqlx::query_as::<_, (Uuid, String, i32)>(
+            r#"
+            SELECT p.user_id, u.tier, u.consciousness_level
+            FROM user_profiles p
+            JOIN users u ON u.id = p.user_id
+            LEFT JOIN user_account_state s ON s.user_id = p.user_id
+            WHERE p.preferences->>'daily_field' = 'true'
+              AND p.birth_date IS NOT NULL
+              AND p.birth_location_lat IS NOT NULL
+              AND p.birth_location_lng IS NOT NULL
+              AND (COALESCE(s.locked_until, u.locked_until) IS NULL
+                   OR COALESCE(s.locked_until, u.locked_until) <= NOW())
+            "#,
+        )
+        .fetch_all(&self.pool)
+        .await
+    }
+
     pub async fn get_profile(&self, user_id: Uuid) -> Result<Option<UserProfile>, Error> {
         sqlx::query_as::<_, UserProfile>(
             r#"

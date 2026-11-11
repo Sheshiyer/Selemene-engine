@@ -1189,6 +1189,9 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         )
         .route("/workflows/:workflow_id/info", get(workflow_info_handler))
         .route("/witness/interpret", post(handlers::witness::interpret))
+        // Daily field: the day's engines and witness dyad, stored in readings
+        .route("/daily", get(handlers::daily::get_daily))
+        .route("/daily/refresh", post(handlers::daily::refresh_daily))
         .route("/readings", get(list_readings_handler))
         .route("/readings/stats", get(readings_stats_handler))
         .route("/readings/:reading_id", get(get_reading_handler))
@@ -1443,7 +1446,7 @@ struct VedicChartBundleResponseSchema {
 }
 
 #[derive(Serialize, ToSchema)]
-struct ApiEngineOutputResponse {
+pub(crate) struct ApiEngineOutputResponse {
     #[serde(flatten)]
     output: EngineOutput,
     contract_version: String,
@@ -1769,7 +1772,7 @@ fn strip_workflow_contract_provenance(
 impl ApiEngineOutputResponse {
     /// Build the calculate envelope. `is_native` must come from
     /// [`AppState::is_native_engine`].
-    fn from_engine_output(mut output: EngineOutput, is_native: bool) -> Self {
+    pub(crate) fn from_engine_output(mut output: EngineOutput, is_native: bool) -> Self {
         let provenance = envelope_contract_provenance(&mut output, is_native);
         let generated_image = output.result.get("generated_image").cloned();
         let generated_audio = output.result.get("generated_audio").cloned();
@@ -3160,7 +3163,7 @@ fn free_tier_quota_applies(mode: BillingMode, tier: &str) -> bool {
 /// Returns Err(402) when the user has consumed their free-tier quota for the
 /// current calendar month. Fails OPEN on db errors / missing repo to avoid
 /// blocking paying flows on infrastructure hiccups.
-async fn enforce_free_tier_quota(
+pub(crate) async fn enforce_free_tier_quota(
     state: &AppState,
     user: &AuthUser,
 ) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
@@ -3208,7 +3211,7 @@ async fn enforce_free_tier_quota(
 
 /// Fire-and-forget increment of the free-tier monthly counter. Called from
 /// the success branch of engine + workflow handlers.
-fn increment_free_tier_counter(state: &AppState, user: &AuthUser) {
+pub(crate) fn increment_free_tier_counter(state: &AppState, user: &AuthUser) {
     if user.tier != "free" {
         return;
     }
@@ -4676,6 +4679,11 @@ fn request_pool_options(max_connections: u32) -> PgPoolOptions {
 ///
 /// # Returns
 /// Configured `AppState` with orchestrator, cache, auth, and metrics
+/// Arm the daily-field scheduler (05:30 IST) on a built application state.
+pub fn spawn_daily_field_scheduler(state: AppState) {
+    handlers::daily::spawn_scheduler(state);
+}
+
 pub async fn build_app_state(config: &ApiConfig) -> AppState {
     // -- Orchestrator with engines --
     let (mut orchestrator, bridge_manager) = build_runtime_orchestrator_and_bridge().await;

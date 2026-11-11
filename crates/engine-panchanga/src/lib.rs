@@ -495,6 +495,8 @@ fn build_result(
     let karana_val = calculate_karana(tithi_val);
     let karana_slot = karana_slot_from_tithi(tithi_val);
     let (karana_idx, karana_name) = karana_identity(karana_slot);
+    // Vara belongs to the local day. `jd` counts UTC days, so it is shifted to local
+    // time first: an IST morning before 05:30 is still the previous UTC day.
     let vara_val = calculate_vara(jd + tz_offset_hours / 24.0);
 
     let tithi_idx = (tithi_val.floor() as usize).min(29);
@@ -1076,6 +1078,55 @@ mod tests {
             "Pratipada (Shukla)"
         );
         assert!((0.0..30.0).contains(&before) && (0.0..30.0).contains(&after));
+    }
+
+    /// Daily mode reads `current_time` on the local wall clock of the birth timezone.
+    /// Regression: the UTC value was formatted as local time and shifted again, so an
+    /// IST morning was computed 5h30m early and the vara fell on the previous day.
+    #[tokio::test]
+    async fn daily_mode_reads_current_time_in_the_local_timezone() {
+        let mut input = test_input();
+        input.birth_data.as_mut().unwrap().timezone = "Asia/Kolkata".to_string();
+        // 06:22:41 IST on Friday 30 Oct 2026, ten minutes after Bangalore sunrise.
+        input.current_time = chrono::DateTime::parse_from_rfc3339("2026-10-30T00:52:41Z")
+            .unwrap()
+            .with_timezone(&chrono::Utc);
+        input
+            .options
+            .insert("mode".to_string(), serde_json::json!("daily"));
+        let output = PanchangaEngine::new().calculate(input).await.unwrap();
+        let result = result_of(&output);
+        assert_eq!(result.vara_name, "Shukravara (Friday)");
+        // Positions use the exact instant, seconds included.
+        let expected_jd = calculate_julian_day("2026-10-30", "06:22", 5.5) + 41.0 / 86_400.0;
+        assert!((result.julian_day - expected_jd).abs() < 1e-6, "jd {} vs {}", result.julian_day, expected_jd);
+    }
+
+    /// Vara follows the local day even while the UTC date is still the previous one,
+    /// as for an early sunrise in eastern India; positions keep the actual instant.
+    #[tokio::test]
+    async fn vara_follows_the_local_day_before_0530_ist() {
+        let mut input = test_input();
+        input.birth_data.as_mut().unwrap().timezone = "Asia/Kolkata".to_string();
+        // 05:15 IST on Friday 30 Oct 2026 is 23:45 UTC on Thursday 29 Oct.
+        input.current_time = chrono::DateTime::parse_from_rfc3339("2026-10-29T23:45:00Z")
+            .unwrap()
+            .with_timezone(&chrono::Utc);
+        input
+            .options
+            .insert("mode".to_string(), serde_json::json!("daily"));
+        let output = PanchangaEngine::new().calculate(input).await.unwrap();
+        let result = result_of(&output);
+        assert_eq!(result.vara_name, "Shukravara (Friday)");
+        let expected_jd = calculate_julian_day("2026-10-30", "05:15", 5.5);
+        assert!((result.julian_day - expected_jd).abs() < 1e-6);
+
+        // Birth mode reads the same way: 01:00 IST on Tuesday 13 Aug 1991.
+        let (birth, _) = compute_panchanga_reporting_fallback("1991-08-13", "01:00", 5.5);
+        assert_eq!(birth.vara_name, "Mangalavara (Tuesday)");
+        // A western offset late in the evening stays on the local day too.
+        let (west, _) = compute_panchanga_reporting_fallback("2026-10-30", "22:00", -5.0);
+        assert_eq!(west.vara_name, "Shukravara (Friday)");
     }
 
     /// Daily mode reads the time from `current_time`, so nothing is assumed.
