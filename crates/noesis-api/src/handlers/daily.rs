@@ -17,7 +17,9 @@
 //! - A background task runs the refresh at 05:30 IST for users whose profile
 //!   preferences carry `daily_field: true` (set through `PATCH /api/v1/users/me`).
 
-use crate::handlers::witness::{interpret_grounded, CalendarDay, WitnessInterpretRequest};
+use crate::handlers::witness::{
+    interpret_grounded, CalendarDay, WitnessInterpretRequest, WitnessInterpretResponse,
+};
 use crate::AppState;
 use axum::{
     extract::{Extension, Json, Query, State},
@@ -427,10 +429,16 @@ pub(crate) async fn run_daily(
             )
             .await;
             let lacking = missing_grounding(&available);
+            let blank = blank_witness_fields(&dyad);
             if !lacking.is_empty() {
                 skipped.push(MissingPart {
                     part: WITNESS_ID.into(),
                     reason: format!("witness ran without {}; not stored, retried on the next refresh", lacking.join(", ")),
+                });
+            } else if !blank.is_empty() {
+                skipped.push(MissingPart {
+                    part: WITNESS_ID.into(),
+                    reason: format!("witness came back without {}; not stored, retried on the next refresh", blank.join(", ")),
                 });
             } else {
                 let ms = Some(started.elapsed().as_secs_f64() * 1000.0);
@@ -462,6 +470,22 @@ pub(crate) async fn run_daily(
 /// The day engines a witness was not given, out of the ones it reads.
 fn missing_grounding(available: &[String]) -> Vec<&'static str> {
     WITNESS_GROUNDING.into_iter().filter(|e| !available.iter().any(|a| a == e)).collect()
+}
+
+/// The witness fields that came back blank. A failed or malformed LLM synthesis
+/// returns both pillars with an empty synthesis and question; storing that would
+/// mark the day complete and stop later refreshes from retrying it.
+fn blank_witness_fields(dyad: &WitnessInterpretResponse) -> Vec<&'static str> {
+    [
+        ("aletheios", &dyad.aletheios),
+        ("pichet", &dyad.pichet),
+        ("synthesis", &dyad.synthesis),
+        ("witness_question", &dyad.witness_question),
+    ]
+    .into_iter()
+    .filter(|(_, text)| text.trim().is_empty())
+    .map(|(name, _)| name)
+    .collect()
 }
 
 /// The moment and anchor a stored daily row was computed for.
@@ -815,6 +839,26 @@ mod tests {
         assert_eq!(missing_grounding(&partial), vec!["transits", "vimshottari"]);
         assert_eq!(missing_grounding(&[]), WITNESS_GROUNDING.to_vec());
         assert!(WITNESS_GROUNDING.iter().all(|e| DAY_ENGINES.contains(e)));
+    }
+
+    #[test]
+    fn a_witness_with_a_blank_field_is_not_stored() {
+        let whole = WitnessInterpretResponse {
+            aletheios: "left".into(),
+            pichet: "right".into(),
+            synthesis: "both".into(),
+            witness_question: "what is here?".into(),
+            engines_used: vec![],
+            llm_powered: true,
+        };
+        assert!(blank_witness_fields(&whole).is_empty());
+        // What interpret_with_llm returns when its synthesis call fails.
+        let unsynthesised = WitnessInterpretResponse {
+            synthesis: String::new(),
+            witness_question: " ".into(),
+            ..whole
+        };
+        assert_eq!(blank_witness_fields(&unsynthesised), vec!["synthesis", "witness_question"]);
     }
 
     #[tokio::test]
