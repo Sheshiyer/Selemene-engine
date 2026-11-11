@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -76,8 +76,28 @@ describe('migrate-harshita-l0', () => {
       expect(existsSync(`${dst}/local/reading.pdf`)).toBe(false);
       expect(JSON.parse(readFileSync(`${dst}/source-pack/manifest.json`, 'utf-8')).report_level).toBe('L0');
       expect(stderr).toContain('No report.pdf');
-      expect(stderr).toContain(`PREMIUM_ASSETS_ROOT="${root}"`);
+      expect(stderr).toContain(`PREMIUM_ASSETS_ROOT="${realpathSync(root)}"`);
       expect(stderr).toContain('scripts/l0-render.ts synthetic-person');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('prints an absolute archive root when the destination is relative', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'migrate-l0-'));
+    try {
+      const src = join(root, 'new-l0-flow');
+      writeSyntheticNewL0Flow(src);
+      rmSync(join(src, 'report.pdf'));
+
+      const { stderr } = await execFileAsync(
+        'bash',
+        [SCRIPT, src, 'archive/.premium-assets-witness-synthetic-person/synthetic-person'],
+        { cwd: root },
+      );
+
+      expect(existsSync(join(root, 'archive/.premium-assets-witness-synthetic-person/synthetic-person/source-pack/manifest.json'))).toBe(true);
+      expect(stderr).toContain(`PREMIUM_ASSETS_ROOT="${realpathSync(join(root, 'archive'))}"`);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

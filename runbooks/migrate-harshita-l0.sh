@@ -43,7 +43,8 @@ if [ -f "$SRC/report.pdf" ]; then
   cp "$SRC/report.pdf" "$DST/local/reading.pdf"
 else
   PERSON_ID="$(basename "$DST")"
-  ARCHIVE_ROOT="$(dirname "$(dirname "$DST")")"
+  # Absolute, because `pnpm --filter ... exec` runs inside packages/witness-pipeline.
+  ARCHIVE_ROOT="$(cd "$DST/../.." && pwd)"
   echo "No report.pdf in $SRC; skipped local/reading.pdf. Render it from the migrated source pack:" >&2
   echo "  PREMIUM_ASSETS_ROOT=\"$ARCHIVE_ROOT\" BRAND_CONFIG_PATH=<brand-config.yaml> \\" >&2
   echo "    pnpm --filter @noesis/witness-pipeline exec tsx scripts/l0-render.ts $PERSON_ID" >&2
