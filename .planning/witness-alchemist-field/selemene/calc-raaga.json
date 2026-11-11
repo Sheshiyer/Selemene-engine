@@ -1,0 +1,1 @@
+{"contract_version":"v1","status":403,"error_code":"ENGINE_SCOPE_FORBIDDEN","message":"This API key is not permitted to execute engine 'raaga'.","error":"This API key is not permitted to execute engine 'raaga'.","details":{"engine_id":"raaga","required_permission":"raaga:read"},"trace_id":"9b6697cd-1932-4d16-b340-b248f5b6d944"}
