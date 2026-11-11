@@ -271,6 +271,7 @@ fn new_reading(
     date: NaiveDate,
     moment: DateTime<Utc>,
     anchor: &str,
+    birth: &BirthData,
     lat: f64,
     lng: f64,
     result: Value,
@@ -288,6 +289,7 @@ fn new_reading(
             "moment": moment.to_rfc3339(),
             "moment_anchor": anchor,
             "method": METHOD,
+            "birth_data": birth,
             "witnessed_at": { "lat": lat, "lng": lng },
         }),
         result_data: result,
@@ -361,7 +363,12 @@ pub(crate) async fn run_daily(
         .stored(uid, &date_s)
         .await
         .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, "READINGS_READ_FAILED", e.to_string()))?;
-    // A partly stored day keeps the moment it was started with, so every part agrees.
+    // A partly stored day keeps the profile inputs and the moment it was started with,
+    // so every part agrees even if the profile changed between runs.
+    let (birth, lat, lng) = stored_rows
+        .iter()
+        .find_map(|r| stored_inputs(&r.input_data))
+        .unwrap_or((birth, lat, lng));
     let (moment, anchor) = match stored_rows.iter().find_map(|r| stored_moment(&r.input_data)) {
         Some(m) => m,
         None => sunrise_moment(state, user, is_api_key, &birth, date, lat, lng).await,
@@ -390,7 +397,7 @@ pub(crate) async fn run_daily(
                 let prompt = Some(output.witness_prompt.clone());
                 let envelope = crate::ApiEngineOutputResponse::from_engine_output(output, state.is_native_engine(engine_id));
                 let ms = Some(started.elapsed().as_secs_f64() * 1000.0);
-                let reading = new_reading(uid, engine_id, date, moment, anchor, lat, lng, serde_json::to_value(&envelope).unwrap_or_default(), prompt, level as i16, ms);
+                let reading = new_reading(uid, engine_id, date, moment, anchor, &birth, lat, lng, serde_json::to_value(&envelope).unwrap_or_default(), prompt, level as i16, ms);
                 match held.save(&reading).await {
                     Ok(Some(_)) => computed += 1,
                     // Another process stored this part first; its row stands.
@@ -443,7 +450,7 @@ pub(crate) async fn run_daily(
             } else {
                 let ms = Some(started.elapsed().as_secs_f64() * 1000.0);
                 let question = Some(dyad.witness_question.clone());
-                let reading = new_reading(uid, WITNESS_ID, date, moment, anchor, lat, lng, serde_json::to_value(&dyad).unwrap_or_default(), question, level as i16, ms);
+                let reading = new_reading(uid, WITNESS_ID, date, moment, anchor, &birth, lat, lng, serde_json::to_value(&dyad).unwrap_or_default(), question, level as i16, ms);
                 match held.save(&reading).await {
                     Ok(Some(_)) => computed += 1,
                     Ok(None) => {}
@@ -486,6 +493,14 @@ fn blank_witness_fields(dyad: &WitnessInterpretResponse) -> Vec<&'static str> {
     .filter(|(_, text)| text.trim().is_empty())
     .map(|(name, _)| name)
     .collect()
+}
+
+/// The birth data and witnessing place a stored daily row was computed from. Rows
+/// written before the snapshot was kept have none, and the current profile is used.
+fn stored_inputs(input: &Value) -> Option<(BirthData, f64, f64)> {
+    let birth = serde_json::from_value(input.get("birth_data")?.clone()).ok()?;
+    let here = input.get("witnessed_at")?;
+    Some((birth, here.get("lat")?.as_f64()?, here.get("lng")?.as_f64()?))
 }
 
 /// The moment and anchor a stored daily row was computed for.
@@ -688,6 +703,26 @@ mod tests {
         let (m, a) = stored_moment(&input).unwrap();
         assert_eq!(m.to_rfc3339(), "2026-10-30T00:52:37+00:00");
         assert_eq!(a, "sunrise+10m");
+    }
+
+    #[test]
+    fn a_partial_day_reuses_the_profile_it_was_started_with() {
+        let birth = BirthData {
+            name: None,
+            date: "1991-08-13".into(),
+            time: Some("13:31".into()),
+            latitude: 12.97,
+            longitude: 77.59,
+            timezone: "Asia/Kolkata".into(),
+        };
+        let date = NaiveDate::from_ymd_opt(2026, 10, 30).unwrap();
+        let moment = Utc.with_ymd_and_hms(2026, 10, 30, 0, 52, 37).unwrap();
+        let row = new_reading(Uuid::nil(), "biorhythm", date, moment, "sunrise+10m", &birth, 13.0, 77.6, json!({}), None, 0, None);
+        let (kept, lat, lng) = stored_inputs(&row.input_data).unwrap();
+        assert_eq!(serde_json::to_value(&kept).unwrap(), serde_json::to_value(&birth).unwrap());
+        assert_eq!((lat, lng), (13.0, 77.6));
+        // A row written before the snapshot was kept falls back to the current profile.
+        assert!(stored_inputs(&json!({"moment": "2026-10-30T00:52:37+00:00", "witnessed_at": {"lat": 13.0, "lng": 77.6}})).is_none());
     }
 
     #[test]
