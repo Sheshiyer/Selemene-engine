@@ -39,7 +39,12 @@ pub struct TsEngineRequest {
 /// provenance block inside `EngineOutput::result`. It is bridge-owned
 /// scaffolding (not engine data) and is lifted out by the API envelope, so it
 /// never collides with an engine's own `result["provenance"]` payload.
-pub const CONTRACT_PROVENANCE_KEY: &str = "__contract_provenance";
+pub use noesis_core::CONTRACT_PROVENANCE_KEY;
+
+/// Reserved key under which the bridge stashes the sidecar's full
+/// `witness_prompts` list (prompt, context, themes) inside
+/// `EngineOutput::result`; the API envelope lifts it back out (GH #1411).
+pub use noesis_core::CONTRACT_WITNESS_PROMPTS_KEY;
 
 /// Response format from TypeScript engines
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -35,9 +35,9 @@ const STREAM_TIMEOUT: Duration = Duration::from_secs(20 * 60);
 /// A stream that sends nothing (not even a keep-alive) for this long is dead.
 const STREAM_IDLE_TIMEOUT: Duration = Duration::from_secs(120);
 
-// Tier → (model_id, max_tokens) for the Witness Dyad.
-// Mirrors nvidia-routing.ts — single source of truth is the TS file;
-// update both when swapping models.
+// Legacy tier model IDs and token budgets for the Witness Dyad.
+// Provider-specific replacements belong in complete_via: hosted providers retire
+// model IDs independently, and their namespaces must not be changed together.
 fn model_for_tier(tier: &str, role: &str) -> (&'static str, u32) {
     match (tier, role) {
         // enterprise: deep reasoning models
@@ -152,6 +152,8 @@ struct ChatRequest {
     temperature: f32,
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     stream: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    chat_template_kwargs: Option<serde_json::Value>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -319,7 +321,14 @@ impl LlmClient {
             LlmProvider::Nvidia => (
                 NVIDIA_BASE_URL,
                 self.nvidia_api_key.as_deref().unwrap_or(""),
-                model,
+                // The Enterprise role models retired from NVIDIA's hosted API
+                // (410 Gone). This replacement passed a live completion probe
+                // on 2026-11-03. Keep role prompts/budgets and other providers.
+                if self.tier == "enterprise" {
+                    "nvidia/nemotron-3.5-super-vl-120b-a12b"
+                } else {
+                    model
+                },
             ),
             LlmProvider::OpenRouter => (
                 OPENROUTER_BASE_URL,
@@ -344,6 +353,10 @@ impl LlmClient {
             max_tokens,
             temperature: 0.82,
             stream,
+            // Leave the short dyad budget for the answer and synthesis JSON.
+            // Other providers do not receive NVIDIA-specific template options.
+            chat_template_kwargs: (*provider == LlmProvider::Nvidia && self.tier == "enterprise")
+                .then(|| serde_json::json!({ "enable_thinking": false })),
         };
 
         debug!("[witness-llm] POST {url} model={model} provider={provider:?}");
@@ -470,6 +483,26 @@ fn parse_stream(raw: &str) -> Result<Streamed, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn thinking_options_preserve_false_and_are_omitted_for_other_providers() {
+        for options in [None, Some(serde_json::json!({"enable_thinking": false}))] {
+            let body = serde_json::to_value(ChatRequest {
+                model: "fixture".into(),
+                messages: vec![],
+                max_tokens: 2048,
+                temperature: 0.82,
+                stream: false,
+                chat_template_kwargs: options.clone(),
+            })
+            .unwrap();
+            if options.is_some() {
+                assert_eq!(body["chat_template_kwargs"]["enable_thinking"], false);
+            } else {
+                assert!(body.get("chat_template_kwargs").is_none());
+            }
+        }
+    }
 
     #[test]
     fn a_stream_collects_content_and_skips_keepalives() {

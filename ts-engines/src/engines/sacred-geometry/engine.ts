@@ -4,10 +4,10 @@
 
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
 import { EngineValidationError } from '../../utils'
-import { SeededRandom, getDefaultSeed } from '../../utils/random'
+import { SeededRandom, assertIntegerSeed, getDefaultSeed } from '../../utils/random'
 import { buildGeometry } from './geometry'
 import { SACRED_FORMS, getFormById, getFormIds } from './wisdom'
-import { generateWitnessPrompts } from './witness'
+import { generateWitnessNarrative } from './witness'
 
 export class SacredGeometryEngine implements ConsciousnessEngine {
   private safeSvgPreview(template?: string): {
@@ -61,6 +61,7 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
     const formParam = input.parameters.form as string | undefined
     const intention = input.question ?? (input.parameters.intention as string | undefined)
     const svgTemplate = input.parameters.svg_template as string | undefined
+    assertIntegerSeed(input.seed)
     const seed = input.seed ?? getDefaultSeed()
 
     // Select form
@@ -83,8 +84,8 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
       form = rng.pick(SACRED_FORMS)
     }
 
-    // Generate witness prompts
-    const witnessPrompts = generateWitnessPrompts(form, intention, seed)
+    // Generate witness prompts, recording how each was derived (GH #1411)
+    const narrative = generateWitnessNarrative(form, intention, seed)
 
     const svgPreview = this.safeSvgPreview(svgTemplate)
 
@@ -138,7 +139,14 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
       provenance_detail: {
         form: { kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' },
         form_selection: formSelection,
-        meditation: { kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' },
+        // The meditation text is instruction, not inquiry, and the duration is
+        // a fixed suggestion rather than a lookup; both are labelled (GH #1411).
+        meditation: {
+          kind: 'symbolic_lookup',
+          source: 'wisdom.SACRED_FORMS',
+          mode: 'guidance',
+          duration_suggestion: 'static_constant',
+        },
         calculated_geometry: calculatedGeometry,
         rendered_artifact: {
           status: 'not_implemented',
@@ -146,14 +154,21 @@ export class SacredGeometryEngine implements ConsciousnessEngine {
             'The engine renders no SVG or image; clients draw result.geometry from its numbers, and svg_preview only validates a caller-supplied svg_template.',
         },
         svg_preview: { kind: 'caller_template_validation', status: svgPreview.status },
-        witness_prompts: { kind: 'templated_narrative' },
+        // Narrative sits beneath the deterministic fields: each prompt names its
+        // template, inquiry vs guidance, and the result fields it was filled from.
+        witness_prompts: {
+          kind: 'templated_narrative',
+          source: 'witness.generateWitnessPrompts',
+          seed,
+          prompts: narrative.derivation,
+        },
       },
     }
 
     return {
       engine_id: 'sacred-geometry',
       result,
-      witness_prompts: witnessPrompts,
+      witness_prompts: narrative.prompts,
       calculated_at: new Date().toISOString(),
       processing_time_ms: Math.round(endTime - startTime),
       // Everything above comes from the in-process SACRED_FORMS table and

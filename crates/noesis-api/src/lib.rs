@@ -12,13 +12,14 @@ mod capabilities;
 pub mod cf_access;
 mod config;
 pub mod desktop_auth;
+pub mod engine_requirements;
 pub mod error;
 pub mod error_mapper;
 mod handlers;
 mod living_reading_publication;
 mod logging;
-pub mod reading;
 mod middleware;
+pub mod reading;
 pub use middleware::ApiKeyPrincipal;
 pub mod workflow_parity;
 
@@ -116,6 +117,7 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::admin::update_user_state,
         handlers::admin::update_user_tier,
         handlers::admin::update_user_roles,
+        handlers::admin::api_key_tiers,
         handlers::admin::list_api_keys,
         handlers::admin::create_api_key,
         handlers::admin::revoke_api_key,
@@ -142,6 +144,20 @@ use workflow_parity::log_workflow_registry_parity;
         handlers::auth::forgot_password,
         handlers::auth::reset_password,
         handlers::auth::change_password,
+        handlers::witness_requests::status,
+        handlers::witness_requests::enqueue,
+        handlers::shared_identity::context,
+        handlers::shared_identity::update_context,
+        handlers::shared_identity::profile,
+        handlers::shared_identity::update_profile,
+        handlers::shared_identity::calculate,
+        handlers::shared_identity::readings,
+        handlers::shared_identity::reading,
+        handlers::shared_identity::create_enrollment,
+        handlers::shared_identity::claim_enrollment,
+        handlers::shared_identity::confirm_enrollment,
+        handlers::shared_identity::start_email_link,
+        handlers::shared_identity::complete_email_link,
         handlers::desktop_auth::authorize,
         handlers::desktop_auth::token,
         handlers::desktop_auth::revoke,
@@ -235,6 +251,7 @@ use workflow_parity::log_workflow_registry_parity;
             handlers::admin::UpdateUserRolesResponse,
             handlers::admin::AdminApiKeysResponse,
             handlers::admin::AdminApiKeyItem,
+            handlers::admin::AdminKeyTier,
             handlers::admin::CreateApiKeyRequest,
             handlers::admin::CreateApiKeyResponse,
             handlers::admin::RotateApiKeyResponse,
@@ -823,6 +840,20 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
     // token rather than a session, so they sit outside auth_middleware but are
     // rate limited by IP.
     let desktop_token_routes = Router::new()
+        .route("/sessions/token", post(handlers::sessions::token))
+        .route("/sessions/revoke", post(handlers::sessions::revoke))
+        .route(
+            "/account/email-links/complete",
+            post(handlers::shared_identity::complete_email_link),
+        )
+        .route(
+            "/account/email-links/begin",
+            get(handlers::shared_identity::email_begin_page).post(handlers::shared_identity::bind_email_browser),
+        )
+        .route(
+            "/account/email-links/verify",
+            get(handlers::shared_identity::verify_email_link),
+        )
         .route("/desktop/token", post(handlers::desktop_auth::token))
         .route("/desktop/revoke", post(handlers::desktop_auth::revoke))
         .layer(axum_middleware::from_fn_with_state(
@@ -831,6 +862,11 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         ));
 
     let api_v1 = Router::new()
+        .route("/subjects/:id/witness", get(handlers::witness_catalog::catalog).post(handlers::witness_catalog::publish))
+        .route("/subjects/:id/witness/requests", get(handlers::witness_requests::status).post(handlers::witness_requests::enqueue))
+        .route("/witness/requests/claim", post(handlers::witness_requests::claim))
+        .route("/witness/requests/:id/start", post(handlers::witness_requests::start))
+        .route("/witness/requests/:id/hold", post(handlers::witness_requests::hold))
         .route(
             "/auth/change-password",
             post(handlers::auth::change_password),
@@ -838,6 +874,59 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         .route("/auth/logout", post(handlers::auth::logout))
         // Desktop sign-in starts here in the browser; requires a Cloudflare Access identity.
         .route("/desktop/authorize", get(handlers::desktop_auth::authorize))
+        .route("/sessions/authorize", get(handlers::sessions::authorize))
+        .route(
+            "/users/me/context",
+            get(handlers::shared_identity::context)
+                .patch(handlers::shared_identity::update_context),
+        )
+        .route(
+            "/subjects/:id/profile",
+            get(handlers::shared_identity::profile)
+                .patch(handlers::shared_identity::update_profile),
+        )
+        .route(
+            "/subjects/:id/engines/:engine/calculate",
+            post(handlers::shared_identity::calculate),
+        )
+        .route(
+            "/subjects/:id/readings",
+            get(handlers::shared_identity::readings),
+        )
+        .route(
+            "/subjects/:id/readings/:reading",
+            get(handlers::shared_identity::reading),
+        )
+        .route(
+            "/account/enrollments",
+            post(handlers::shared_identity::create_enrollment)
+                .get(handlers::shared_identity::pending_enrollments),
+        )
+        .route(
+            "/account/enrollments/preview",
+            post(handlers::shared_identity::preview_enrollment),
+        )
+        .route(
+            "/account/enrollments/claim",
+            post(handlers::shared_identity::claim_enrollment),
+        )
+        .route("/account/sharing", get(handlers::shared_identity::sharing))
+        .route(
+            "/account/enrollments/:id/sharing",
+            post(handlers::shared_identity::accept_enrollment_sharing),
+        )
+        .route(
+            "/account/enrollments/:id/confirm",
+            post(handlers::shared_identity::confirm_enrollment),
+        )
+        .route(
+            "/account/enrollments/:id",
+            axum::routing::delete(handlers::shared_identity::revoke_enrollment),
+        )
+        .route(
+            "/account/email-links",
+            post(handlers::shared_identity::start_email_link),
+        )
         .route(
             "/users/me",
             get(handlers::users::get_me).patch(handlers::users::update_me),
@@ -896,6 +985,7 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
             "/admin/users/:user_id/roles",
             put(handlers::admin::update_user_roles),
         )
+        .route("/admin/api-key-tiers", get(handlers::admin::api_key_tiers))
         .route(
             "/admin/api-keys",
             get(handlers::admin::list_api_keys).post(handlers::admin::create_api_key),
@@ -1105,6 +1195,9 @@ pub fn create_router(state: AppState, config: &ApiConfig) -> Router {
         )
         .route("/workflows/:workflow_id/info", get(workflow_info_handler))
         .route("/witness/interpret", post(handlers::witness::interpret))
+        // Daily field: the day's engines and witness dyad, stored in readings
+        .route("/daily", get(handlers::daily::get_daily))
+        .route("/daily/refresh", post(handlers::daily::refresh_daily))
         .route("/readings", get(list_readings_handler))
         .route("/readings/stats", get(readings_stats_handler))
         .route("/readings/:reading_id", get(get_reading_handler))
@@ -1320,6 +1413,7 @@ struct WorkflowSummary {
 
 #[derive(Serialize, ToSchema)]
 struct EngineInfoResponse {
+    input_guidance: serde_json::Value,
     engine_id: String,
     engine_name: String,
     required_phase: u8,
@@ -1358,7 +1452,7 @@ struct VedicChartBundleResponseSchema {
 }
 
 #[derive(Serialize, ToSchema)]
-struct ApiEngineOutputResponse {
+pub(crate) struct ApiEngineOutputResponse {
     #[serde(flatten)]
     output: EngineOutput,
     contract_version: String,
@@ -1610,6 +1704,29 @@ fn take_contract_provenance(
     }
 }
 
+/// Remove the bridge's reserved `witness_prompts` list from an engine
+/// output's `result` and parse it (GH #1411). Like the provenance block, an
+/// unparseable list is still removed so it never leaks, and `None` is returned.
+fn take_contract_witness_prompts(
+    output: &mut EngineOutput,
+) -> Option<Vec<noesis_core::contract::WitnessPrompt>> {
+    let raw = output
+        .result
+        .as_object_mut()
+        .and_then(|o| o.remove(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY))?;
+    match serde_json::from_value(raw) {
+        Ok(prompts) => Some(prompts),
+        Err(e) => {
+            tracing::warn!(
+                engine_id = %output.engine_id,
+                error = %e,
+                "sidecar witness_prompts failed contract-v1 parse; dropping them"
+            );
+            None
+        }
+    }
+}
+
 /// Contract-v1 provenance for a native engine, derived from the metadata the
 /// engine itself filled in (`fallback_used` and `provider_id` are set
 /// explicitly at every native construction site). `confidence` is omitted
@@ -1661,15 +1778,27 @@ fn strip_workflow_contract_provenance(
 impl ApiEngineOutputResponse {
     /// Build the calculate envelope. `is_native` must come from
     /// [`AppState::is_native_engine`].
-    fn from_engine_output(mut output: EngineOutput, is_native: bool) -> Self {
+    pub(crate) fn from_engine_output(mut output: EngineOutput, is_native: bool) -> Self {
         let provenance = envelope_contract_provenance(&mut output, is_native);
         let generated_image = output.result.get("generated_image").cloned();
         let generated_audio = output.result.get("generated_audio").cloned();
-        let witness_prompts = vec![ApiWitnessPrompt {
-            prompt: output.witness_prompt.clone(),
-            context: None,
-            themes: Vec::new(),
-        }];
+        // The full list (with context and themes) when the engine supplied one;
+        // otherwise the single `witness_prompt`, as before (GH #1411).
+        let witness_prompts = match take_contract_witness_prompts(&mut output) {
+            Some(prompts) if !prompts.is_empty() => prompts
+                .into_iter()
+                .map(|p| ApiWitnessPrompt {
+                    prompt: p.prompt,
+                    context: p.context,
+                    themes: p.themes.unwrap_or_default(),
+                })
+                .collect(),
+            _ => vec![ApiWitnessPrompt {
+                prompt: output.witness_prompt.clone(),
+                context: None,
+                themes: Vec::new(),
+            }],
+        };
         let calculated_at = output.metadata.timestamp.to_rfc3339();
         let processing_time_ms = output.metadata.calculation_time_ms;
 
@@ -1685,6 +1814,51 @@ impl ApiEngineOutputResponse {
             generated_audio,
         }
     }
+}
+
+impl ApiEngineOutputResponse {
+    /// The `result_data` stored for this reading: the engine output with the
+    /// envelope's contract-v1 `provenance` block (when it has one) as a
+    /// top-level sibling of `result`, as on the wire, so the reading can be
+    /// audited later; bridge fields such as `confidence` exist nowhere else.
+    /// The reserved scaffolding keys were already lifted out of `result` by
+    /// [`Self::from_engine_output`]. Older readings carry no block and are
+    /// never given one.
+    fn reading_result_data(&self) -> Value {
+        let mut data = serde_json::to_value(&self.output).unwrap_or_default();
+        if let (Some(object), Some(provenance)) = (data.as_object_mut(), &self.provenance) {
+            object.insert(
+                "provenance".to_string(),
+                serde_json::to_value(provenance).unwrap_or_default(),
+            );
+        }
+        data
+    }
+}
+
+/// The `result_data` stored for a workflow reading: each entry of
+/// `engine_outputs` carries its engine's envelope provenance beside `result`,
+/// as [`ApiEngineOutputResponse::reading_result_data`] does. `provenance` comes from
+/// [`strip_workflow_contract_provenance`].
+fn workflow_reading_result_data(
+    workflow: &WorkflowResult,
+    provenance: &HashMap<String, noesis_core::contract::Provenance>,
+) -> Value {
+    let mut data = serde_json::to_value(workflow).unwrap_or_default();
+    if let Some(outputs) = data
+        .get_mut("engine_outputs")
+        .and_then(Value::as_object_mut)
+    {
+        for (engine_id, block) in provenance {
+            if let Some(output) = outputs.get_mut(engine_id).and_then(Value::as_object_mut) {
+                output.insert(
+                    "provenance".to_string(),
+                    serde_json::to_value(block).unwrap_or_default(),
+                );
+            }
+        }
+    }
+    data
 }
 
 #[derive(Serialize, ToSchema)]
@@ -1991,9 +2165,10 @@ pub(crate) fn check_engine_scope(
         return Ok(());
     }
     let required = engine_scope_permission(engine_id);
-    let allowed = user.permissions.iter().any(|perm| {
-        perm == &required || perm == "engines:*" || perm == "admin:*" || perm == "*"
-    });
+    let allowed = user
+        .permissions
+        .iter()
+        .any(|perm| perm == &required || perm == "engines:*" || perm == "admin:*" || perm == "*");
     if allowed {
         Ok(())
     } else {
@@ -2008,7 +2183,13 @@ pub(crate) fn enforce_engine_scope(
     engine_id: &str,
     route: &'static str,
 ) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
-    enforce_engine_scope_with_mode(user, is_api_key, engine_id, route, EngineScopeMode::from_env())
+    enforce_engine_scope_with_mode(
+        user,
+        is_api_key,
+        engine_id,
+        route,
+        EngineScopeMode::from_env(),
+    )
 }
 
 /// Scope rule for composed routes (assets, witness) that run a fixed set of
@@ -2053,9 +2234,7 @@ fn enforce_engine_scope_with_mode(
                     Err(ErrorMapper::response(
                         StatusCode::FORBIDDEN,
                         "ENGINE_SCOPE_FORBIDDEN",
-                        format!(
-                            "This API key is not permitted to execute engine '{engine_id}'."
-                        ),
+                        format!("This API key is not permitted to execute engine '{engine_id}'."),
                         Some(serde_json::json!({
                             "engine_id": engine_id,
                             "required_permission": required,
@@ -2990,7 +3169,7 @@ fn free_tier_quota_applies(mode: BillingMode, tier: &str) -> bool {
 /// Returns Err(402) when the user has consumed their free-tier quota for the
 /// current calendar month. Fails OPEN on db errors / missing repo to avoid
 /// blocking paying flows on infrastructure hiccups.
-async fn enforce_free_tier_quota(
+pub(crate) async fn enforce_free_tier_quota(
     state: &AppState,
     user: &AuthUser,
 ) -> Result<(), (StatusCode, Json<ErrorResponse>)> {
@@ -3038,7 +3217,7 @@ async fn enforce_free_tier_quota(
 
 /// Fire-and-forget increment of the free-tier monthly counter. Called from
 /// the success branch of engine + workflow handlers.
-fn increment_free_tier_counter(state: &AppState, user: &AuthUser) {
+pub(crate) fn increment_free_tier_counter(state: &AppState, user: &AuthUser) {
     if user.tier != "free" {
         return;
     }
@@ -3164,7 +3343,7 @@ async fn calculate_handler(
                     workflow_id: None,
                     input_hash,
                     input_data: input_json,
-                    result_data: serde_json::to_value(output).unwrap_or_default(),
+                    result_data: envelope.reading_result_data(),
                     witness_prompt: Some(output.witness_prompt.clone()),
                     consciousness_level: output.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
@@ -3490,6 +3669,7 @@ async fn engine_info_handler(
         })?;
 
     Ok(Json(EngineInfoResponse {
+        input_guidance: engine_requirements::requirements(&engine_id),
         engine_id: engine.engine_id().to_string(),
         engine_name: engine.engine_name().to_string(),
         required_phase: engine.required_phase(),
@@ -3642,7 +3822,7 @@ async fn execute_workflow_by_id(
                     workflow_id: Some(workflow_id.clone()),
                     input_hash,
                     input_data: input_json,
-                    result_data: serde_json::to_value(&workflow_result).unwrap_or_default(),
+                    result_data: workflow_reading_result_data(&workflow_result, &provenance),
                     witness_prompt: None,
                     consciousness_level: user.consciousness_level as i16,
                     calculation_time_ms: Some(duration_ms),
@@ -3700,7 +3880,10 @@ async fn execute_workflow_by_id(
                 });
             }
 
-            Ok(Json(ApiWorkflowResultResponse::new(workflow_result, provenance)))
+            Ok(Json(ApiWorkflowResultResponse::new(
+                workflow_result,
+                provenance,
+            )))
         }
         Err(e) => {
             state.metrics.record_engine_calculation_with_status(
@@ -3762,7 +3945,14 @@ async fn birth_blueprint_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "birth-blueprint".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "birth-blueprint".to_string(),
+        input,
+    )
+    .await
 }
 
 /// POST /api/v1/workflows/daily-practice/execute -- workflow-specific OpenAPI shape
@@ -3788,7 +3978,14 @@ async fn daily_practice_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "daily-practice".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "daily-practice".to_string(),
+        input,
+    )
+    .await
 }
 
 /// POST /api/v1/workflows/decision-support/execute -- workflow-specific OpenAPI shape
@@ -3814,7 +4011,14 @@ async fn decision_support_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "decision-support".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "decision-support".to_string(),
+        input,
+    )
+    .await
 }
 
 /// POST /api/v1/workflows/self-inquiry/execute -- workflow-specific OpenAPI shape
@@ -3840,7 +4044,14 @@ async fn self_inquiry_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "self-inquiry".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "self-inquiry".to_string(),
+        input,
+    )
+    .await
 }
 
 /// POST /api/v1/workflows/creative-expression/execute -- workflow-specific OpenAPI shape
@@ -3866,7 +4077,14 @@ async fn creative_expression_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "creative-expression".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "creative-expression".to_string(),
+        input,
+    )
+    .await
 }
 
 /// POST /api/v1/workflows/full-spectrum/execute -- workflow-specific OpenAPI shape
@@ -3892,7 +4110,14 @@ async fn full_spectrum_execute_doc(
     api_key_principal: Option<Extension<ApiKeyPrincipal>>,
     Json(input): Json<EngineInput>,
 ) -> Result<Json<ApiWorkflowResultResponse>, (StatusCode, Json<ErrorResponse>)> {
-    execute_workflow_by_id(state, user, api_key_principal.is_some(), "full-spectrum".to_string(), input).await
+    execute_workflow_by_id(
+        state,
+        user,
+        api_key_principal.is_some(),
+        "full-spectrum".to_string(),
+        input,
+    )
+    .await
 }
 
 /// GET /api/v1/workflows -- list all workflow IDs
@@ -4191,6 +4416,13 @@ struct LegacyPanchangaResponse {
     solar_longitude: f64,
     lunar_longitude: f64,
     julian_day: f64,
+    // Additive provenance fields (#1191).
+    position_source: Option<String>,
+    birth_time_assumed: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    assumed_birth_time: Option<String>,
+    vara_basis: Option<String>,
+    ayanamsa_degrees: Option<f64>,
 }
 
 /// POST /api/legacy/panchanga/calculate -- backward compatible Panchanga endpoint
@@ -4272,6 +4504,17 @@ async fn legacy_panchanga_handler(
         solar_longitude: panchanga_result["solar_longitude"].as_f64().unwrap_or(0.0),
         lunar_longitude: panchanga_result["lunar_longitude"].as_f64().unwrap_or(0.0),
         julian_day: panchanga_result["julian_day"].as_f64().unwrap_or(0.0),
+        position_source: panchanga_result["position_source"]
+            .as_str()
+            .map(str::to_string),
+        birth_time_assumed: panchanga_result["birth_time_assumed"]
+            .as_bool()
+            .unwrap_or(false),
+        assumed_birth_time: panchanga_result["assumed_birth_time"]
+            .as_str()
+            .map(str::to_string),
+        vara_basis: panchanga_result["vara_basis"].as_str().map(str::to_string),
+        ayanamsa_degrees: panchanga_result["ayanamsa_degrees"].as_f64(),
     };
 
     Ok(Json(legacy_response))
@@ -4413,6 +4656,28 @@ async fn build_runtime_orchestrator_and_bridge(
     (orchestrator, bridge_manager)
 }
 
+/// Upper bound on each startup probe of the database (see `build_app_state`).
+/// Startup may wait longer than a request, so this is independent of
+/// `DATABASE_ACQUIRE_TIMEOUT_MS`.
+const STARTUP_DB_CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
+
+/// Request-path acquire timeout: how long a handler waits for a pooled
+/// connection (including opening one) before the database call fails.
+/// Configured by `DATABASE_ACQUIRE_TIMEOUT_MS` (default 3000).
+fn db_acquire_timeout() -> Duration {
+    noesis_data::database_acquire_timeout()
+}
+
+/// Pool options shared by every request-serving pool, so an unreachable
+/// database fails requests within `DATABASE_ACQUIRE_TIMEOUT_MS` instead of
+/// sqlx's 30 s default. Outcomes are unchanged: only how long a failing
+/// acquire waits.
+fn request_pool_options(max_connections: u32) -> PgPoolOptions {
+    PgPoolOptions::new()
+        .max_connections(max_connections)
+        .acquire_timeout(db_acquire_timeout())
+}
+
 /// Build the default `AppState` with all engines registered.
 ///
 /// # Arguments
@@ -4420,6 +4685,11 @@ async fn build_runtime_orchestrator_and_bridge(
 ///
 /// # Returns
 /// Configured `AppState` with orchestrator, cache, auth, and metrics
+/// Arm the daily-field scheduler (05:30 IST) on a built application state.
+pub fn spawn_daily_field_scheduler(state: AppState) {
+    handlers::daily::spawn_scheduler(state);
+}
+
 pub async fn build_app_state(config: &ApiConfig) -> AppState {
     // -- Orchestrator with engines --
     let (mut orchestrator, bridge_manager) = build_runtime_orchestrator_and_bridge().await;
@@ -4448,30 +4718,35 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
                 PgConnectOptions::new()
             });
 
-        // Retry startup DB connection to handle transient pooler unavailability.
+        // Retry the startup DB probe to handle transient pooler unavailability.
         // Uses 3 attempts with exponential back-off (2s -> 4s) before giving up.
+        //
+        // The probe is a standalone connection with its own startup bound, so
+        // a slow cold start is tolerated here without lengthening the pool's
+        // request-path acquire timeout (`DATABASE_ACQUIRE_TIMEOUT_MS`).
         const MAX_ATTEMPTS: u32 = 3;
         let mut pool_result: Option<sqlx::PgPool> = None;
         for attempt in 1..=MAX_ATTEMPTS {
-            let opts = connect_options.clone();
             match tokio::time::timeout(
-                Duration::from_secs(10),
-                PgPoolOptions::new()
-                    .max_connections(5)
-                    .idle_timeout(Duration::from_secs(300)) // drop idle conns after 5min
-                    .acquire_timeout(Duration::from_secs(5)) // fail fast on acquire
-                    .test_before_acquire(true) // health-check stale conns
-                    .connect_with(opts),
+                STARTUP_DB_CONNECT_TIMEOUT,
+                <sqlx::PgConnection as sqlx::Connection>::connect_with(&connect_options),
             )
             .await
             {
-                Ok(Ok(p)) => {
+                Ok(Ok(probe)) => {
+                    let _ = sqlx::Connection::close(probe).await;
                     tracing::info!(
+                        acquire_timeout_ms = db_acquire_timeout().as_millis() as u64,
                         "Database pool connected (attempt {}/{})",
                         attempt,
                         MAX_ATTEMPTS
                     );
-                    pool_result = Some(p);
+                    pool_result = Some(
+                        request_pool_options(5)
+                            .idle_timeout(Duration::from_secs(300)) // drop idle conns after 5min
+                            .test_before_acquire(true) // health-check stale conns
+                            .connect_lazy_with(connect_options.clone()),
+                    );
                     break;
                 }
                 Ok(Err(ref e)) if attempt < MAX_ATTEMPTS => {
@@ -4499,7 +4774,10 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
                     tokio::time::sleep(delay).await;
                 }
                 Err(_) => {
-                    tracing::warn!("Database connection timed out after 10s (running without DB)");
+                    tracing::warn!(
+                        "Database connection timed out after {}s (running without DB)",
+                        STARTUP_DB_CONNECT_TIMEOUT.as_secs()
+                    );
                 }
             }
         }
@@ -4580,8 +4858,7 @@ pub async fn build_app_state(config: &ApiConfig) -> AppState {
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
         // Create a lazy pool with a dummy URL — queries will fail at runtime,
         // but the server can still boot and serve non-DB endpoints.
-        PgPoolOptions::new()
-            .max_connections(1)
+        request_pool_options(1)
             .connect_lazy("postgres://localhost/noesis_unavailable")
             .expect("Failed to create placeholder pool")
     })));
@@ -4648,8 +4925,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
 
     // -- Database (lazy pool, optional) --
     let pool = config.database_url.as_ref().map(|db_url| {
-        PgPoolOptions::new()
-            .max_connections(5)
+        request_pool_options(5)
             .connect_lazy(db_url)
             .expect("Failed to create lazy database pool")
     });
@@ -4707,8 +4983,7 @@ pub async fn build_app_state_lazy_db(config: &ApiConfig) -> AppState {
         .map(|p| Arc::new(UsageRepository::new(p.clone())));
 
     let user_repository = Arc::new(UserRepository::new(pool.unwrap_or_else(|| {
-        PgPoolOptions::new()
-            .max_connections(1)
+        request_pool_options(1)
             .connect_lazy("postgres://localhost/noesis_unavailable")
             .expect("Failed to create placeholder pool")
     })));
@@ -4999,7 +5274,9 @@ mod p4_contract_tests {
                 provider_id: None,
             },
         };
-        let response = serde_json::to_value(ApiEngineOutputResponse::from_engine_output(output, false)).unwrap();
+        let response =
+            serde_json::to_value(ApiEngineOutputResponse::from_engine_output(output, false))
+                .unwrap();
 
         assert_eq!(response["generated_audio"], fixture("audio"));
         assert_eq!(response["generated_image"], fixture("image"));
@@ -5017,7 +5294,7 @@ mod p4_contract_tests {
     fn sigil_contract_provenance_is_lifted_into_envelope_and_stripped_from_result() {
         // Lane S4: a seven-field sigil provenance block stashed by the bridge
         // under the reserved key becomes the envelope's top-level `provenance`
-        // and never appears inside `result` (which is what gets persisted).
+        // and never appears inside `result`.
         let output = EngineOutput {
             engine_id: "sigil-forge".to_string(),
             result: serde_json::json!({
@@ -5071,6 +5348,368 @@ mod p4_contract_tests {
             .is_none());
         assert_eq!(wire["generated_image"]["b64_json"], "iVBORw0KGgo=");
     }
+    #[test]
+    fn sacred_geometry_api_envelope_matches_committed_fixture() {
+        // GH #1401: build the real /calculate envelope from the sacred-geometry
+        // sidecar fixture (bridge -> ApiEngineOutputResponse) and pin it as the
+        // API-side fixture that the Rust SDK, TUI renderer and TS SDK probes
+        // consume. Set UPDATE_SACRED_GEOMETRY_FIXTURE=1 to rewrite it.
+        const ENVELOPE_PATH: &str = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../ts-engines/tests/fixtures/sacred-geometry/api-envelope-seed-1401.json"
+        );
+        let sidecar: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/sacred-geometry/bridge-round-trip-seed-1401.json"
+        ))
+        .unwrap();
+        let response: noesis_bridge::ts_client::TsEngineResponse =
+            serde_json::from_value(sidecar["sidecar_response"].clone()).unwrap();
+        let mut output = noesis_bridge::ts_response_into_output(response, 0);
+        // The bridge stamps its own crate version; pin it so releases don't churn the fixture.
+        output.metadata.engine_version = "fixture".to_string();
+
+        let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
+        let wire = serde_json::to_value(&envelope).unwrap();
+
+        if std::env::var_os("UPDATE_SACRED_GEOMETRY_FIXTURE").is_some() {
+            let mut text = serde_json::to_string_pretty(&wire).unwrap();
+            text.push('\n');
+            std::fs::write(ENVELOPE_PATH, text).unwrap();
+        }
+        let committed: Value =
+            serde_json::from_str(&std::fs::read_to_string(ENVELOPE_PATH).unwrap()).unwrap();
+        assert_eq!(
+            wire, committed,
+            "api envelope drifted from the committed fixture"
+        );
+
+        // The bridge block is lifted to the top level and stripped from result;
+        // the engine's own per-part provenance stays inside result.
+        assert_eq!(wire["provenance"]["fallback_used"], false);
+        assert_eq!(wire["provenance"]["runtime_kind"], "typescript");
+        assert!(wire["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+        assert_eq!(
+            wire["result"]["provenance_detail"],
+            sidecar["sidecar_response"]["result"]["provenance_detail"]
+        );
+        assert_eq!(
+            wire["result"]["provenance_detail"]["calculated_geometry"]["status"],
+            "calculated"
+        );
+
+        // GH #1411: the envelope carries every witness prompt with its context
+        // and themes, matching what the engine emitted; nothing leaks into result.
+        assert_eq!(
+            wire["witness_prompts"],
+            sidecar["sidecar_response"]["witness_prompts"]
+        );
+        assert_eq!(wire["witness_prompts"].as_array().unwrap().len(), 3);
+        assert_eq!(wire["witness_prompt"], wire["witness_prompts"][0]["prompt"]);
+        assert!(wire["result"]
+            .get(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY)
+            .is_none());
+
+        // The stored reading keeps the same block beside `result`, and neither
+        // reserved scaffolding key.
+        let persisted = envelope.reading_result_data();
+        assert_eq!(persisted["provenance"], wire["provenance"]);
+        assert_eq!(persisted["result"], wire["result"]);
+        let stored = persisted.to_string();
+        assert!(!stored.contains(noesis_bridge::CONTRACT_PROVENANCE_KEY));
+        assert!(!stored.contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
+    }
+
+    #[test]
+    fn enneagram_api_envelope_lifts_provenance_for_both_paths() {
+        // GH #1311: real enneagram sidecar responses (assessment and direct
+        // lookup) go through the bridge and into the /calculate envelope. The
+        // envelope must carry each block verbatim at the top level, strip it
+        // from result, keep typeSource, and never give a lookup a confidence.
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/enneagram/bridge-round-trip.json"
+        ))
+        .unwrap();
+        let cases = fixture["cases"].as_array().unwrap();
+        assert_eq!(cases.len(), 2);
+
+        let mut backends = Vec::new();
+        for case in cases {
+            let sidecar = &case["sidecar_response"];
+            let response: noesis_bridge::ts_client::TsEngineResponse =
+                serde_json::from_value(sidecar.clone()).unwrap();
+            let output = noesis_bridge::ts_response_into_output(response, 1);
+            let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
+            let wire = serde_json::to_value(&envelope).unwrap();
+
+            assert_eq!(
+                wire["provenance"], sidecar["provenance"],
+                "{}",
+                case["name"]
+            );
+            assert!(wire["result"]
+                .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+                .is_none());
+            assert_eq!(
+                wire["result"]["typeSource"],
+                sidecar["result"]["typeSource"]
+            );
+            assert_eq!(wire["provenance"]["fallback_used"], false);
+            assert!(wire["provenance"].get("provider_id").is_none());
+            backends.push(wire["provenance"]["backend_id"].clone());
+
+            match sidecar["result"]["typeSource"].as_str().unwrap() {
+                "assessment" => {
+                    assert_eq!(wire["provenance"]["confidence"], 0.78);
+                    assert_eq!(wire["result"]["assessment"]["answeredCount"], 35);
+                }
+                "user-supplied" => {
+                    assert!(
+                        wire["provenance"].get("confidence").is_none(),
+                        "a direct lookup must not carry a confidence"
+                    );
+                    assert_eq!(wire["result"]["suppliedWing"], 5);
+                    assert!(wire["result"].get("assessment").is_none());
+                }
+                other => panic!("unexpected typeSource {other}"),
+            }
+        }
+        assert_eq!(
+            backends,
+            vec![
+                serde_json::json!("enneagram-assessment"),
+                serde_json::json!("enneagram-type-lookup")
+            ]
+        );
+    }
+
+    /// The seed-42 i-ching sidecar fixture as the bridge hands it to the API.
+    fn i_ching_fixture_output() -> (Value, EngineOutput) {
+        let sidecar: Value = serde_json::from_str(include_str!(
+            "../../../ts-engines/tests/fixtures/i-ching/bridge-round-trip-seed-42.json"
+        ))
+        .unwrap();
+        let response: noesis_bridge::ts_client::TsEngineResponse =
+            serde_json::from_value(sidecar["sidecar_response"].clone()).unwrap();
+        let mut output = noesis_bridge::ts_response_into_output(response, 0);
+        // The bridge stamps its own crate version; pin it so releases don't churn the fixture.
+        output.metadata.engine_version = "fixture".to_string();
+        (sidecar["sidecar_response"].clone(), output)
+    }
+
+    /// Compare `wire` with a committed fixture, rewriting it when `update_var` is set.
+    fn assert_matches_fixture(wire: &Value, path: &str, update_var: &str) {
+        if std::env::var_os(update_var).is_some() {
+            let mut text = serde_json::to_string_pretty(wire).unwrap();
+            text.push('\n');
+            std::fs::write(path, text).unwrap();
+        }
+        let committed: Value =
+            serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+        assert_eq!(
+            wire, &committed,
+            "{path} drifted from the committed fixture"
+        );
+    }
+
+    #[test]
+    fn i_ching_api_envelope_and_persisted_reading_keep_derivation() {
+        // #1341: pin the /calculate envelope the Rust SDK, TUI and TS SDK probes
+        // consume. Set UPDATE_I_CHING_FIXTURE=1 to rewrite it.
+        let (sidecar, output) = i_ching_fixture_output();
+        let envelope = ApiEngineOutputResponse::from_engine_output(output, false);
+        let wire = serde_json::to_value(&envelope).unwrap();
+        assert_matches_fixture(
+            &wire,
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../ts-engines/tests/fixtures/i-ching/api-envelope-seed-42.json"
+            ),
+            "UPDATE_I_CHING_FIXTURE",
+        );
+        // Same JSON number either way: the sidecar sends `1`, the typed f64 `1.0`.
+        let parse = |v: &Value| -> noesis_core::contract::Provenance {
+            serde_json::from_value(v.clone()).unwrap()
+        };
+        assert_eq!(parse(&wire["provenance"]), parse(&sidecar["provenance"]));
+        assert_eq!(wire["result"], sidecar["result"]);
+
+        // calculate_handler persists `envelope.reading_result_data()`: cast/derived
+        // origins survive, and so does the whole contract block, beside `result`.
+        let persisted = envelope.reading_result_data();
+        assert_eq!(persisted["result"], sidecar["result"]);
+        assert_eq!(
+            persisted["result"]["derivation"]["line_values"]["origin"],
+            "cast"
+        );
+        assert_eq!(persisted["provenance"], wire["provenance"]);
+        assert_eq!(persisted["provenance"]["confidence"], 1.0);
+        assert!(persisted["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+        // GH #1411: the witness scaffolding key is never stored either.
+        assert!(!persisted
+            .to_string()
+            .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
+    }
+
+    #[test]
+    fn i_ching_workflow_response_and_persisted_reading_keep_derivation() {
+        // #1341: decision-support runs i-ching. Pin the workflow response the SDK
+        // probes consume. Set UPDATE_I_CHING_FIXTURE=1 to rewrite it.
+        let (sidecar, output) = i_ching_fixture_output();
+        let mut workflow = WorkflowResult {
+            workflow_id: "decision-support".to_string(),
+            engine_outputs: HashMap::from([("i-ching".to_string(), output)]),
+            synthesis: None,
+            total_time_ms: 0.0,
+            timestamp: "2026-11-07T00:00:00Z".parse().unwrap(),
+        };
+        let provenance = strip_workflow_contract_provenance(&mut workflow, |_| false);
+        let parse = |v: &Value| -> noesis_core::contract::Provenance {
+            serde_json::from_value(v.clone()).unwrap()
+        };
+
+        // workflow_handler persists `workflow_reading_result_data` after the
+        // strip: derivation stays, and the engine's contract block sits beside
+        // its `result`.
+        let persisted = workflow_reading_result_data(&workflow, &provenance);
+        assert_eq!(
+            persisted["engine_outputs"]["i-ching"]["result"],
+            sidecar["result"]
+        );
+        assert_eq!(
+            parse(&persisted["engine_outputs"]["i-ching"]["provenance"]),
+            parse(&sidecar["provenance"])
+        );
+        assert!(persisted["engine_outputs"]["i-ching"]["result"]
+            .get(noesis_bridge::CONTRACT_PROVENANCE_KEY)
+            .is_none());
+        // GH #1411: the witness scaffolding key is never stored either.
+        assert!(!persisted
+            .to_string()
+            .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
+
+        let wire =
+            serde_json::to_value(ApiWorkflowResultResponse::new(workflow, provenance)).unwrap();
+        assert_matches_fixture(
+            &wire,
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../ts-engines/tests/fixtures/i-ching/api-workflow-seed-42.json"
+            ),
+            "UPDATE_I_CHING_FIXTURE",
+        );
+        let engine_result = &wire["engine_results"]["i-ching"];
+        assert_eq!(
+            parse(&engine_result["provenance"]),
+            parse(&sidecar["provenance"])
+        );
+        assert_eq!(engine_result["result"], sidecar["result"]);
+        assert!(wire["engine_outputs"]["i-ching"]
+            .get("provenance")
+            .is_none());
+    }
+
+    #[tokio::test]
+    #[ignore = "requires Postgres: scripts/cloud/test-db.sh, then DATABASE_URL"]
+    async fn i_ching_readings_round_trip_keeps_derivation() {
+        // #1341: store i-ching readings in `readings` exactly as calculate_handler
+        // and workflow_handler build them, then read them back.
+        let database_url = std::env::var("DATABASE_URL")
+            .unwrap_or_else(|_| "postgres://postgres@localhost/noesis_test".to_string());
+        let pool = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(2)
+            .connect(&database_url)
+            .await
+            .expect("connect to test database");
+        let user = UserRepository::new(pool.clone())
+            .create_user(
+                &format!("i-ching-{}@example.com", uuid::Uuid::new_v4()),
+                "test_password_hash",
+                "I Ching Readings Test User",
+            )
+            .await
+            .expect("create test user");
+        let readings = ReadingsRepository::new(pool);
+        let reading =
+            |engine_id: &str, workflow_id: Option<String>, result_data: Value| NewReading {
+                user_id: user.id,
+                engine_id: engine_id.to_string(),
+                workflow_id,
+                input_hash: "synthetic-seed-42".to_string(),
+                input_data: serde_json::json!({"seed": 42}),
+                result_data,
+                witness_prompt: None,
+                consciousness_level: 0,
+                calculation_time_ms: Some(0.0),
+                client_event_id: None,
+                client_device_id: None,
+                device_platform: None,
+                device_app_version: None,
+            };
+
+        let (sidecar, output) = i_ching_fixture_output();
+        let envelope = ApiEngineOutputResponse::from_engine_output(output.clone(), false);
+        let single = readings
+            .save_reading(&reading("i-ching", None, envelope.reading_result_data()))
+            .await
+            .expect("save calculate reading");
+
+        let mut workflow = WorkflowResult {
+            workflow_id: "decision-support".to_string(),
+            engine_outputs: HashMap::from([("i-ching".to_string(), output)]),
+            synthesis: None,
+            total_time_ms: 0.0,
+            timestamp: "2026-11-07T00:00:00Z".parse().unwrap(),
+        };
+        let provenance = strip_workflow_contract_provenance(&mut workflow, |_| false);
+        let flow = readings
+            .save_reading(&reading(
+                "workflow:decision-support",
+                Some("decision-support".to_string()),
+                workflow_reading_result_data(&workflow, &provenance),
+            ))
+            .await
+            .expect("save workflow reading");
+
+        let sidecar_block: noesis_core::contract::Provenance =
+            serde_json::from_value(sidecar["provenance"].clone()).unwrap();
+        for (id, path, block_path) in [
+            (single, "/result", "/provenance"),
+            (
+                flow,
+                "/engine_outputs/i-ching/result",
+                "/engine_outputs/i-ching/provenance",
+            ),
+        ] {
+            let stored = readings
+                .get_reading(id, user.id)
+                .await
+                .expect("load reading")
+                .expect("reading exists");
+            let result = stored.result_data.pointer(path).expect("stored result");
+            assert_eq!(result, &sidecar["result"], "{path}");
+            assert_eq!(result["derivation"]["line_values"]["origin"], "cast");
+            assert!(result.get(noesis_bridge::CONTRACT_PROVENANCE_KEY).is_none());
+            assert!(!stored
+                .result_data
+                .to_string()
+                .contains(noesis_bridge::CONTRACT_WITNESS_PROMPTS_KEY));
+            // The contract block is stored beside `result` and reloads intact.
+            let block: noesis_core::contract::Provenance = serde_json::from_value(
+                stored
+                    .result_data
+                    .pointer(block_path)
+                    .expect("stored block")
+                    .clone(),
+            )
+            .unwrap();
+            assert_eq!(block, sidecar_block, "{block_path}");
+            assert_eq!(block.confidence, Some(1.0));
+        }
+    }
 
     #[test]
     fn invalid_contract_provenance_is_dropped_not_leaked() {
@@ -5122,9 +5761,13 @@ mod p4_contract_tests {
 
     #[test]
     fn native_engine_envelope_derives_block_from_metadata() {
-        let envelope = ApiEngineOutputResponse::from_engine_output(native_output(false, None), true);
+        let envelope =
+            ApiEngineOutputResponse::from_engine_output(native_output(false, None), true);
         let prov = envelope.provenance.as_ref().expect("native block derived");
-        assert_eq!(prov.runtime_kind, noesis_core::contract::RuntimeKind::Native);
+        assert_eq!(
+            prov.runtime_kind,
+            noesis_core::contract::RuntimeKind::Native
+        );
         assert_eq!(prov.implementation_version, "0.1.0");
         assert!(!prov.cached);
         assert!(!prov.fallback_used);
@@ -5141,8 +5784,12 @@ mod p4_contract_tests {
         );
         let wire = serde_json::to_value(&envelope).unwrap();
         let block = &wire["provenance"];
-        let keys: std::collections::BTreeSet<&str> =
-            block.as_object().unwrap().keys().map(String::as_str).collect();
+        let keys: std::collections::BTreeSet<&str> = block
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect();
         assert_eq!(
             keys,
             std::collections::BTreeSet::from([
@@ -5202,8 +5849,7 @@ mod p4_contract_tests {
             timestamp: chrono::Utc::now(),
         };
 
-        let provenance =
-            strip_workflow_contract_provenance(&mut workflow, |id| id == "panchanga");
+        let provenance = strip_workflow_contract_provenance(&mut workflow, |id| id == "panchanga");
 
         assert_eq!(
             provenance["panchanga"].runtime_kind,
@@ -5222,14 +5868,18 @@ mod p4_contract_tests {
                 .is_none());
         }
 
-        let response = serde_json::to_value(ApiWorkflowResultResponse::new(workflow, provenance))
-            .unwrap();
+        let response =
+            serde_json::to_value(ApiWorkflowResultResponse::new(workflow, provenance)).unwrap();
         assert_eq!(
             response["engine_results"]["panchanga"]["provenance"]["runtime_kind"],
             "native"
         );
-        assert!(response["engine_results"]["tarot"].get("provenance").is_none());
-        assert!(response["engine_outputs"]["panchanga"].get("provenance").is_none());
+        assert!(response["engine_results"]["tarot"]
+            .get("provenance")
+            .is_none());
+        assert!(response["engine_outputs"]["panchanga"]
+            .get("provenance")
+            .is_none());
     }
 
     fn scope_user(permissions: &[&str]) -> AuthUser {
@@ -5248,10 +5898,19 @@ mod p4_contract_tests {
     fn engine_scope_mode_parses_env_values_and_defaults_to_audit() {
         assert_eq!(EngineScopeMode::parse(None), EngineScopeMode::Audit);
         assert_eq!(EngineScopeMode::parse(Some("")), EngineScopeMode::Audit);
-        assert_eq!(EngineScopeMode::parse(Some("audit")), EngineScopeMode::Audit);
+        assert_eq!(
+            EngineScopeMode::parse(Some("audit")),
+            EngineScopeMode::Audit
+        );
         assert_eq!(EngineScopeMode::parse(Some("off")), EngineScopeMode::Off);
-        assert_eq!(EngineScopeMode::parse(Some(" Enforce ")), EngineScopeMode::Enforce);
-        assert_eq!(EngineScopeMode::parse(Some("bogus")), EngineScopeMode::Audit);
+        assert_eq!(
+            EngineScopeMode::parse(Some(" Enforce ")),
+            EngineScopeMode::Enforce
+        );
+        assert_eq!(
+            EngineScopeMode::parse(Some("bogus")),
+            EngineScopeMode::Audit
+        );
     }
 
     #[test]
@@ -5325,14 +5984,8 @@ mod p4_contract_tests {
         let user = scope_user(&["basic:access"]);
         for mode in [EngineScopeMode::Audit, EngineScopeMode::Off] {
             assert!(
-                enforce_engine_scope_with_mode(
-                    &user,
-                    true,
-                    "panchanga",
-                    "engines/calculate",
-                    mode
-                )
-                .is_ok(),
+                enforce_engine_scope_with_mode(&user, true, "panchanga", "engines/calculate", mode)
+                    .is_ok(),
                 "{mode:?}"
             );
         }
@@ -5372,9 +6025,10 @@ mod p4_contract_tests {
         .await;
         assert_eq!(degraded.status, "degraded");
 
-        let unavailable =
-            probe_with(serde_json::json!({"status": "healthy", "capability_status": "unavailable"}))
-                .await;
+        let unavailable = probe_with(
+            serde_json::json!({"status": "healthy", "capability_status": "unavailable"}),
+        )
+        .await;
         assert_eq!(unavailable.status, "unavailable");
 
         let available =

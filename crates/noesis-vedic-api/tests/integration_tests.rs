@@ -28,6 +28,29 @@ fn test_service(base_url: &str) -> VedicApiService {
     VedicApiService::new(test_client(base_url))
 }
 
+/// A real vendor response captured in `tests/fixtures/captures`. The client
+/// maps the live `/planets` and `/navamsa-chart-info` envelopes, so mocks
+/// must serve that shape rather than the typed `BirthChart`/`NavamsaChart`.
+fn capture(name: &str) -> serde_json::Value {
+    let path = format!(
+        "{}/tests/fixtures/captures/{}",
+        env!("CARGO_MANIFEST_DIR"),
+        name
+    );
+    let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {path}: {e}"));
+    serde_json::from_slice(&bytes).unwrap_or_else(|e| panic!("parse {path}: {e}"))
+}
+
+/// Captured `/planets` response for 1991-08-13 13:31 Bangalore.
+fn planets_envelope() -> serde_json::Value {
+    capture("planets_bangalore_1991-08-13.json")
+}
+
+/// Captured `/navamsa-chart-info` response for 1991-08-13 13:31 Bangalore.
+fn navamsa_envelope() -> serde_json::Value {
+    capture("navamsa_bangalore_1991-08-13.json")
+}
+
 // ===========================================================================
 // Module: Panchang endpoint tests
 // ===========================================================================
@@ -245,8 +268,8 @@ mod birth_chart_tests {
         let server = MockServer::start().await;
 
         Mock::given(method("POST"))
-            .and(path("/horoscope-chart"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()))
+            .and(path("/planets"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(planets_envelope()))
             .expect(1)
             .mount(&server)
             .await;
@@ -262,7 +285,7 @@ mod birth_chart_tests {
             result.err()
         );
         let chart = result.unwrap();
-        assert_eq!(chart.ascendant.sign.as_str(), "Aries");
+        assert_eq!(chart.ascendant.sign.as_str(), "Scorpio");
         assert!(!chart.planets.is_empty());
         assert_eq!(chart.houses.len(), 12);
     }
@@ -272,8 +295,8 @@ mod birth_chart_tests {
         let server = MockServer::start().await;
 
         Mock::given(method("POST"))
-            .and(path("/horoscope-chart"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()))
+            .and(path("/planets"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(planets_envelope()))
             .expect(1)
             .mount(&server)
             .await;
@@ -300,7 +323,7 @@ mod birth_chart_tests {
         let server = MockServer::start().await;
 
         Mock::given(method("POST"))
-            .and(path("/horoscope-chart"))
+            .and(path("/planets"))
             .respond_with(ResponseTemplate::new(502).set_body_string("Bad Gateway"))
             .mount(&server)
             .await;
@@ -330,8 +353,8 @@ mod navamsa_tests {
         let server = MockServer::start().await;
 
         Mock::given(method("POST"))
-            .and(path("/navamsa-chart"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_navamsa_chart()))
+            .and(path("/navamsa-chart-info"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(navamsa_envelope()))
             .expect(1)
             .mount(&server)
             .await;
@@ -347,7 +370,7 @@ mod navamsa_tests {
             result.err()
         );
         let chart = result.unwrap();
-        assert_eq!(chart.d9_lagna.as_str(), "Sagittarius");
+        assert_eq!(chart.d9_lagna.as_str(), "Libra");
         assert!(!chart.navamsa_positions.is_empty());
     }
 
@@ -356,7 +379,7 @@ mod navamsa_tests {
         let server = MockServer::start().await;
 
         Mock::given(method("POST"))
-            .and(path("/navamsa-chart"))
+            .and(path("/navamsa-chart-info"))
             .respond_with(ResponseTemplate::new(503).set_body_string("Service Unavailable"))
             .mount(&server)
             .await;
@@ -705,8 +728,8 @@ mod service_wrapper_tests {
         let server = MockServer::start().await;
 
         Mock::given(method("POST"))
-            .and(path("/horoscope-chart"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()))
+            .and(path("/planets"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(planets_envelope()))
             .expect(1)
             .mount(&server)
             .await;
@@ -723,8 +746,8 @@ mod service_wrapper_tests {
         let server = MockServer::start().await;
 
         Mock::given(method("POST"))
-            .and(path("/navamsa-chart"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_navamsa_chart()))
+            .and(path("/navamsa-chart-info"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(navamsa_envelope()))
             .expect(1)
             .mount(&server)
             .await;
@@ -1167,6 +1190,32 @@ mod fallback_service_tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_vimshottari_with_fallback_invalid_date_is_an_error() {
+        // The dasha is native: invalid input is returned, not replaced by an
+        // approximate fallback calculation.
+        let service = test_service_with_fallback("http://localhost:0");
+        let result = service
+            .vimshottari_dasha_with_fallback(
+                1991,
+                13,
+                14,
+                9,
+                30,
+                0,
+                12.9716,
+                77.5946,
+                5.5,
+                DashaLevel::Mahadasha,
+            )
+            .await;
+        assert!(
+            matches!(result, Err(VedicApiError::InvalidInput { .. })),
+            "unexpected: {:?}",
+            result.map(|d| d.mahadashas.len())
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_vimshottari_with_fallback_success_native() {
         // PR2: vimshottari is native; "API path" never fails over HTTP.
         let service = test_service_with_fallback("http://localhost:0");
@@ -1198,7 +1247,7 @@ mod fallback_service_tests {
         let server = MockServer::start().await;
 
         Mock::given(method("POST"))
-            .and(path("/horoscope-chart"))
+            .and(path("/planets"))
             .respond_with(ResponseTemplate::new(502).set_body_string("Bad gateway"))
             .mount(&server)
             .await;

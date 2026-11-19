@@ -29,9 +29,11 @@ Rust engines:
 - All Swiss-Ephemeris calls (transits, vimshottari Moon-longitude lookup)
   serialize through `tokio::task::spawn_blocking` — the global C mutex in
   `libswisseph-sys` is honoured.
-- `Panchang.ayanamsa` is now computed from Julian Day via a Lahiri
-  approximation (≈±10″ accurate, J2000 anchor) rather than the previous
-  hard-coded `24.0`. Real Lahiri drift (~50.27″/yr) is tracked.
+- `Panchang.ayanamsa` is the dated Lahiri ayanamsa (Swiss Ephemeris
+  `SE_SIDM_LAHIRI`) that `engine-panchanga` applied to the sidereal
+  longitudes, rather than the previous hard-coded `24.0`. (It was briefly a
+  J2000-anchored linear approximation; #1521 replaced that with the
+  engine's own value.)
 - `KaranaApiResponse.number` is correctly populated 1..=11 (previously
   always `0`).
 - `resilience.rs::native_panchang`'s `DayBoundaries.next_sunrise` is now

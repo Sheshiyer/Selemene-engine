@@ -271,11 +271,8 @@ impl NumerologyEngine {
     }
 
     fn compute(&self, input: &EngineInput) -> Result<NumerologyResult, EngineError> {
-        let birth = input.birth_data.as_ref().ok_or_else(|| {
-            EngineError::ValidationError("birth_data is required for numerology".into())
-        })?;
-
-        let name = birth.name.as_deref().ok_or_else(|| {
+        let name = input.birth_data.as_ref().and_then(|birth| birth.name.as_deref())
+            .or_else(|| input.options.get("name").and_then(|value| value.as_str())).ok_or_else(|| {
             EngineError::ValidationError("name is required for numerology calculations".into())
         })?;
 
@@ -285,7 +282,9 @@ impl NumerologyEngine {
             ));
         }
 
-        let date = &birth.date;
+        let date = input.birth_data.as_ref().map(|birth| birth.date.as_str())
+            .or_else(|| input.options.get("birth_date").and_then(|value| value.as_str()))
+            .ok_or_else(|| EngineError::ValidationError("birth date is required for numerology".into()))?;
 
         let life_path = calculate_life_path(date)?;
         let expression = calculate_expression(name);
@@ -431,6 +430,10 @@ impl ConsciousnessEngine for NumerologyEngine {
             }
             hasher.update(b"|");
             hasher.update(birth.date.as_bytes());
+        } else {
+            if let Some(name) = input.options.get("name").and_then(|value| value.as_str()) { hasher.update(name.as_bytes()); }
+            hasher.update(b"|");
+            if let Some(date) = input.options.get("birth_date").and_then(|value| value.as_str()) { hasher.update(date.as_bytes()); }
         }
         let hash = hasher.finalize();
         format!("numerology:{:x}", hash)
@@ -450,6 +453,18 @@ mod tests {
     use chrono::Utc;
     use noesis_core::Precision;
     use std::collections::HashMap;
+
+    #[test]
+    fn minimal_options_match_legacy_birth_data() {
+        let legacy = make_input("Test Reader", "1990-01-01");
+        let mut minimal = legacy.clone();
+        minimal.birth_data = None;
+        minimal.options.insert("name".into(), serde_json::json!("Test Reader"));
+        minimal.options.insert("birth_date".into(), serde_json::json!("1990-01-01"));
+        let engine = NumerologyEngine::new();
+        assert_eq!(engine.cache_key(&legacy), engine.cache_key(&minimal));
+        assert_eq!(serde_json::to_value(engine.compute(&legacy).unwrap()).unwrap(), serde_json::to_value(engine.compute(&minimal).unwrap()).unwrap());
+    }
 
     fn make_input(name: &str, date: &str) -> EngineInput {
         EngineInput {

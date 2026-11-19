@@ -62,6 +62,10 @@
 > Part of [Tryambakam Noesis](https://tryambakam.space) — a living inquiry field where success means you outgrow the system.
 <!-- readme-gen:end:hero -->
 
+## Repository ownership
+
+Noesis Daily is maintained in its own private `Sheshiyer/noesis-daily` repository, with independent commits, pull requests, worktrees, personal sources and deployments. This Selemene repository owns the calculation backend and reusable engine assets. Daily application and personal-reading changes belong in Daily; historical daily-field branches here are not its current release source.
+
 ## Production release and billing
 
 The current production release is the [Dodo-free mode release](https://github.com/Sheshiyer/Selemene-engine/releases/tag/release-3.3.1-free-mode-20260908),

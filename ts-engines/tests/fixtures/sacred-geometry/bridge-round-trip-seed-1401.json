@@ -1,0 +1,261 @@
+{
+  "input": {
+    "consciousness_level": 0,
+    "parameters": {
+      "svg_template": "<svg><script>x()</script></svg>"
+    },
+    "seed": 1401
+  },
+  "sidecar_response": {
+    "engine_id": "sacred-geometry",
+    "result": {
+      "form": {
+        "id": "torus",
+        "name": "Torus",
+        "description": "A donut-shaped surface of revolution. Represents the fundamental shape of energy flow in the universe, from atoms to galaxies.",
+        "symbolism": "Energy flow, self-sustaining systems, and the cycle of creation. Represents how energy continuously flows, returns, and regenerates.",
+        "elements": [
+          "circle",
+          "sphere",
+          "vortex"
+        ],
+        "numerology": 0
+      },
+      "meditation": {
+        "prompt": "Feel energy rising through your center, flowering outward, descending around you, and returning through your base. You are the torus.",
+        "duration_suggestion": "5-15 minutes"
+      },
+      "intention": null,
+      "svg_preview": {
+        "status": "rejected",
+        "reason": "SVG template contains disallowed script content."
+      },
+      "seed": 1401,
+      "geometry": {
+        "unit": "relative",
+        "frame": {
+          "center": [
+            0,
+            0
+          ],
+          "radius": 1,
+          "y_axis": "up"
+        },
+        "construction": "Torus: orthographic plan view, along the axis of revolution, of a ring torus with major radius 0.6 and tube radius 0.4: outer equator (R+r), inner equator (R-r) and tube centre circle (R), with 12 meridian circles at equal angles, which project to radial segments.",
+        "circles": [
+          {
+            "cx": 0,
+            "cy": 0,
+            "r": 1
+          },
+          {
+            "cx": 0,
+            "cy": 0,
+            "r": 0.2
+          },
+          {
+            "cx": 0,
+            "cy": 0,
+            "r": 0.6
+          }
+        ],
+        "polygons": [],
+        "polylines": [],
+        "lines": [
+          {
+            "x1": 0,
+            "y1": 0.2,
+            "x2": 0,
+            "y2": 1
+          },
+          {
+            "x1": -0.1,
+            "y1": 0.173205,
+            "x2": -0.5,
+            "y2": 0.866025
+          },
+          {
+            "x1": -0.173205,
+            "y1": 0.1,
+            "x2": -0.866025,
+            "y2": 0.5
+          },
+          {
+            "x1": -0.2,
+            "y1": 0,
+            "x2": -1,
+            "y2": 0
+          },
+          {
+            "x1": -0.173205,
+            "y1": -0.1,
+            "x2": -0.866025,
+            "y2": -0.5
+          },
+          {
+            "x1": -0.1,
+            "y1": -0.173205,
+            "x2": -0.5,
+            "y2": -0.866025
+          },
+          {
+            "x1": 0,
+            "y1": -0.2,
+            "x2": 0,
+            "y2": -1
+          },
+          {
+            "x1": 0.1,
+            "y1": -0.173205,
+            "x2": 0.5,
+            "y2": -0.866025
+          },
+          {
+            "x1": 0.173205,
+            "y1": -0.1,
+            "x2": 0.866025,
+            "y2": -0.5
+          },
+          {
+            "x1": 0.2,
+            "y1": 0,
+            "x2": 1,
+            "y2": 0
+          },
+          {
+            "x1": 0.173205,
+            "y1": 0.1,
+            "x2": 0.866025,
+            "y2": 0.5
+          },
+          {
+            "x1": 0.1,
+            "y1": 0.173205,
+            "x2": 0.5,
+            "y2": 0.866025
+          }
+        ],
+        "points": [
+          [
+            0,
+            0
+          ]
+        ],
+        "measures": {
+          "major_radius": 0.6,
+          "tube_radius": 0.4,
+          "meridian_count": 12
+        }
+      },
+      "provenance_detail": {
+        "form": {
+          "kind": "symbolic_lookup",
+          "source": "wisdom.SACRED_FORMS"
+        },
+        "form_selection": {
+          "kind": "seeded_random",
+          "seed": 1401
+        },
+        "meditation": {
+          "kind": "symbolic_lookup",
+          "source": "wisdom.SACRED_FORMS",
+          "mode": "guidance",
+          "duration_suggestion": "static_constant"
+        },
+        "calculated_geometry": {
+          "status": "calculated",
+          "kind": "deterministic_construction",
+          "source": "geometry.buildGeometry",
+          "construction": "Torus: orthographic plan view, along the axis of revolution, of a ring torus with major radius 0.6 and tube radius 0.4: outer equator (R+r), inner equator (R-r) and tube centre circle (R), with 12 meridian circles at equal angles, which project to radial segments.",
+          "computed": {
+            "circles": 3,
+            "polygons": 0,
+            "polylines": 0,
+            "lines": 12,
+            "points": 1,
+            "solid": false
+          }
+        },
+        "rendered_artifact": {
+          "status": "not_implemented",
+          "reason": "The engine renders no SVG or image; clients draw result.geometry from its numbers, and svg_preview only validates a caller-supplied svg_template."
+        },
+        "svg_preview": {
+          "kind": "caller_template_validation",
+          "status": "rejected"
+        },
+        "witness_prompts": {
+          "kind": "templated_narrative",
+          "source": "witness.generateWitnessPrompts",
+          "seed": 1401,
+          "prompts": [
+            {
+              "template": "form_contemplation",
+              "mode": "inquiry",
+              "inputs": [
+                "result.form.name",
+                "result.form.elements"
+              ]
+            },
+            {
+              "template": "meditation",
+              "mode": "guidance",
+              "inputs": [
+                "result.meditation.prompt"
+              ]
+            },
+            {
+              "template": "numerology",
+              "mode": "inquiry",
+              "inputs": [
+                "result.form.numerology",
+                "result.form.name"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "witness_prompts": [
+      {
+        "prompt": "Where in your life do the elements of Torus — circle, sphere, vortex — appear?",
+        "context": "Contemplating Torus",
+        "themes": [
+          "geometry",
+          "pattern",
+          "awareness",
+          "circle",
+          "sphere",
+          "vortex"
+        ]
+      },
+      {
+        "prompt": "Before you begin: Feel energy rising through your center, flowering outward, descending around you, and returning through your base. You are the torus.",
+        "context": "Meditation guidance",
+        "themes": [
+          "meditation",
+          "presence",
+          "visualization"
+        ]
+      },
+      {
+        "prompt": "The number 0 resonates through Torus. Where does this number appear in your life?",
+        "context": "Numerological resonance",
+        "themes": [
+          "numerology",
+          "symbolism",
+          "synchronicity"
+        ]
+      }
+    ],
+    "calculated_at": "2026-10-29T00:00:00.000Z",
+    "processing_time_ms": 0,
+    "provenance": {
+      "runtime_kind": "typescript",
+      "implementation_version": "1.0.0",
+      "cached": false,
+      "fallback_used": false,
+      "confidence": 1
+    }
+  }
+}

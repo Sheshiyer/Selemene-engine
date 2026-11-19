@@ -313,6 +313,16 @@ impl BillingRepository {
 
     /// Upsert a subscription row keyed by (provider, provider_subscription_id).
     /// Used by `subscription.active` and `subscription.updated` handlers.
+    ///
+    /// `ON CONFLICT` only arbitrates on `uq_billing_subscriptions_provider_subscription`;
+    /// the table also has `uq_billing_subscriptions_active_user`. Two concurrent
+    /// first-time inserts of the *same* subscription (e.g. duplicate webhook
+    /// deliveries racing past the idempotency pre-check) could therefore fail
+    /// the loser with 23505 on the non-arbiter index instead of taking the
+    /// `DO UPDATE` path. A transaction-scoped advisory lock on the provider
+    /// subscription serialises those writers, so the second one sees the
+    /// committed row and updates it. Conflicts between *different*
+    /// subscriptions for one user are still rejected by the index.
     #[allow(clippy::too_many_arguments)]
     pub async fn upsert_subscription(
         &self,
@@ -326,7 +336,14 @@ impl BillingRepository {
         current_period_end: Option<DateTime<Utc>>,
         metadata: serde_json::Value,
     ) -> Result<BillingSubscription, Error> {
-        sqlx::query_as::<_, BillingSubscription>(
+        let mut tx = self.pool.begin().await?;
+        sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))")
+            .bind(format!(
+                "billing_subscriptions:{PROVIDER_DODO}:{provider_subscription_id}"
+            ))
+            .execute(&mut *tx)
+            .await?;
+        let subscription = sqlx::query_as::<_, BillingSubscription>(
             r#"
             INSERT INTO billing_subscriptions (
                 user_id, plan_id, provider, provider_customer_id,
@@ -362,8 +379,10 @@ impl BillingRepository {
         .bind(current_period_start)
         .bind(current_period_end)
         .bind(metadata)
-        .fetch_one(&self.pool)
-        .await
+        .fetch_one(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        Ok(subscription)
     }
 
     /// Mark a subscription cancelled. Honours `cancel_at_period_end=true` →

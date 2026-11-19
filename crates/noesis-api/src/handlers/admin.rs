@@ -9,6 +9,7 @@ use axum::{
 };
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use chrono::{DateTime, Duration, Utc};
+use noesis_auth::key_tiers::KeyTier;
 use noesis_auth::{sha256_hex, ApiKey, AuthUser};
 use noesis_bridge;
 use noesis_core::EngineError;
@@ -967,15 +968,6 @@ fn user_state(locked_until: Option<DateTime<Utc>>) -> String {
     }
 }
 
-pub(crate) fn default_rate_limit_for_tier(tier: &str) -> i32 {
-    match tier.to_ascii_lowercase().as_str() {
-        "free" => 60,
-        "premium" => 1_000,
-        "enterprise" => 10_000,
-        _ => 100,
-    }
-}
-
 pub(crate) fn generate_secret_api_key() -> String {
     format!("nk_{}{}", Uuid::new_v4().simple(), Uuid::new_v4().simple())
 }
@@ -1042,6 +1034,56 @@ pub(crate) async fn effective_permissions(
 
     let collected = permissions.into_iter().collect::<Vec<_>>();
     Ok(normalize_effective_permissions(&collected))
+}
+
+/// Admin authorization gate: `None` when the caller holds `required`,
+/// otherwise a 403 `FORBIDDEN` response naming it.
+///
+/// See [`require_any_admin_permission`] for how the decision is made.
+pub(crate) async fn require_admin_permission(
+    state: &AppState,
+    auth_user: &AuthUser,
+    required: &str,
+) -> Option<Response> {
+    require_any_admin_permission(state, auth_user, &[required]).await
+}
+
+/// Admin authorization gate that passes when the caller holds any of
+/// `accepted`; a denial names the first entry.
+///
+/// The decision never depends on the database being reachable:
+/// 1. If the caller's own credential (JWT or API-key claims) already grants the
+///    permission, the gate passes without any database lookup.
+/// 2. Otherwise grants stored in the database (roles, profile grants, active
+///    API keys) are consulted. If that lookup fails, the request is denied
+///    with 403 (fail closed) and the error is logged; it is never granted.
+pub(crate) async fn require_any_admin_permission(
+    state: &AppState,
+    auth_user: &AuthUser,
+    accepted: &[&str],
+) -> Option<Response> {
+    let holds_any = |permissions: &[String]| {
+        accepted
+            .iter()
+            .any(|required| has_permission(permissions, required))
+    };
+    if holds_any(&normalize_effective_permissions(&auth_user.permissions)) {
+        return None;
+    }
+
+    let denied_as = accepted.first().copied().unwrap_or("admin:*");
+    match effective_permissions(state, auth_user).await {
+        Ok(permissions) if holds_any(&permissions) => None,
+        Ok(_) => Some(forbidden_response(denied_as)),
+        Err(error) => {
+            tracing::warn!(
+                required_permission = %denied_as,
+                error = %error.0,
+                "Stored admin permissions could not be resolved; denying request"
+            );
+            Some(forbidden_response(denied_as))
+        }
+    }
 }
 
 fn map_user_record(record: AdminUserRecord) -> AdminUserItem {
@@ -1227,15 +1269,6 @@ async fn collect_system_runtime_snapshot(state: &AppState) -> SystemRuntimeSnaps
     }
 }
 
-fn require_permission_or_forbidden(permissions: &[String], required: &str) -> Option<Response> {
-    if has_permission(permissions, required) {
-        None
-    } else {
-        tracing::warn!(required_permission = %required, "Authorization denied — insufficient permissions");
-        Some(forbidden_response(required))
-    }
-}
-
 #[allow(clippy::result_large_err)]
 fn admin_repo_or_503(state: &AppState) -> Result<&AdminRepository, Response> {
     state
@@ -1311,9 +1344,7 @@ pub async fn list_users(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<ListUsersQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:users:list")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:users:list").await {
         return Ok(resp);
     }
 
@@ -1380,10 +1411,7 @@ pub async fn update_user_state(
     Path(user_id): Path<String>,
     Json(payload): Json<UpdateUserStateRequest>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:users:suspend")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:users:suspend").await {
         return Ok(resp);
     }
 
@@ -1461,9 +1489,8 @@ pub async fn update_user_tier(
     Path(user_id): Path<String>,
     Json(payload): Json<UpdateUserTierRequest>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
     if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:users:tier:update")
+        require_admin_permission(&state, &auth_user, "admin:users:tier:update").await
     {
         return Ok(resp);
     }
@@ -1478,31 +1505,18 @@ pub async fn update_user_tier(
         Err(resp) => return Ok(resp),
     };
 
-    let tier = payload.tier.trim().to_ascii_lowercase();
-    if tier.is_empty() {
+    let Some(tier) = KeyTier::parse(&payload.tier) else {
         return Ok(json_error_response(
             StatusCode::UNPROCESSABLE_ENTITY,
-            "Tier cannot be empty",
+            "Choose Basic, Pro, or Enterprise",
             "VALIDATION_ERROR",
             None,
         ));
-    }
-    const VALID_TIERS: &[&str] = &["free", "basic", "premium", "enterprise"];
-    if !VALID_TIERS.contains(&tier.as_str()) {
-        return Ok(json_error_response(
-            StatusCode::UNPROCESSABLE_ENTITY,
-            format!(
-                "Invalid tier '{}'. Must be one of: {}",
-                tier,
-                VALID_TIERS.join(", ")
-            ),
-            "VALIDATION_ERROR",
-            None,
-        ));
-    }
+    };
+    let tier = tier.code();
 
     let updated = repo
-        .set_user_tier(user_uuid, &tier)
+        .set_user_tier(user_uuid, tier)
         .await
         .map_err(|e| EngineError::InternalError(format!("Failed to update user tier: {e}")))?;
 
@@ -1547,9 +1561,8 @@ pub async fn update_user_roles(
     Path(user_id): Path<String>,
     Json(payload): Json<UpdateUserRolesRequest>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
     if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:users:roles:update")
+        require_admin_permission(&state, &auth_user, "admin:users:roles:update").await
     {
         return Ok(resp);
     }
@@ -1622,6 +1635,43 @@ pub async fn update_user_roles(
 }
 
 /// GET /api/v1/admin/api-keys -- list API key records
+#[derive(Serialize, ToSchema)]
+pub struct AdminKeyTier {
+    pub code: String,
+    pub label: String,
+    pub permissions: Vec<String>,
+    pub consciousness_level: u8,
+    pub rate_limit: u32,
+}
+
+#[utoipa::path(get, path = "/api/v1/admin/api-key-tiers", tag = "admin",
+    responses((status = 200, body = Vec<AdminKeyTier>)),
+    security(("bearer_auth" = []), ("api_key" = [])))]
+pub async fn api_key_tiers(
+    State(state): State<AppState>,
+    Extension(user): Extension<AuthUser>,
+) -> Result<Response, ApiError> {
+    if let Some(resp) =
+        require_any_admin_permission(&state, &user, &["admin:keys:list", "admin:keys:create"]).await
+    {
+        return Ok(resp);
+    }
+    let tiers: Vec<_> = KeyTier::ALL
+        .into_iter()
+        .map(|tier| {
+            let e = tier.entitlements();
+            AdminKeyTier {
+                code: tier.code().into(),
+                label: tier.label().into(),
+                permissions: e.permissions,
+                consciousness_level: e.consciousness_level,
+                rate_limit: e.rate_limit,
+            }
+        })
+        .collect();
+    Ok(Json(tiers).into_response())
+}
+
 #[utoipa::path(
     get,
     path = "/api/v1/admin/api-keys",
@@ -1645,8 +1695,7 @@ pub async fn list_api_keys(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<ListApiKeysQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:keys:list") {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:keys:list").await {
         return Ok(resp);
     }
 
@@ -1717,9 +1766,7 @@ pub async fn create_api_key(
     Extension(auth_user): Extension<AuthUser>,
     Json(payload): Json<CreateApiKeyRequest>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:keys:create")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:keys:create").await {
         return Ok(resp);
     }
 
@@ -1746,58 +1793,58 @@ pub async fn create_api_key(
         ));
     }
 
-    let tier = if let Some(tier) = payload
-        .tier
-        .as_deref()
-        .map(|t| t.trim().to_ascii_lowercase())
-        .filter(|t| !t.is_empty())
-    {
-        const VALID_TIERS: &[&str] = &["free", "basic", "premium", "enterprise"];
-        if !VALID_TIERS.contains(&tier.as_str()) {
+    let requested_tier = match payload.tier.as_deref() {
+        Some(value) => value.to_string(),
+        None => repo
+            .get_user_tier(user_uuid)
+            .await
+            .map_err(|e| {
+                tracing::error!(error = %e, "Failed to read key owner tier");
+                EngineError::InternalError("Unable to read key owner tier".into())
+            })?
+            .unwrap_or_else(|| "free".into()),
+    };
+    let Some(key_tier) = KeyTier::parse(&requested_tier) else {
+        return Ok(json_error_response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "Choose Basic, Pro, or Enterprise",
+            "VALIDATION_ERROR",
+            None,
+        ));
+    };
+    let tier_managed = payload.permissions.is_none()
+        && payload.consciousness_level.is_none()
+        && payload.rate_limit.is_none();
+    let entitlements = match key_tier.restrict(
+        payload.permissions,
+        payload.consciousness_level,
+        payload.rate_limit,
+    ) {
+        Ok(e) => e,
+        Err(message) => {
             return Ok(json_error_response(
                 StatusCode::UNPROCESSABLE_ENTITY,
-                format!(
-                    "Invalid tier '{}'. Must be one of: {}",
-                    tier,
-                    VALID_TIERS.join(", ")
-                ),
+                message,
                 "VALIDATION_ERROR",
                 None,
-            ));
+            ))
         }
-        tier
-    } else if let Some(existing_tier) = repo
-        .get_user_tier(user_uuid)
-        .await
-        .map_err(|e| EngineError::InternalError(format!("Failed to read user tier: {e}")))?
+    };
+    if payload
+        .expires_at
+        .is_some_and(|expiry| expiry <= Utc::now())
     {
-        existing_tier.to_ascii_lowercase()
-    } else {
-        "free".to_string()
-    };
-
-    let permissions = payload
-        .permissions
-        .unwrap_or_else(|| vec!["basic:access".to_string()]);
-
-    let rate_limit = {
-        let rl = payload
-            .rate_limit
-            .unwrap_or_else(|| default_rate_limit_for_tier(&tier));
-        // Enforce sane bounds: 0 disables rate limiting (allowed for enterprise),
-        // 100_000 is a hard ceiling to prevent runaway values.
-        if !(0..=100_000).contains(&rl) {
-            return Ok(json_error_response(
-                StatusCode::UNPROCESSABLE_ENTITY,
-                format!("rate_limit must be between 0 and 100000, got {rl}"),
-                "VALIDATION_ERROR",
-                None,
-            ));
-        }
-        rl
-    };
-
-    let consciousness_level = payload.consciousness_level.unwrap_or(0).clamp(0, 5);
+        return Ok(json_error_response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "Expiration must be in the future",
+            "VALIDATION_ERROR",
+            None,
+        ));
+    }
+    let tier = key_tier.code().to_string();
+    let permissions = entitlements.permissions;
+    let rate_limit = entitlements.rate_limit as i32;
+    let consciousness_level = i32::from(entitlements.consciousness_level);
 
     let secret_key = generate_secret_api_key();
     let key_hash = sha256_hex(&secret_key);
@@ -1818,10 +1865,16 @@ pub async fn create_api_key(
                 rate_limit,
                 expires_at: payload.expires_at,
                 rotated_from_key_id: None,
+                tier_managed,
             },
         )
         .await
-        .map_err(|e| EngineError::InternalError(format!("Failed to create api key: {e}")))?;
+        .map_err(|e| {
+            tracing::error!(error = %e, "Failed to create API key");
+            EngineError::InternalError(
+                "Unable to create API key. Please retry or contact the administrator.".into(),
+            )
+        })?;
 
     let _ = state
         .auth
@@ -1867,9 +1920,7 @@ pub async fn revoke_api_key(
     Extension(auth_user): Extension<AuthUser>,
     Path(key_id): Path<String>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:keys:revoke")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:keys:revoke").await {
         return Ok(resp);
     }
 
@@ -1927,9 +1978,7 @@ pub async fn rotate_api_key(
     Extension(auth_user): Extension<AuthUser>,
     Path(key_id): Path<String>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:keys:rotate")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:keys:rotate").await {
         return Ok(resp);
     }
 
@@ -2015,9 +2064,7 @@ pub async fn delete_api_key(
     Extension(auth_user): Extension<AuthUser>,
     Path(key_id): Path<String>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:keys:delete")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:keys:delete").await {
         return Ok(resp);
     }
 
@@ -2075,9 +2122,8 @@ pub async fn history_sync_users(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<PaginationQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
     if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:history-sync:read")
+        require_admin_permission(&state, &auth_user, "admin:history-sync:read").await
     {
         return Ok(resp);
     }
@@ -2148,9 +2194,8 @@ pub async fn history_sync_devices(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<PaginationQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
     if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:history-sync:read")
+        require_admin_permission(&state, &auth_user, "admin:history-sync:read").await
     {
         return Ok(resp);
     }
@@ -2222,9 +2267,8 @@ pub async fn history_sync_events(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<HistoryEventsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
     if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:history-sync:read")
+        require_admin_permission(&state, &auth_user, "admin:history-sync:read").await
     {
         return Ok(resp);
     }
@@ -2302,10 +2346,7 @@ pub async fn usage_summary(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<AdminUsageSummaryQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:analytics:read").await {
         return Ok(resp);
     }
 
@@ -2416,10 +2457,7 @@ pub async fn analytics_summary(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<AnalyticsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:analytics:read").await {
         return Ok(resp);
     }
 
@@ -2478,10 +2516,7 @@ pub async fn analytics_timeseries(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<AnalyticsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:analytics:read").await {
         return Ok(resp);
     }
 
@@ -2551,10 +2586,7 @@ pub async fn analytics_breakdown(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<AnalyticsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:analytics:read").await {
         return Ok(resp);
     }
 
@@ -2623,10 +2655,7 @@ pub async fn analytics_top_consumers(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<AnalyticsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:analytics:read").await {
         return Ok(resp);
     }
 
@@ -2679,9 +2708,7 @@ pub async fn system_health(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -2752,9 +2779,7 @@ pub async fn system_services(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<SystemServicesQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -2853,9 +2878,7 @@ pub async fn system_workflows(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<SystemWorkflowsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -3005,9 +3028,7 @@ pub async fn system_cache(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -3057,9 +3078,7 @@ pub async fn list_audit_events(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<AuditEventsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:audit:list")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:audit:list").await {
         return Ok(resp);
     }
 
@@ -3141,11 +3160,14 @@ pub async fn get_audit_event(
     Extension(auth_user): Extension<AuthUser>,
     Path(event_id): Path<String>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    let can_read = has_permission(&effective_permissions, "admin:audit:read")
-        || has_permission(&effective_permissions, "admin:audit:list");
-    if !can_read {
-        return Ok(forbidden_response("admin:audit:read"));
+    if let Some(resp) = require_any_admin_permission(
+        &state,
+        &auth_user,
+        &["admin:audit:read", "admin:audit:list"],
+    )
+    .await
+    {
+        return Ok(resp);
     }
 
     let repo = match admin_repo_or_503(&state) {
@@ -3197,9 +3219,7 @@ pub async fn list_audit_actions(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:audit:list")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:audit:list").await {
         return Ok(resp);
     }
 
@@ -3252,10 +3272,7 @@ pub async fn list_witness_dyad_executions(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<WitnessDyadQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:analytics:read").await {
         return Ok(resp);
     }
 
@@ -3323,10 +3340,7 @@ pub async fn get_witness_dyad_execution(
     Extension(auth_user): Extension<AuthUser>,
     Path(execution_id): Path<String>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:analytics:read").await {
         return Ok(resp);
     }
 
@@ -3390,10 +3404,7 @@ pub async fn witness_dyad_analytics(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<AnalyticsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:analytics:read").await {
         return Ok(resp);
     }
 
@@ -3541,9 +3552,8 @@ pub async fn list_living_readings(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<AdminLivingReadingsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
     if let Some(response) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
+        require_admin_permission(&state, &auth_user, "admin:analytics:read").await
     {
         return Ok(response);
     }
@@ -3652,9 +3662,8 @@ pub async fn create_living_reading_invitation(
     Path(reading_id): Path<String>,
     Json(payload): Json<CreateLivingReadingInvitationRequest>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
     if let Some(response) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:write")
+        require_admin_permission(&state, &auth_user, "admin:analytics:write").await
     {
         return Ok(response);
     }
@@ -3750,9 +3759,8 @@ pub async fn list_living_reading_invitations(
     Extension(auth_user): Extension<AuthUser>,
     Path(reading_id): Path<String>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
     if let Some(response) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
+        require_admin_permission(&state, &auth_user, "admin:analytics:read").await
     {
         return Ok(response);
     }
@@ -3780,9 +3788,8 @@ pub async fn revoke_living_reading_invitation(
     Extension(auth_user): Extension<AuthUser>,
     Path((reading_id, invitation_id)): Path<(String, String)>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
     if let Some(response) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:write")
+        require_admin_permission(&state, &auth_user, "admin:analytics:write").await
     {
         return Ok(response);
     }
@@ -3827,9 +3834,8 @@ pub async fn get_living_reading(
     Extension(auth_user): Extension<AuthUser>,
     Path(reading_id): Path<String>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
     if let Some(response) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
+        require_admin_permission(&state, &auth_user, "admin:analytics:read").await
     {
         return Ok(response);
     }
@@ -3883,10 +3889,7 @@ pub async fn list_all_readings(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<AdminReadingsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:analytics:read").await {
         return Ok(resp);
     }
 
@@ -3936,10 +3939,7 @@ pub async fn readings_engine_breakdown(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<AnalyticsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) =
-        require_permission_or_forbidden(&effective_permissions, "admin:analytics:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:analytics:read").await {
         return Ok(resp);
     }
 
@@ -3995,9 +3995,7 @@ pub async fn ephemeris_checksums(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4020,9 +4018,7 @@ pub async fn list_biofield_sessions(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<BiofieldSessionsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4096,9 +4092,7 @@ pub async fn get_biofield_session(
     Extension(auth_user): Extension<AuthUser>,
     Path(session_id): Path<String>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4163,9 +4157,7 @@ pub async fn list_engines_admin(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<EngineDetailQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4260,9 +4252,7 @@ pub async fn get_engine_admin(
     Path(engine_id): Path<String>,
     Query(query): Query<EngineDetailQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4336,9 +4326,7 @@ pub async fn get_workflow_admin(
     Path(workflow_id): Path<String>,
     Query(query): Query<SystemWorkflowsQuery>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4490,9 +4478,7 @@ pub async fn bridge_health(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4648,9 +4634,7 @@ pub async fn engine_capabilities(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4663,9 +4647,7 @@ pub async fn sidecar_detail(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4765,9 +4747,7 @@ pub async fn hermes_bridge_status(
     State(_state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&_state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&_state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4840,9 +4820,7 @@ pub async fn llm_proxy_status(
     State(_state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&_state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&_state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -4938,9 +4916,7 @@ pub async fn observability_summary(
     State(state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 
@@ -5065,9 +5041,7 @@ pub async fn skills_ecosystem_status(
     State(_state): State<AppState>,
     Extension(auth_user): Extension<AuthUser>,
 ) -> Result<Response, ApiError> {
-    let effective_permissions = effective_permissions(&_state, &auth_user).await?;
-    if let Some(resp) = require_permission_or_forbidden(&effective_permissions, "admin:system:read")
-    {
+    if let Some(resp) = require_admin_permission(&_state, &auth_user, "admin:system:read").await {
         return Ok(resp);
     }
 

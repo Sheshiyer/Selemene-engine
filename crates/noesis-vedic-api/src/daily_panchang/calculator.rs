@@ -1,6 +1,8 @@
 //! Daily panchang calculator
 
 use super::{DailyPanchang, KaranaInfo, NakshatraInfo, TimePeriod, TithiInfo, YogaInfo};
+use crate::panchang::muhurta::{abhijit_period, DayEighth};
+use crate::sun::{local_event_hhmm, SunEvent};
 use chrono::{Datelike, NaiveDate};
 
 /// Calculate daily panchang for a given date and location
@@ -10,7 +12,7 @@ pub fn calculate_daily_panchang(
     longitude: f64,
     timezone: f64,
 ) -> DailyPanchang {
-    // Calculate sunrise/sunset (simplified - would use actual astronomical calculation)
+    // Sunrise/sunset in local clock time ("polar_day"/"polar_night" if none)
     let sunrise = calculate_sunrise(date, latitude, longitude, timezone);
     let sunset = calculate_sunset(date, latitude, longitude, timezone);
 
@@ -66,15 +68,12 @@ pub fn calculate_daily_panchang(
     }
 }
 
-fn calculate_sunrise(_date: NaiveDate, lat: f64, _lon: f64, _tz: f64) -> String {
-    // Simplified sunrise calculation
-    let base_hour = if lat > 0.0 { 6 } else { 5 };
-    format!("{:02}:15", base_hour)
+fn calculate_sunrise(date: NaiveDate, lat: f64, lon: f64, tz: f64) -> String {
+    local_event_hhmm(date, lat, lon, tz, SunEvent::Rise)
 }
 
-fn calculate_sunset(_date: NaiveDate, lat: f64, _lon: f64, _tz: f64) -> String {
-    let base_hour = if lat > 0.0 { 18 } else { 19 };
-    format!("{:02}:30", base_hour)
+fn calculate_sunset(date: NaiveDate, lat: f64, lon: f64, tz: f64) -> String {
+    local_event_hhmm(date, lat, lon, tz, SunEvent::Set)
 }
 
 fn get_vara(date: NaiveDate) -> String {
@@ -90,91 +89,50 @@ fn get_vara(date: NaiveDate) -> String {
     weekdays[date.weekday().num_days_from_sunday() as usize].to_string()
 }
 
-fn calculate_rahu_kalam(vara: &str, sunrise: &str, _sunset: &str) -> TimePeriod {
-    // Rahu Kalam varies by weekday
-    let (start_offset, end_offset) = match vara {
-        "Sunday" => (4.5, 6.0),
-        "Monday" => (1.5, 3.0),
-        "Tuesday" => (3.0, 4.5),
-        "Wednesday" => (4.5, 6.0),
-        "Thursday" => (3.0, 4.5),
-        "Friday" => (1.5, 3.0),
-        "Saturday" => (6.0, 7.5),
-        _ => (4.5, 6.0),
-    };
+fn calculate_rahu_kalam(vara: &str, sunrise: &str, sunset: &str) -> TimePeriod {
+    eighth_period("Rahu Kalam", DayEighth::RahuKalam, vara, sunrise, sunset)
+}
 
+fn calculate_yama_gandam(vara: &str, sunrise: &str, sunset: &str) -> TimePeriod {
+    eighth_period("Yama Gandam", DayEighth::YamaGandam, vara, sunrise, sunset)
+}
+
+fn calculate_gulika_kaal(vara: &str, sunrise: &str, sunset: &str) -> TimePeriod {
+    eighth_period("Gulika Kaal", DayEighth::GulikaKaal, vara, sunrise, sunset)
+}
+
+/// Inauspicious eighth of the day for `vara`, shared with
+/// `panchang::muhurta`. Start and end are empty if sunrise/sunset do not
+/// parse.
+fn eighth_period(
+    name: &str,
+    period: DayEighth,
+    vara: &str,
+    sunrise: &str,
+    sunset: &str,
+) -> TimePeriod {
+    let (start, end) = period
+        .period(vara, sunrise, sunset)
+        .map(|(start, end, _)| (start, end))
+        .unwrap_or_default();
     TimePeriod {
-        name: "Rahu Kalam".to_string(),
-        start: format_time_offset(sunrise, start_offset),
-        end: format_time_offset(sunrise, end_offset),
+        name: name.to_string(),
+        start,
+        end,
         is_auspicious: false,
     }
 }
 
-fn calculate_yama_gandam(vara: &str, sunrise: &str, _sunset: &str) -> TimePeriod {
-    let (start_offset, end_offset) = match vara {
-        "Sunday" => (3.0, 4.5),
-        "Monday" => (4.5, 6.0),
-        "Tuesday" => (6.0, 7.5),
-        "Wednesday" => (1.5, 3.0),
-        "Thursday" => (0.0, 1.5),
-        "Friday" => (3.0, 4.5),
-        "Saturday" => (4.5, 6.0),
-        _ => (3.0, 4.5),
-    };
-
-    TimePeriod {
-        name: "Yama Gandam".to_string(),
-        start: format_time_offset(sunrise, start_offset),
-        end: format_time_offset(sunrise, end_offset),
-        is_auspicious: false,
-    }
-}
-
-fn calculate_gulika_kaal(vara: &str, sunrise: &str, _sunset: &str) -> TimePeriod {
-    let (start_offset, end_offset) = match vara {
-        "Sunday" => (6.0, 7.5),
-        "Monday" => (3.0, 4.5),
-        "Tuesday" => (4.5, 6.0),
-        "Wednesday" => (6.0, 7.5),
-        "Thursday" => (4.5, 6.0),
-        "Friday" => (3.0, 4.5),
-        "Saturday" => (0.0, 1.5),
-        _ => (6.0, 7.5),
-    };
-
-    TimePeriod {
-        name: "Gulika Kaal".to_string(),
-        start: format_time_offset(sunrise, start_offset),
-        end: format_time_offset(sunrise, end_offset),
-        is_auspicious: false,
-    }
-}
-
-fn calculate_abhijit(_sunrise: &str, _sunset: &str) -> Vec<TimePeriod> {
-    // Abhijit muhurta is around solar noon
-    vec![TimePeriod {
-        name: "Abhijit Muhurta".to_string(),
-        start: "11:48".to_string(),
-        end: "12:36".to_string(),
-        is_auspicious: true,
-    }]
-}
-
-fn format_time_offset(base_time: &str, hours_offset: f64) -> String {
-    let parts: Vec<&str> = base_time.split(':').collect();
-    if parts.len() < 2 {
-        return base_time.to_string();
-    }
-
-    let base_hour: u32 = parts[0].parse().unwrap_or(6);
-    let base_min: u32 = parts[1].parse().unwrap_or(0);
-
-    let total_minutes = (base_hour * 60 + base_min) + (hours_offset * 60.0) as u32;
-    let new_hour = (total_minutes / 60) % 24;
-    let new_min = total_minutes % 60;
-
-    format!("{:02}:{:02}", new_hour, new_min)
+fn calculate_abhijit(sunrise: &str, sunset: &str) -> Vec<TimePeriod> {
+    abhijit_period(sunrise, sunset)
+        .map(|(start, end, _)| TimePeriod {
+            name: "Abhijit Muhurta".to_string(),
+            start,
+            end,
+            is_auspicious: true,
+        })
+        .into_iter()
+        .collect()
 }
 
 #[cfg(test)]
@@ -188,8 +146,95 @@ mod tests {
     }
 
     #[test]
-    fn test_format_time_offset() {
-        assert_eq!(format_time_offset("06:00", 1.5), "07:30");
-        assert_eq!(format_time_offset("06:15", 3.0), "09:15");
+    fn eighths_follow_the_weekday_table_on_a_twelve_hour_day() {
+        // (vara, Rahu, Yama, Gulika) start times for a 06:00–18:00 day.
+        let expected = [
+            ("Sunday", "16:30", "12:00", "15:00"),
+            ("Monday", "07:30", "10:30", "13:30"),
+            ("Tuesday", "15:00", "09:00", "12:00"),
+            ("Wednesday", "12:00", "07:30", "10:30"),
+            ("Thursday", "13:30", "06:00", "09:00"),
+            ("Friday", "10:30", "15:00", "07:30"),
+            ("Saturday", "09:00", "13:30", "06:00"),
+        ];
+        for (vara, rahu, yama, gulika) in expected {
+            assert_eq!(
+                calculate_rahu_kalam(vara, "06:00", "18:00").start,
+                rahu,
+                "Rahu {vara}"
+            );
+            assert_eq!(
+                calculate_yama_gandam(vara, "06:00", "18:00").start,
+                yama,
+                "Yama {vara}"
+            );
+            assert_eq!(
+                calculate_gulika_kaal(vara, "06:00", "18:00").start,
+                gulika,
+                "Gulika {vara}"
+            );
+        }
+    }
+
+    #[test]
+    fn eighths_and_abhijit_scale_with_day_length() {
+        // Synthetic Thursday 2026-01-15, 07:14–18:21.
+        let rahu = calculate_rahu_kalam("Thursday", "07:14", "18:21");
+        assert_eq!((rahu.start.as_str(), rahu.end.as_str()), ("14:10", "15:34"));
+        assert!(!rahu.is_auspicious);
+
+        let abhijit = calculate_abhijit("07:14", "18:21");
+        assert_eq!(abhijit.len(), 1);
+        assert_eq!(
+            (abhijit[0].start.as_str(), abhijit[0].end.as_str()),
+            ("12:25", "13:09")
+        );
+        assert!(abhijit[0].is_auspicious);
+    }
+
+    #[test]
+    fn agrees_with_panchang_muhurta() {
+        use crate::panchang::muhurta::{GulikaKaal, RahuKalam, YamaGandam};
+        let (sunrise, sunset) = ("07:14", "18:21");
+        for vara in [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+        ] {
+            let rahu = RahuKalam::for_day(vara, sunrise, sunset).unwrap();
+            let yama = YamaGandam::for_day(vara, sunrise, sunset).unwrap();
+            let gulika = GulikaKaal::for_day(vara, sunrise, sunset).unwrap();
+            let daily = [
+                calculate_rahu_kalam(vara, sunrise, sunset),
+                calculate_yama_gandam(vara, sunrise, sunset),
+                calculate_gulika_kaal(vara, sunrise, sunset),
+            ];
+            assert_eq!(
+                (&daily[0].start, &daily[0].end),
+                (&rahu.start, &rahu.end),
+                "Rahu {vara}"
+            );
+            assert_eq!(
+                (&daily[1].start, &daily[1].end),
+                (&yama.start, &yama.end),
+                "Yama {vara}"
+            );
+            assert_eq!(
+                (&daily[2].start, &daily[2].end),
+                (&gulika.start, &gulika.end),
+                "Gulika {vara}"
+            );
+        }
+    }
+
+    #[test]
+    fn unparseable_day_gives_no_periods() {
+        let rahu = calculate_rahu_kalam("Monday", "dawn", "18:00");
+        assert!(rahu.start.is_empty() && rahu.end.is_empty());
+        assert!(calculate_abhijit("dawn", "18:00").is_empty());
     }
 }

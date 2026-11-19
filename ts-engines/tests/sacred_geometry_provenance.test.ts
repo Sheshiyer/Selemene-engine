@@ -18,6 +18,10 @@ import type { EngineInput } from '../src/types'
 import { EngineValidationError } from '../src/utils'
 
 const engine = new SacredGeometryEngine()
+const bridgeFixturePath = new URL(
+  './fixtures/sacred-geometry/bridge-round-trip-seed-1401.json',
+  import.meta.url,
+)
 
 function input(parameters: Record<string, unknown>, seed = 1401): EngineInput {
   return { consciousness_level: 0, parameters, seed }
@@ -50,7 +54,12 @@ describe('SacredGeometryEngine provenance (GH #1401)', () => {
     const detail = result.provenance_detail
     expect(detail.form).toEqual({ kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' })
     expect(detail.form_selection).toEqual({ kind: 'requested' })
-    expect(detail.meditation).toEqual({ kind: 'symbolic_lookup', source: 'wisdom.SACRED_FORMS' })
+    expect(detail.meditation).toEqual({
+      kind: 'symbolic_lookup',
+      source: 'wisdom.SACRED_FORMS',
+      mode: 'guidance',
+      duration_suggestion: 'static_constant',
+    })
     expect(detail.calculated_geometry.status).toBe('calculated')
     expect(typeof detail.calculated_geometry.construction).toBe('string')
     expect(detail.rendered_artifact.status).toBe('not_implemented')
@@ -112,5 +121,23 @@ describe('SacredGeometryEngine provenance (GH #1401)', () => {
     expect(roundTripped.result.provenance_detail).toEqual(
       (output.result as AnyResult).provenance_detail,
     )
+  })
+
+  it('probe:bridge-fixture - committed sidecar fixture matches live engine output', async () => {
+    // crates/noesis-bridge replays this exact file through ts_response_into_output
+    // (sacred_geometry_sidecar_fixture_round_trips_provenance_and_detail), so
+    // the Rust probe can only pass against what this engine really emits.
+    const fixture = JSON.parse(await Bun.file(bridgeFixturePath).text())
+    const live = await engine.calculate(fixture.input)
+
+    expect({
+      ...live,
+      calculated_at: fixture.sidecar_response.calculated_at,
+      processing_time_ms: fixture.sidecar_response.processing_time_ms,
+    }).toEqual(fixture.sidecar_response)
+    expect(fixture.sidecar_response.result.provenance_detail.form_selection.kind).toBe(
+      'seeded_random',
+    )
+    expect(fixture.sidecar_response.result.provenance_detail.svg_preview.status).toBe('rejected')
   })
 })

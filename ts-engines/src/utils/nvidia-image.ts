@@ -80,6 +80,8 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
       Accept: 'application/json',
     },
     body: JSON.stringify(body),
+    // Bound orphaned work before the configured 90-second API bridge deadline.
+    signal: AbortSignal.timeout(60_000),
   })
 
   if (!res.ok) {

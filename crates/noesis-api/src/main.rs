@@ -3,7 +3,10 @@
 //! Entry point for the Noesis API server. Initializes tracing, builds the router,
 //! and starts the Axum HTTP server with environment-based configuration.
 
-use noesis_api::{build_app_state, create_router, init_tracing, init_tracing_json, ApiConfig};
+use noesis_api::{
+    build_app_state, create_router, init_tracing, init_tracing_json, spawn_daily_field_scheduler,
+    ApiConfig,
+};
 use tokio::net::TcpListener;
 
 #[tokio::main]
@@ -89,6 +92,9 @@ async fn main() {
         });
         tracing::info!("API key auto-purge task scheduled (30-day retention for revoked keys)");
     }
+
+    // Daily field: the day's engines and witness dyad at 05:30 IST for opted-in users.
+    spawn_daily_field_scheduler(state.clone());
 
     // Create the Axum router with all routes and middleware
     let app = create_router(state, &config);

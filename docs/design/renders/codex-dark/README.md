@@ -1,13 +1,15 @@
 # Codex Dark render set
 
-The darker redo of the Codex render set (`Instruments Codex Dark` in the design system, version 14). It is the brand look: the owner chose it on 2026-10-29 over the first Codex pass, because the metal is pushed darker and matte and gold is held to hairline line, as the Render Bible asks.
+This set contains the 27 darker generated PNG originals selected as the brand direction on 29 October 2026: 17 engines, six workflows, three voice plates and the trinity-hex mark. The metal is dark matte patinated bronze, with gold held to fine lines and emerald glass accents on a dark ground. The brighter [first pass](../codex/) remains a historical reference.
 
-`prompts.json` holds the 27 prompts. They are the first Codex pass prompts (`../codex/prompts.json`) with two changes: the base block says the metal is dark matte patinated bronze with gold as line only, and the four plates and the mark (voices and mark) get the same metal line. The reference is the Vimshottari still from the first pass (`../codex/engines__04-vimshottari.png`), used for void ground, light direction, plinth and glass. Its metal is brighter than the brief, so the prompt asks for darker metal than the reference.
+`prompts.json` preserves each subject, requested aspect, dimensions and prompt. Engines and workflows are 1024 × 1536 pixels, voice plates are 1536 × 1024, and the mark is 1024 × 1024. The PNG originals are committed in ordinary Git. They retain their original metadata and are not the JPEG derivatives mentioned in earlier design-session notes.
 
-Generation ran through `codex exec` with `--sandbox workspace-write`, `-i <reference>` and the prompt after `--`, four at a time, one retry each on a failed file. All 27 succeeded on the first attempt.
+The historical generation notes describe a Codex CLI image run using the first pass's `engines__04-vimshottari.png` as a style reference. They do not establish a currently available model or provider route.
 
-The PNG originals are here (27 files, about 60 MB in total). Each is 1024 px on the long side for engines and workflows, 1024 square for the mark, 1536 wide for the voices. The design system carries 1400 px JPEG versions (`sips -Z 1400`, quality 85).
+`measure-lens.py` is an optional offline helper requiring Pillow and NumPy. It estimates the emerald-glass centre as percentages of image width and height:
 
-`measure-lens.py` finds the emerald glass in each still and prints its centre as a percentage of width and height, which gives the `--lx` and `--ly` values for InstrumentMotion. It is a detector, not a truth: where a still has no single emerald glass the recorded value is the centre of the object, and every value was checked by eye on a contact sheet. The recorded values are in `project/components/InstrumentMotion/README.md` in the design system.
+```sh
+python3 measure-lens.py engines__04-vimshottari.png
+```
 
-The 27 originals are large. Decide whether they belong in git (for example with Git LFS) before committing this folder.
+The detector is a heuristic and can return no result. Review a coordinate against the image before using it for animation. Historical component coordinates and browser checks belong to the separately archived design session; this source set does not claim those components are installed or accepted on current main.

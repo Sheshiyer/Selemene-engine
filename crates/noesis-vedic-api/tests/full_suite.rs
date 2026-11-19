@@ -384,6 +384,18 @@ mod integration_smoke_tests {
         VedicApiService::new(CachedVedicClient::new(config))
     }
 
+    /// A real vendor response captured in `tests/fixtures/captures`. The
+    /// client maps the live `/planets` and `/navamsa-chart-info` envelopes.
+    fn capture(name: &str) -> serde_json::Value {
+        let path = format!(
+            "{}/tests/fixtures/captures/{}",
+            env!("CARGO_MANIFEST_DIR"),
+            name
+        );
+        let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {path}: {e}"));
+        serde_json::from_slice(&bytes).unwrap_or_else(|e| panic!("parse {path}: {e}"))
+    }
+
     #[tokio::test]
     async fn test_panchang_endpoint_roundtrip() {
         let server = MockServer::start().await;
@@ -429,29 +441,35 @@ mod integration_smoke_tests {
     async fn test_birth_chart_endpoint_roundtrip() {
         let server = MockServer::start().await;
         Mock::given(method("POST"))
-            .and(path("/horoscope-chart"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_birth_chart()))
+            .and(path("/planets"))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(capture("planets_bangalore_1991-08-13.json")),
+            )
             .mount(&server)
             .await;
 
         let result = test_service(&server.uri())
             .birth_chart(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5)
             .await;
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "{:?}", result.err());
     }
 
     #[tokio::test]
     async fn test_navamsa_endpoint_roundtrip() {
         let server = MockServer::start().await;
         Mock::given(method("POST"))
-            .and(path("/navamsa-chart"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(mocks::mock_navamsa_chart()))
+            .and(path("/navamsa-chart-info"))
+            .respond_with(
+                ResponseTemplate::new(200)
+                    .set_body_json(capture("navamsa_bangalore_1991-08-13.json")),
+            )
             .mount(&server)
             .await;
 
         let result = test_service(&server.uri())
             .navamsa_chart(1991, 8, 13, 13, 31, 0, 12.9716, 77.5946, 5.5)
             .await;
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "{:?}", result.err());
     }
 }

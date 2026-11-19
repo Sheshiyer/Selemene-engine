@@ -4,8 +4,15 @@ pub mod assets;
 pub mod auth;
 pub mod billing;
 pub mod biofield;
+pub mod daily;
 pub mod desktop_auth;
 pub mod living_reading_invites;
 pub mod onboarding;
 pub mod users;
 pub mod witness;
+
+pub mod sessions;
+pub mod shared_identity;
+
+pub mod witness_catalog;
+pub mod witness_requests;

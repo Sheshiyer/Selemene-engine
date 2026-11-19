@@ -499,6 +499,6 @@ describe('SigilForgeEngine provenance (lane S4)', () => {
 
   it('metadata input_schema advertises the provider parameter', () => {
     const schema = new SigilForgeEngine(new MockImageProvider()).metadata().input_schema
-    expect(schema.provider?.enum).toEqual(['nvidia', 'nano-banana', 'kimi'])
+    expect(schema.provider?.enum).toEqual(['nvidia', 'nano-banana', 'kimi', 'cloudflare'])
   })
 })

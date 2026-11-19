@@ -197,7 +197,7 @@ fn karana_type_from_index(idx: u8) -> KaranaType {
 /// `compute_panchanga` entry point is sync-only.
 ///
 /// `lat`/`lng`/`tz_offset_hours` drive both the Panchanga (via tz_offset)
-/// and the `DayBoundaries` block (via approximate-sunrise math). The HH:MM
+/// and the `DayBoundaries` block (via `crate::sun`, local clock time). The HH:MM
 /// format is preserved so downstream `calculate_muhurtas`,
 /// `calculate_hora_timings`, `calculate_choghadiya` keep working.
 pub fn compute_panchang_native(
@@ -275,9 +275,8 @@ pub fn compute_panchang_native(
     let paksha = paksha_from_tithi_index(result.tithi_index);
 
     // ---- Day boundaries ----
-    let sunrise = crate::resilience::approximate_sunrise(lat, result.julian_day);
-    let sunset = crate::resilience::approximate_sunset(lat, result.julian_day);
-    let next_sunrise = crate::resilience::approximate_sunrise(lat, result.julian_day + 1.0);
+    let (sunrise, sunset, next_sunrise) =
+        crate::resilience::day_boundary_times(year, month, day, lat, lng, tz_offset_hours);
     let day_boundaries = DayBoundaries {
         sunrise,
         sunset,
@@ -340,22 +339,12 @@ pub fn compute_panchang_native(
         paksha,
         planets,
         day_boundaries,
-        ayanamsa: lahiri_ayanamsa_from_julian_day(result.julian_day),
+        // The ayanamsa the engine subtracted to get the sidereal longitudes
+        // above, so the reported value and the positions agree.
+        ayanamsa: result
+            .ayanamsa_degrees
+            .unwrap_or_else(|| engine_panchanga::lahiri_ayanamsa(result.julian_day)),
     })
-}
-
-/// Lahiri (Chitrapaksha) ayanamsa as a function of Julian Day.
-///
-/// Linear approximation around the 1990–2050 epoch — Lahiri drifts at
-/// roughly 50.27″/yr from the reference point (JD 2451545.0 = 2000-01-01,
-/// 23.853°). Good to ±10″ across modern births; sufficient for sign /
-/// nakshatra boundaries.  PR3 will replace this with the engine's
-/// internally-computed value once `engine-panchanga` exposes it.
-pub(crate) fn lahiri_ayanamsa_from_julian_day(jd: f64) -> f64 {
-    const J2000: f64 = 2_451_545.0;
-    const AYANAMSA_AT_J2000: f64 = 23.853;
-    const PRECESSION_DEG_PER_DAY: f64 = 50.2876 / 3600.0 / 365.25;
-    AYANAMSA_AT_J2000 + (jd - J2000) * PRECESSION_DEG_PER_DAY
 }
 
 impl VedicApiClient {
@@ -438,10 +427,17 @@ impl VedicApiClient {
         let date = NaiveDate::parse_from_str(&request.date, "%Y-%m-%d").map_err(|e| {
             VedicApiError::ParseError(format!("invalid date '{}': {}", request.date, e))
         })?;
-        let _ = date;
-        let jdn = engine_panchanga::calculate_julian_day(&request.date, "12:00", request.timezone);
-        let sunrise = crate::resilience::approximate_sunrise(request.latitude, jdn);
-        let sunset = crate::resilience::approximate_sunset(request.latitude, jdn);
+        let event = |kind| {
+            crate::sun::local_event_hhmm(
+                date,
+                request.latitude,
+                request.longitude,
+                request.timezone,
+                kind,
+            )
+        };
+        let sunrise = event(crate::sun::SunEvent::Rise);
+        let sunset = event(crate::sun::SunEvent::Set);
         Ok(SunriseSunsetResponse {
             sunrise,
             sunset,
@@ -517,5 +513,21 @@ mod tests {
         assert_eq!(p.day_boundaries.sunset.len(), 5);
         // ayanamsa populated
         assert!(p.ayanamsa > 0.0);
+    }
+
+    /// The reported ayanamsa is the dated Lahiri value engine-panchanga
+    /// applied, so `moon.longitude + ayanamsa` gives back the tropical Moon.
+    #[test]
+    fn test_compute_panchang_native_reports_engine_ayanamsa() {
+        let p = compute_panchang_native(2026, 5, 13, 15, 30, 0, 12.9716, 77.5946, 5.5)
+            .expect("native panchang must succeed");
+        let engine = engine_panchanga::compute_panchanga("2026-05-13", "15:30", 5.5);
+        assert_eq!(Some(p.ayanamsa), engine.ayanamsa_degrees);
+        assert_eq!(
+            p.ayanamsa,
+            engine_panchanga::lahiri_ayanamsa(engine.julian_day)
+        );
+        // 2026 Lahiri is ~24.23°, not a J2000-anchored 23.85° approximation.
+        assert!((p.ayanamsa - 24.2254).abs() < 1e-3, "{}", p.ayanamsa);
     }
 }

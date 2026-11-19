@@ -1,3 +1,87 @@
+# Seed validation for TypeScript engines — 2026-11-10
+
+- A non-integer or non-finite `seed` (such as `1.5`) no longer crashes tarot, enneagram, sacred-geometry or sigil-forge with a `RangeError` (a sidecar 500 `CALCULATION_ERROR`). They now reject it as a 422 `INVALID_SEED` validation error with `details.field: "seed"`, the code I Ching already used. Integer and omitted seeds behave as before; I Ching keeps its stricter nonnegative-safe-integer rule.
+
+# Seeded randomness for small seeds — 2026-11-09
+
+- `SeededRandom` (shared by every TypeScript engine) now mixes the seed with SplitMix64, so small seeds such as 0, 42 or 1401 no longer start from nearly identical states. Before, the first draw was below 0.5 for every seed from 0 to 99,999, which skewed tarot shuffles, I Ching casts, sacred-geometry selection and witness templates.
+- Keep the xorshift128+ state to 64-bit words (the shift was never masked, so the state grew without bound) and derive `next()` from the top 53 bits so it can never return 1.
+- I Ching no longer discards 16 draws to work around the bias, and its seed-bias test uses a chi-square bound instead of a fixed per-cell tolerance that an ideal generator fails about one block in five.
+- **Seeded output changes for every TypeScript engine:** the same seed now gives a different reading than before. Committed seeded fixtures are regenerated from the engines; saved readings are not rewritten.
+
+# Witness prompts across the bridge and API — 2026-11-07
+
+- Carry every TypeScript engine's `witness_prompts` (prompt, context, themes) through the bridge, the API envelope, the Rust SDK and the TUI instead of collapsing them to the first prompt's text. `witness_prompt` is still the first prompt, and engines that supply no list keep the single-prompt envelope.
+- Sacred geometry labels each witness prompt beneath the deterministic result: its template family, inquiry versus guidance, and the `result.*` fields it was filled from. The meditation text and its fixed duration suggestion are marked as guidance; prompt wording is unchanged.
+- Fix the TypeScript SDK's `EngineOutput.witness_prompts` type (the API sends objects, not strings) and the premium-asset pipeline's fallback, which took the whole prompt object instead of its text.
+- Saved readings still store only the first prompt; this change does not publish packages or deploy services.
+
+# I Ching provenance across SDK, TUI, workflows and readings — 2026-11-07
+
+- Rust SDK `workflow()` now keeps each engine's contract provenance from `engine_results` (it previously read only `engine_outputs`, which never carries it). Missing or malformed blocks are skipped, never invented.
+- Pin real seed-42 I Ching sidecar, `/calculate` and workflow fixtures, and probe the bridge, API, persisted reading shape, Rust SDK, Markdown/text/JSON reports, TUI screens and TS SDK. Saved readings keep `result.derivation`; the contract block stays response-only, as before. Nothing is deployed.
+
+# Rust SDK/TUI contract provenance — 2026-11-04
+
+- Preserve valid API contract provenance through the shared Rust output type, SDK client, TUI result screen and JSON/Markdown/text reports, without adding required fields to public output constructors.
+- Keep contract provenance separate from engine-owned attribution; reject malformed/conflicting new envelope blocks and preserve legacy outputs without inventing provenance.
+- Refresh the synthetic sacred-geometry round-trip fixtures against the construction code already on main; distinguish calculated geometry from unimplemented rendering.
+- Add focused core, bridge, API, SDK, TUI and TypeScript probes. Existing saved readings and the separate Daily repository are unchanged; this change does not publish packages or deploy services.
+
+# I Ching bridge provenance regression — 2026-11-04
+
+- Keep contract provenance, cast derivation and separate hexagram text attribution unchanged through the Rust bridge.
+
+# Enneagram bridge provenance regression — 2026-11-04
+
+- Keep assessment versus user-supplied provenance, confidence and answer coverage unchanged through the Rust bridge.
+
+# Biofield provenance documentation — 2026-11-04
+
+- Remove the stale statement that Biofield does not report Moshier fallback; the existing table and implementation already describe that behavior correctly.
+
+# Panchanga API method and provenance fields — 2026-11-04
+
+- Carry `position_source`, `birth_time_assumed`, `vara_basis` and `ayanamsa_degrees` through OpenAPI and the legacy Panchanga response.
+- Test explicit/missing-time behavior and the ayanamsa against the native calculation. These fields are additive; saved readings and Daily files are unchanged.
+
+# Panchanga 3.3.2 calculation corrections — 2026-11-04
+
+- Keep daily `current_time` as its UTC instant and resolve IANA timezones with dated DST rules; reject unknown zones rather than silently treating them as UTC.
+- Take vara from the local civil date and report `vara_basis: local_date`; calculate and report the dated Swiss Ephemeris Lahiri ayanamsa instead of subtracting a fixed 23.72 degrees.
+- Separate cache identity by mode, instant, timezone and missing-versus-explicit birth time, preventing reuse of the old cache entries.
+- Report the engine calculation version as 3.3.2 and keep the Vedic adapter's ayanamsa consistent with the value actually applied.
+- Document result changes and DST ambiguity behavior in the [Panchanga reference](docs/engines/panchanga.md). Synthetic regression fixtures are updated; existing saved readings and the separate Daily repository are unchanged. This source change does not deploy or recalculate stored results.
+
+# Render source preservation and repository ownership — 2026-11-04
+
+- Preserve 54 original generated PNGs and their two prompt manifests, with the dark set identified as the selected brand direction.
+- Document exact dimensions, historical generation limits and the optional offline lens helper.
+- Clarify that Noesis Daily owns its application and personal readings in a separate private repository.
+- Keep the original historical handoff and unrelated unfinished source in private recovery; this change does not deploy a service.
+
+# Enterprise image and audio generation — 2026-11-03
+
+- Added an explicit Cloudflare Workers AI Sigil provider for the existing account, with inference-only credentials, honest MIME/provider metadata and no fabricated image-seed claim.
+- Fixed bridge constructors ignoring the configured timeout and bounded NVIDIA image requests.
+- Verified real Raaga WAV generation, R2 upload/reuse and downloaded audio integrity; retained consent requirements and the original Enterprise key.
+
+# Enterprise key tooling repair — 2026-11-03
+
+- Added a replay-safe compatibility migration for legacy Biofield baselines missing the notes column, preserving their existing data and dependencies.
+- Applied pending desktop-session and reading-job migrations to staging and production; verified baseline creation/comparison/export and job-store availability.
+- Replaced retired Enterprise NVIDIA role endpoints with a live-verified supported endpoint and disabled its reasoning mode to retain the response budget for complete Witness output.
+- Verified the original Enterprise key across 19 engines and six workflows; recorded provider/fallback limits in the [audit evidence](docs/release/enterprise-key-full-audit-2026-11-03.md).
+
+# Admin API key creation and tiers — 2026-11-03
+
+- Fixed API key creation by supplying the missing lifecycle INSERT value and retaining atomic audit events.
+- Simplified the admin form to Basic, Pro, and Enterprise with server-owned engine scopes, access levels, and rate limits.
+- Preserved restricted-key intent and engine scopes across tier changes, role changes, and rotation; serialized rotation with tier changes to prevent stale privilege restoration.
+- Added protected nonsecret tier metadata, inline creation errors, and duplicate-submit protection.
+- Preserved the recent minimal-input Numerology/Biorhythm behavior and embedded-mode build inclusion.
+- Verified on staging and the production admin dashboard at `144.tryambakam.space`; see [release evidence](docs/release/admin-api-key-tiers-2026-11-03.md).
+
 # 3.3.1 — Dodo-free billing production release (2026-09-08)
 
 > [Production release record](https://github.com/Sheshiyer/Selemene-engine/releases/tag/release-3.3.1-free-mode-20260908)

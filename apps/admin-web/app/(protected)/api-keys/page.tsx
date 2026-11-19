@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ActionRail, MetricSurface } from "@/components/admin-primitives";
 import { BulkActionBar, useBulkSelection } from "@/components/bulk-actions";
@@ -14,6 +14,7 @@ import {
   deleteAdminApiKey,
   getAdminSession,
   getAdminApiKeys,
+  getAdminApiKeyTiers,
   revokeAdminApiKey,
   rotateAdminApiKey,
 } from "@/lib/api";
@@ -21,39 +22,7 @@ import { copyToClipboard, exportCsv, exportJson } from "@/lib/export";
 import { hasPermission } from "@/lib/permissions";
 import { statusPillClass } from "@/lib/status";
 import { buildQueryString, getStringParam } from "@/lib/url-query";
-import type { AdminApiKeyItem, AdminSession } from "@/types/admin";
-
-const PERMISSION_GROUPS = [
-  {
-    label: "Admin",
-    permissions: [
-      { value: "admin:*", label: "Full admin access" },
-      { value: "admin:users:list", label: "List users" },
-      { value: "admin:users:write", label: "Modify users" },
-      { value: "admin:keys:list", label: "List API keys" },
-      { value: "admin:keys:create", label: "Create API keys" },
-      { value: "admin:keys:revoke", label: "Revoke API keys" },
-      { value: "admin:keys:rotate", label: "Rotate API keys" },
-      { value: "admin:keys:delete", label: "Delete API keys" },
-      { value: "admin:analytics", label: "View analytics" },
-    ],
-  },
-  {
-    label: "API Access",
-    permissions: [{ value: "basic:access", label: "Basic API access" }],
-  },
-  {
-    label: "Engines",
-    permissions: [
-      { value: "engines:panchanga", label: "Panchanga" },
-      { value: "engines:numerology", label: "Numerology" },
-      { value: "engines:biorhythm", label: "Biorhythm" },
-      { value: "engines:human-design", label: "Human Design" },
-      { value: "engines:gene-keys", label: "Gene Keys" },
-      { value: "engines:vimshottari", label: "Vimshottari" },
-    ],
-  },
-];
+import type { AdminApiKeyItem, AdminApiKeyTier, AdminSession } from "@/types/admin";
 
 const SECRET_REVEAL_WINDOW_SECONDS = 15;
 const SECRET_INITIAL_REVEAL_SECONDS = 60;
@@ -324,8 +293,8 @@ export default function ApiKeysPage() {
   const [createName, setCreateName] = useState("");
   const [createUserId, setCreateUserId] = useState("");
   const [createTier, setCreateTier] = useState("premium");
-  const [createPerms, setCreatePerms] = useState<Set<string>>(new Set(["basic:access"]));
-  const [createRateLimit, setCreateRateLimit] = useState("1000");
+  const [tierOptions, setTierOptions] = useState<AdminApiKeyTier[]>([]);
+  const creatingRef = useRef(false);
   const [createExpires, setCreateExpires] = useState("");
   const [creating, setCreating] = useState(false);
 
@@ -394,12 +363,22 @@ export default function ApiKeysPage() {
 
   useEffect(() => {
     const token = getAuthToken() ?? undefined;
-void getAdminSession(token)
-      .then(setSession)
+    void getAdminSession(token)
+      .then((value) => { setSession(value); setCreateUserId(value.user_id); })
       .catch(() => {
         // Ignore permission refresh failures and let route guards / action errors handle auth state.
       });
   }, []);
+
+  useEffect(() => {
+    void getAdminApiKeyTiers(getAuthToken() ?? undefined)
+      .then(setTierOptions)
+      .catch(() => setError("Unable to load key tiers. Refresh and try again."));
+  }, []);
+
+  const selectedTier = tierOptions.find((tier) => tier.code === createTier);
+  const tierLabel = (code: string) => tierOptions.find((tier) => tier.code === code)?.label
+    ?? ({ free: "Basic", basic: "Basic", premium: "Pro", pro: "Pro", enterprise: "Enterprise" }[code.toLowerCase()] ?? code);
 
   useEffect(() => {
     if (!secretVisible || !secretForSelectedKey) {
@@ -492,10 +471,8 @@ void getAdminSession(token)
 
   function resetCreateForm() {
     setCreateName("");
-    setCreateUserId("");
+    setCreateUserId(session?.user_id ?? "");
     setCreateTier("premium");
-    setCreatePerms(new Set(["basic:access"]));
-    setCreateRateLimit("1000");
     setCreateExpires("");
   }
 
@@ -538,24 +515,23 @@ void getAdminSession(token)
   }
 
   async function handleCreate() {
+    if (creatingRef.current || !selectedTier) return;
     const token = getAuthToken() ?? undefined;
     if (!createUserId.trim()) {
       setError("User ID is required.");
       return;
     }
 
+    creatingRef.current = true;
     setCreating(true);
     setError(null);
     setSuccess(null);
     try {
-      const rl = Number.parseInt(createRateLimit, 10);
       const res = await createAdminApiKey(token, {
         user_id: createUserId.trim(),
         name: createName.trim() || undefined,
         tier: createTier,
-        permissions: Array.from(createPerms),
-        rate_limit: Number.isNaN(rl) ? undefined : rl,
-        expires_at: createExpires || undefined,
+        expires_at: createExpires ? new Date(createExpires).toISOString() : undefined,
       });
 
       setRecentSecret({ keyId: res.key.id, secret: res.secret_key, source: "created" });
@@ -573,6 +549,7 @@ void getAdminSession(token)
         err instanceof ApiClientError ? err.payload?.error || err.message : "Failed to create API key"
       );
     } finally {
+      creatingRef.current = false;
       setCreating(false);
     }
   }
@@ -732,15 +709,6 @@ setSubmittingId(key.id);
     exportJson(`admin-api-keys-${new Date().toISOString().slice(0, 10)}.json`, filteredKeys);
   }
 
-  function togglePerm(perm: string) {
-    setCreatePerms((prev) => {
-      const next = new Set(prev);
-      if (next.has(perm)) next.delete(perm);
-      else next.add(perm);
-      return next;
-    });
-  }
-
   return (
     <PageShell
       title="API Keys"
@@ -775,9 +743,7 @@ setSubmittingId(key.id);
           Tier
           <select value={tierFilter} onChange={(e) => updateParam("tier", e.target.value)}>
             <option value="all">All tiers</option>
-            <option value="free">Free</option>
-            <option value="premium">Premium</option>
-            <option value="enterprise">Enterprise</option>
+            {tierOptions.map((tier) => <option key={tier.code} value={tier.code}>{tier.label}</option>)}
           </select>
         </label>
         <label>
@@ -870,7 +836,7 @@ setSubmittingId(key.id);
                     <span className={statusPillClass(key.is_active ? "active" : "revoked")}>
                       {key.is_active ? "active" : "revoked"}
                     </span>
-                    <span className={tierPillClass(key.tier)}>{key.tier}</span>
+                    <span className={tierPillClass(key.tier)}>{tierLabel(key.tier)}</span>
                   </div>
                 </div>
 
@@ -960,7 +926,7 @@ setSubmittingId(key.id);
         onClose={() => setShowCreate(false)}
         eyebrow="Create"
         title="Create API Key"
-        summary="Generate a new key with explicit tier, permission, and expiration controls."
+        summary="Choose a tier and generate a key. Access is assigned automatically."
         footer={
           <>
             <button type="button" onClick={() => setShowCreate(false)}>
@@ -969,7 +935,7 @@ setSubmittingId(key.id);
             <button
               type="button"
               className="btn-primary"
-              disabled={creating || !createUserId.trim()}
+              disabled={creating || !createUserId.trim() || !selectedTier}
               onClick={handleCreate}
             >
               {creating ? "Creating..." : "Generate key"}
@@ -977,9 +943,10 @@ setSubmittingId(key.id);
           </>
         }
       >
+        {error ? <p role="alert" className="helper">{error}</p> : null}
         <div className="form-group">
-          <label>Key name</label>
-          <input
+          <label htmlFor="create-key-name">Key name</label>
+          <input id="create-key-name"
             value={createName}
             onChange={(e) => setCreateName(e.target.value)}
             placeholder="e.g. Production Mobile App"
@@ -987,62 +954,32 @@ setSubmittingId(key.id);
         </div>
 
         <div className="form-group">
-          <label>User ID</label>
-          <input
+          <label htmlFor="create-key-owner">Owner</label>
+          <input id="create-key-owner"
             value={createUserId}
             onChange={(e) => setCreateUserId(e.target.value)}
             placeholder="UUID of the target user"
           />
         </div>
 
-        <div className="modal-two-column">
-          <div className="form-group">
-            <label>Tier</label>
-            <select value={createTier} onChange={(e) => setCreateTier(e.target.value)}>
-              <option value="free">Free (60/min)</option>
-              <option value="premium">Premium (1,000/min)</option>
-              <option value="enterprise">Enterprise (10,000/min)</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Rate limit override</label>
-            <input
-              value={createRateLimit}
-              onChange={(e) => setCreateRateLimit(e.target.value)}
-              placeholder="req/min"
-            />
-          </div>
+        <div className="form-group">
+          <label htmlFor="create-key-tier">Tier</label>
+          <select id="create-key-tier" value={createTier} onChange={(e) => setCreateTier(e.target.value)} disabled={!tierOptions.length}>
+            {!tierOptions.length ? <option value="">Loading tiers...</option> : null}
+            {tierOptions.map((tier) => <option key={tier.code} value={tier.code}>{tier.label}</option>)}
+          </select>
+          {selectedTier ? <p className="helper">{selectedTier.permissions.filter((p) => p.endsWith(":read")).length} engines · {selectedTier.rate_limit.toLocaleString() } requests/minute · scopes assigned automatically</p> : null}
         </div>
 
         <div className="form-group">
-          <label>Expiration (optional)</label>
-          <input
+          <label htmlFor="create-key-expiry">Expiration (optional)</label>
+          <input id="create-key-expiry"
             type="datetime-local"
             value={createExpires}
             onChange={(e) => setCreateExpires(e.target.value)}
           />
         </div>
 
-        <div className="modal-section">
-          <label className="form-section-label">Permissions</label>
-          {PERMISSION_GROUPS.map((group) => (
-            <div className="perm-group" key={group.label}>
-              <div className="perm-group-label">{group.label}</div>
-              <div className="perm-list">
-                {group.permissions.map((permission) => (
-                  <label className="perm-item" key={permission.value}>
-                    <input
-                      type="checkbox"
-                      checked={createPerms.has(permission.value)}
-                      onChange={() => togglePerm(permission.value)}
-                    />
-                    <span>{permission.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
       </ModalSurface>
 
       <ModalSurface
@@ -1069,7 +1006,7 @@ setSubmittingId(key.id);
                 <span className={statusPillClass(selectedKey.is_active ? "active" : "revoked")}>
                   {selectedKey.is_active ? "active" : "revoked"}
                 </span>
-                <span className={tierPillClass(selectedKey.tier)}>{selectedKey.tier}</span>
+                <span className={tierPillClass(selectedKey.tier)}>{tierLabel(selectedKey.tier)}</span>
               </div>
             </div>
 

@@ -56,6 +56,10 @@
     "generated_audio": {
       "type": "object",
       "description": "Optional FROZEN top-level generated audio reference"
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Optional contracts/v1 provenance block (contracts/v1/schemas/provenance.schema.json); older sidecars omit it"
     }
   }
 }

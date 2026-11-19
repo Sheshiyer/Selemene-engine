@@ -12,20 +12,19 @@
         "name": "Past",
         "meaning": "What has led to this moment; influences from the past",
         "card": {
-          "id": "cups-13",
-          "name": "Queen of Cups",
-          "arcana": "minor",
-          "suit": "cups",
-          "number": 13,
+          "id": "major-18",
+          "name": "The Moon",
+          "arcana": "major",
+          "number": 18,
           "element": "water",
           "isReversed": true,
           "interpretation": {
-            "meaning": "Inner feelings, self-care, self-love, co-dependency",
+            "meaning": "Release of fear, repressed emotion, inner confusion",
             "keywords": [
-              "compassion",
-              "nurturing",
+              "illusion",
               "intuition",
-              "emotional security"
+              "uncertainty",
+              "subconscious"
             ]
           }
         }
@@ -35,19 +34,20 @@
         "name": "Present",
         "meaning": "The current situation; where you stand now",
         "card": {
-          "id": "major-9",
-          "name": "The Hermit",
-          "arcana": "major",
+          "id": "cups-9",
+          "name": "Nine of Cups",
+          "arcana": "minor",
+          "suit": "cups",
           "number": 9,
-          "element": "earth",
-          "isReversed": true,
+          "element": "water",
+          "isReversed": false,
           "interpretation": {
-            "meaning": "Isolation, loneliness, withdrawal, lost your way",
+            "meaning": "Contentment, satisfaction, gratitude, wish come true",
             "keywords": [
-              "introspection",
-              "solitude",
-              "guidance",
-              "wisdom"
+              "contentment",
+              "satisfaction",
+              "wishes fulfilled",
+              "gratitude"
             ]
           }
         }
@@ -57,20 +57,20 @@
         "name": "Future",
         "meaning": "What may unfold; potential outcomes and energies ahead",
         "card": {
-          "id": "cups-6",
-          "name": "Six of Cups",
+          "id": "wands-2",
+          "name": "Two of Wands",
           "arcana": "minor",
-          "suit": "cups",
-          "number": 6,
-          "element": "water",
-          "isReversed": true,
+          "suit": "wands",
+          "number": 2,
+          "element": "fire",
+          "isReversed": false,
           "interpretation": {
-            "meaning": "Living in the past, forgiveness, lacking playfulness",
+            "meaning": "Planning, making decisions, leaving home, personal goals",
             "keywords": [
-              "nostalgia",
-              "memories",
-              "innocence",
-              "reunion"
+              "planning",
+              "decisions",
+              "discovery",
+              "progress"
             ]
           }
         }
@@ -80,34 +80,34 @@
   },
   "witness_prompts": [
     {
-      "prompt": "With The Hermit appearing reversed, what inner landscape might it be reflecting?",
-      "context": "The Hermit in Present position (reversed)",
+      "prompt": "What shadow aspect of The Moon resonates with your current experience?",
+      "context": "The Moon in Past position (reversed)",
       "themes": [
         "shadow",
         "inversion",
         "inner work",
-        "introspection",
-        "solitude",
-        "guidance",
-        "wisdom"
+        "illusion",
+        "intuition",
+        "uncertainty",
+        "subconscious"
       ]
     },
     {
-      "prompt": "How do The Hermit and Six of Cups seem to speak to each other in this reading?",
-      "context": "Connection between Present and Future",
+      "prompt": "What story emerges between Two of Wands and Nine of Cups?",
+      "context": "Connection between Future and Present",
       "themes": [
-        "introspection",
-        "solitude",
-        "guidance",
-        "wisdom",
-        "nostalgia",
-        "memories",
-        "innocence",
-        "reunion"
+        "planning",
+        "decisions",
+        "discovery",
+        "progress",
+        "contentment",
+        "satisfaction",
+        "wishes fulfilled",
+        "gratitude"
       ]
     },
     {
-      "prompt": "What does this reading illuminate that you may not have seen before?",
+      "prompt": "What overall feeling or intuition arises from this reading?",
       "context": "Overall reading reflection",
       "themes": [
         "wholeness",
@@ -117,5 +117,12 @@
     }
   ],
   "calculated_at": "2024-01-15T14:30:00.000Z",
-  "processing_time_ms": 0
+  "processing_time_ms": 0,
+  "provenance": {
+    "runtime_kind": "typescript",
+    "implementation_version": "1.0.0",
+    "cached": false,
+    "fallback_used": false,
+    "confidence": 1
+  }
 }

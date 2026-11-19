@@ -79,10 +79,9 @@ const PLACEHOLDER_RE = /\[[^\]]*\bfrom engine results\b[^\]]*\]/i;
 const MIN_CHART_FIDELITY = 0.5;
 const PASS_CHART_FIDELITY = 0.8;
 
-// Gates that runFinalVerification blocks on. Kept here so SectionRubric in integrated.ts is untouched.
+// A rubric from auditSectionOutput always carries a placeholder verdict.
 export interface AuditedSectionRubric extends SectionRubric {
   placeholder_gate: 'pass' | 'fail';
-  chart_fidelity_gate?: 'pass' | 'warn' | 'fail';
 }
 
 function extractKeyFactsFromEngines(engines: any[]): Set<string> {

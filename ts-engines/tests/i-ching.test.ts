@@ -130,11 +130,19 @@ describe('I Ching King Wen computation', () => {
     for (let seed = 0; seed < 8192; seed++) {
       castThreeCoinLines(seed).forEach((value, line) => counts[line][value - 6]++)
     }
+    // Chi-square over all 24 cells against the 1:3:3:1 binomial (df = 18).
+    // 42.31 is the p = 0.001 critical value: an unbiased generator stays under
+    // it, while the old seed bias (every seed casting old yin) scores in the
+    // thousands. A fixed per-cell tolerance of 100 is about 2.3 sigma for the
+    // 3/8 cells and fails ~20% of blocks even for an ideal generator.
+    const expected = [1024, 3072, 3072, 1024]
+    let chiSquare = 0
     for (const line of counts) {
-      for (let value = 0; value < 4; value++) {
-        expect(Math.abs(line[value] - [1024, 3072, 3072, 1024][value])).toBeLessThan(100)
-      }
+      line.forEach((count, value) => {
+        chiSquare += (count - expected[value]) ** 2 / expected[value]
+      })
     }
+    expect(chiSquare).toBeLessThan(42.31)
   })
 
   it('repairs the actual observed inconsistent cast without choosing random IDs', () => {
@@ -403,5 +411,26 @@ describe('I Ching provenance and degradation (#1341)', () => {
       const error = await engine.calculate(bad).catch((caught: unknown) => caught)
       expect((error as { code?: string }).code).toMatch(/^INVALID_/)
     }
+  })
+})
+
+describe('I Ching seam fixture (#1341)', () => {
+  it('committed sidecar fixture matches live engine output', async () => {
+    // crates/noesis-bridge, noesis-api, noesis-sdk, noesis-tui and the TS SDK
+    // replay this file (or the API envelopes built from it), so those probes
+    // can only pass against what this engine really emits.
+    const fixture = JSON.parse(
+      await Bun.file(
+        new URL('./fixtures/i-ching/bridge-round-trip-seed-42.json', import.meta.url),
+      ).text(),
+    )
+    const live = await engine.calculate(fixture.input)
+    expect({
+      ...live,
+      calculated_at: fixture.sidecar_response.calculated_at,
+      processing_time_ms: fixture.sidecar_response.processing_time_ms,
+    }).toEqual(fixture.sidecar_response)
+    expect(fixture.sidecar_response.result.derivation.line_values.origin).toBe('cast')
+    expect(fixture.sidecar_response.result.derivation.relating_hexagram.origin).toBe('derived')
   })
 })

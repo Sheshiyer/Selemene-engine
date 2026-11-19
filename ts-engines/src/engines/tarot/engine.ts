@@ -3,7 +3,7 @@
  */
 
 import type { ConsciousnessEngine, EngineInput, EngineMetadata, EngineOutput } from '../../types'
-import { EngineValidationError } from '../../utils'
+import { EngineValidationError, assertIntegerSeed } from '../../utils'
 import { performReading } from './reading'
 import { SPREAD_DEFINITIONS, SpreadType, parseSpreadType } from './spreads'
 import { generateQuestionBasedPrompts } from './witness'
@@ -41,6 +41,7 @@ export class TarotEngine implements ConsciousnessEngine {
     // Extract parameters
     const spreadParam = (input.parameters.spread as string) ?? 'three_card'
     const question = input.question ?? (input.parameters.question as string)
+    assertIntegerSeed(input.seed)
     const seed = input.seed
 
     // Parse spread type

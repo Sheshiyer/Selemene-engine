@@ -5,6 +5,7 @@ import type {
   AdminAnalyticsTimeseriesResponse,
   AdminAnalyticsTopConsumersResponse,
   AdminApiKeysResponse,
+  AdminApiKeyTier,
   AdminAuditActionsResponse,
   AdminAuditEventDetailResponse,
   AdminAuditEventsResponse,
@@ -317,6 +318,10 @@ export async function getAdminApiKeys(
     })}`,
     { token }
   );
+}
+
+export async function getAdminApiKeyTiers(token?: string): Promise<AdminApiKeyTier[]> {
+  return request<AdminApiKeyTier[]>("/api/v1/admin/api-key-tiers", { token });
 }
 
 export async function createAdminApiKey(

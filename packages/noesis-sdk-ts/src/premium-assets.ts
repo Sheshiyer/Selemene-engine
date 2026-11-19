@@ -349,7 +349,7 @@ export function resolveModeDoc(mode?: string | ParsedModeDoc): ParsedModeDoc {
 
 /** Map SDK EngineOutput (from calculate) to the SelemeneEngineOutput shape the pipeline expects. */
 export function engineOutputToSelemene(eo: EngineOutput, level: number): SelemeneEngineOutput {
-  const wp = eo.witness_prompt ?? eo.witness_prompts?.[0] ?? '';
+  const wp = eo.witness_prompt ?? eo.witness_prompts?.[0]?.prompt ?? '';
   const meta = (eo.metadata as Record<string, unknown>) || {};
   return {
     engine_id: eo.engine_id as SelemeneEngineOutput['engine_id'],

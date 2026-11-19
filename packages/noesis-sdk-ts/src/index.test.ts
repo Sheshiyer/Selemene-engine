@@ -179,3 +179,44 @@ describe("NoesisClient", () => {
     ).rejects.toBeInstanceOf(DOMException);
   });
 });
+
+describe("panchanga provenance (GH #1191)", () => {
+  it("returns the flat panchanga result with its provenance fields intact", async () => {
+    // Synthetic Moshier-fallback result for 2000-01-01 12:00 UTC.
+    const result = {
+      tithi_index: 25,
+      tithi_name: "Ekadashi (Krishna)",
+      tithi_value: 25.246,
+      vara_index: 6,
+      vara_name: "Shanivara (Saturday)",
+      vara_basis: "local_date",
+      julian_day: 2451545.0,
+      ayanamsa_degrees: 23.857,
+      position_source: "swiss_ephemeris_moshier",
+      birth_time_assumed: true,
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(
+          JSON.stringify({
+            engine_id: "panchanga",
+            result,
+            witness_prompt: "synthetic",
+            consciousness_level: 0,
+            metadata: { backend: "native-rust", fallback_used: true },
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
+
+    const client = new NoesisClient("https://example.com", { authToken: "token" });
+    const res = await client.calculate("panchanga", input);
+
+    expect(res.result).toEqual(result);
+    expect(res.result.ayanamsa_degrees).toBe(23.857);
+    expect(res.result.vara_basis).toBe("local_date");
+    expect(res.result.position_source).toBe("swiss_ephemeris_moshier");
+  });
+});

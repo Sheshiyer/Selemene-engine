@@ -38,7 +38,8 @@ pub mod organ_clock;
 pub mod panchang_integration;
 pub mod panchanga_qualities;
 pub mod recommendations;
-pub mod sun;
+/// Offline sunrise/sunset; lives in `noesis-vedic-api` so panchang shares it.
+pub use noesis_vedic_api::sun;
 pub mod vedic_time;
 pub mod wisdom;
 pub mod witness;
@@ -71,7 +72,7 @@ pub use vedic_time::{
     choghadiya_at, hora_at, vedic_day_for, ChoghadiyaPeriod, DayHalf, HoraPeriod, VedicDay,
 };
 pub use wisdom::{get_opposing_organ, get_organ_element, get_organ_for_hour, organ_clock};
-pub use witness::generate_witness_prompt;
+pub use witness::{generate_witness_prompt, generate_witness_prompt_seeded};
 
 // Re-export core traits
 pub use noesis_core::{ConsciousnessEngine, EngineError, EngineInput, EngineOutput};

@@ -22,6 +22,7 @@ import {
   editImage as nvidiaEdit,
   generateImage as nvidiaGenerate,
 } from '../utils/nvidia-image'
+import { CloudflareImageProvider } from './cloudflare'
 import { KimiImageProvider } from './kimi'
 
 // T-060: real nano-banana impl (not stub). Separate module per task spec + FROZEN style.
@@ -63,6 +64,7 @@ export interface GeneratedImage {
     style?: string
     seed?: number
     finish_reason?: string
+    mime_type?: string
   }
 }
 
@@ -74,7 +76,7 @@ export interface ImageProvider {
 }
 
 export interface ImageProviderConfig {
-  provider: 'nvidia' | 'nano-banana' | 'kimi'
+  provider: 'nvidia' | 'nano-banana' | 'kimi' | 'cloudflare'
   apiKey?: string
   endpoint?: string
   defaultModel?: string
@@ -202,13 +204,19 @@ export function createImageProvider(config: Partial<ImageProviderConfig> = {}): 
       return new NanoBananaImageProvider(full)
     case 'kimi':
       return new KimiImageProvider(full)
+    case 'cloudflare':
+      return new CloudflareImageProvider()
     default:
       return new NvidiaImageProvider(full)
   }
 }
 
-/** Default provider: nano-banana when RUNCOMFY_TOKEN is present, otherwise nvidia (config-only). */
+/** Explicit Cloudflare opt-in; otherwise retain the legacy nano-banana/NVIDIA default. */
 export function createDefaultImageProvider(): ImageProvider {
+  // Explicit opt-in; dedicated Workers AI credentials never silently change defaults.
+  if (Bun.env.SIGIL_IMAGE_PROVIDER === 'cloudflare') {
+    return createImageProvider({ provider: 'cloudflare' })
+  }
   if (isNanoBananaAvailable()) {
     return createImageProvider({ provider: 'nano-banana' })
   }

@@ -30,3 +30,21 @@ println!("{}", output.witness_prompt);
 # Ok(())
 # }
 ```
+
+
+## Contract provenance in engine results
+
+`NoesisClient::calculate` retains the API's optional contract-v1 provenance.
+Use `output.contract_provenance()` for its typed runtime, implementation version,
+cache/fallback state, optional backend/provider and optional confidence. This
+block stays distinct from engine-owned `result.provenance` or
+`result.provenance_detail`.
+
+JSON serialization and JSON report exports put the block back at top-level
+`provenance` and omit internal transport scaffolding from `result`. Markdown
+(including the TUI result screen) and text exports show supplied provenance
+when metadata is enabled. Existing `EngineOutput` constructors remain valid.
+Legacy saved outputs without a contract block remain readable and are not
+assigned inferred provenance. Malformed or conflicting envelope blocks fail
+parsing instead of disappearing silently. No saved result is migrated or
+recalculated by this change; SDK/TUI registry publication remains a separate gate.

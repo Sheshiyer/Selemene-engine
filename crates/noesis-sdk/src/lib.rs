@@ -90,3 +90,5 @@ pub enum Error {
 
 /// Result type for SDK operations
 pub type Result<T> = std::result::Result<T, Error>;
+
+pub mod shared_identity;

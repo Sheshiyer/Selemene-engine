@@ -451,6 +451,9 @@ impl ConsciousnessEngine for BiofieldEngine {
         let elapsed = start.elapsed();
 
         let mut result = Self::serialize_result(analysis);
+        if let AnalysisOutcome::Vedic(vedic_result, _) = &outcome {
+            vedic_result.birth_time.write_to(&mut result);
+        }
 
         if let Some(reason) = provenance.mock_reason {
             result["mock_reason"] = json!(reason);
@@ -611,12 +614,16 @@ impl ConsciousnessEngine for BiofieldEngine {
     }
 
     fn cache_key(&self, input: &EngineInput) -> String {
-        // Vedic analysis: cache by birth data + transit hour
+        // Vedic analysis: cache by birth data + transit hour. The timezone is
+        // part of the key because it decides the birth instant. A missing time
+        // is keyed as "-", not "12:00": it computes the same chart as an
+        // explicit noon but reports `birth_time_assumed: true`.
         if let Some(birth_data) = &input.birth_data {
             let birth_str = format!(
-                "{}_{}",
+                "{}_{}_{}",
                 birth_data.date,
-                birth_data.time.as_deref().unwrap_or("12:00")
+                birth_data.time.as_deref().unwrap_or("-"),
+                birth_data.timezone
             );
             let transit_hour = input.current_time.format("%Y-%m-%d-%H").to_string();
             let raw = format!("biofield:vedic:{}:{}", birth_str, transit_hour);
@@ -909,6 +916,35 @@ mod tests {
         assert!(key.starts_with("biofield:vedic:"));
     }
 
+    /// A missing time and an explicit 12:00 compute the same chart but report
+    /// `birth_time_assumed` differently, so they must not share a cache entry.
+    #[tokio::test]
+    async fn test_cache_key_vedic_separates_missing_time_from_noon() {
+        let engine = BiofieldEngine::new();
+        let mut untimed = create_vedic_input();
+        untimed.birth_data.as_mut().unwrap().time = None;
+        let mut noon = create_vedic_input();
+        noon.birth_data.as_mut().unwrap().time = Some("12:00".to_string());
+        noon.current_time = untimed.current_time;
+        assert_ne!(engine.cache_key(&untimed), engine.cache_key(&noon));
+    }
+
+    #[tokio::test]
+    async fn test_cache_key_vedic_depends_on_birth_timezone() {
+        let engine = BiofieldEngine::new();
+        let input = create_vedic_input();
+        let mut other_zone = create_vedic_input();
+        if let Some(birth_data) = other_zone.birth_data.as_mut() {
+            birth_data.timezone = "America/New_York".to_string();
+        }
+        // Same local date and time, different zone: a different birth instant.
+        assert_ne!(engine.cache_key(&input), engine.cache_key(&other_zone));
+        assert_eq!(
+            engine.cache_key(&input),
+            engine.cache_key(&create_vedic_input())
+        );
+    }
+
     #[tokio::test]
     async fn test_output_has_chakra_readings() {
         let engine = BiofieldEngine::new();
@@ -1131,8 +1167,10 @@ mod tests {
         assert!(output.result["provenance"]["fallback_reason"].is_null());
     }
 
-    /// Boundary: a missing birth time is defaulted to 12:00 UTC (input
-    /// defaulting, not a fallback) and is not reported anywhere in the output.
+    /// Boundary: a missing birth time is defaulted to local 12:00. That is
+    /// input defaulting, not a fallback: the metrics match an explicit 12:00,
+    /// `fallback_used` is unaffected, and `birth_time_assumed` /
+    /// `assumed_birth_time` report the default.
     #[tokio::test]
     async fn test_missing_birth_time_defaults_to_noon_without_fallback() {
         let engine = BiofieldEngine::new();
@@ -1161,6 +1199,23 @@ mod tests {
             untimed_out.metadata.fallback_used,
             noon_out.metadata.fallback_used
         );
+
+        assert_eq!(untimed_out.result["birth_time_assumed"], json!(true));
+        assert_eq!(untimed_out.result["assumed_birth_time"], json!("12:00"));
+        assert_eq!(noon_out.result["birth_time_assumed"], json!(false));
+        assert!(noon_out.result.get("assumed_birth_time").is_none());
+    }
+
+    /// Without birth data there is no birth time to assume: the mock path
+    /// carries neither field.
+    #[tokio::test]
+    async fn test_mock_path_has_no_birth_time_fields() {
+        let output = BiofieldEngine::new()
+            .calculate(create_test_input())
+            .await
+            .unwrap();
+        assert!(output.result.get("birth_time_assumed").is_none());
+        assert!(output.result.get("assumed_birth_time").is_none());
     }
 
     /// Invalid input is a validation error, never a silent mock.

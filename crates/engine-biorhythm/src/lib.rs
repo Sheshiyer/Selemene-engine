@@ -141,6 +141,18 @@ fn parse_date(date_str: &str) -> Result<chrono::NaiveDate, EngineError> {
         .map_err(|e| EngineError::CalculationError(format!("Invalid date '{}': {}", date_str, e)))
 }
 
+/// The calendar date the cycles are read for: `options.target_date` (YYYY-MM-DD) when
+/// given, else the UTC date of `current_time`. A caller in another timezone passes its
+/// local date, since an instant shortly after local midnight is still the previous UTC day.
+fn target_date_of(input: &EngineInput) -> Result<NaiveDate, EngineError> {
+    match input.options.get("target_date") {
+        Some(v) => parse_date(v.as_str().ok_or_else(|| {
+            EngineError::CalculationError("target_date must be a YYYY-MM-DD string".into())
+        })?),
+        None => Ok(input.current_time.date_naive()),
+    }
+}
+
 // ---------------------------------------------------------------------------
 // ConsciousnessEngine implementation
 // ---------------------------------------------------------------------------
@@ -163,14 +175,15 @@ impl ConsciousnessEngine for BiorhythmEngine {
         let start = Instant::now();
 
         // --- Extract birth date ---
-        let birth_data = input.birth_data.as_ref().ok_or_else(|| {
+        let date = input.birth_data.as_ref().map(|birth| birth.date.as_str())
+            .or_else(|| input.options.get("birth_date").and_then(|value| value.as_str())).ok_or_else(|| {
             EngineError::CalculationError(
                 "birth_data is required for biorhythm calculations".into(),
             )
         })?;
 
-        let birth_date = parse_date(&birth_data.date)?;
-        let target_date = input.current_time.date_naive();
+        let birth_date = parse_date(date)?;
+        let target_date = target_date_of(&input)?;
 
         let days_alive = (target_date - birth_date).num_days();
         if days_alive < 0 {
@@ -363,13 +376,14 @@ impl ConsciousnessEngine for BiorhythmEngine {
 
         if let Some(ref bd) = input.birth_data {
             hasher.update(bd.date.as_bytes());
+        } else if let Some(date) = input.options.get("birth_date").and_then(|value| value.as_str()) {
+            hasher.update(date.as_bytes());
         }
 
-        let target_date = input
-            .current_time
-            .date_naive()
-            .format("%Y-%m-%d")
-            .to_string();
+        let target_date = match target_date_of(input) {
+            Ok(d) => d.format("%Y-%m-%d").to_string(),
+            Err(_) => format!("invalid:{:?}", input.options.get("target_date")),
+        };
         hasher.update(target_date.as_bytes());
 
         if let Some(forecast) = input.options.get("forecast_days") {
@@ -397,6 +411,17 @@ mod tests {
     use chrono::{DateTime, NaiveDate, TimeZone, Utc};
     use noesis_core::{BirthData, Precision};
     use std::collections::HashMap;
+
+    #[tokio::test]
+    async fn minimal_options_match_legacy_birth_data() {
+        let legacy = make_input("1990-01-01", Utc.with_ymd_and_hms(2026, 10, 31, 12, 0, 0).unwrap());
+        let mut minimal = legacy.clone();
+        minimal.birth_data = None;
+        minimal.options.insert("birth_date".into(), serde_json::json!("1990-01-01"));
+        let engine = BiorhythmEngine::new();
+        assert_eq!(engine.cache_key(&legacy), engine.cache_key(&minimal));
+        assert_eq!(engine.calculate(legacy).await.unwrap().result, engine.calculate(minimal).await.unwrap().result);
+    }
 
     fn make_input(birth_date: &str, target: DateTime<Utc>) -> EngineInput {
         EngineInput {
@@ -850,6 +875,33 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[tokio::test]
+    async fn target_date_option_sets_the_calendar_day() {
+        let engine = BiorhythmEngine::new();
+        // 23:55 UTC on 29 Oct is 05:25 IST on 30 Oct.
+        let early = Utc.with_ymd_and_hms(2026, 10, 29, 23, 55, 0).unwrap();
+        let noon = Utc.with_ymd_and_hms(2026, 10, 30, 12, 0, 0).unwrap();
+        let mut dated = make_input("1991-08-13", early);
+        dated
+            .options
+            .insert("target_date".into(), serde_json::json!("2026-10-30"));
+
+        let from_option = engine.calculate(dated.clone()).await.unwrap().result;
+        let from_noon = engine.calculate(make_input("1991-08-13", noon)).await.unwrap().result;
+        let from_instant = engine.calculate(make_input("1991-08-13", early)).await.unwrap().result;
+        assert_eq!(from_option["target_date"], "2026-10-30");
+        assert_eq!(from_option["physical"], from_noon["physical"]);
+        assert_eq!(from_instant["target_date"], "2026-10-29");
+        assert_ne!(
+            engine.cache_key(&dated),
+            engine.cache_key(&make_input("1991-08-13", early))
+        );
+
+        let mut bad = make_input("1991-08-13", early);
+        bad.options.insert("target_date".into(), serde_json::json!("30-10-2026"));
+        assert!(engine.calculate(bad).await.is_err());
     }
 
     // -----------------------------------------------------------------------

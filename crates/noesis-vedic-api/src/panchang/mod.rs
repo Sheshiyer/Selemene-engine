@@ -39,7 +39,7 @@ pub mod hora;
 // Choghadiya
 pub mod choghadiya;
 
-mod clock;
+pub(crate) mod clock;
 
 // Re-export main types for convenience
 pub use choghadiya::*;
@@ -194,7 +194,11 @@ impl CompletePanchang {
         }
     }
 
-    /// Check if a specific time is good for starting something new
+    /// Check if a specific time is good for starting something new.
+    ///
+    /// `time` is `HH:MM` or `HH:MM:SS`. It is not good if it falls in an
+    /// unfavorable Choghadiya or in Rahu Kalam, Yama Gandam or Gulika Kaal.
+    /// Periods are half-open: a period's end time belongs to the next one.
     pub fn is_good_for_starting(&self, time: &str) -> bool {
         // Check Choghadiya
         if let Some(choghadiya) = self.choghadiya.get_current(time) {
@@ -203,21 +207,19 @@ impl CompletePanchang {
             }
         }
 
-        // Check Muhurtas
-        if let Some(ref rahu) = self.muhurtas.rahu_kalam {
-            if time >= rahu.start.as_str() && time <= rahu.end.as_str() {
-                return false;
-            }
-        }
-        if let Some(ref yama) = self.muhurtas.yama_gandam {
-            if time >= yama.start.as_str() && time <= yama.end.as_str() {
-                return false;
-            }
-        }
-        if let Some(ref gulika) = self.muhurtas.gulika_kaal {
-            if time >= gulika.start.as_str() && time <= gulika.end.as_str() {
-                return false;
-            }
+        // Check Muhurtas: each period is half-open [start, end)
+        let muhurtas = &self.muhurtas;
+        let inauspicious = [
+            &muhurtas.rahu_kalam,
+            &muhurtas.yama_gandam,
+            &muhurtas.gulika_kaal,
+        ];
+        if inauspicious
+            .into_iter()
+            .flatten()
+            .any(|m| clock::in_period(time, &m.start, &m.end))
+        {
+            return false;
         }
 
         true
@@ -428,6 +430,80 @@ pub fn parse_nakshatra_from_response(data: &serde_json::Value) -> VedicApiResult
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A panchang whose only blocking periods are Thursday's three eighths
+    /// on a 07:14–18:21 day, with no Choghadiya to interfere.
+    fn thursday_panchang() -> CompletePanchang {
+        let (sunrise, sunset) = ("07:14", "18:21");
+        let mut p = crate::mocks::mock_complete_panchang();
+        p.choghadiya.day.clear();
+        p.choghadiya.night.clear();
+        let as_muhurta = |name: &str, start: String, end: String| Muhurta {
+            name: name.to_string(),
+            start,
+            end,
+            duration_minutes: 83,
+            nature: MuhurtaNature::VeryInauspicious,
+            ruler: String::new(),
+            suitable_activities: vec![],
+            avoid_activities: vec![],
+        };
+        let rahu = RahuKalam::for_day("Thursday", sunrise, sunset).unwrap();
+        let yama = YamaGandam::for_day("Thursday", sunrise, sunset).unwrap();
+        let gulika = GulikaKaal::for_day("Thursday", sunrise, sunset).unwrap();
+        p.muhurtas.rahu_kalam = Some(as_muhurta("Rahu Kalam", rahu.start, rahu.end));
+        p.muhurtas.yama_gandam = Some(as_muhurta("Yama Gandam", yama.start, yama.end));
+        p.muhurtas.gulika_kaal = Some(as_muhurta("Gulika Kaal", gulika.start, gulika.end));
+        p
+    }
+
+    #[test]
+    fn is_good_for_starting_avoids_rahu_yama_and_gulika() {
+        // Rahu 14:10–15:34, Yama 07:14–08:37, Gulika 10:00–11:24.
+        let p = thursday_panchang();
+        for bad in [
+            "14:10", "15:00", "15:33:59", "07:14", "08:36", "10:00", "11:23:30",
+        ] {
+            assert!(!p.is_good_for_starting(bad), "{bad} should be avoided");
+        }
+        for good in ["14:09:59", "12:00", "16:00", "09:30", "11:30"] {
+            assert!(p.is_good_for_starting(good), "{good} should be fine");
+        }
+    }
+
+    #[test]
+    fn is_good_for_starting_treats_periods_as_half_open() {
+        let p = thursday_panchang();
+        // Each end time belongs to the period after it, as in `split_span`.
+        assert!(p.is_good_for_starting("15:34"));
+        assert!(p.is_good_for_starting("08:37"));
+        assert!(p.is_good_for_starting("11:24"));
+    }
+
+    #[test]
+    fn is_good_for_starting_compares_times_not_strings() {
+        let p = thursday_panchang();
+        // Without a leading zero, "7:30" sorted after "07:14"–"08:37" as text.
+        assert!(!p.is_good_for_starting("7:30"));
+        // Seconds inside the last minute of Rahu Kalam.
+        assert!(!p.is_good_for_starting("15:33:30"));
+    }
+
+    #[test]
+    fn is_good_for_starting_still_checks_choghadiya() {
+        let mut p = thursday_panchang();
+        p.choghadiya = calculate_choghadiya("Thursday", "07:14", "18:21", "07:14");
+        // Night Choghadiyas lie outside the three daytime eighths.
+        let bad = p
+            .choghadiya
+            .night
+            .iter()
+            .find(|c| !c.nature.is_favorable())
+            .expect("an unfavorable night Choghadiya")
+            .start
+            .clone();
+        assert!(!p.is_good_for_starting(&bad));
+    }
 
     #[test]
     fn test_panchang_query_builder() {

@@ -2,7 +2,9 @@
 //!
 //! Native engines (registered with the orchestrator, not served by the
 //! TypeScript bridge) get a block derived from the metadata each engine fills
-//! in. Bridge engines keep their sidecar-lifted block or none.
+//! in. Bridge engines keep their sidecar-lifted block or none. Saved readings
+//! store the same block beside `result` in `result_data` (DB-backed checks are
+//! in `panchanga_reading_persistence_tests.rs`).
 
 mod common;
 
@@ -42,7 +44,12 @@ fn assert_contract_block(block: &Value) -> Provenance {
         .collect();
     let allowed: BTreeSet<&str> = SEVEN_FIELDS.into_iter().collect();
     assert!(keys.is_subset(&allowed), "unexpected keys in {block}");
-    for required in ["runtime_kind", "implementation_version", "cached", "fallback_used"] {
+    for required in [
+        "runtime_kind",
+        "implementation_version",
+        "cached",
+        "fallback_used",
+    ] {
         assert!(keys.contains(required), "missing {required} in {block}");
     }
     let parsed: Provenance =
@@ -80,10 +87,21 @@ async fn native_success_carries_native_block_without_fallback() {
     assert!(prov.provider_id.is_none());
     assert!(prov.confidence.is_none());
     // Exactly the keys this block populates; nothing reserved leaks into result.
-    let keys: BTreeSet<&str> = block.as_object().unwrap().keys().map(String::as_str).collect();
+    let keys: BTreeSet<&str> = block
+        .as_object()
+        .unwrap()
+        .keys()
+        .map(String::as_str)
+        .collect();
     assert_eq!(
         keys,
-        BTreeSet::from(["runtime_kind", "implementation_version", "cached", "fallback_used", "backend_id"])
+        BTreeSet::from([
+            "runtime_kind",
+            "implementation_version",
+            "cached",
+            "fallback_used",
+            "backend_id"
+        ])
     );
     assert!(response["result"].get("__contract_provenance").is_none());
 }
@@ -97,10 +115,16 @@ async fn face_reading_without_image_declares_fallback() {
     let prov = assert_contract_block(&response["provenance"]);
     assert_eq!(prov.runtime_kind, RuntimeKind::Native);
     assert!(prov.fallback_used);
-    assert_eq!(prov.backend_id.as_deref(), Some("birth-physiognomy-fallback"));
+    assert_eq!(
+        prov.backend_id.as_deref(),
+        Some("birth-physiognomy-fallback")
+    );
     assert_eq!(response["metadata"]["fallback_used"], json!(true));
     // The engine-owned block (kept for compatibility) agrees with the envelope.
-    assert_eq!(response["result"]["provenance"]["fallback_used"], json!(true));
+    assert_eq!(
+        response["result"]["provenance"]["fallback_used"],
+        json!(true)
+    );
     assert!(response["result"]["provenance"]["fallback_reason"].is_string());
 }
 
@@ -162,8 +186,11 @@ async fn workflow_engine_results_carry_per_engine_provenance() {
             assert_eq!(prov.runtime_kind, RuntimeKind::Native, "{engine_id}");
             native_seen += 1;
         }
-        // The persisted-shape map never carries an envelope block.
-        assert!(response["engine_outputs"][engine_id].get("provenance").is_none());
+        // The flattened `engine_outputs` map in the response stays the bare
+        // engine output; the block is reported once, under `engine_results`.
+        assert!(response["engine_outputs"][engine_id]
+            .get("provenance")
+            .is_none());
         assert!(output["result"].get("__contract_provenance").is_none());
     }
     assert!(native_seen > 0, "birth-blueprint should run native engines");
@@ -196,4 +223,47 @@ fn stored_reading_without_new_metadata_fields_still_deserializes() {
     let wire = serde_json::to_value(&output).unwrap();
     assert_eq!(wire["metadata"]["fallback_used"], json!(false));
     assert!(wire["metadata"].get("provider_id").is_none());
+}
+
+#[test]
+fn stored_reading_with_provenance_block_round_trips_through_engine_output() {
+    // The shape a saved bridge reading has now: the contract block (with the
+    // sidecar's `confidence`) beside `result`. Synthetic values.
+    let stored = json!({
+        "engine_id": "enneagram",
+        "result": {"mode": "assessment", "primaryType": 7},
+        "witness_prompt": "What do you notice?",
+        "consciousness_level": 1,
+        "metadata": {
+            "calculation_time_ms": 1.2,
+            "backend": "typescript",
+            "precision_achieved": "Standard",
+            "cached": false,
+            "timestamp": "2026-01-01T00:00:00Z",
+            "engine_version": "fixture",
+            "fallback_used": false
+        },
+        "provenance": {
+            "runtime_kind": "typescript",
+            "implementation_version": "1.0.0",
+            "cached": false,
+            "fallback_used": false,
+            "backend_id": "enneagram-assessment",
+            "confidence": 0.78
+        }
+    });
+    let prov = assert_contract_block(&stored["provenance"]);
+    assert_eq!(prov.confidence, Some(0.78));
+
+    // Typed readers (SDK, TUI history) load it and write back the same JSON.
+    let output: noesis_core::EngineOutput =
+        serde_json::from_value(stored.clone()).expect("stored reading must load");
+    assert_eq!(serde_json::to_value(&output).unwrap(), stored);
+
+    // A reading stored before the block existed loads without inventing one.
+    let mut older = stored;
+    older.as_object_mut().unwrap().remove("provenance");
+    let output: noesis_core::EngineOutput =
+        serde_json::from_value(older.clone()).expect("older reading must load");
+    assert_eq!(serde_json::to_value(&output).unwrap(), older);
 }

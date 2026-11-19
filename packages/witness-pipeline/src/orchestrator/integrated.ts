@@ -44,6 +44,9 @@ export interface SectionRubric {
   latency_ms: number;
   chart_fidelity_score?: number;
   chart_fidelity_details?: string[];
+  // Gates that runFinalVerification blocks on; set by auditSectionOutput.
+  placeholder_gate?: 'pass' | 'fail';
+  chart_fidelity_gate?: 'pass' | 'warn' | 'fail';
 }
 
 export interface PassResult {
